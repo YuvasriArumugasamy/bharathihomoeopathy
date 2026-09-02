@@ -1,0 +1,101 @@
+export const initialAdminOffers = [
+  {
+    id: "offer-demo-1",
+    name: "Monsoon Family Wellness 25% Off",
+    description: "Special savings on curated wellness and seasonal combo packages.",
+    type: "Percentage Discount",
+    discountValue: 25,
+    applicableTo: "Combo Products",
+    productIds: ["prod-7", "prod-12"],
+    categoryIds: [],
+    startDate: "2026-08-01",
+    endDate: "2026-09-30",
+    status: "Active",
+    isFeatured: true,
+    createdAt: "2026-07-28"
+  },
+  {
+    id: "offer-demo-2",
+    name: "Mother Tincture Intro Savings",
+    description: "Flat ₹100 discount on select 30ml pure mother tinctures.",
+    type: "Fixed Discount",
+    discountValue: 100,
+    applicableTo: "Mother Tinctures",
+    productIds: ["prod-3", "prod-9"],
+    categoryIds: [],
+    startDate: "2026-08-10",
+    endDate: "2026-09-15",
+    status: "Active",
+    isFeatured: false,
+    createdAt: "2026-08-05"
+  },
+  {
+    id: "offer-demo-3",
+    name: "Autumn Pre-Season Biochemic Promo",
+    description: "Scheduled promotion for all biochemic cell salts.",
+    type: "Percentage Discount",
+    discountValue: 15,
+    applicableTo: "Biochemic Medicines",
+    productIds: [],
+    categoryIds: [],
+    startDate: "2026-09-01",
+    endDate: "2026-10-15",
+    status: "Scheduled",
+    isFeatured: false,
+    createdAt: "2026-08-20"
+  }
+];
+
+export const initialAdminCoupons = [
+  {
+    id: "coupon-demo-1",
+    code: "HOMECARE10",
+    name: "New Patient Welcome 10%",
+    description: "10% discount on first homeopathic and wellness product order.",
+    discountType: "Percentage",
+    discountValue: 10,
+    minimumOrderValue: 499,
+    maximumDiscount: 200,
+    usageLimit: 500,
+    usedCount: 124,
+    perCustomerLimit: 1,
+    startDate: "2026-01-01",
+    endDate: "2026-12-31",
+    status: "Active",
+    createdAt: "2026-01-01"
+  },
+  {
+    id: "coupon-demo-2",
+    code: "WELLNESS20",
+    name: "Monsoon Wellness Special",
+    description: "20% off on all wellness categories for orders over ₹1200.",
+    discountType: "Percentage",
+    discountValue: 20,
+    minimumOrderValue: 1200,
+    maximumDiscount: 500,
+    usageLimit: 200,
+    usedCount: 88,
+    perCustomerLimit: 2,
+    startDate: "2026-08-01",
+    endDate: "2026-09-30",
+    status: "Active",
+    createdAt: "2026-07-25"
+  },
+  {
+    id: "coupon-demo-3",
+    code: "FLAT150",
+    name: "Flat ₹150 Off Big Cart",
+    description: "Flat ₹150 discount for orders above ₹1500.",
+    discountType: "Fixed Amount",
+    discountValue: 150,
+    minimumOrderValue: 1500,
+    maximumDiscount: 150,
+    usageLimit: 100,
+    usedCount: 42,
+    perCustomerLimit: 1,
+    startDate: "2026-08-01",
+    endDate: "2026-08-31",
+    status: "Active",
+    createdAt: "2026-07-28"
+  }
+];

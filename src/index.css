@@ -1,0 +1,315 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+    margin: 0;
+    padding: 0;
+    background-color: #f8fafc;
+    position: relative;
+  }
+
+  #root {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: clip;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Smooth transitions */
+.transition-smooth {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hide scrollbar completely while maintaining scroll functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Google Translate Overrides */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-banner-frame,
+iframe.goog-te-banner-frame,
+.skiptranslate > iframe,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf-ti6hGc {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+body {
+    top: 0px !important;
+    position: static !important;
+}
+
+#goog-gt-tt, 
+.goog-te-balloon-frame {
+    display: none !important;
+}
+
+.goog-text-highlight {
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.goog-logo-link {
+    display: none !important;
+}
+.goog-te-gadget {
+    color: transparent !important;
+}
+
+/* Fix Tailwind breaking Google Translate widget images */
+.goog-te-gadget-simple img {
+    max-width: none !important;
+    display: inline-block !important;
+}
+
+/* Custom Animated Circle Fill Button */
+.btn-animated-fill {
+  background: transparent;
+  position: relative;
+  padding: 6px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid rgb(40, 144, 241);
+  border-radius: 25px;
+  outline: none;
+  overflow: hidden;
+  color: rgb(40, 144, 241);
+  transition: color 0.3s 0.1s ease-out, border-color 0.3s ease-out;
+  text-align: center;
+  z-index: 1;
+}
+
+.btn-animated-fill span {
+  margin: 0 8px;
+}
+
+.btn-animated-fill::before {
+  position: absolute;
+  top: 0;
+  left: -5em;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  content: '';
+  border-radius: 50%;
+  display: block;
+  width: 20em;
+  height: 20em;
+  text-align: center;
+  transition: box-shadow 0.5s ease-out;
+  z-index: -1;
+}
+
+.btn-animated-fill:hover {
+  color: #fff;
+  border: 1px solid rgb(40, 144, 241);
+}
+
+.btn-animated-fill:hover::before {
+  box-shadow: inset 0 0 0 10em rgb(40, 144, 241);
+}
+
+/* Brand Color Variant (Orange) */
+.btn-animated-orange {
+  border-color: #c26839;
+  color: #c26839;
+}
+.btn-animated-orange:hover {
+  border-color: #c26839;
+}
+.btn-animated-orange:hover::before {
+  box-shadow: inset 0 0 0 10em #c26839;
+}
+
+/* Teal Variant */
+.btn-animated-teal {
+  border-color: #236888;
+  color: #236888;
+}
+.btn-animated-teal:hover {
+  border-color: #236888;
+}
+.btn-animated-teal:hover::before {
+  box-shadow: inset 0 0 0 10em #236888;
+}
+
+/* Uiverse.io Skew Animated Button Style */
+.btn {
+ --color: #c26839;
+ --color2: #ffffff;
+ padding: 0.7em 1.5em;
+ background-color: transparent;
+ border-radius: 8px;
+ border: 1.5px solid var(--color);
+ transition: 0.5s;
+ position: relative;
+ overflow: hidden;
+ cursor: pointer;
+ z-index: 1;
+ font-weight: 700;
+ font-size: 14px;
+ font-family: inherit;
+ text-transform: uppercase;
+ letter-spacing: 0.04em;
+ color: var(--color);
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ gap: 0.5rem;
+ text-decoration: none;
+}
+
+.btn::after, .btn::before {
+ content: '';
+ display: block;
+ height: 100%;
+ width: 100%;
+ transform: skew(90deg) translate(-50%, -50%);
+ position: absolute;
+ inset: 50%;
+ left: 25%;
+ z-index: -1;
+ transition: .5s ease-out;
+ background-color: var(--color);
+}
+
+.btn::before {
+ top: -50%;
+ left: -25%;
+ transform: skew(90deg) rotate(180deg) translate(-50%, -50%);
+}
+
+.btn:hover::before {
+ transform: skew(45deg) rotate(180deg) translate(-50%, -50%);
+}
+
+.btn:hover::after {
+ transform: skew(45deg) translate(-50%, -50%);
+}
+
+.btn:hover {
+ color: var(--color2);
+}
+
+.btn:active {
+ filter: brightness(.7);
+ transform: scale(.98);
+}
+
+/* Color Variants for .btn */
+.btn-emerald {
+ --color: #00A97F;
+ --color2: #ffffff;
+}
+
+.btn-orange, .btn-brand {
+ --color: #c26839;
+ --color2: #ffffff;
+}
+
+.btn-teal, .btn-navy {
+ --color: #236888;
+ --color2: #ffffff;
+}
+
+.btn-dark {
+ --color: #0f3e5c;
+ --color2: #ffffff;
+}
+
+.btn-blue {
+ --color: #2890f1;
+ --color2: #ffffff;
+}
+
+.btn-rose {
+ --color: #e11d48;
+ --color2: #ffffff;
+}
+
+.btn-white {
+ --color: #ffffff;
+ --color2: #0b1727;
+}
+
+/* Vibrant Sunset Orange-Yellow Gradient Pill Button with Warm Ambient Glow */
+.btn-gradient-orange, .btn-sunset-orange {
+  background: linear-gradient(135deg, #ff4e50 0%, #f97316 50%, #f9d423 100%);
+  color: #ffffff !important;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 9999px;
+  border: none !important;
+  padding: 12px 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 10px 25px -4px rgba(249, 83, 46, 0.45), 0 4px 10px -2px rgba(249, 115, 22, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-gradient-orange:hover, .btn-sunset-orange:hover {
+  background: linear-gradient(135deg, #ff3b3e 0%, #ea580c 50%, #facc15 100%);
+  box-shadow: 0 14px 30px -4px rgba(249, 83, 46, 0.65), 0 6px 14px -2px rgba(249, 115, 22, 0.4);
+  transform: translateY(-2px) scale(1.02);
+  color: #ffffff !important;
+}
+
+.btn-gradient-orange:active, .btn-sunset-orange:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 6px 16px -2px rgba(249, 83, 46, 0.4);
+}
