@@ -19,6 +19,18 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
 
   if (!isOpen) return null;
 
+  // Lock body scroll when modal is open
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   const handleLoginSubmit = (e) => {
     e.preventDefault();
     console.log('Login submitted:', { loginEmail, loginPassword });
@@ -38,17 +50,17 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto no-scrollbar">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm">
       
       {/* Backdrop */}
       <div 
         onClick={onClose}
-        className="fixed inset-0 bg-[#0b1727]/65 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+        className="absolute inset-0"
       />
 
       {/* Modal Dialog Card */}
       <div 
-        className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-100 z-10 overflow-hidden my-auto max-h-[92vh] flex flex-col md:flex-row animate-in zoom-in-95 fade-in duration-200"
+        className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-100 z-10 overflow-hidden my-auto max-h-[90vh] flex flex-col md:flex-row animate-in zoom-in-95 fade-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         
@@ -90,7 +102,7 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
         </div>
 
         {/* Right Column: Form Panel */}
-        <div className="w-full md:w-7/12 p-6 sm:p-8 relative flex flex-col justify-between overflow-y-auto no-scrollbar max-h-[90vh]">
+        <div className="w-full md:w-7/12 p-6 sm:p-8 relative flex flex-col overflow-y-auto max-h-[90vh]">
           
           <button
             onClick={onClose}
