@@ -391,7 +391,8 @@ export const Appointment = () => {
               </div>
             )}
             </div>
-          </ScrollReveal>
+          </div>
+        </ScrollReveal>
 
           {/* Right: Clinic Information & Important Notes */}
           <ScrollReveal direction="right" className="lg:col-span-4 space-y-6">
