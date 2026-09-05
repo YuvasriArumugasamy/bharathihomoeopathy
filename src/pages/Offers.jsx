@@ -139,7 +139,7 @@ export const Offers = () => {
 
         {/* Content Box placed in the exact center with proportional typography */}
         <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 w-full py-3 sm:py-8 lg:py-12 flex justify-center text-center">
-          <div className="w-full max-w-md sm:max-w-lg lg:max-w-xl space-y-1 sm:space-y-2.5 flex flex-col items-center text-center">
+          <ScrollReveal direction="up" className="w-full max-w-md sm:max-w-lg lg:max-w-xl space-y-1 sm:space-y-2.5 flex flex-col items-center text-center">
             <nav className="flex items-center justify-center gap-1.5 text-[9px] sm:text-xs font-bold text-slate-700 bg-white/75 backdrop-blur-xs px-2.5 py-0.5 rounded-full border border-amber-200/40">
               <Link to="/" className="hover:text-[#e05a1e] transition-colors">Home</Link>
               <span>&gt;</span>
@@ -147,7 +147,7 @@ export const Offers = () => {
             </nav>
 
             <h1 className="text-lg sm:text-3xl lg:text-5xl font-black text-navy-950 tracking-tight leading-tight text-center drop-shadow-xs">
-              Exclusive <span className="text-[#e05a1e] font-serif italic">Offers</span>
+              Exclusive <span className="text-[#e05a1e] font-serif italic inline-block transition-transform duration-300 hover:scale-110">Offers</span>
             </h1>
             
             <p className="text-[10px] sm:text-sm md:text-base font-bold text-navy-950 text-center leading-tight">
@@ -172,7 +172,7 @@ export const Offers = () => {
                 <span>100% Natural</span>
               </span>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 

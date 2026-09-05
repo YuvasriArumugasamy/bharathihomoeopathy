@@ -89,7 +89,7 @@ export const Appointment = () => {
         <div className="absolute inset-0 bg-white/70 lg:bg-transparent lg:bg-gradient-to-r lg:from-white lg:via-white/80 lg:via-40% lg:to-transparent lg:to-70% z-0"></div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="space-y-3 sm:space-y-4 max-w-lg lg:max-w-xl xl:max-w-2xl">
+          <ScrollReveal direction="left" className="space-y-3 sm:space-y-4 max-w-lg lg:max-w-xl xl:max-w-2xl">
             
             {/* Breadcrumb Tag */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/90 text-[11px] sm:text-xs font-bold text-slate-800 shadow-md">
@@ -100,7 +100,7 @@ export const Appointment = () => {
 
             {/* Main Title with Elegant Display & Serif Font */}
             <h1 className="text-4xl sm:text-6xl font-black text-[#0b1727] tracking-tight leading-none font-display drop-shadow-[0_2px_10px_rgba(255,255,255,0.9)]">
-              Book an <span className="text-[#e05a1e] font-serif italic font-bold">Appointment</span>
+              Book an <span className="text-[#e05a1e] font-serif italic font-bold inline-block transition-transform duration-300 hover:scale-110">Appointment</span>
             </h1>
 
             {/* Subtitle */}
@@ -112,7 +112,7 @@ export const Appointment = () => {
             <p className="text-xs sm:text-base text-slate-900 font-extrabold leading-relaxed max-w-2xl drop-shadow-[0_1px_8px_rgba(255,255,255,0.95)]">
               Schedule an appointment with Dr. Bharathi for personalized homeopathic care and natural healing.
             </p>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
