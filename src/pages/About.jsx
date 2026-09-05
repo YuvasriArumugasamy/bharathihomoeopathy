@@ -212,17 +212,7 @@ export const About = () => {
               playsInline
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-5">
-              <div className="bg-white/15 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 flex items-center gap-2.5 text-white shadow-lg">
-                <div className="w-7 h-7 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-2xs">
-                  <Leaf className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <span className="text-xs font-black tracking-wide block">Natural & Gentle Care</span>
-                  <span className="text-[10px] text-emerald-200 font-medium">100% Safe Homeopathic Remedies</span>
-                </div>
-              </div>
-            </div>
+
           </div>
 
           {/* Right Column Details */}
