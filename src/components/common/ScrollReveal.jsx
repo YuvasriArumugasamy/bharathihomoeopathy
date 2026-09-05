@@ -8,9 +8,9 @@ export const ScrollReveal = ({
   children, 
   direction = 'up',
   delay = 0, 
-  duration = 750, 
+  duration = 700, 
   className = '',
-  threshold = 0.1,
+  threshold = 0.01,
   once = true,
   style = {}
 }) => {
@@ -18,6 +18,24 @@ export const ScrollReveal = ({
   const ref = useRef(null);
 
   useEffect(() => {
+    const checkViewport = () => {
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect();
+        const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+        // If element is already in or near viewport
+        if (rect.top <= windowHeight + 100 && rect.bottom >= -100) {
+          setIsVisible(true);
+          return true;
+        }
+      }
+      return false;
+    };
+
+    // Check immediately on mount
+    const alreadyVisible = checkViewport();
+    if (alreadyVisible && once) return;
+
+    // Use IntersectionObserver for scroll detection
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -29,7 +47,7 @@ export const ScrollReveal = ({
           setIsVisible(false);
         }
       },
-      { threshold, rootMargin: '0px 0px -50px 0px' }
+      { threshold: 0.01, rootMargin: '100px 0px 100px 0px' }
     );
 
     const currentRef = ref.current;
@@ -37,8 +55,19 @@ export const ScrollReveal = ({
       observer.observe(currentRef);
     }
 
+    // Scroll fallback event listener for instant responsiveness
+    const handleScroll = () => {
+      if (checkViewport() && once && currentRef) {
+        observer.unobserve(currentRef);
+        window.removeEventListener('scroll', handleScroll);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
     return () => {
       if (currentRef) observer.unobserve(currentRef);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, [threshold, once]);
 
@@ -46,15 +75,15 @@ export const ScrollReveal = ({
     if (isVisible) return 'translate3d(0, 0, 0) scale(1)';
     switch (direction) {
       case 'up':
-        return 'translate3d(0, 50px, 0)';
+        return 'translate3d(0, 40px, 0)';
       case 'down':
-        return 'translate3d(0, -50px, 0)';
+        return 'translate3d(0, -40px, 0)';
       case 'left':
-        return 'translate3d(-50px, 0, 0)';
+        return 'translate3d(-40px, 0, 0)';
       case 'right':
-        return 'translate3d(50px, 0, 0)';
+        return 'translate3d(40px, 0, 0)';
       case 'zoom':
-        return 'scale(0.9)';
+        return 'scale(0.92)';
       case 'fade':
       default:
         return 'translate3d(0, 0, 0)';
