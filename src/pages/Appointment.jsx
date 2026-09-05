@@ -18,6 +18,7 @@ import {
   Building2
 } from 'lucide-react';
 import { SectionHeader } from '../components/common/SectionHeader';
+import { ScrollReveal } from '../components/common/ScrollReveal';
 import { useToast } from '../context/ToastContext';
 import { assets } from '../assets';
 
@@ -120,7 +121,8 @@ export const Appointment = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Left: Appointment Booking Form */}
-          <div className="lg:col-span-8 bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 p-6 sm:p-10 shadow-[0_15px_45px_rgba(15,23,42,0.08)] relative overflow-hidden">
+          <ScrollReveal direction="left" className="lg:col-span-8">
+            <div className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 p-6 sm:p-10 shadow-[0_15px_45px_rgba(15,23,42,0.08)] relative overflow-hidden">
             {/* Top Accent Gradient Line */}
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#ff4e50] via-[#f97316] via-amber-400 to-[#0b344d]" />
 
@@ -389,10 +391,10 @@ export const Appointment = () => {
               </div>
             )}
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Right: Clinic Information & Important Notes */}
-          <div className="lg:col-span-4 space-y-6">
+          <ScrollReveal direction="right" className="lg:col-span-4 space-y-6">
             
             {/* Clinic Information Card */}
             <div className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-[0_10px_35px_rgba(15,23,42,0.06)] hover:shadow-xl transition-all duration-300 relative overflow-hidden group space-y-4">
@@ -503,10 +505,9 @@ export const Appointment = () => {
                     In case of emergency, please call us directly.
                   </span>
                 </li>
-              </ul>
             </div>
 
-          </div>
+          </ScrollReveal>
 
         </div>
       </section>

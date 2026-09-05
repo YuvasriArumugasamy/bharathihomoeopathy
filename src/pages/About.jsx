@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { assets } from '../assets';
 import { SectionHeader } from '../components/common/SectionHeader';
+import { ScrollReveal } from '../components/common/ScrollReveal';
 
 export const About = () => {
   const timeline = [

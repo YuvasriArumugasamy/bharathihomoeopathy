@@ -16,6 +16,7 @@ import {
 import { demoProducts } from '../data/products';
 import { assets } from '../assets';
 import { SectionHeader } from '../components/common/SectionHeader';
+import { ScrollReveal } from '../components/common/ScrollReveal';
 
 export const Offers = () => {
   const [timeLeft, setTimeLeft] = useState({
@@ -250,26 +251,28 @@ export const Offers = () => {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {offersByCategory.map((item, idx) => (
-            <div key={idx} className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm flex flex-col justify-between items-center text-center space-y-3 relative group">
-              <span className={`absolute top-2 left-2 ${item.badgeColor} text-white font-extrabold text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded shadow-sm`}>
-                {item.badge}
-              </span>
+            <ScrollReveal key={idx} direction="up" delay={idx * 60}>
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm flex flex-col justify-between items-center text-center space-y-3 relative group h-full">
+                <span className={`absolute top-2 left-2 ${item.badgeColor} text-white font-extrabold text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded shadow-sm`}>
+                  {item.badge}
+                </span>
 
-              <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-50 p-2 mt-4 flex items-center justify-center">
-                <img src={item.image} alt={item.category} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform" />
+                <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-50 p-2 mt-4 flex items-center justify-center">
+                  <img src={item.image} alt={item.category} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform" />
+                </div>
+
+                <h3 className="font-bold text-xs text-navy-950 leading-tight">
+                  {item.category}
+                </h3>
+
+                <Link
+                  to={`/shop?category=${encodeURIComponent(item.category)}`}
+                  className={`w-full py-1.5 px-3 border rounded-lg text-xs font-bold transition-colors ${item.btnBorder}`}
+                >
+                  Shop Now
+                </Link>
               </div>
-
-              <h3 className="font-bold text-xs text-navy-950 leading-tight">
-                {item.category}
-              </h3>
-
-              <Link
-                to={`/shop?category=${encodeURIComponent(item.category)}`}
-                className={`w-full py-1.5 px-3 border rounded-lg text-xs font-bold transition-colors ${item.btnBorder}`}
-              >
-                Shop Now
-              </Link>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
 
@@ -282,31 +285,33 @@ export const Offers = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {comboDeals.map((combo, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-3 flex flex-col justify-between relative group">
-              <span className="absolute top-3 right-3 w-10 h-10 rounded-full bg-brandOrange-500 text-white font-black text-[10px] flex items-center justify-center text-center leading-tight shadow-md">
-                {combo.badge}
-              </span>
+            <ScrollReveal key={i} direction={i % 2 === 0 ? "left" : "right"} delay={i * 80}>
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-3 flex flex-col justify-between relative group h-full">
+                <span className="absolute top-3 right-3 w-10 h-10 rounded-full bg-brandOrange-500 text-white font-black text-[10px] flex items-center justify-center text-center leading-tight shadow-md">
+                  {combo.badge}
+                </span>
 
-              <div className="aspect-[4/3] rounded-xl overflow-hidden bg-slate-50 p-3 flex items-center justify-center">
-                <img src={combo.image} alt={combo.name} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform" />
-              </div>
-
-              <div className="space-y-1">
-                <h3 className="font-extrabold text-sm text-navy-950">{combo.name}</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">{combo.desc}</p>
-                <div className="flex items-baseline gap-2 pt-1">
-                  <span className="text-base font-extrabold text-navy-950">₹{combo.price}.00</span>
-                  <span className="text-xs text-slate-400 line-through">₹{combo.originalPrice}.00</span>
+                <div className="aspect-[4/3] rounded-xl overflow-hidden bg-slate-50 p-3 flex items-center justify-center">
+                  <img src={combo.image} alt={combo.name} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform" />
                 </div>
-              </div>
 
-              <Link
-                to="/shop?category=Combo%20Offers"
-                className={`w-full py-2.5 text-center text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-sm transition-colors ${combo.btnColor}`}
-              >
-                Shop Combo
-              </Link>
-            </div>
+                <div className="space-y-1">
+                  <h3 className="font-extrabold text-sm text-navy-950">{combo.name}</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">{combo.desc}</p>
+                  <div className="flex items-baseline gap-2 pt-1">
+                    <span className="text-base font-extrabold text-navy-950">₹{combo.price}.00</span>
+                    <span className="text-xs text-slate-400 line-through">₹{combo.originalPrice}.00</span>
+                  </div>
+                </div>
+
+                <Link
+                  to="/shop?category=Combo%20Offers"
+                  className={`w-full py-2.5 text-center text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-sm transition-colors ${combo.btnColor}`}
+                >
+                  Shop Combo
+                </Link>
+              </div>
+            </ScrollReveal>
           ))}
         </div>
 

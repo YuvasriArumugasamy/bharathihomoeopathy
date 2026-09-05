@@ -24,6 +24,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { ProductCard } from '../components/shop/ProductCard';
 import { SectionHeader } from '../components/common/SectionHeader';
+import { ScrollReveal } from '../components/common/ScrollReveal';
 export const Home = () => {
   const { addToCart } = useCart();
   const { showToast } = useToast();

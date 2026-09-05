@@ -21,6 +21,7 @@ import { assets } from '../assets';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { ProductCard } from '../components/shop/ProductCard';
+import { ScrollReveal } from '../components/common/ScrollReveal';
 import { demoProducts } from '../data/products';
 
 export const Shop = () => {
@@ -485,8 +486,10 @@ export const Shop = () => {
             <div id="shop-product-grid">
               {paginatedProducts.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3">
-                  {paginatedProducts.map((prod) => (
-                    <ProductCard key={prod.id} product={prod} />
+                  {paginatedProducts.map((prod, idx) => (
+                    <ScrollReveal key={prod.id} direction="up" delay={(idx % 6) * 50}>
+                      <ProductCard product={prod} />
+                    </ScrollReveal>
                   ))}
                 </div>
               ) : (
