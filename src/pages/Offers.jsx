@@ -324,7 +324,7 @@ export const Offers = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
-          <div className="bg-[#fff7ed] rounded-3xl p-6 sm:p-8 border border-amber-100 space-y-4 shadow-sm flex flex-col justify-between">
+          <div className="bg-[#fff7ed] rounded-3xl p-6 sm:p-8 border border-amber-100 space-y-4 shadow-sm flex flex-col justify-between items-center text-center">
             <div className="space-y-2">
               <h3 className="text-lg font-extrabold text-navy-950">
                 Monsoon Care<br />Special Offer
@@ -339,7 +339,7 @@ export const Offers = () => {
             </div>
           </div>
 
-          <div className="bg-[#eff6ff] rounded-3xl p-6 sm:p-8 border border-blue-100 space-y-4 shadow-sm flex flex-col justify-between">
+          <div className="bg-[#eff6ff] rounded-3xl p-6 sm:p-8 border border-blue-100 space-y-4 shadow-sm flex flex-col justify-between items-center text-center">
             <div className="space-y-2">
               <h3 className="text-lg font-extrabold text-navy-950">
                 Back to Health<br />Special
@@ -354,7 +354,7 @@ export const Offers = () => {
             </div>
           </div>
 
-          <div className="bg-[#f0fdf4] rounded-3xl p-6 sm:p-8 border border-emerald-100 space-y-4 shadow-sm flex flex-col justify-between">
+          <div className="bg-[#f0fdf4] rounded-3xl p-6 sm:p-8 border border-emerald-100 space-y-4 shadow-sm flex flex-col justify-between items-center text-center">
             <div className="space-y-2">
               <h3 className="text-lg font-extrabold text-navy-950">
                 Summer Wellness<br />Offer
