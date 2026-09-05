@@ -286,36 +286,37 @@ export const Home = () => {
         {/* 7 Interactive Category Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4 lg:gap-4">
           {categories.map((cat, idx) => (
-            <Link
-              key={cat.name}
-              to={`/shop?category=${encodeURIComponent(cat.name)}`}
-              className="flex flex-col items-center text-center p-3.5 sm:p-4 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-xl hover:shadow-orange-500/10 hover:border-brandOrange-400/60 hover:-translate-y-1.5 transition-all duration-300 group relative overflow-hidden"
-            >
-              {/* Top Accent Gradient Line on Hover */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <ScrollReveal key={cat.name} direction="up" delay={idx * 50}>
+              <Link
+                to={`/shop?category=${encodeURIComponent(cat.name)}`}
+                className="flex flex-col items-center text-center p-3.5 sm:p-4 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-xl hover:shadow-orange-500/10 hover:border-brandOrange-400/60 hover:-translate-y-1.5 transition-all duration-300 group relative overflow-hidden h-full"
+              >
+                {/* Top Accent Gradient Line on Hover */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-              {/* Glowing Gradient Ring Pod around Image */}
-              <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full p-1 bg-gradient-to-tr from-brandOrange-500 via-amber-400 to-[#18587c] shadow-md group-hover:scale-105 group-hover:rotate-3 transition-all duration-300 flex items-center justify-center shrink-0">
-                <div className="w-full h-full rounded-full bg-white p-1 overflow-hidden flex items-center justify-center border-2 border-white shadow-inner">
-                  <img
-                    src={cat.image}
-                    alt={cat.name}
-                    className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300"
-                  />
+                {/* Glowing Gradient Ring Pod around Image */}
+                <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full p-1 bg-gradient-to-tr from-brandOrange-500 via-amber-400 to-[#18587c] shadow-md group-hover:scale-105 group-hover:rotate-3 transition-all duration-300 flex items-center justify-center shrink-0">
+                  <div className="w-full h-full rounded-full bg-white p-1 overflow-hidden flex items-center justify-center border-2 border-white shadow-inner">
+                    <img
+                      src={cat.image}
+                      alt={cat.name}
+                      className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* Category Title */}
-              <h3 className="text-xs sm:text-[12.5px] font-extrabold text-navy-950 mt-3 group-hover:text-brandOrange-600 transition-colors leading-tight line-clamp-2 min-h-[32px] flex items-center justify-center">
-                {cat.name}
-              </h3>
+                {/* Category Title */}
+                <h3 className="text-xs sm:text-[12.5px] font-extrabold text-navy-950 mt-3 group-hover:text-brandOrange-600 transition-colors leading-tight line-clamp-2 min-h-[32px] flex items-center justify-center">
+                  {cat.name}
+                </h3>
 
-              {/* Interactive Arrow Indicator on Hover */}
-              <div className="opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200 text-[10px] font-extrabold text-brandOrange-500 flex items-center gap-0.5 mt-1">
-                <span>Explore</span>
-                <ArrowRight className="w-3 h-3" />
-              </div>
-            </Link>
+                {/* Interactive Arrow Indicator on Hover */}
+                <div className="opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200 text-[10px] font-extrabold text-brandOrange-500 flex items-center gap-0.5 mt-1">
+                  <span>Explore</span>
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+              </Link>
+            </ScrollReveal>
           ))}
         </div>
 
@@ -347,8 +348,10 @@ export const Home = () => {
 
         {/* 6 Grid Products */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {bestSellerProducts.map((prod) => (
-            <ProductCard key={prod.id} product={prod} />
+          {bestSellerProducts.map((prod, idx) => (
+            <ScrollReveal key={prod.id} direction="up" delay={idx * 60}>
+              <ProductCard product={prod} />
+            </ScrollReveal>
           ))}
         </div>
 
