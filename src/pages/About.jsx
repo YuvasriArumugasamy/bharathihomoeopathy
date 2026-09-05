@@ -140,7 +140,7 @@ export const About = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-          <div className="max-w-2xl space-y-3 sm:space-y-4">
+          <ScrollReveal direction="left" duration={850} className="max-w-2xl space-y-3 sm:space-y-4">
             
             {/* Breadcrumb Pill */}
             <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-[11px] sm:text-xs text-sky-100 font-semibold shadow-sm">
@@ -151,7 +151,7 @@ export const About = () => {
 
             {/* Title */}
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
-              About <span className="text-[#fb923c] font-serif italic">Us</span>
+              About <span className="text-[#fb923c] font-serif italic inline-block transition-transform duration-300 hover:scale-110">Us</span>
             </h1>
 
             {/* Description */}
@@ -161,15 +161,15 @@ export const About = () => {
 
             {/* Action Badges Strip - Compact horizontal layout on mobile */}
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1 sm:pt-2">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 bg-black/50 backdrop-blur-md rounded-xl border border-white/20 text-[11px] sm:text-xs font-bold text-white shadow-md">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 bg-black/50 backdrop-blur-md rounded-xl border border-white/20 text-[11px] sm:text-xs font-bold text-white shadow-md hover:border-emerald-400/50 transition-colors">
                 <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" />
                 <span>10+ Years Experience</span>
               </div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 bg-black/50 backdrop-blur-md rounded-xl border border-white/20 text-[11px] sm:text-xs font-bold text-white shadow-md">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 bg-black/50 backdrop-blur-md rounded-xl border border-white/20 text-[11px] sm:text-xs font-bold text-white shadow-md hover:border-amber-400/50 transition-colors">
                 <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
                 <span>5000+ Happy Patients</span>
               </div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 bg-black/50 backdrop-blur-md rounded-xl border border-white/20 text-[11px] sm:text-xs font-bold text-white shadow-md">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 bg-black/50 backdrop-blur-md rounded-xl border border-white/20 text-[11px] sm:text-xs font-bold text-white shadow-md hover:border-sky-400/50 transition-colors">
                 <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400 shrink-0" />
                 <span>100% Pure Homeopathy</span>
               </div>
@@ -192,7 +192,7 @@ export const About = () => {
               </Link>
             </div>
 
-          </div>
+          </ScrollReveal>
         </div>
 
       </section>
