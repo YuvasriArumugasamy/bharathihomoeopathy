@@ -26,6 +26,7 @@ import { ProductCard } from '../components/shop/ProductCard';
 import { ProductSkeleton } from '../components/common/ProductSkeleton';
 import { ErrorState } from '../components/common/ErrorState';
 import { SectionHeader } from '../components/common/SectionHeader';
+import { ScrollReveal } from '../components/common/ScrollReveal';
 import { demoProducts } from '../data/products';
 
 export const ProductDetails = () => {
@@ -183,7 +184,7 @@ export const ProductDetails = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
         
         {/* Left Gallery Card */}
-        <div className="lg:col-span-6 space-y-4">
+        <ScrollReveal direction="left" className="lg:col-span-6 space-y-4">
           <div 
             onClick={() => setShowImageModal(true)}
             className="aspect-square bg-white/95 backdrop-blur-2xl rounded-3xl overflow-hidden border border-slate-200/90 p-3 shadow-[0_15px_45px_rgba(15,23,42,0.08)] relative group flex items-center justify-center cursor-zoom-in"
@@ -256,10 +257,10 @@ export const ProductDetails = () => {
               ))}
             </div>
           )}
-        </div>
+        </ScrollReveal>
 
         {/* Right Product Buy Section Card */}
-        <div className="lg:col-span-6 bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] space-y-6 relative overflow-hidden">
+        <ScrollReveal direction="right" className="lg:col-span-6 bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] space-y-6 relative overflow-hidden">
           {/* Top Accent Gradient Line */}
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d]" />
 
@@ -390,7 +391,7 @@ export const ProductDetails = () => {
             </div>
           </div>
 
-        </div>
+        </ScrollReveal>
 
       </div>
 

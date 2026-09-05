@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { assets } from '../assets';
 import { SectionHeader } from '../components/common/SectionHeader';
+import { ScrollReveal } from '../components/common/ScrollReveal';
 import { useToast } from '../context/ToastContext';
 
 export const Contact = () => {
@@ -84,7 +85,7 @@ export const Contact = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Left: Contact Info Cards */}
-          <div className="lg:col-span-5 space-y-4">
+          <ScrollReveal direction="left" className="lg:col-span-5 space-y-4">
             
             {/* Address Card */}
             <div className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-[0_10px_35px_rgba(15,23,42,0.06)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-start gap-4 relative overflow-hidden group">
@@ -146,10 +147,11 @@ export const Contact = () => {
               </div>
             </div>
 
-          </div>
+          </ScrollReveal>
 
           {/* Right: Enquiry Form Card */}
-          <div className="lg:col-span-7 bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-10 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] relative overflow-hidden">
+          <ScrollReveal direction="right" className="lg:col-span-7">
+            <div className="bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-10 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] relative overflow-hidden">
             {/* Top Accent Gradient Line */}
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d]" />
 
@@ -297,6 +299,7 @@ export const Contact = () => {
               </div>
             )}
           </div>
+        </ScrollReveal>
 
         </div>
       </section>

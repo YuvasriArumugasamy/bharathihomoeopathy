@@ -162,7 +162,7 @@ export const Blog = () => {
 
         {/* Content Box placed in the TOP RIGHT on mobile over the clean background area */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-6 pb-12 sm:py-16 flex justify-end">
-          <div className="w-[62%] sm:w-full max-w-xs sm:max-w-lg lg:max-w-xl space-y-1.5 sm:space-y-3.5 flex flex-col items-end sm:items-start text-right sm:text-left">
+          <ScrollReveal direction="right" className="w-[62%] sm:w-full max-w-xs sm:max-w-lg lg:max-w-xl space-y-1.5 sm:space-y-3.5 flex flex-col items-end sm:items-start text-right sm:text-left">
             <nav className="flex items-center gap-1.5 text-[10px] sm:text-xs font-bold text-slate-700 bg-white/75 backdrop-blur-xs px-2.5 py-0.5 rounded-full border border-emerald-200/40 w-fit">
               <Link to="/" className="hover:text-[#e05a1e] transition-colors">Home</Link>
               <span>&gt;</span>
@@ -176,7 +176,7 @@ export const Blog = () => {
             <p className="text-[10px] sm:text-sm text-slate-700 font-semibold leading-snug sm:leading-relaxed">
               Helpful tips, expert advice and natural health insights to help you and your family live a healthier life.
             </p>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -191,54 +191,53 @@ export const Blog = () => {
             </h2>
 
             <div className="space-y-6">
-              {filteredPosts.map((post) => (
-                <div
-                  key={post.id}
-                  className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 grid grid-cols-1 sm:grid-cols-12 gap-6 p-5 items-center"
-                >
-                  <div className="sm:col-span-5 aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100">
-                    <img src={post.image} alt={post.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
-                  </div>
-
-                  <div className="sm:col-span-7 space-y-2.5">
-                    <span className="text-[10px] font-black text-brandOrange-600 uppercase tracking-wider block">
-                      {post.category}
-                    </span>
-
-                    <h3 className="font-extrabold text-base sm:text-lg text-navy-950 leading-snug hover:text-brandOrange-600 transition-colors">
-                      {post.title}
-                    </h3>
-
-                    <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
-                      {post.excerpt}
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-400 pt-1 border-t border-slate-100">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-brandOrange-500" />
-                        <span>{post.date}</span>
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <User className="w-3 h-3 text-brandOrange-500" />
-                        <span>{post.author}</span>
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-brandOrange-500" />
-                        <span>{post.readTime}</span>
-                      </span>
+              {filteredPosts.map((post, idx) => (
+                <ScrollReveal key={post.id} direction="up" delay={idx * 60}>
+                  <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 grid grid-cols-1 sm:grid-cols-12 gap-6 p-5 items-center">
+                    <div className="sm:col-span-5 aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100">
+                      <img src={post.image} alt={post.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
                     </div>
 
-                    <div className="pt-2">
-                      <button
-                        onClick={() => setReadingModalPost(post)}
-                        className="text-xs font-bold text-brandOrange-600 hover:text-brandOrange-700 flex items-center gap-1"
-                      >
-                        <span>Read More</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
+                    <div className="sm:col-span-7 space-y-2.5">
+                      <span className="text-[10px] font-black text-brandOrange-600 uppercase tracking-wider block">
+                        {post.category}
+                      </span>
+
+                      <h3 className="font-extrabold text-base sm:text-lg text-navy-950 leading-snug hover:text-brandOrange-600 transition-colors">
+                        {post.title}
+                      </h3>
+
+                      <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
+                        {post.excerpt}
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-400 pt-1 border-t border-slate-100">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-brandOrange-500" />
+                          <span>{post.date}</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <User className="w-3 h-3 text-brandOrange-500" />
+                          <span>{post.author}</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-brandOrange-500" />
+                          <span>{post.readTime}</span>
+                        </span>
+                      </div>
+
+                      <div className="pt-2">
+                        <button
+                          onClick={() => setReadingModalPost(post)}
+                          className="text-xs font-bold text-brandOrange-600 hover:text-brandOrange-700 flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>Read More</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </ScrollReveal>
               ))}
             </div>
           </main>
