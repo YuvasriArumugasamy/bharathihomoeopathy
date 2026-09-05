@@ -505,8 +505,8 @@ export const Appointment = () => {
                     In case of emergency, please call us directly.
                   </span>
                 </li>
+              </ul>
             </div>
-
           </ScrollReveal>
 
         </div>
