@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Star, 
@@ -13,7 +14,9 @@ import {
   Package,
   Leaf,
   Plus,
-  Minus
+  Minus,
+  X,
+  ZoomIn
 } from 'lucide-react';
 import { productService } from '../services/productService';
 import { useCart } from '../context/CartContext';
@@ -22,6 +25,7 @@ import { useToast } from '../context/ToastContext';
 import { ProductCard } from '../components/shop/ProductCard';
 import { ProductSkeleton } from '../components/common/ProductSkeleton';
 import { ErrorState } from '../components/common/ErrorState';
+import { SectionHeader } from '../components/common/SectionHeader';
 import { demoProducts } from '../data/products';
 
 export const ProductDetails = () => {
@@ -44,6 +48,18 @@ export const ProductDetails = () => {
   ]);
   const [newReview, setNewReview] = useState({ name: '', rating: 5, title: '', comment: '' });
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+
+  useEffect(() => {
+    if (showImageModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showImageModal]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -168,12 +184,21 @@ export const ProductDetails = () => {
         
         {/* Left Gallery Card */}
         <div className="lg:col-span-6 space-y-4">
-          <div className="aspect-square bg-white/95 backdrop-blur-2xl rounded-3xl overflow-hidden border border-slate-200/90 p-3 shadow-[0_15px_45px_rgba(15,23,42,0.08)] relative group flex items-center justify-center">
+          <div 
+            onClick={() => setShowImageModal(true)}
+            className="aspect-square bg-white/95 backdrop-blur-2xl rounded-3xl overflow-hidden border border-slate-200/90 p-3 shadow-[0_15px_45px_rgba(15,23,42,0.08)] relative group flex items-center justify-center cursor-zoom-in"
+          >
             <img
               src={selectedImage || product.image}
               alt={product.name}
               className="w-full h-full object-cover object-center rounded-2xl transition-all duration-300 group-hover:scale-[1.03]"
             />
+
+            {/* Hover Zoom Hint Badge */}
+            <div className="absolute bottom-4 right-4 z-20 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 pointer-events-none">
+              <ZoomIn className="w-3.5 h-3.5" />
+              <span>Click to enlarge</span>
+            </div>
             
             {/* Corner Ribbon Discount Badge */}
             {hasDiscount && (
@@ -184,7 +209,7 @@ export const ProductDetails = () => {
             )}
 
             {/* Top Right Floating Action Buttons Stack (Share + Wishlist) */}
-            <div className="absolute top-5 right-5 z-20 flex flex-col gap-2.5">
+            <div className="absolute top-5 right-5 z-20 flex flex-col gap-2.5" onClick={(e) => e.stopPropagation()}>
               {/* Share Button */}
               <button
                 type="button"
@@ -559,6 +584,42 @@ export const ProductDetails = () => {
             ))}
           </div>
         </div>
+      )}
+
+      {/* FULLSCREEN IMAGE LIGHTBOX MODAL (100% Covered using React Portal, Matching Image 2 Reference) */}
+      {showImageModal && createPortal(
+        <div 
+          onClick={() => setShowImageModal(false)}
+          className="fixed top-0 left-0 w-screen h-screen bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-fadeIn cursor-pointer"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', zIndex: 9999999 }}
+        >
+          {/* Top Control Bar */}
+          <div className="absolute top-5 right-5 z-[10000000] flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowImageModal(false)}
+              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer shadow-lg"
+              title="Close Preview"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Centered Image Container */}
+          <div 
+            className="relative max-w-4xl max-h-[90vh] w-full flex items-center justify-center p-2 sm:p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-white rounded-xl p-3 sm:p-6 shadow-2xl max-h-[85vh] flex items-center justify-center overflow-hidden">
+              <img
+                src={selectedImage || product.image}
+                alt={product.name}
+                className="max-h-[80vh] max-w-full object-contain rounded-lg"
+              />
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
     </div>

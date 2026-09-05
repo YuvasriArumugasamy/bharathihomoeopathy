@@ -279,10 +279,10 @@ export const About = () => {
             <div className="pt-2">
               <Link
                 to="/appointment"
-                className="btn-gradient-orange inline-flex items-center justify-center gap-2 text-xs font-black"
+                className="btn-gradient-orange inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-black whitespace-nowrap"
               >
-                <Calendar className="w-4 h-4" />
-                <span>Book Your Consultation</span>
+                <Calendar className="w-4 h-4 shrink-0" />
+                <span className="whitespace-nowrap">BOOK YOUR CONSULTATION</span>
               </Link>
             </div>
           </div>

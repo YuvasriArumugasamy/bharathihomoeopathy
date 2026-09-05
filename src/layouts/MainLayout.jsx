@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { TopContactBar } from '../components/common/TopContactBar';
 import { Navbar } from '../components/common/Navbar';
 import { Footer } from '../components/common/Footer';
@@ -10,6 +10,9 @@ import { CountryModal } from '../components/common/CountryModal';
 import { assets } from '../assets';
 
 export const MainLayout = () => {
+  const location = useLocation();
+  const isShopPage = location.pathname === '/shop' || location.pathname.startsWith('/shop');
+
   return (
     <div 
       className="min-h-screen flex flex-col w-full pb-16 lg:pb-0"
@@ -26,8 +29,8 @@ export const MainLayout = () => {
       {/* Top Bar that scrolls away */}
       <TopContactBar />
 
-      {/* Main Navbar */}
-      <header className="w-full bg-white sticky top-0 z-50 shadow-sm">
+      {/* Main Navbar - On Mobile Shop page, navbar scrolls away so Category/Filter bar sticks to top-0 */}
+      <header className={`w-full bg-white z-50 shadow-sm ${isShopPage ? 'relative sm:sticky sm:top-0' : 'sticky top-0'}`}>
         <Navbar />
       </header>
 

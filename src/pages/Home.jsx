@@ -41,88 +41,35 @@ export const Home = () => {
   const categories = [
     { 
       name: "Homeopathy Medicines", 
-      image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=300&q=80" 
+      image: assets.p1
     },
     { 
       name: "Mother Tinctures", 
-      image: assets.product1 || "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&w=300&q=80" 
+      image: assets.p2
     },
     { 
       name: "Biochemic Medicines", 
-      image: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?auto=format&fit=crop&w=300&q=80" 
+      image: assets.p3
     },
     { 
       name: "Herbal Products", 
-      image: "https://images.unsplash.com/photo-1512069772995-ec65ed45afd6?auto=format&fit=crop&w=300&q=80" 
+      image: assets.p4
     },
     { 
       name: "Personal Care", 
-      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=300&q=80" 
+      image: assets.p5
     },
     { 
       name: "Combo Offers", 
-      image: "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=300&q=80" 
+      image: assets.p6
     },
     { 
       name: "Health Conditions", 
-      image: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=300&q=80" 
+      image: assets.p7
     }
   ];
 
-  const bestSellerProducts = [
-    {
-      id: "prod-1",
-      name: "Arsenicum Album 30",
-      size: "20g Globules",
-      price: 120.00,
-      originalPrice: 120.00,
-      rating: 5,
-      reviews: 120,
-      image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=350&q=80"
-    },
-    {
-      id: "prod-2",
-      name: "Rhus Tox 30",
-      size: "20g Globules",
-      price: 110.00,
-      originalPrice: 120.00,
-      discount: 10,
-      rating: 5,
-      reviews: 98,
-      image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&w=350&q=80"
-    },
-    {
-      id: "prod-3",
-      name: "Nux Vomica 30",
-      size: "20g Globules",
-      price: 110.00,
-      originalPrice: 110.00,
-      rating: 5,
-      reviews: 110,
-      image: "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=350&q=80"
-    },
-    {
-      id: "prod-4",
-      name: "Calcarea Carbonica 30",
-      size: "20g Globules",
-      price: 120.00,
-      originalPrice: 120.00,
-      rating: 5,
-      reviews: 134,
-      image: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?auto=format&fit=crop&w=350&q=80"
-    },
-    {
-      id: "prod-5",
-      name: "Alfalfa Tonic",
-      size: "200g",
-      price: 250.00,
-      originalPrice: 250.00,
-      rating: 5,
-      reviews: 86,
-      image: "https://images.unsplash.com/photo-1512069772995-ec65ed45afd6?auto=format&fit=crop&w=350&q=80"
-    },
-
-  ];
+  const bestSellerProducts = demoProducts.slice(0, 5);
 
   const testimonials = [
     {

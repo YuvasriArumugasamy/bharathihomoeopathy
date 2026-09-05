@@ -1,6 +1,18 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 
 export const FloatingActions = () => {
+  const location = useLocation();
+
+  // Hide on Shop page and Product Details pages
+  if (
+    location.pathname === '/shop' || 
+    location.pathname.startsWith('/shop') || 
+    location.pathname.startsWith('/product')
+  ) {
+    return null;
+  }
+
   const actions = [
     {
       id: 'call',

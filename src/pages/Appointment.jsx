@@ -360,10 +360,10 @@ export const Appointment = () => {
                 <div className="pt-4">
                   <button
                     type="submit"
-                    className="btn-gradient-orange w-full sm:w-auto shadow-lg shadow-orange-500/30 hover:scale-105 transition-transform duration-200 px-8 py-3.5 rounded-2xl"
+                    className="btn-gradient-orange w-full sm:w-auto shadow-lg shadow-orange-500/30 hover:scale-105 transition-transform duration-200 px-8 py-3.5 rounded-2xl whitespace-nowrap"
                   >
-                    <Calendar className="w-4 h-4" />
-                    <span>Confirm Appointment</span>
+                    <Calendar className="w-4 h-4 shrink-0" />
+                    <span className="whitespace-nowrap">BOOK YOUR CONSULTATION</span>
                   </button>
                 </div>
 
