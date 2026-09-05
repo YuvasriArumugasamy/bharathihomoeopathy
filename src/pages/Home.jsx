@@ -115,25 +115,25 @@ export const Home = () => {
       title: "Boost Your Immunity Naturally with Homeopathy",
       tag: "HEALTH TIPS",
       date: "20 May 2025",
-      image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=500&q=80"
+      image: assets.p1
     },
     {
       title: "Homeopathy for Stress and Anxiety Relief",
       tag: "WELLNESS",
       date: "15 May 2025",
-      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=500&q=80"
+      image: assets.p2
     },
     {
       title: "Natural Care for Your Child's Healthy Growth",
       tag: "CHILD CARE",
       date: "10 May 2025",
-      image: "https://images.unsplash.com/photo-1512069772995-ec65ed45afd6?auto=format&fit=crop&w=500&q=80"
+      image: assets.p3
     },
     {
       title: "Homeopathy Treatment for Allergy and Sinusitis",
       tag: "ALLERGY",
       date: "05 May 2025",
-      image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&w=500&q=80"
+      image: assets.p4
     }
   ];
 

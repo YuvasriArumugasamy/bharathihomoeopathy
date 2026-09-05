@@ -42,42 +42,42 @@ export const Offers = () => {
       category: "Homeopathy Medicines",
       badge: "UP TO 20% OFF",
       badgeColor: "bg-brandOrange-500",
-      image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=400&q=80",
+      image: assets.p1,
       btnBorder: "border-brandOrange-500 text-brandOrange-600 hover:bg-brandOrange-500 hover:text-white"
     },
     {
       category: "Mother Tinctures",
       badge: "UP TO 15% OFF",
       badgeColor: "bg-emerald-600",
-      image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&w=400&q=80",
+      image: assets.p2,
       btnBorder: "border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white"
     },
     {
       category: "Biochemic Medicines",
       badge: "UP TO 15% OFF",
       badgeColor: "bg-amber-500",
-      image: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?auto=format&fit=crop&w=400&q=80",
+      image: assets.p3,
       btnBorder: "border-amber-500 text-amber-700 hover:bg-amber-500 hover:text-white"
     },
     {
       category: "Personal Care",
       badge: "UP TO 10% OFF",
       badgeColor: "bg-rose-500",
-      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=400&q=80",
+      image: assets.p4,
       btnBorder: "border-rose-500 text-rose-700 hover:bg-rose-500 hover:text-white"
     },
     {
       category: "Combo Offers",
       badge: "SPECIAL COMBO OFFERS",
       badgeColor: "bg-purple-600",
-      image: "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=400&q=80",
+      image: assets.p5,
       btnBorder: "border-purple-600 text-purple-700 hover:bg-purple-600 hover:text-white"
     },
     {
       category: "Health Conditions",
       badge: "UP TO 10% OFF",
       badgeColor: "bg-sky-600",
-      image: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=400&q=80",
+      image: assets.p6,
       btnBorder: "border-sky-600 text-sky-700 hover:bg-sky-600 hover:text-white"
     }
   ];
@@ -89,7 +89,7 @@ export const Offers = () => {
       desc: "Boost your immunity naturally with this powerful combo.",
       price: 699,
       originalPrice: 875,
-      image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=400&q=80",
+      image: assets.p7,
       btnColor: "bg-emerald-600 hover:bg-emerald-700"
     },
     {
@@ -98,7 +98,7 @@ export const Offers = () => {
       desc: "Relief from allergies, sinusitis & respiratory issues.",
       price: 599,
       originalPrice: 705,
-      image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&w=400&q=80",
+      image: assets.p8,
       btnColor: "bg-brandOrange-500 hover:bg-brandOrange-600"
     },
     {
@@ -107,7 +107,7 @@ export const Offers = () => {
       desc: "Care for women's health, hormonal balance & well-being.",
       price: 749,
       originalPrice: 935,
-      image: "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=400&q=80",
+      image: assets.p9,
       btnColor: "bg-rose-500 hover:bg-rose-600"
     },
     {
@@ -116,7 +116,7 @@ export const Offers = () => {
       desc: "Complete family care for everyday health & wellness.",
       price: 799,
       originalPrice: 940,
-      image: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?auto=format&fit=crop&w=400&q=80",
+      image: assets.p10,
       btnColor: "bg-purple-600 hover:bg-purple-700"
     }
   ];
