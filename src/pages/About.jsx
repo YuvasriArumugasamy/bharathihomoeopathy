@@ -421,7 +421,7 @@ export const About = () => {
 
       </section>
 
-      {/* 6. Meet Dr. Bharathi Section (With Real Photo assets.bharathi & Quote Card) */}
+      {/* 6. Meet Dr. Bharathi Section (With Real Photo assets.bharathi) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white rounded-3xl border border-slate-100 p-6 sm:p-10 shadow-sm">
           
@@ -435,7 +435,7 @@ export const About = () => {
           </div>
 
           {/* Center Details */}
-          <div className="lg:col-span-5 space-y-4">
+          <div className="lg:col-span-8 space-y-4">
             <div>
               <h3 className="text-2xl font-extrabold text-[#0b1727] tracking-tight">
                 Meet Dr. Bharathi
@@ -474,35 +474,13 @@ export const About = () => {
             <div className="pt-2">
               <Link
                 to="/appointment"
-                className="btn-gradient-orange"
+                className="btn-gradient-orange inline-flex items-center gap-2"
               >
                 <Calendar className="w-4 h-4" />
                 <span>Book Appointment</span>
               </Link>
             </div>
           </div>
-
-          {/* Right Quote Card */}
-          <div className="lg:col-span-3 bg-[#fdfbf9] border border-amber-100 p-6 rounded-2xl text-center space-y-4 shadow-sm flex flex-col justify-between h-full">
-            <span className="text-4xl font-serif text-[#e05a1e] font-black leading-none">“</span>
-            
-            <p className="text-xs sm:text-sm text-slate-700 font-medium italic leading-relaxed">
-              My goal is to heal naturally, care deeply and help you live a healthier life.
-            </p>
-            
-            <div className="space-y-3 pt-2">
-              <span className="text-xs font-bold text-[#0b1727] block">- Dr. Bharathi</span>
-              
-              <div className="w-24 h-16 mx-auto rounded-xl overflow-hidden shadow-sm">
-                <img
-                  src="https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&w=300&q=80"
-                  alt="Herbal remedies"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-
         </div>
       </section>
 
