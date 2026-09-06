@@ -57,9 +57,9 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
         onClick={(e) => e.stopPropagation()}
       >
         
-        {/* Mobile Top Doctor Banner Illustration (Un-obscured top banner) */}
+        {/* Mobile Top Doctor Banner Illustration (Full Doctor Artwork & Feature Badges Visible) */}
         <div 
-          className="md:hidden w-full h-44 sm:h-52 shrink-0 bg-cover bg-top relative shadow-xs"
+          className="md:hidden w-full h-56 sm:h-64 shrink-0 bg-[length:100%_auto] bg-top bg-no-repeat relative shadow-xs"
           style={{ backgroundImage: `url(${assets.loginBg || assets.logoBg3})` }}
         >
           {/* Mobile Floating Close 'X' Button */}
