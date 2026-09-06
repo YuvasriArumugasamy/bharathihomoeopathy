@@ -49,6 +49,16 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
     }
   };
 
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm">
       
@@ -58,18 +68,18 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
         className="absolute inset-0"
       />
 
-      {/* Modal Dialog Card with full logoBg3 background */}
+      {/* Modal Dialog Card with responsive background image (loginBg for mobile, logoBg3 for desktop) */}
       <div 
-        className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-100 z-10 overflow-hidden my-auto max-h-[90vh] flex flex-col md:flex-row bg-cover bg-no-repeat bg-left sm:bg-center animate-in zoom-in-95 fade-in duration-200"
-        style={{ backgroundImage: `url(${assets.logoBg3})` }}
+        className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-100 z-10 overflow-hidden my-auto max-h-[90vh] flex flex-col md:flex-row bg-cover bg-no-repeat bg-top md:bg-left-top animate-in zoom-in-95 fade-in duration-200"
+        style={{ backgroundImage: `url(${isMobile ? (assets.loginBg || assets.logoBg3) : assets.logoBg3})` }}
         onClick={(e) => e.stopPropagation()}
       >
         
-        {/* Left Column Spacer (Desktop) so logoBg3 Doctor illustration shows */}
+        {/* Left Column Spacer (Desktop) so Doctor illustration shows */}
         <div className="hidden md:block md:w-5/12 min-h-[480px] pointer-events-none" />
 
         {/* Right Column: Form Panel */}
-        <div className="w-full md:w-7/12 p-6 sm:p-8 relative flex flex-col overflow-y-auto max-h-[90vh] bg-white/85 md:bg-transparent backdrop-blur-xs md:backdrop-blur-none">
+        <div className="w-full md:w-7/12 p-6 sm:p-8 pt-16 sm:pt-8 relative flex flex-col overflow-y-auto max-h-[90vh] bg-white/90 md:bg-transparent backdrop-blur-xs md:backdrop-blur-none">
           
           <button
             onClick={onClose}

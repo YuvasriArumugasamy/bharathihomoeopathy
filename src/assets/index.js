@@ -29,11 +29,13 @@ import p11Img from './p11.png';
 
 import logoBg1Img from './logo bg1.png';
 import logoBg3Img from './logo bg 3.png';
+import loginBgImg from './login bg.png';
 
 export const assets = {
   logo: logoImg,
   logoBg1: logoBg1Img,
   logoBg3: logoBg3Img,
+  loginBg: loginBgImg,
   bharathi: bharathiImg,
   product1: product1Img,
   shopBg: shopBgImg,
