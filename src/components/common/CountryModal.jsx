@@ -59,11 +59,11 @@ export const CountryModal = () => {
         </button>
 
         {/* Left Column - Image */}
-        <div className="w-full md:w-1/2 bg-white relative h-[220px] sm:h-[260px] md:h-auto md:min-h-[500px] shrink-0 overflow-hidden">
+        <div className="w-full md:w-1/2 bg-slate-900 relative h-[220px] sm:h-[260px] md:h-auto md:min-h-[500px] shrink-0 overflow-hidden">
           <img 
             src={modalBg} 
             alt="World Map Background" 
-            className="w-full h-full object-cover object-center scale-[1.03] md:scale-105"
+            className="w-full h-full object-cover object-center rounded-none shadow-none"
           />
         </div>
 
