@@ -87,8 +87,8 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
           <div className="relative z-10 pt-6 mt-auto">
             <div className="rounded-2xl overflow-hidden border border-white/20 shadow-xl relative aspect-4/3">
               <img 
-                src={assets.homeopathyAuth || assets.bgg1} 
-                alt="100% Pure & Authentic Homeopathy" 
+                src={assets.logoBg1 || assets.bgg1} 
+                alt="Dr. Bharathi's Homeo Care Banner" 
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-3">

@@ -14,6 +14,7 @@ import animoCoverRingMp4 from './animo-cover-ring-vertical-960p.mp4';
 import homeopathyAuthImg from './homeopathy_auth.jpg';
 import herbalBgImg from './Screenshot 2026-09-02 100844.png';
 import paperBgImg from './paper-bg.png';
+import logoBg1Img from './logo bg1.png';
 
 import p1Img from './p1.png';
 import p2Img from './p2.png';
@@ -44,6 +45,7 @@ export const assets = {
   offersBg: bg9Img,
   bg9: bg9Img,
   paperBg: paperBgImg,
+  logoBg1: logoBg1Img,
   heroVideo: heroVideoMp4,
   bgVideo1: bgVideo1Mp4,
   animoCoverRing: animoCoverRingMp4,

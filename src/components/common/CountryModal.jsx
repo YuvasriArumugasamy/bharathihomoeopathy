@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Globe2, ChevronDown, Check } from 'lucide-react';
-import modalBg from '../../assets/images/country-modal-bg.jpg';
+import logoBg1 from '../../assets/logo bg1.png';
 import { countries } from '../../data/countries';
 
 export const CountryModal = () => {
@@ -59,11 +59,11 @@ export const CountryModal = () => {
         </button>
 
         {/* Left Column - Image */}
-        <div className="w-full md:w-1/2 bg-white relative h-[220px] sm:h-[260px] md:h-auto md:min-h-[500px] shrink-0 overflow-hidden">
+        <div className="w-full md:w-1/2 bg-[#fafdfd] relative h-[220px] sm:h-[260px] md:h-auto md:min-h-[460px] shrink-0 overflow-hidden flex items-center justify-center p-2">
           <img 
-            src={modalBg} 
-            alt="World Map Background" 
-            className="w-full h-full object-cover object-center scale-[1.03] md:scale-105"
+            src={logoBg1} 
+            alt="Dr Bharathi's Homeo Care" 
+            className="w-full h-full object-cover object-left md:object-center rounded-l-xl"
           />
         </div>
 
