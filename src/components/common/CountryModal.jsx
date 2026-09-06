@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Globe2, ChevronDown, Check, ArrowRight, ShieldCheck, Sparkles, MapPin } from 'lucide-react';
 import modalBg from '../../assets/images/country-modal-bg.jpg';
+import globe3dIcon from '../../assets/globe3d.svg';
 import { countries } from '../../data/countries';
 
 export const CountryModal = () => {
@@ -67,15 +68,15 @@ export const CountryModal = () => {
           {/* Header Section */}
           <div className="space-y-4 pt-2">
             
-            {/* Worldwide Delivery Pill Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 border border-orange-200/70 text-brandOrange-600 text-xs font-black tracking-wide shadow-2xs">
-              <Globe2 className="w-3.5 h-3.5 text-brandOrange-500 animate-spin-slow" />
+            {/* Worldwide Delivery Pill Badge with 3D Globe Icon */}
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-sky-50/80 border border-sky-200/80 text-sky-700 text-xs font-black tracking-wide shadow-2xs">
+              <img src={globe3dIcon} alt="3D Globe" className="w-5 h-5 drop-shadow-xs animate-spin-slow shrink-0" />
               <span>GLOBAL HOMEOPATHY CARE</span>
             </div>
 
             {/* Main Heading */}
-            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-sans leading-tight">
-              Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-brandOrange-500 via-orange-600 to-amber-500 font-serif italic">Country</span>
+            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-sans leading-tight flex items-center gap-2">
+              <span>Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-brandOrange-500 via-orange-600 to-amber-500 font-serif italic">Country</span></span>
             </h3>
 
             {/* Description */}
@@ -111,8 +112,8 @@ export const CountryModal = () => {
                   className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border-2 border-slate-200 hover:border-brandOrange-500/60 focus:border-brandOrange-500 focus:ring-4 focus:ring-brandOrange-500/10 outline-none transition-all duration-200 bg-white text-left shadow-2xs group cursor-pointer"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-xl bg-orange-50 border border-orange-200/60 flex items-center justify-center text-brandOrange-600 font-black shrink-0">
-                      <MapPin className="w-4 h-4" />
+                    <div className="w-8 h-8 rounded-xl bg-sky-50 border border-sky-200/80 flex items-center justify-center p-1 shrink-0">
+                      <img src={globe3dIcon} alt="Globe" className="w-full h-full object-contain" />
                     </div>
                     <span className="text-slate-900 font-extrabold text-xs sm:text-sm truncate">{selectedCountry}</span>
                   </div>
