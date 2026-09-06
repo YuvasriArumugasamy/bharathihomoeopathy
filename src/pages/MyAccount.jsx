@@ -19,11 +19,20 @@ import { mockAccountData } from '../data/accountData';
 import { useToast } from '../context/ToastContext';
 
 export const MyAccount = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, openAuthModal } = useAuth();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('orders');
 
-  const [address, setAddress] = useState(mockAccountData.savedAddress);
+  const [address, setAddress] = useState(() => mockAccountData?.savedAddress || {
+    fullName: 'Patient Customer',
+    phone: '+91 98765 43210',
+    addressLine1: '123 Healthcare Avenue',
+    addressLine2: '',
+    city: 'Chennai',
+    state: 'Tamil Nadu',
+    pincode: '600001',
+    country: 'India'
+  });
   const [isEditingAddress, setIsEditingAddress] = useState(false);
 
   return (
@@ -32,7 +41,7 @@ export const MyAccount = () => {
       {/* Customer Profile Banner */}
       <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-900 rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
         <div className="flex items-center gap-4 text-center sm:text-left">
-          <div className="w-16 h-16 rounded-2xl bg-brandOrange-500 text-white font-black text-2xl flex items-center justify-center shadow-lg">
+          <div className="w-16 h-16 rounded-2xl bg-brandOrange-500 text-white font-black text-2xl flex items-center justify-center shadow-lg shrink-0">
             {user?.name ? user.name.charAt(0).toUpperCase() : 'P'}
           </div>
           <div>
@@ -44,13 +53,23 @@ export const MyAccount = () => {
           </div>
         </div>
 
-        <button
-          onClick={logout}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-rose-500/20 text-slate-200 hover:text-rose-400 text-xs font-semibold border border-white/10 transition-smooth"
-        >
-          <LogOut className="w-4 h-4" />
-          <span>Sign Out</span>
-        </button>
+        {user ? (
+          <button
+            onClick={logout}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-rose-500/20 text-slate-200 hover:text-rose-400 text-xs font-semibold border border-white/10 transition-smooth cursor-pointer"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Sign Out</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => openAuthModal && openAuthModal('login')}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brandOrange-500 hover:bg-brandOrange-600 text-white text-xs font-bold transition-smooth cursor-pointer"
+          >
+            <User className="w-4 h-4" />
+            <span>Log In / Sign Up</span>
+          </button>
+        )}
       </div>
 
       {/* Main Dashboard Layout */}
@@ -67,7 +86,7 @@ export const MyAccount = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-smooth ${
+              className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-smooth cursor-pointer ${
                 activeTab === tab.id
                   ? 'bg-brandOrange-50 text-brandOrange-600'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-navy-900'
@@ -93,7 +112,7 @@ export const MyAccount = () => {
               </h3>
 
               <div className="space-y-4">
-                {mockAccountData.recentOrders.map((order) => (
+                {(mockAccountData?.recentOrders || []).map((order) => (
                   <div key={order.id} className="p-5 rounded-2xl bg-slate-50 border border-slate-200/70 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -112,7 +131,7 @@ export const MyAccount = () => {
                       <span className="font-extrabold text-sm text-brandOrange-600">₹{order.amount}</span>
                       <button
                         onClick={() => showToast(`Tracking link for ${order.id} sent to SMS`, 'info')}
-                        className="px-3 py-1.5 bg-white border border-slate-200 hover:border-brandOrange-400 text-slate-700 text-xs font-bold rounded-lg shadow-sm"
+                        className="px-3 py-1.5 bg-white border border-slate-200 hover:border-brandOrange-400 text-slate-700 text-xs font-bold rounded-lg shadow-sm cursor-pointer"
                       >
                         Track Order
                       </button>
@@ -130,23 +149,25 @@ export const MyAccount = () => {
                 Upcoming & Past Consultations
               </h3>
 
-              <div className="p-6 rounded-2xl bg-brandOrange-50/50 border border-brandOrange-200/60 space-y-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-brandOrange-600" />
-                    <span className="font-extrabold text-sm text-navy-900">{mockAccountData.upcomingAppointment.doctor}</span>
+              {mockAccountData?.upcomingAppointment && (
+                <div className="p-6 rounded-2xl bg-brandOrange-50/50 border border-brandOrange-200/60 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-brandOrange-600" />
+                      <span className="font-extrabold text-sm text-navy-900">{mockAccountData.upcomingAppointment.doctor}</span>
+                    </div>
+                    <span className="px-2.5 py-0.5 bg-brandOrange-100 text-brandOrange-800 font-bold text-[10px] rounded-full">
+                      {mockAccountData.upcomingAppointment.status}
+                    </span>
                   </div>
-                  <span className="px-2.5 py-0.5 bg-brandOrange-100 text-brandOrange-800 font-bold text-[10px] rounded-full">
-                    {mockAccountData.upcomingAppointment.status}
-                  </span>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 pt-1">
+                    <div>Date: <strong>{mockAccountData.upcomingAppointment.date}</strong></div>
+                    <div>Time: <strong>{mockAccountData.upcomingAppointment.time}</strong></div>
+                    <div>Mode: <strong>{mockAccountData.upcomingAppointment.type}</strong></div>
+                  </div>
+                  <p className="text-xs text-slate-500 pt-1">{mockAccountData.upcomingAppointment.notes}</p>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 pt-1">
-                  <div>Date: <strong>{mockAccountData.upcomingAppointment.date}</strong></div>
-                  <div>Time: <strong>{mockAccountData.upcomingAppointment.time}</strong></div>
-                  <div>Mode: <strong>{mockAccountData.upcomingAppointment.type}</strong></div>
-                </div>
-                <p className="text-xs text-slate-500 pt-1">{mockAccountData.upcomingAppointment.notes}</p>
-              </div>
+              )}
             </div>
           )}
 
@@ -157,7 +178,7 @@ export const MyAccount = () => {
                 <h3 className="text-sm font-bold text-navy-900 uppercase tracking-wider">Default Delivery Address</h3>
                 <button
                   onClick={() => setIsEditingAddress(!isEditingAddress)}
-                  className="text-xs font-bold text-brandOrange-600 hover:underline"
+                  className="text-xs font-bold text-brandOrange-600 hover:underline cursor-pointer"
                 >
                   {isEditingAddress ? 'Done Editing' : 'Edit Address'}
                 </button>
@@ -165,30 +186,30 @@ export const MyAccount = () => {
 
               {!isEditingAddress ? (
                 <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-1 text-xs text-slate-700 leading-relaxed">
-                  <p className="font-bold text-navy-900">{address.fullName}</p>
-                  <p>{address.phone}</p>
-                  <p>{address.addressLine1}</p>
-                  {address.addressLine2 && <p>{address.addressLine2}</p>}
-                  <p>{address.city}, {address.state} - {address.pincode}</p>
-                  <p className="font-medium text-slate-400 pt-1">{address.country}</p>
+                  <p className="font-bold text-navy-900">{address?.fullName}</p>
+                  <p>{address?.phone}</p>
+                  <p>{address?.addressLine1}</p>
+                  {address?.addressLine2 && <p>{address?.addressLine2}</p>}
+                  <p>{address?.city}, {address?.state} - {address?.pincode}</p>
+                  <p className="font-medium text-slate-400 pt-1">{address?.country}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   <input
                     type="text"
-                    value={address.fullName}
+                    value={address?.fullName || ''}
                     onChange={(e) => setAddress({ ...address, fullName: e.target.value })}
                     className="w-full p-2.5 text-xs bg-slate-50 border rounded-xl"
                   />
                   <input
                     type="text"
-                    value={address.phone}
+                    value={address?.phone || ''}
                     onChange={(e) => setAddress({ ...address, phone: e.target.value })}
                     className="w-full p-2.5 text-xs bg-slate-50 border rounded-xl"
                   />
                   <input
                     type="text"
-                    value={address.addressLine1}
+                    value={address?.addressLine1 || ''}
                     onChange={(e) => setAddress({ ...address, addressLine1: e.target.value })}
                     className="w-full p-2.5 text-xs bg-slate-50 border rounded-xl"
                   />
@@ -197,7 +218,7 @@ export const MyAccount = () => {
                       setIsEditingAddress(false);
                       showToast('Address updated successfully', 'success');
                     }}
-                    className="px-4 py-2 bg-navy-900 text-white text-xs font-bold rounded-xl"
+                    className="px-4 py-2 bg-navy-900 text-white text-xs font-bold rounded-xl cursor-pointer"
                   >
                     Save Changes
                   </button>
