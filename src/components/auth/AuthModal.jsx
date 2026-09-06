@@ -81,6 +81,8 @@ export const AuthModal = () => {
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Handle Login Submit
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
