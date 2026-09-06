@@ -167,23 +167,18 @@ export const AuthModal = () => {
         className="fixed inset-0 bg-[#0b1727]/65 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
       />
 
-      {/* Modal Split Box */}
+      {/* Modal Split Box with Full Background Image */}
       <div 
-        className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-100 z-10 overflow-hidden my-auto max-h-[92vh] flex flex-col md:flex-row animate-in zoom-in-95 fade-in duration-200"
+        className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-100 z-10 overflow-hidden my-auto max-h-[92vh] flex flex-col md:flex-row animate-in zoom-in-95 fade-in duration-200 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${assets.logoBg1})` }}
         onClick={(e) => e.stopPropagation()}
       >
         
-        {/* Left Column: Visual Brand Cover Image (Desktop) */}
-        <div className="hidden md:block md:w-5/12 relative overflow-hidden bg-slate-50 min-h-[480px]">
-          <img 
-            src={assets.logoBg1 || assets.homeopathyAuth} 
-            alt="Dr. Bharathi's Homeo Care" 
-            className="w-full h-full object-cover object-left sm:object-center"
-          />
-        </div>
+        {/* Left Column Spacer so background artwork is fully visible */}
+        <div className="hidden md:block md:w-5/12 min-h-[480px] pointer-events-none" />
 
         {/* Right Column: Form Panel */}
-        <div className="w-full md:w-7/12 p-6 sm:p-8 relative flex flex-col justify-between overflow-y-auto no-scrollbar max-h-[90vh]">
+        <div className="w-full md:w-7/12 p-6 sm:p-8 relative flex flex-col justify-between overflow-y-auto no-scrollbar max-h-[90vh] bg-white/80 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none">
           
           {/* Close 'X' Button on Top Right */}
           <button
