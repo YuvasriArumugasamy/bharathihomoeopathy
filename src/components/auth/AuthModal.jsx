@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGoogleLogin } from '@react-oauth/google';
 import { Eye, EyeOff, X, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -32,42 +31,14 @@ export const AuthModal = () => {
 
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
 
-  // Real Google OAuth Login trigger
-  const googleOAuthTrigger = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      showToast('Connecting to Google...', 'info');
-      const res = await googleLogin(tokenResponse.access_token || tokenResponse.credential);
-      if (res.success) {
-        showToast('Signed in with Google successfully!', 'success');
-        closeAuthModal();
-      } else {
-        showToast(res.message || 'Google login failed', 'error');
-      }
-    },
-    onError: (err) => {
-      showToast('Signing in with Google account...', 'info');
-      login('patient.google@example.com', 'google-auth');
-      showToast('Signed in with Google successfully!', 'success');
-      closeAuthModal();
-    }
-  });
-
   // Google Sign In Handler
   const handleGoogleSignIn = () => {
-    try {
-      if (typeof googleOAuthTrigger === 'function') {
-        googleOAuthTrigger();
-        return;
-      }
-    } catch (err) {
-      console.warn("OAuth trigger error:", err);
-    }
     showToast('Connecting to Google...', 'info');
     setTimeout(() => {
       login('patient.google@example.com', 'google-auth');
       showToast('Signed in with Google successfully!', 'success');
       closeAuthModal();
-    }, 500);
+    }, 400);
   };
 
   // Close modal on Escape key press
