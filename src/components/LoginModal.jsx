@@ -50,22 +50,37 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
         className="absolute inset-0"
       />
 
-      {/* Modal Dialog Card with responsive background image (loginBg for mobile, logoBg3 for desktop) */}
+      {/* Modal Dialog Card */}
       <div 
-        className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-100 z-10 overflow-hidden my-auto max-h-[90vh] flex flex-col md:flex-row bg-cover bg-no-repeat bg-top md:bg-left-top animate-in zoom-in-95 fade-in duration-200"
-        style={{ backgroundImage: `url(${isMobile ? (assets.loginBg || assets.logoBg3) : assets.logoBg3})` }}
+        className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-100 z-10 overflow-hidden my-auto max-h-[92vh] flex flex-col md:flex-row md:bg-cover md:bg-no-repeat md:bg-left-top animate-in zoom-in-95 fade-in duration-200"
+        style={{ backgroundImage: isMobile ? 'none' : `url(${assets.logoBg3})` }}
         onClick={(e) => e.stopPropagation()}
       >
         
+        {/* Mobile Top Doctor Banner Illustration (Un-obscured top banner) */}
+        <div 
+          className="md:hidden w-full h-44 sm:h-52 shrink-0 bg-cover bg-top relative shadow-xs"
+          style={{ backgroundImage: `url(${assets.loginBg || assets.logoBg3})` }}
+        >
+          {/* Mobile Floating Close 'X' Button */}
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 w-8.5 h-8.5 rounded-full bg-white/90 hover:bg-white text-slate-700 shadow-md flex items-center justify-center transition-all cursor-pointer z-30 backdrop-blur-md border border-slate-100"
+            aria-label="Close modal"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
         {/* Left Column Spacer (Desktop) so Doctor illustration shows */}
         <div className="hidden md:block md:w-5/12 min-h-[480px] pointer-events-none" />
 
         {/* Right Column: Form Panel */}
-        <div className="w-full md:w-7/12 p-6 sm:p-8 pt-16 sm:pt-8 relative flex flex-col overflow-y-auto max-h-[90vh] bg-white/90 md:bg-transparent backdrop-blur-xs md:backdrop-blur-none">
+        <div className="w-full md:w-7/12 p-5 sm:p-8 relative flex flex-col justify-between overflow-y-auto no-scrollbar max-h-[88vh] md:max-h-[90vh] bg-[#fdfcf9] md:bg-transparent">
           
           <button
             onClick={onClose}
-            className="absolute right-5 top-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer z-20"
+            className="hidden md:flex absolute right-5 top-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 items-center justify-center transition-colors cursor-pointer z-20"
           >
             <X className="w-4 h-4" />
           </button>
