@@ -17,7 +17,7 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
     agreeTerms: true
   });
 
-  if (!isOpen) return null;
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
 
   // Lock body scroll when modal is open
   React.useEffect(() => {
@@ -31,26 +31,6 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
     };
   }, [isOpen]);
 
-  const handleLoginSubmit = (e) => {
-    e.preventDefault();
-    console.log('Login submitted:', { loginEmail, loginPassword });
-    if (onClose) onClose();
-  };
-
-  const handleRegisterSubmit = (e) => {
-    e.preventDefault();
-    console.log('Register submitted:', registerData);
-    if (onClose) onClose();
-  };
-
-  const handleGoogleClick = () => {
-    if (onGoogleSuccess) {
-      onGoogleSuccess({ credential: 'mock-google-credential' });
-    }
-  };
-
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
-
   React.useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -58,6 +38,8 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm">

@@ -30,43 +30,44 @@ export const AuthModal = () => {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
 
-  // Real Google OAuth Login trigger with fallback
-  let googleOAuthTrigger;
-  try {
-    googleOAuthTrigger = useGoogleLogin({
-      onSuccess: async (tokenResponse) => {
-        showToast('Connecting to Google...', 'info');
-        const res = await googleLogin(tokenResponse.access_token || tokenResponse.credential);
-        if (res.success) {
-          showToast('Signed in with Google successfully!', 'success');
-          closeAuthModal();
-        } else {
-          showToast(res.message || 'Google login failed', 'error');
-        }
-      },
-      onError: (err) => {
-        showToast('Signing in with Google account...', 'info');
-        login('patient.google@example.com', 'google-auth');
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+
+  // Real Google OAuth Login trigger
+  const googleOAuthTrigger = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      showToast('Connecting to Google...', 'info');
+      const res = await googleLogin(tokenResponse.access_token || tokenResponse.credential);
+      if (res.success) {
         showToast('Signed in with Google successfully!', 'success');
         closeAuthModal();
+      } else {
+        showToast(res.message || 'Google login failed', 'error');
       }
-    });
-  } catch (err) {
-    googleOAuthTrigger = null;
-  }
+    },
+    onError: (err) => {
+      showToast('Signing in with Google account...', 'info');
+      login('patient.google@example.com', 'google-auth');
+      showToast('Signed in with Google successfully!', 'success');
+      closeAuthModal();
+    }
+  });
 
   // Google Sign In Handler
   const handleGoogleSignIn = () => {
-    if (googleOAuthTrigger) {
-      googleOAuthTrigger();
-    } else {
-      showToast('Connecting to Google...', 'info');
-      setTimeout(() => {
-        login('patient.google@example.com', 'google-auth');
-        showToast('Signed in with Google successfully!', 'success');
-        closeAuthModal();
-      }, 500);
+    try {
+      if (typeof googleOAuthTrigger === 'function') {
+        googleOAuthTrigger();
+        return;
+      }
+    } catch (err) {
+      console.warn("OAuth trigger error:", err);
     }
+    showToast('Connecting to Google...', 'info');
+    setTimeout(() => {
+      login('patient.google@example.com', 'google-auth');
+      showToast('Signed in with Google successfully!', 'success');
+      closeAuthModal();
+    }, 500);
   };
 
   // Close modal on Escape key press
@@ -103,63 +104,6 @@ export const AuthModal = () => {
     };
   }, [isAuthModalOpen, authModalTab]);
 
-  if (!isAuthModalOpen) return null;
-
-  // Handle Login Submit
-  const handleLoginSubmit = async (e) => {
-    e.preventDefault();
-    if (!loginEmail.trim() || !loginPassword) {
-      showToast('Please enter your email and password', 'warning');
-      return;
-    }
-    setLoginLoading(true);
-    const res = await login(loginEmail.trim(), loginPassword);
-    setLoginLoading(false);
-
-    if (res.success) {
-      showToast('Welcome back to Dr. Bharathi’s Homeo Care!', 'success');
-      closeAuthModal();
-    } else {
-      showToast(res.message || 'Login failed. Please check your credentials.', 'error');
-    }
-  };
-
-  // Handle Register Submit
-  const handleRegisterSubmit = async (e) => {
-    e.preventDefault();
-    if (!registerData.email.trim() || !registerData.password) {
-      showToast('Please fill in all required fields', 'warning');
-      return;
-    }
-    if (registerData.password.length < 6) {
-      showToast('Password must be at least 6 characters long', 'warning');
-      return;
-    }
-    if (!registerData.agreeTerms) {
-      showToast('Please accept the terms and conditions to proceed', 'warning');
-      return;
-    }
-
-    setRegisterLoading(true);
-    const res = await register({
-      firstName: 'User',
-      lastName: '',
-      email: registerData.email.trim(),
-      phone: '',
-      password: registerData.password,
-    });
-    setRegisterLoading(false);
-
-    if (res.success) {
-      showToast('Account created successfully! Welcome to Dr. Bharathi’s Homeo Care', 'success');
-      closeAuthModal();
-    } else {
-      showToast(res.message || 'Registration failed. Please try again.', 'error');
-    }
-  };
-
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
-
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -167,6 +111,8 @@ export const AuthModal = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  if (!isAuthModalOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto no-scrollbar">
