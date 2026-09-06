@@ -150,10 +150,10 @@ export const CountryModal = () => {
               </div>
             </div>
 
-            {/* Premium CTA Button */}
+            {/* Premium Vibrant CTA Button */}
             <button
               onClick={handleContinue}
-              className="w-full flex items-center justify-center gap-2.5 py-4 px-6 text-xs sm:text-sm font-black text-white bg-gradient-to-r from-brandOrange-500 via-orange-600 to-[#0b344d] hover:scale-[1.02] active:scale-95 rounded-2xl shadow-xl shadow-orange-500/20 transition-all duration-200 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2.5 py-4 px-6 text-xs sm:text-sm font-black text-white bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] hover:from-[#f97316] hover:to-[#ff4e50] hover:scale-[1.02] active:scale-95 rounded-2xl shadow-xl shadow-orange-500/30 transition-all duration-200 cursor-pointer uppercase tracking-wider"
             >
               <span>Explore Products & Prices</span>
               <ArrowRight className="w-4 h-4" />
