@@ -52,14 +52,14 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
 
       {/* Modal Dialog Card */}
       <div 
-        className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-100 z-10 overflow-hidden my-auto max-h-[92vh] flex flex-col md:flex-row md:bg-cover md:bg-no-repeat md:bg-left-top animate-in zoom-in-95 fade-in duration-200"
+        className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-100 z-10 overflow-hidden my-auto h-[90vh] max-h-[660px] flex flex-col md:flex-row md:bg-cover md:bg-no-repeat md:bg-left-top animate-in zoom-in-95 fade-in duration-200"
         style={{ backgroundImage: isMobile ? 'none' : `url(${assets.logoBg3})` }}
         onClick={(e) => e.stopPropagation()}
       >
         
-        {/* Mobile Top Doctor Banner Illustration (Full Doctor Artwork & Feature Badges Visible) */}
+        {/* Mobile Fixed Top Doctor Banner Illustration */}
         <div 
-          className="md:hidden w-full h-56 sm:h-64 shrink-0 bg-[length:100%_auto] bg-top bg-no-repeat relative shadow-xs"
+          className="md:hidden w-full h-48 sm:h-56 shrink-0 bg-[length:100%_auto] bg-top bg-no-repeat relative shadow-xs border-b border-slate-100/80 z-20"
           style={{ backgroundImage: `url(${assets.loginBg || assets.logoBg3})` }}
         >
           {/* Mobile Floating Close 'X' Button */}
@@ -75,8 +75,8 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
         {/* Left Column Spacer (Desktop) so Doctor illustration shows */}
         <div className="hidden md:block md:w-5/12 min-h-[480px] pointer-events-none" />
 
-        {/* Right Column: Form Panel */}
-        <div className="w-full md:w-7/12 p-5 sm:p-8 relative flex flex-col justify-between overflow-y-auto no-scrollbar max-h-[88vh] md:max-h-[90vh] bg-[#fdfcf9] md:bg-transparent">
+        {/* Right Column: Form Panel (Scrollable on Mobile below fixed top banner) */}
+        <div className="w-full md:w-7/12 p-5 sm:p-8 flex-1 overflow-y-auto no-scrollbar bg-[#fdfcf9] md:bg-transparent relative flex flex-col justify-between">
           
           <button
             onClick={onClose}
