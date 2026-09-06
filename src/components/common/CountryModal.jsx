@@ -63,9 +63,6 @@ export const CountryModal = () => {
 
         {/* Right Column - Luxury Selection Form */}
         <div className="w-full md:w-1/2 p-6 sm:p-8 md:p-10 flex flex-col justify-between bg-white relative">
-          
-          {/* Subtle Top Accent Line */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0b344d] via-brandOrange-500 to-amber-400" />
 
           {/* Header Section */}
           <div className="space-y-4 pt-2">
