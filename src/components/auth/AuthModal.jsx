@@ -167,18 +167,18 @@ export const AuthModal = () => {
         className="fixed inset-0 bg-[#0b1727]/65 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
       />
 
-      {/* Modal Split Box with Full Background Image */}
+      {/* Modal Split Box with full logoBg3 background */}
       <div 
-        className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-100 z-10 overflow-hidden my-auto max-h-[92vh] flex flex-col md:flex-row animate-in zoom-in-95 fade-in duration-200 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${assets.logoBg1})` }}
+        className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-100 z-10 overflow-hidden my-auto max-h-[92vh] flex flex-col md:flex-row bg-cover bg-no-repeat bg-left sm:bg-center animate-in zoom-in-95 fade-in duration-200"
+        style={{ backgroundImage: `url(${assets.logoBg3})` }}
         onClick={(e) => e.stopPropagation()}
       >
         
-        {/* Left Column Spacer so background artwork is fully visible */}
+        {/* Left Column Spacer (Desktop) so logoBg3 Doctor illustration shows */}
         <div className="hidden md:block md:w-5/12 min-h-[480px] pointer-events-none" />
 
         {/* Right Column: Form Panel */}
-        <div className="w-full md:w-7/12 p-6 sm:p-8 relative flex flex-col justify-between overflow-y-auto no-scrollbar max-h-[90vh] bg-white/80 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none">
+        <div className="w-full md:w-7/12 p-6 sm:p-8 relative flex flex-col justify-between overflow-y-auto no-scrollbar max-h-[90vh] bg-white/85 md:bg-transparent backdrop-blur-xs md:backdrop-blur-none">
           
           {/* Close 'X' Button on Top Right */}
           <button
