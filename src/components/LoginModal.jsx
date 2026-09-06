@@ -84,19 +84,15 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
             </p>
           </div>
 
-          <div className="relative z-10 pt-6 mt-auto">
-            <div className="rounded-2xl overflow-hidden border border-white/20 shadow-xl relative aspect-4/3">
-              <img 
-                src={assets.logoBg1 || assets.bgg1} 
-                alt="Dr. Bharathi's Homeo Care Banner" 
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-3">
-                <div className="bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-1.5 text-white">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span className="text-[11px] font-bold tracking-wide">100% Pure & Authentic Homeopathy</span>
-                </div>
-              </div>
+          {/* Bottom Trust Points */}
+          <div className="relative z-10 pt-6 mt-auto space-y-3">
+            <div className="bg-white/10 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-white/15 flex items-center gap-2.5 text-white">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="text-xs font-bold tracking-wide">100% Pure & Authentic Homeopathy</span>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-white/15 flex items-center gap-2.5 text-white">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="text-xs font-bold tracking-wide">Personalised Clinic Consultation</span>
             </div>
           </div>
         </div>
