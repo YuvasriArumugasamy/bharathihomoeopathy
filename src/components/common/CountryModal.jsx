@@ -68,8 +68,8 @@ export const CountryModal = () => {
           <div className="space-y-4 pt-2">
             
             {/* Worldwide Delivery Pill Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 border border-orange-200/70 text-brandOrange-600 text-xs font-black tracking-wide shadow-2xs">
-              <i className="fa-solid fa-earth-americas text-brandOrange-500 text-sm"></i>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-50 border border-sky-200/80 text-sky-800 text-xs font-black tracking-wide shadow-2xs">
+              <i className="fa-solid fa-earth-americas text-sky-500 text-sm"></i>
               <span>BHARATHI HOMEOPATHY CARE</span>
             </div>
 
@@ -96,11 +96,11 @@ export const CountryModal = () => {
                 <button
                   type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border-2 border-slate-200 hover:border-brandOrange-500/60 focus:border-brandOrange-500 focus:ring-4 focus:ring-brandOrange-500/10 outline-none transition-all duration-200 bg-white text-left shadow-2xs group cursor-pointer"
+                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border-2 border-slate-200 hover:border-sky-500/60 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 outline-none transition-all duration-200 bg-white text-left shadow-2xs group cursor-pointer"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-xl bg-orange-50 border border-orange-200/60 flex items-center justify-center text-brandOrange-600 font-black shrink-0">
-                      <i className="fa-solid fa-earth-americas text-brandOrange-500 text-sm"></i>
+                    <div className="w-8 h-8 rounded-xl bg-sky-50 border border-sky-200/80 flex items-center justify-center text-sky-600 font-black shrink-0">
+                      <i className="fa-solid fa-earth-americas text-sky-500 text-sm"></i>
                     </div>
                     <span className="text-slate-900 font-extrabold text-xs sm:text-sm truncate">{selectedCountry}</span>
                   </div>
