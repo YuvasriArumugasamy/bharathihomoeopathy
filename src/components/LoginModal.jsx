@@ -73,10 +73,10 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
         </div>
 
         {/* Left Column Spacer (Desktop) so Doctor illustration shows */}
-        <div className="hidden md:block md:w-5/12 min-h-[480px] pointer-events-none" />
+        <div className="hidden md:block md:w-[52%] min-h-[480px] pointer-events-none shrink-0" />
 
-        {/* Right Column: Form Panel (Scrollable on Mobile below fixed top banner) */}
-        <div className="w-full md:w-7/12 p-5 sm:p-8 flex-1 overflow-y-auto no-scrollbar bg-[#fdfcf9] md:bg-transparent relative flex flex-col justify-between">
+        {/* Right Column: Form Panel (Shifted right on desktop to prevent overlap with logo text) */}
+        <div className="w-full md:w-[48%] p-5 sm:p-8 md:pl-6 md:pr-10 flex-1 overflow-y-auto no-scrollbar bg-[#fdfcf9] md:bg-transparent relative flex flex-col justify-between">
           
           <button
             onClick={onClose}
