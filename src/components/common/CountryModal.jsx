@@ -82,18 +82,6 @@ export const CountryModal = () => {
             <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
               We ship authentic homeopathic remedies & wellness formulations straight to your doorstep worldwide.
             </p>
-
-            {/* Feature Pills */}
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-xl border border-slate-100 text-[11px] font-bold text-slate-700">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                <span>Custom Shipping</span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-xl border border-slate-100 text-[11px] font-bold text-slate-700">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                <span>100% Authentic</span>
-              </div>
-            </div>
           </div>
 
           {/* Selection & Dropdown Form */}
