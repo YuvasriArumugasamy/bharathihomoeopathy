@@ -173,42 +173,13 @@ export const AuthModal = () => {
         onClick={(e) => e.stopPropagation()}
       >
         
-        {/* Left Column: Visual Brand Cover Card (Desktop) */}
-        <div className="hidden md:flex md:w-5/12 bg-gradient-to-br from-[#164459] via-[#1d546c] to-[#0e3141] relative flex-col justify-between p-8 text-white overflow-hidden">
-          {/* Background Glow Accents */}
-          <div className="absolute -top-12 -left-12 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-amber-500/20 rounded-full blur-2xl pointer-events-none" />
-
-          {/* Brand Header */}
-          <div className="space-y-4 relative z-10">
-            <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-amber-300 shadow-md bg-white flex items-center justify-center p-0.5">
-              <img 
-                src={assets.logo} 
-                alt="Dr. Bharathi's Homeo Care" 
-                className="w-full h-full object-cover rounded-full"
-              />
-            </div>
-
-            <h2 className="text-2xl font-extrabold tracking-tight leading-snug font-sans">
-              Register & Be A Part Of The Care Circle!
-            </h2>
-
-            <p className="text-xs text-sky-100/90 leading-relaxed font-medium">
-              Access 100% authentic homeopathic formulations, expert doctor appointments, and personalized health tracking.
-            </p>
-          </div>
-
-          {/* Bottom Trust Points */}
-          <div className="relative z-10 pt-6 mt-auto space-y-3">
-            <div className="bg-white/10 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-white/15 flex items-center gap-2.5 text-white">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span className="text-xs font-bold tracking-wide">100% Pure & Authentic Homeopathy</span>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-white/15 flex items-center gap-2.5 text-white">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span className="text-xs font-bold tracking-wide">Personalised Clinic Consultation</span>
-            </div>
-          </div>
+        {/* Left Column: Visual Brand Cover Image (Desktop) */}
+        <div className="hidden md:block md:w-5/12 relative overflow-hidden bg-slate-50 min-h-[480px]">
+          <img 
+            src={assets.logoBg1 || assets.homeopathyAuth} 
+            alt="Dr. Bharathi's Homeo Care" 
+            className="w-full h-full object-cover object-left sm:object-center"
+          />
         </div>
 
         {/* Right Column: Form Panel */}

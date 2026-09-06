@@ -27,8 +27,11 @@ import p9Img from './p9.png';
 import p10Img from './p10.png';
 import p11Img from './p11.png';
 
+import logoBg1Img from './logo bg1.png';
+
 export const assets = {
   logo: logoImg,
+  logoBg1: logoBg1Img,
   bharathi: bharathiImg,
   product1: product1Img,
   shopBg: shopBgImg,
