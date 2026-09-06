@@ -20,9 +20,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Synchronize current storage state
+    // Synchronize current storage state & purge legacy demo google cache
     const storedUser = authStorage.getUser();
-    if (storedUser) {
+    if (storedUser?.email === 'google.user@example.com') {
+      authStorage.clearAuth();
+      setUser(null);
+    } else if (storedUser) {
       setUser(storedUser);
     }
   }, []);
