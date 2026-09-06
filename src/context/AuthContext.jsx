@@ -108,21 +108,53 @@ export const AuthProvider = ({ children }) => {
   const googleLogin = async (credential) => {
     setLoading(true);
     try {
+      // Decode real user info from Google JWT credential token
+      let realGoogleUser = null;
       try {
-        const res = await api.post('/auth/google-login', { credential });
-        if (res && res.data && res.data.user) {
-          authStorage.setToken(res.data.token);
-          authStorage.setUser(res.data.user);
-          setUser(res.data.user);
-          setLoading(false);
-          return { success: true, user: res.data.user };
+        if (credential) {
+          const base64Url = credential.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = decodeURIComponent(
+            atob(base64)
+              .split('')
+              .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+              .join('')
+          );
+          const payload = JSON.parse(jsonPayload);
+          if (payload && payload.email) {
+            realGoogleUser = {
+              _id: 'usr-google-' + (payload.sub || Date.now()),
+              name: payload.name || payload.given_name || 'Bharathi',
+              email: payload.email,
+              picture: payload.picture || '',
+              role: 'customer',
+              phone: '',
+              authProvider: 'google'
+            };
+          }
         }
-      } catch (backendErr) {
-        console.warn("Backend Google login unavailable:", backendErr.message);
+      } catch (decodeErr) {
+        console.warn("Could not decode Google token client-side:", decodeErr.message);
       }
 
-      // Demo fallback for Google login
-      const demoUser = {
+      try {
+        const res = await api.post('/auth/google-login', { credential });
+        const userObj = res?.data?.data?.user || res?.data?.user;
+        const tokenObj = res?.data?.data?.token || res?.data?.token;
+
+        if (userObj) {
+          authStorage.setToken(tokenObj);
+          authStorage.setUser(userObj);
+          setUser(userObj);
+          setLoading(false);
+          return { success: true, user: userObj };
+        }
+      } catch (backendErr) {
+        console.warn("Backend Google login response fallback:", backendErr.message);
+      }
+
+      // Fallback with real decoded user info
+      const finalUser = realGoogleUser || {
         _id: 'usr-google-' + Date.now(),
         name: 'Google User',
         email: 'google.user@example.com',
@@ -132,10 +164,10 @@ export const AuthProvider = ({ children }) => {
       };
 
       authStorage.setToken('demo_jwt_token_google_' + Date.now());
-      authStorage.setUser(demoUser);
-      setUser(demoUser);
+      authStorage.setUser(finalUser);
+      setUser(finalUser);
       setLoading(false);
-      return { success: true, user: demoUser };
+      return { success: true, user: finalUser };
     } catch (err) {
       setLoading(false);
       return { success: false, message: err.message || 'Google login failed' };
