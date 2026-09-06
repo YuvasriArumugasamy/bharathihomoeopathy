@@ -70,7 +70,7 @@ export const CountryModal = () => {
             {/* Worldwide Delivery Pill Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 border border-orange-200/70 text-brandOrange-600 text-xs font-black tracking-wide shadow-2xs">
               <i className="fa-solid fa-earth-americas text-brandOrange-500 text-sm"></i>
-              <span>GLOBAL HOMEOPATHY CARE</span>
+              <span>BHARATHI HOMEOPATHY CARE</span>
             </div>
 
             {/* Main Heading */}
