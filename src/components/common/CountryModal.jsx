@@ -1,33 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { X, Globe2, ChevronDown, Check } from 'lucide-react';
-import modalBg from '../../assets/images/country-modal-bg.jpg';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Globe2, ChevronDown, Check, Search, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 import { countries } from '../../data/countries';
+import { assets } from '../../assets';
+
+// Popular quick selection countries with flags
+const POPULAR_COUNTRIES = [
+  { name: 'India', flag: '🇮🇳' },
+  { name: 'United States of America', label: 'USA', flag: '🇺🇸' },
+  { name: 'United Kingdom', label: 'UK', flag: '🇬🇧' },
+  { name: 'United Arab Emirates', label: 'UAE', flag: '🇦🇪' },
+  { name: 'Canada', flag: '🇨🇦' },
+  { name: 'Singapore', flag: '🇸🇬' },
+  { name: 'Australia', flag: '🇦🇺' }
+];
 
 export const CountryModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('India');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     // Check if country is already selected
     const savedCountry = localStorage.getItem('user_country');
     if (!savedCountry) {
-      // Small delay to let page load first
       const timer = setTimeout(() => {
         setIsOpen(true);
-        // Ask for geolocation to trigger the browser prompt as requested
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
-            (position) => {
-              console.log("Location access granted.");
-              // Here you could use a reverse geocoding API to auto-select country based on lat/lng
-            },
-            (error) => {
-              console.log("Location access denied or failed.");
-            }
+            () => console.log("Location access granted."),
+            () => console.log("Location access denied or failed.")
           );
         }
-      }, 1500);
+      }, 1200);
       return () => clearTimeout(timer);
     }
   }, []);
@@ -38,66 +44,149 @@ export const CountryModal = () => {
     return () => window.removeEventListener('open_country_modal', handleOpenModal);
   }, []);
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleContinue = () => {
     localStorage.setItem('user_country', selectedCountry);
     window.dispatchEvent(new Event('country_changed'));
     setIsOpen(false);
   };
 
+  const filteredCountries = countries.filter(country =>
+    country.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col md:flex-row overflow-hidden relative animate-in zoom-in-95 duration-500 max-h-[95vh] md:max-h-[85vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0b1727]/75 backdrop-blur-md p-4 animate-in fade-in duration-300">
+      
+      {/* Modal Card Box */}
+      <div 
+        className="relative w-full max-w-lg bg-white rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-100/80 overflow-hidden animate-in zoom-in-95 duration-300"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Top Decorative Brand Gradient Bar */}
+        <div className="h-2 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d]" />
+
         {/* Close Button */}
         <button 
           onClick={() => setIsOpen(false)}
-          className="absolute top-4 right-4 z-10 p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full transition-colors"
+          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-2xs"
+          aria-label="Close"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
-        {/* Left Column - Image */}
-        <div className="w-full md:w-1/2 bg-slate-900 relative h-[220px] sm:h-[260px] md:h-auto md:min-h-[500px] shrink-0 overflow-hidden">
-          <img 
-            src={modalBg} 
-            alt="World Map Background" 
-            className="w-full h-full object-cover object-center rounded-none shadow-none"
-          />
-        </div>
+        <div className="p-6 sm:p-8 space-y-6">
 
-        {/* Right Column - Selection Form */}
-        <div className="w-full md:w-1/2 p-6 sm:p-8 md:p-12 flex flex-col justify-center bg-white">
-          <div className="text-center mb-6 md:mb-8">
-            <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 md:mb-3">Choose Your Country</h3>
-            <p className="text-gray-600 flex items-center justify-center gap-2 mb-2">
-              We deliver worldwide. <Globe2 className="w-5 h-5 text-blue-500" />
+          {/* Header Section */}
+          <div className="text-center space-y-2">
+            
+            {/* Globe Icon Badge */}
+            <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0b344d] to-[#1d546c] text-white flex items-center justify-center shadow-lg shadow-[#0b344d]/20 ring-4 ring-sky-500/10 relative">
+              <Globe2 className="w-7 h-7 text-sky-300 animate-pulse" />
+              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-brandOrange-500 flex items-center justify-center text-[9px] font-black text-white shadow-xs">
+                <Sparkles className="w-2.5 h-2.5" />
+              </div>
+            </div>
+
+            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display">
+              Choose Your Country
+            </h3>
+
+            <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-sm mx-auto leading-relaxed">
+              Select your destination to explore authentic products, local pricing, & doorstep courier delivery.
             </p>
-            <p className="text-sm text-gray-500">
-              Select your country to explore products, prices & delivered to your doorstep.
-            </p>
+
+            {/* Worldwide Tag */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-700 text-[11px] font-bold">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Worldwide Express Shipping Available</span>
+            </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label htmlFor="country" className="block text-sm font-medium text-gray-700 text-left">
-                Select Country
-              </label>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl border border-gray-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all bg-white hover:bg-gray-50 text-left shadow-sm"
-                >
-                  <span className="text-gray-800 font-medium">{selectedCountry}</span>
-                  <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
+          {/* Quick Select Pills */}
+          <div className="space-y-2 pt-1">
+            <label className="block text-[11px] font-black uppercase text-slate-400 tracking-wider text-left">
+              Popular Destinations
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {POPULAR_COUNTRIES.map((c) => {
+                const isSelected = selectedCountry === c.name;
+                return (
+                  <button
+                    key={c.name}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCountry(c.name);
+                      setIsDropdownOpen(false);
+                    }}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer border ${
+                      isSelected
+                        ? 'bg-[#0b344d] text-white border-[#0b344d] shadow-sm scale-105'
+                        : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200/80 hover:border-slate-300'
+                    }`}
+                  >
+                    <span>{c.flag}</span>
+                    <span>{c.label || c.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Country Selection Dropdown */}
+          <div className="space-y-2 text-left relative" ref={dropdownRef}>
+            <label className="block text-xs font-black uppercase text-slate-700 tracking-wider">
+              Select Country / Region
+            </label>
+            
+            <button
+              type="button"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border border-slate-200/90 hover:border-brandOrange-500 focus:outline-none focus:ring-4 focus:ring-brandOrange-500/10 bg-slate-50/60 hover:bg-white text-left transition-all duration-200 shadow-2xs group cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Globe2 className="w-4 h-4 text-brandOrange-500 shrink-0" />
+                <span className="text-slate-900 font-extrabold text-xs sm:text-sm truncate">
+                  {selectedCountry}
+                </span>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-slate-400 group-hover:text-brandOrange-600 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div className="absolute z-50 left-0 right-0 bottom-full mb-2 bg-white border border-slate-200 rounded-2xl shadow-2xl p-2 max-h-64 flex flex-col animate-in fade-in zoom-in-95 duration-150">
                 
-                {isDropdownOpen && (
-                  <div className="absolute z-50 w-full bottom-full mb-2 bg-white border border-gray-200 rounded-lg shadow-xl max-h-64 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    <ul className="py-2">
-                      {countries.map((countryName) => (
+                {/* Search Box */}
+                <div className="relative mb-2 shrink-0">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Search country..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-brandOrange-500 focus:bg-white"
+                  />
+                </div>
+
+                {/* Country List */}
+                <ul className="overflow-y-auto space-y-0.5 max-h-48 pr-1 no-scrollbar">
+                  {filteredCountries.length > 0 ? (
+                    filteredCountries.map((countryName) => {
+                      const isSelected = selectedCountry === countryName;
+                      return (
                         <li key={countryName}>
                           <button
                             type="button"
@@ -105,34 +194,42 @@ export const CountryModal = () => {
                               setSelectedCountry(countryName);
                               setIsDropdownOpen(false);
                             }}
-                            className={`w-full text-left px-4 py-2.5 flex items-center justify-between hover:bg-[#f0f4f8] transition-colors ${
-                              selectedCountry === countryName ? 'bg-[#e6f0fa] text-[#0a58ca] font-medium' : 'text-gray-700'
+                            className={`w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
+                              isSelected
+                                ? 'bg-brandOrange-50 text-brandOrange-600 font-black'
+                                : 'text-slate-700 hover:bg-slate-50'
                             }`}
                           >
-                            {countryName}
-                            {selectedCountry === countryName && (
-                              <Check className="w-4 h-4 text-[#0a58ca]" />
-                            )}
+                            <span>{countryName}</span>
+                            {isSelected && <Check className="w-4 h-4 text-brandOrange-600 shrink-0" />}
                           </button>
                         </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                      );
+                    })
+                  ) : (
+                    <li className="p-3 text-center text-xs text-slate-400 font-medium">
+                      No country found matching "{searchQuery}"
+                    </li>
+                  )}
+                </ul>
               </div>
-            </div>
-
-            <button
-              onClick={handleContinue}
-              className="w-full bg-gradient-to-r from-blue-600 to-[#0a58ca] hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/30 transform hover:-translate-y-0.5"
-            >
-              Continue
-            </button>
-
-            <p className="text-xs text-center text-gray-400 mt-6">
-              You can change your country anytime from the header.
-            </p>
+            )}
           </div>
+
+          {/* Continue Button */}
+          <button
+            onClick={handleContinue}
+            className="w-full flex items-center justify-center gap-2 py-4 px-6 text-xs sm:text-sm font-black text-white bg-gradient-to-r from-brandOrange-500 via-amber-500 to-brandOrange-600 hover:from-brandOrange-600 hover:to-amber-600 active:scale-98 rounded-2xl shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-200 cursor-pointer"
+          >
+            <span>Continue Shopping in {selectedCountry}</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+
+          {/* Footer Note */}
+          <p className="text-[11px] text-center text-slate-400 font-medium">
+            You can change your country anytime from the top bar.
+          </p>
+
         </div>
       </div>
     </div>
