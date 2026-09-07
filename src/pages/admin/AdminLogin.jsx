@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { User, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Home } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, ArrowRight, Home } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import assets from '../../assets';
@@ -14,7 +14,6 @@ export const AdminLogin = () => {
   const [username, setUsername] = useState('admin@drbharathi.com');
   const [password, setPassword] = useState('admin123');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
 
   const redirectUrl = searchParams.get('redirect') || '/admin';
@@ -52,16 +51,6 @@ export const AdminLogin = () => {
       setLoading(false);
       showToast('Login failed. Please try again.', 'error');
     }
-  };
-
-  const handleFillDemo = () => {
-    setUsername('admin@drbharathi.com');
-    setPassword('admin123');
-    showToast('Demo admin credentials populated!', 'info');
-  };
-
-  const handleForgotPassword = () => {
-    showToast('Password reset link sent to admin recovery email address.', 'info');
   };
 
   return (
@@ -148,27 +137,6 @@ export const AdminLogin = () => {
               </div>
             </div>
 
-            {/* OPTIONS ROW (Remember Me & Forgot Password) */}
-            <div className="flex items-center justify-between text-xs pt-1">
-              <label className="flex items-center gap-2 text-slate-700 font-medium cursor-pointer hover:text-slate-900 transition text-[11px]">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded border-slate-400 bg-white text-amber-500 focus:ring-amber-500 accent-amber-500 cursor-pointer"
-                />
-                <span>Remember me</span>
-              </label>
-
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                className="text-amber-600 hover:text-amber-700 font-semibold transition hover:underline text-[11px]"
-              >
-                Forgot Password?
-              </button>
-            </div>
-
             {/* SUBMIT BUTTON */}
             <div className="pt-2">
               <button
@@ -190,18 +158,6 @@ export const AdminLogin = () => {
               </button>
             </div>
           </form>
-
-          {/* DEMO CREDENTIALS QUICK FILL HELPER */}
-          <div className="mt-5 pt-3 border-t border-slate-200/80 text-center">
-            <button
-              type="button"
-              onClick={handleFillDemo}
-              className="text-[11px] text-slate-600 hover:text-amber-600 font-medium transition bg-white/90 border border-slate-300 px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 shadow-sm cursor-pointer"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
-              <span>Fill Demo Admin Credentials</span>
-            </button>
-          </div>
 
         </div>
 
