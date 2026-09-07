@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { User, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import assets from '../../assets';
@@ -188,9 +188,9 @@ export const AdminLogin = () => {
                 className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#ff4d29] via-[#ff7300] to-[#ffa200] hover:from-[#ff3810] hover:to-[#ff9100] text-white font-black text-sm sm:text-base tracking-wide shadow-[0_6px_25px_rgba(255,77,41,0.45)] hover:shadow-[0_8px_30px_rgba(255,77,41,0.6)] transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-2.5 cursor-pointer border border-white/20 disabled:opacity-70"
               >
                 {loading ? (
-                  <span className="flex items-center gap-2">
-                    <div className="w-4.5 h-4.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Authenticating...</span>
+                  <span className="flex items-center gap-2.5">
+                    <Loader2 className="w-6 h-6 animate-spin text-white shrink-0" />
+                    <span className="font-extrabold uppercase tracking-wider text-sm">Authenticating...</span>
                   </span>
                 ) : (
                   <>
