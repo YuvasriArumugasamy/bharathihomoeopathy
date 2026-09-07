@@ -20,7 +20,6 @@ import {
   Sparkles
 } from 'lucide-react';
 import { adminDashboardData } from '../../data/adminDashboardData';
-import assets from '../../assets';
 
 export const AdminDashboard = () => {
   const [timeFilter, setTimeFilter] = useState('7 Days');
@@ -52,21 +51,22 @@ export const AdminDashboard = () => {
   return (
     <div className="space-y-8 pb-8 font-sans">
       
-      {/* Hero Header Banner with Paper Texture Background */}
-      <div 
-        className="relative bg-cover bg-center rounded-[2rem] p-6 sm:p-8 border border-slate-200/90 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden bg-white"
-        style={{ backgroundImage: `url(${assets.paperBg})` }}
-      >
+      {/* Hero Header Banner with Clean White Card Styling */}
+      <div className="relative bg-white/95 backdrop-blur-md p-6 sm:p-8 rounded-[2rem] shadow-sm border border-slate-200/90 overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        
+        {/* Subtle Decorative Ambient Glow */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-brandOrange-500/5 rounded-full blur-[80px] pointer-events-none" />
+
         <div className="relative z-10 space-y-2 max-w-2xl">
           <div className="flex items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brandOrange-50 border border-brandOrange-200/80 text-brandOrange-700 font-extrabold text-[10px] uppercase tracking-widest shadow-sm">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brandOrange-50 border border-brandOrange-200 text-brandOrange-600 font-extrabold text-[10px] uppercase tracking-widest">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               Live Clinic & Dispensary Sync
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-navy-950 leading-tight">
-            Good Morning, <span className="text-brandOrange-600 font-black">Dr. Bharathi Care Admin</span>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-navy-950 leading-tight">
+            Good Morning, <span className="text-brandOrange-600">Dr. Bharathi Care Admin</span>
           </h1>
 
           <p className="text-slate-600 text-xs sm:text-sm font-medium">
@@ -78,14 +78,14 @@ export const AdminDashboard = () => {
         <div className="relative z-10 flex items-center gap-3 shrink-0">
           <Link
             to="/admin/products"
-            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-[#ff4d29] via-[#ff7300] to-[#ffa200] hover:from-[#ff3a12] hover:to-[#ff9200] text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-md shadow-brandOrange-500/20 border border-white/30 transition-all duration-200 active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-[#ff4d29] via-[#ff7300] to-[#ffa200] hover:from-[#ff3810] hover:to-[#ff9100] text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-lg shadow-brandOrange-500/25 transition-all duration-200 active:scale-95 cursor-pointer border border-white/20"
           >
             <Plus className="w-4.5 h-4.5 stroke-[2.5]" />
             <span>Add Product</span>
           </Link>
           <Link
             to="/admin/appointments"
-            className="inline-flex items-center gap-2 px-5 py-3 bg-navy-950 hover:bg-navy-900 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-md transition-all duration-200 active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-navy-950 hover:bg-navy-900 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-md transition-all duration-200 active:scale-95 cursor-pointer border border-slate-800"
           >
             <Calendar className="w-4.5 h-4.5 text-amber-400" />
             <span>View Calendar</span>

@@ -2,12 +2,16 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { AdminSidebar } from '../components/admin/AdminSidebar';
 import { AdminTopbar } from '../components/admin/AdminTopbar';
+import assets from '../assets';
 
 export const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#f1f5f9] flex text-slate-800 font-sans w-full max-w-full overflow-x-hidden">
+    <div 
+      className="min-h-screen bg-cover bg-center flex text-slate-800 font-sans w-full max-w-full overflow-x-hidden"
+      style={{ backgroundImage: `url(${assets.paperBg})` }}
+    >
       
       {/* Admin Sidebar */}
       <AdminSidebar
