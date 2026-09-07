@@ -15,7 +15,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
   };
 
   return (
-    <header className="h-20 bg-white border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+    <header className="h-20 bg-white/90 backdrop-blur-md border-b border-slate-200/90 px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30 shadow-sm transition-all">
       
       {/* Left: Mobile Hamburger & Current Breadcrumb */}
       <div className="flex items-center gap-3">
