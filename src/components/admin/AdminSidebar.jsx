@@ -79,8 +79,8 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Navigation Menu */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1 scrollbar-thin">
+        {/* Navigation Menu (Scrollbar Hidden) */}
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 px-3 py-1.5 block">
             Management Modules
           </span>
