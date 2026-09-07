@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { User, Lock, Eye, EyeOff, ArrowRight, Home } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import assets from '../../assets';
@@ -60,14 +60,7 @@ export const AdminLogin = () => {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/10 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute top-10 left-10 w-[300px] h-[300px] bg-teal-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Top Left Return to Site Button */}
-      <Link 
-        to="/" 
-        className="fixed top-5 left-5 z-30 flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900/80 border border-slate-700/70 text-slate-200 hover:text-amber-400 hover:border-amber-500/50 backdrop-blur-md transition-all text-xs font-medium shadow-lg"
-      >
-        <Home className="w-4 h-4 text-amber-500" />
-        <span>Back to Website</span>
-      </Link>
+
 
       {/* Outer Card Container using login bg.png as Background */}
       <div 
