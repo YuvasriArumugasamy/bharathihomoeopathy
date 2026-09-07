@@ -33,7 +33,7 @@ export const AdminProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated || user?.role !== 'admin') {
-    return <Navigate to="/login?redirect=/admin" replace />;
+    return <Navigate to="/admin/login" replace />;
   }
 
   return children;

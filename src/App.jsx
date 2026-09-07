@@ -28,6 +28,7 @@ import { Checkout } from './pages/Checkout';
 
 // Admin Pages
 import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { AdminLogin } from './pages/admin/AdminLogin';
 import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminCategories } from './pages/admin/AdminCategories';
 import { AdminOrders } from './pages/admin/AdminOrders';
@@ -79,6 +80,9 @@ export default function App() {
           }
         />
       </Route>
+
+      {/* Admin Auth Route */}
+      <Route path="/admin/login" element={<AdminLogin />} />
 
       {/* Admin Panel Routes */}
       <Route
