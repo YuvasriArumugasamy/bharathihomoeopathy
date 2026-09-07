@@ -20,6 +20,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { adminDashboardData } from '../../data/adminDashboardData';
+import assets from '../../assets';
 
 export const AdminDashboard = () => {
   const [timeFilter, setTimeFilter] = useState('7 Days');
@@ -51,26 +52,24 @@ export const AdminDashboard = () => {
   return (
     <div className="space-y-8 pb-8 font-sans">
       
-      {/* Premium Hero Header Banner */}
-      <div className="relative bg-gradient-to-r from-navy-950 via-[#0a1836] to-navy-900 text-white p-6 sm:p-8 rounded-[2rem] shadow-xl border border-navy-800/80 overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        
-        {/* Decorative Background Ambient Glows */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-brandOrange-500/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-teal-500/10 rounded-full blur-[80px] pointer-events-none" />
-
+      {/* Hero Header Banner with Paper Texture Background */}
+      <div 
+        className="relative bg-cover bg-center rounded-[2rem] p-6 sm:p-8 border border-slate-200/90 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden bg-white"
+        style={{ backgroundImage: `url(${assets.paperBg})` }}
+      >
         <div className="relative z-10 space-y-2 max-w-2xl">
           <div className="flex items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brandOrange-500/15 border border-brandOrange-500/30 text-brandOrange-400 font-extrabold text-[10px] uppercase tracking-widest">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brandOrange-50 border border-brandOrange-200/80 text-brandOrange-700 font-extrabold text-[10px] uppercase tracking-widest shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               Live Clinic & Dispensary Sync
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white leading-tight">
-            Good Morning, <span className="bg-gradient-to-r from-brandOrange-400 via-amber-300 to-amber-500 bg-clip-text text-transparent">Dr. Bharathi Care Admin</span>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-navy-950 leading-tight">
+            Good Morning, <span className="text-brandOrange-600 font-black">Dr. Bharathi Care Admin</span>
           </h1>
 
-          <p className="text-slate-300 text-xs sm:text-sm font-normal">
+          <p className="text-slate-600 text-xs sm:text-sm font-medium">
             Here is your live real-time overview across consultations, online orders, and dispensary inventory today.
           </p>
         </div>
@@ -79,14 +78,14 @@ export const AdminDashboard = () => {
         <div className="relative z-10 flex items-center gap-3 shrink-0">
           <Link
             to="/admin/products"
-            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-brandOrange-500 via-brandOrange-600 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-lg shadow-brandOrange-500/25 transition-all duration-200 active:scale-95 cursor-pointer border border-white/20"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-[#ff4d29] via-[#ff7300] to-[#ffa200] hover:from-[#ff3a12] hover:to-[#ff9200] text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-md shadow-brandOrange-500/20 border border-white/30 transition-all duration-200 active:scale-95 cursor-pointer"
           >
             <Plus className="w-4.5 h-4.5 stroke-[2.5]" />
             <span>Add Product</span>
           </Link>
           <Link
             to="/admin/appointments"
-            className="inline-flex items-center gap-2 px-5 py-3 bg-white/10 hover:bg-white/20 text-white font-extrabold rounded-2xl text-xs sm:text-sm backdrop-blur-md border border-white/20 transition-all duration-200 active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-navy-950 hover:bg-navy-900 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-md transition-all duration-200 active:scale-95 cursor-pointer"
           >
             <Calendar className="w-4.5 h-4.5 text-amber-400" />
             <span>View Calendar</span>
