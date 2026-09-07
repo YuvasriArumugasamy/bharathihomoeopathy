@@ -59,11 +59,14 @@ export const AdminLogin = () => {
       style={{ backgroundImage: `url(${assets.paperBg})` }}
     >
 
-      {/* Outer Card Container using login bg.png as Background */}
-      <div 
-        className="relative z-10 w-full max-w-[450px] rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] border border-slate-200/80 overflow-hidden bg-cover bg-top bg-no-repeat flex flex-col my-4"
-        style={{ backgroundImage: `url(${assets.loginBg})` }}
-      >
+      {/* Outer Card Wrapper with Unique Brand Gradient Border & Elevated Shadow */}
+      <div className="relative z-10 w-full max-w-[455px] p-[3.5px] rounded-[32px] bg-gradient-to-b from-amber-400 via-[#0d9488] to-brandOrange-500 shadow-[0_20px_60px_rgba(0,0,0,0.18)] hover:shadow-[0_25px_70px_rgba(245,158,11,0.25)] transition-all duration-500 my-4 group">
+        
+        {/* Inner Poster Card Container */}
+        <div 
+          className="w-full rounded-[28px] overflow-hidden bg-cover bg-top bg-no-repeat flex flex-col bg-white"
+          style={{ backgroundImage: `url(${assets.loginBg})` }}
+        >
         
         {/* Top spacer to ensure Doctor banner artwork on login bg.png is fully visible */}
         <div className="w-full pt-[285px] sm:pt-[300px]" />
@@ -154,7 +157,9 @@ export const AdminLogin = () => {
       </div>
 
     </div>
-  );
+
+  </div>
+);
 };
 
 export default AdminLogin;
