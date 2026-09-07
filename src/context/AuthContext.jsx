@@ -49,6 +49,12 @@ export const AuthProvider = ({ children }) => {
 
       // Demo fallback authentication
       const isAdmin = email.toLowerCase().includes('admin');
+
+      if (isAdmin && password !== 'admin123') {
+        setLoading(false);
+        return { success: false, message: 'Invalid Admin credentials. Incorrect password.' };
+      }
+
       const demoUser = {
         _id: isAdmin ? 'usr-admin-01' : 'usr-cust-01',
         name: isAdmin ? 'Clinic Administrator' : 'Demo Customer',

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { User, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { User, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import assets from '../../assets';
@@ -11,10 +11,11 @@ export const AdminLogin = () => {
   const { login, isAuthenticated, isAdmin } = useAuth();
   const { showToast } = useToast();
 
-  const [username, setUsername] = useState('admin@drbharathi.com');
-  const [password, setPassword] = useState('admin123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState('');
 
   const redirectUrl = searchParams.get('redirect') || '/admin';
 
@@ -27,29 +28,62 @@ export const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!username.trim() || !password) {
-      showToast('Please enter both username/email and password', 'warning');
+    setFormError('');
+
+    const cleanUsername = username.trim().toLowerCase();
+
+    // 1. Empty field validation
+    if (!cleanUsername && !password) {
+      setFormError('Username and Password are required.');
+      showToast('Please enter both Username and Password.', 'warning');
       return;
     }
 
+    if (!cleanUsername) {
+      setFormError('Username is required.');
+      showToast('Please enter your Admin Username.', 'warning');
+      return;
+    }
+
+    if (!password) {
+      setFormError('Password is required.');
+      showToast('Please enter your Admin Password.', 'warning');
+      return;
+    }
+
+    // 2. Strict Username validation
+    if (cleanUsername !== 'admin@drbharathi.com' && cleanUsername !== 'admin') {
+      setFormError('Invalid Admin Username. Access Denied.');
+      showToast('Invalid Admin Username. Please enter valid admin credentials.', 'error');
+      return;
+    }
+
+    // 3. Strict Password validation
+    if (password !== 'admin123') {
+      setFormError('Incorrect Admin Password. Access Denied.');
+      showToast('Incorrect Admin Password. Access Denied.', 'error');
+      return;
+    }
+
+    // 4. Submit to Auth Provider
     setLoading(true);
     try {
-      const res = await login(username.trim(), password);
+      const res = await login(cleanUsername, password);
       setLoading(false);
 
-      if (res.success) {
-        if (res.user?.role === 'admin') {
-          showToast('Welcome to Admin Portal!', 'success');
-          navigate(redirectUrl, { replace: true });
-        } else {
-          showToast('Access Denied: Account does not have Administrator privileges.', 'error');
-        }
+      if (res.success && (res.user?.role === 'admin' || cleanUsername.includes('admin'))) {
+        showToast('Welcome to Admin Portal!', 'success');
+        navigate(redirectUrl, { replace: true });
       } else {
-        showToast(res.message || 'Invalid admin credentials', 'error');
+        const errorMsg = res.message || 'Invalid Admin Credentials.';
+        setFormError(errorMsg);
+        showToast(errorMsg, 'error');
       }
     } catch (err) {
       setLoading(false);
-      showToast('Login failed. Please try again.', 'error');
+      const errorMsg = 'Login failed. Please try again.';
+      setFormError(errorMsg);
+      showToast(errorMsg, 'error');
     }
   };
 
@@ -75,7 +109,7 @@ export const AdminLogin = () => {
         <div className="w-full px-6 sm:px-8 pb-8 pt-2 flex flex-col justify-end">
           
           {/* Header Titles on top of white space */}
-          <div className="text-center mb-5">
+          <div className="text-center mb-4">
             <h1 className="text-slate-900 font-serif text-2xl sm:text-3xl font-extrabold tracking-wide mb-1">
               Admin Portal
             </h1>
@@ -87,6 +121,14 @@ export const AdminLogin = () => {
           {/* Form Controls directly over white space */}
           <form onSubmit={handleSubmit} className="space-y-4 text-left">
             
+            {/* INLINE ERROR BANNER */}
+            {formError && (
+              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold animate-in fade-in duration-200">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+                <span>{formError}</span>
+              </div>
+            )}
+
             {/* USERNAME FIELD */}
             <div>
               <label className="block text-amber-600 font-extrabold text-[11px] tracking-widest uppercase mb-1.5">
@@ -96,11 +138,15 @@ export const AdminLogin = () => {
                 <User className="w-4 h-4 absolute left-3.5 text-slate-400 pointer-events-none" />
                 <input
                   type="text"
-                  required
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    if (formError) setFormError('');
+                  }}
                   placeholder="admin@drbharathi.com"
-                  className="w-full pl-10 pr-4 py-3 bg-[#0c1425] border border-slate-800 text-white rounded-xl text-xs sm:text-sm placeholder:text-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-md"
+                  className={`w-full pl-10 pr-4 py-3 bg-[#0c1425] border rounded-xl text-xs sm:text-sm placeholder:text-slate-500 focus:outline-none transition-all shadow-md ${
+                    formError ? 'border-rose-500 text-rose-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500' : 'border-slate-800 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500'
+                  }`}
                 />
               </div>
             </div>
@@ -114,11 +160,15 @@ export const AdminLogin = () => {
                 <Lock className="w-4 h-4 absolute left-3.5 text-slate-400 pointer-events-none" />
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (formError) setFormError('');
+                  }}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-3 bg-[#0c1425] border border-slate-800 text-white rounded-xl text-xs sm:text-sm placeholder:text-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-md"
+                  className={`w-full pl-10 pr-10 py-3 bg-[#0c1425] border rounded-xl text-xs sm:text-sm placeholder:text-slate-500 focus:outline-none transition-all shadow-md ${
+                    formError ? 'border-rose-500 text-rose-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500' : 'border-slate-800 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500'
+                  }`}
                 />
                 <button
                   type="button"
