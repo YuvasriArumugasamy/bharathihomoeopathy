@@ -76,7 +76,7 @@ export const AdminLogin = () => {
       >
         
         {/* Top spacer to ensure Doctor banner artwork on login bg.png is fully visible */}
-        <div className="w-full pt-[220px] sm:pt-[240px]" />
+        <div className="w-full pt-[285px] sm:pt-[300px]" />
 
         {/* Login Form placed DIRECTLY over the white space of login bg.png */}
         <div className="w-full px-6 sm:px-8 pb-8 pt-2 flex flex-col justify-end">
