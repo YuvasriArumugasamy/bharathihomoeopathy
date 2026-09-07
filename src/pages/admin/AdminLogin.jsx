@@ -54,17 +54,14 @@ export const AdminLogin = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 overflow-x-hidden bg-slate-950 font-sans">
-      
-      {/* Background Ambient Glows */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute top-10 left-10 w-[300px] h-[300px] bg-teal-500/10 rounded-full blur-[100px] pointer-events-none" />
-
-
+    <div 
+      className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 overflow-x-hidden bg-cover bg-center font-sans"
+      style={{ backgroundImage: `url(${assets.paperBg})` }}
+    >
 
       {/* Outer Card Container using login bg.png as Background */}
       <div 
-        className="relative z-10 w-full max-w-[450px] rounded-3xl shadow-[0_0_60px_rgba(0,0,0,0.8)] border border-amber-500/30 overflow-hidden bg-cover bg-top bg-no-repeat flex flex-col my-4"
+        className="relative z-10 w-full max-w-[450px] rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] border border-slate-200/80 overflow-hidden bg-cover bg-top bg-no-repeat flex flex-col my-4"
         style={{ backgroundImage: `url(${assets.loginBg})` }}
       >
         
