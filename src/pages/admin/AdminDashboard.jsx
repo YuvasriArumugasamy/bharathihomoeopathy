@@ -303,72 +303,76 @@ export const AdminDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left: Interactive Revenue Trend Chart */}
-        <div className="lg:col-span-8 bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-6 flex flex-col justify-between">
+        <div className="lg:col-span-8 bg-white/95 backdrop-blur-sm p-4.5 sm:p-7 lg:p-8 rounded-3xl sm:rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-5 sm:space-y-6 flex flex-col justify-between">
           
           {/* Header & Controls */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="space-y-1">
+            <div className="space-y-1 w-full sm:w-auto">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-gradient-to-tr from-brandOrange-500 to-amber-500 text-white shadow-md shadow-brandOrange-500/20">
+                <div className="p-2 rounded-xl bg-gradient-to-tr from-brandOrange-500 to-amber-500 text-white shadow-md shadow-brandOrange-500/20 shrink-0">
                   <TrendingUp className="w-4 h-4 stroke-[2.5]" />
                 </div>
-                <h3 className="font-extrabold text-lg text-slate-900 tracking-tight font-display">
+                <h3 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight font-display">
                   Revenue & Order Analytics
                 </h3>
               </div>
-              <p className="text-xs text-slate-500 font-medium">
+              <p className="text-[11px] sm:text-xs text-slate-500 font-medium leading-relaxed">
                 Consolidated dispensary sales & online doctor consultation revenue
               </p>
             </div>
 
-            {/* View, Time & Palette Filters */}
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Palette Switcher */}
-              <div className="flex items-center bg-slate-100 p-1.5 rounded-xl gap-1.5 border border-slate-200/70" title="Choose Chart Color Palette">
-                <Palette className="w-3.5 h-3.5 text-slate-400 mr-0.5" />
-                {Object.keys(chartThemes).map((key) => (
+            {/* View, Time & Palette Filters - Optimized for Mobile */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 w-full sm:w-auto">
+              
+              {/* Row 1 on mobile: Metric View Toggle + Palette Picker */}
+              <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
+                {/* Metric Toggle */}
+                <div className="flex items-center bg-slate-100 p-1 rounded-xl text-[11px] font-bold border border-slate-200/70 flex-1 sm:flex-none">
                   <button
-                    key={key}
-                    onClick={() => setChartTheme(key)}
-                    className={`w-4 h-4 rounded-full ${chartThemes[key].swatch} transition-all cursor-pointer ${
-                      chartTheme === key ? 'ring-2 ring-offset-1 ring-slate-800 scale-125 shadow-xs' : 'opacity-60 hover:opacity-100 hover:scale-110'
+                    onClick={() => setMetricView('revenue')}
+                    className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center ${
+                      metricView === 'revenue' 
+                        ? 'bg-white text-navy-950 font-black shadow-xs' 
+                        : 'text-slate-500 hover:text-slate-800'
                     }`}
-                    title={chartThemes[key].name}
-                  />
-                ))}
+                  >
+                    Revenue (₹)
+                  </button>
+                  <button
+                    onClick={() => setMetricView('orders')}
+                    className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center ${
+                      metricView === 'orders' 
+                        ? 'bg-white text-navy-950 font-black shadow-xs' 
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    Orders
+                  </button>
+                </div>
+
+                {/* Palette Switcher */}
+                <div className="flex items-center bg-slate-100 p-1.5 rounded-xl gap-1.5 border border-slate-200/70 shrink-0" title="Choose Chart Color Palette">
+                  <Palette className="w-3.5 h-3.5 text-slate-400 mr-0.5" />
+                  {Object.keys(chartThemes).map((key) => (
+                    <button
+                      key={key}
+                      onClick={() => setChartTheme(key)}
+                      className={`w-4 h-4 rounded-full ${chartThemes[key].swatch} transition-all cursor-pointer ${
+                        chartTheme === key ? 'ring-2 ring-offset-1 ring-slate-800 scale-125 shadow-xs' : 'opacity-60 hover:opacity-100 hover:scale-110'
+                      }`}
+                      title={chartThemes[key].name}
+                    />
+                  ))}
+                </div>
               </div>
 
-              {/* Metric Toggle */}
-              <div className="flex items-center bg-slate-100 p-1 rounded-xl gap-1 text-[11px] font-bold border border-slate-200/70">
-                <button
-                  onClick={() => setMetricView('revenue')}
-                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                    metricView === 'revenue' 
-                      ? 'bg-white text-navy-950 font-black shadow-xs' 
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  Revenue (₹)
-                </button>
-                <button
-                  onClick={() => setMetricView('orders')}
-                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                    metricView === 'orders' 
-                      ? 'bg-white text-navy-950 font-black shadow-xs' 
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  Orders
-                </button>
-              </div>
-
-              {/* Time Range Tabs */}
-              <div className="flex items-center bg-slate-100 p-1 rounded-xl gap-1 text-[11px] font-bold border border-slate-200/70">
+              {/* Row 2 on mobile: Time Range Tabs spanning full width */}
+              <div className="grid grid-cols-3 sm:flex items-center bg-slate-100 p-1 rounded-xl gap-1 text-[11px] font-bold border border-slate-200/70 w-full sm:w-auto">
                 {['7 Days', '30 Days', '90 Days'].map((t) => (
                   <button
                     key={t}
                     onClick={() => setTimeFilter(t)}
-                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center ${
                       timeFilter === t 
                         ? 'bg-navy-950 text-white font-black shadow-sm' 
                         : 'text-slate-500 hover:text-slate-800'
@@ -378,11 +382,12 @@ export const AdminDashboard = () => {
                   </button>
                 ))}
               </div>
+
             </div>
           </div>
 
           {/* Visual Chart Container */}
-          <div className="relative h-64 flex items-end gap-3 sm:gap-6 pt-10 pb-4 border-b border-slate-100">
+          <div className="relative h-60 sm:h-64 flex items-end gap-2 sm:gap-4 lg:gap-6 pt-10 pb-3 border-b border-slate-100">
             {/* Background reference lines */}
             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-25">
               <div className="border-b border-dashed border-slate-300 w-full" />
@@ -398,9 +403,9 @@ export const AdminDashboard = () => {
               const isPeak = currentVal === maxVal;
 
               return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group relative z-10">
+                <div key={i} className="flex-1 flex flex-col items-center gap-1.5 sm:gap-2 h-full justify-end group relative z-10">
                   {/* Interactive Floating Tooltip */}
-                  <div className="absolute -top-10 bg-slate-900 text-white text-[11px] px-3 py-1.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none shadow-xl z-30 whitespace-nowrap flex items-center gap-1.5 border border-slate-700">
+                  <div className="absolute -top-10 bg-slate-900 text-white text-[10px] sm:text-[11px] px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none shadow-xl z-30 whitespace-nowrap flex items-center gap-1.5 border border-slate-700">
                     <span className={`w-1.5 h-1.5 rounded-full ${activeChartTheme.dot}`} />
                     <span className="font-bold">{pt.label}:</span>
                     <span className="font-black text-amber-300">
@@ -409,10 +414,10 @@ export const AdminDashboard = () => {
                   </div>
 
                   {/* Slot Background & Pillar */}
-                  <div className="w-full h-full flex items-end justify-center bg-slate-100/50 hover:bg-slate-100/80 rounded-t-xl transition-colors p-0.5">
+                  <div className="w-full h-full flex items-end justify-center bg-slate-100/50 hover:bg-slate-100/80 rounded-t-lg sm:rounded-t-xl transition-colors p-0.5 sm:p-1">
                     {/* Gradient Pillar Bar */}
                     <div
-                      className={`w-full bg-gradient-to-t ${isPeak ? activeChartTheme.peak : activeChartTheme.bar} rounded-t-lg transition-all duration-500 group-hover:brightness-110 group-hover:scale-x-105 shadow-sm ${isPeak ? activeChartTheme.glow : ''} relative overflow-hidden`}
+                      className={`w-full bg-gradient-to-t ${isPeak ? activeChartTheme.peak : activeChartTheme.bar} rounded-t-md sm:rounded-t-lg transition-all duration-500 group-hover:brightness-110 group-hover:scale-x-105 shadow-sm ${isPeak ? activeChartTheme.glow : ''} relative overflow-hidden`}
                       style={{ height: `${heightPercent}%` }}
                     >
                       <div className="absolute top-0 left-0 right-0 h-1 bg-white/40" />
@@ -420,7 +425,7 @@ export const AdminDashboard = () => {
                   </div>
                   
                   {/* Label */}
-                  <span className={`text-[11px] font-bold mt-1 truncate ${isPeak ? 'text-slate-900 font-black' : 'text-slate-500'}`}>
+                  <span className={`text-[10px] sm:text-[11px] font-bold mt-1 truncate ${isPeak ? 'text-slate-900 font-black' : 'text-slate-500'}`}>
                     {pt.label}
                   </span>
                 </div>
@@ -429,15 +434,15 @@ export const AdminDashboard = () => {
           </div>
 
           {/* Chart Footer Stats */}
-          <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 gap-3 pt-1">
-            <div className="flex items-center gap-2 font-semibold">
-              <span className={`w-3 h-3 bg-gradient-to-r ${activeChartTheme.legend} rounded-full shadow-2xs`} />
-              <span className="text-slate-700 font-bold">Consolidated Dispensary & Booking Volume ({activeChartTheme.name})</span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-500 gap-2.5 pt-1">
+            <div className="flex items-center gap-2 font-semibold text-[11px] sm:text-xs">
+              <span className={`w-2.5 h-2.5 sm:w-3 sm:h-3 bg-gradient-to-r ${activeChartTheme.legend} rounded-full shrink-0 shadow-2xs`} />
+              <span className="text-slate-700 font-bold truncate">Dispensary & Booking Volume ({activeChartTheme.name})</span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <div className={`flex items-center gap-1.5 px-3 py-1 rounded-xl border font-bold ${activeChartTheme.pill}`}>
-                <Sparkles className="w-3.5 h-3.5" />
+            <div className="flex items-center">
+              <div className={`w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] sm:text-xs font-bold ${activeChartTheme.pill}`}>
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
                 <span>Peak Period: Saturday (₹9,200)</span>
               </div>
             </div>
@@ -446,7 +451,7 @@ export const AdminDashboard = () => {
         </div>
 
         {/* Right: Order Status Pipeline */}
-        <div className="lg:col-span-4 bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-6 flex flex-col justify-between">
+        <div className="lg:col-span-4 bg-white/95 backdrop-blur-sm p-4.5 sm:p-7 lg:p-8 rounded-3xl sm:rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-1">
               <h3 className="font-extrabold text-lg text-slate-900 font-display">
