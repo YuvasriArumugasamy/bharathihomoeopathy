@@ -78,9 +78,9 @@ export const AdminEnquiries = () => {
     <div className="space-y-8 animate-in fade-in duration-300">
       
       {/* Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#4B7D8D] via-[#5A8E9E] to-[#C67B3C] p-7 sm:p-9 rounded-[2.25rem] border border-[#4B7D8D]/40 shadow-2xl text-white">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-        <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-[#C67B3C]/15 rounded-full blur-2xl pointer-events-none" />
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-7 sm:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+        <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
