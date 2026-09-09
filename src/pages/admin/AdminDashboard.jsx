@@ -640,12 +640,7 @@ export const AdminDashboard = () => {
                       {ord.id}
                     </td>
                     <td className="py-3.5 font-bold text-slate-800">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-black text-[10px] flex items-center justify-center">
-                          {ord.customer.charAt(0)}
-                        </div>
-                        <span>{ord.customer}</span>
-                      </div>
+                      <span>{ord.customer}</span>
                     </td>
                     <td className="py-3.5 font-black text-brandOrange-600">
                       ₹{ord.amount.toLocaleString()}

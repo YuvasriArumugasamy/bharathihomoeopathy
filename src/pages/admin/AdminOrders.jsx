@@ -211,14 +211,9 @@ export const AdminOrders = () => {
                     </button>
                   </td>
                   <td className="py-3.5 px-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-navy-950 to-slate-800 text-white font-black text-xs flex items-center justify-center shrink-0">
-                        {ord.customer.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-extrabold text-slate-900 leading-tight">{ord.customer.name}</p>
-                        <p className="text-[10px] text-slate-400 font-medium">{ord.customer.phone}</p>
-                      </div>
+                    <div>
+                      <p className="font-extrabold text-slate-900 leading-tight">{ord.customer.name}</p>
+                      <p className="text-[10px] text-slate-400 font-medium">{ord.customer.phone}</p>
                     </div>
                   </td>
                   <td className="py-3.5 px-4 text-slate-500 font-medium whitespace-nowrap">
