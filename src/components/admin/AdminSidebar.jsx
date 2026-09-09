@@ -61,7 +61,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
         {/* Brand Header */}
         <div className="h-20 flex items-center justify-between px-6 border-b border-white/10 shrink-0 bg-[#1A4B63]/40">
           <Link to="/admin" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-full overflow-hidden bg-white border-2 border-[#C86838] shadow-md ring-2 ring-[#C86838]/30 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+            <div className="w-11 h-11 rounded-full overflow-hidden bg-white border-2 border-orange-400 shadow-md ring-2 ring-orange-400/30 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
               <img 
                 src={assets.logo} 
                 alt="Dr. Bharathi Logo" 
@@ -77,8 +77,8 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
                 </span>
               </div>
               <div className="flex items-center gap-1.5 mt-1.5">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#C86838]/25 border border-[#C86838]/50 text-[8.5px] font-extrabold uppercase tracking-[0.18em] text-white font-display shadow-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#F5A26B] animate-pulse shrink-0" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/25 border border-orange-400/40 text-[8.5px] font-extrabold uppercase tracking-[0.18em] text-white font-display shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
                   Admin Control
                 </span>
               </div>
@@ -105,7 +105,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#C86838] via-[#D97443] to-[#C86838] text-white shadow-lg shadow-[#C86838]/30 border border-white/25 scale-[1.02]'
+                    ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-lg shadow-orange-500/35 border border-white/30 scale-[1.02]'
                     : 'text-white/80 hover:text-white hover:bg-white/10'
                 }`
               }
@@ -127,7 +127,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
               <ExternalLink className="w-3.5 h-3.5" />
               <span>Live Patient Store</span>
             </span>
-            <span className="text-[10px] bg-[#C86838] px-2 py-0.5 rounded-full text-white font-bold shadow-xs">View</span>
+            <span className="text-[10px] bg-gradient-to-r from-[#ff4e50] to-[#f97316] px-2.5 py-0.5 rounded-full text-white font-black shadow-xs">View</span>
           </Link>
 
           <button
