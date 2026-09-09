@@ -68,26 +68,26 @@ export const AdminReviews = () => {
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brandOrange-500/20 border border-brandOrange-400/30 text-brandOrange-300 text-xs font-black tracking-widest uppercase">
-              <Star className="w-3.5 h-3.5 text-brandOrange-400 fill-brandOrange-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white text-slate-900 text-[10.5px] font-black tracking-widest uppercase shadow-md border border-white">
+              <Star className="w-3.5 h-3.5 text-orange-600 fill-orange-500 stroke-[2.5]" />
               Patient Experience & Ratings
             </div>
-            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
+            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
               Reviews & Testimonials
             </h1>
-            <p className="text-slate-300 text-sm max-w-xl font-normal leading-relaxed">
+            <p className="text-white text-xs sm:text-sm max-w-xl font-bold leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
               Curate patient healing testimonials, verify homeopathic remedy feedback, and feature high-rating stories.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="px-5 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/30 text-amber-300 flex items-center justify-center font-black text-base">
+            <div className="px-5 py-3.5 bg-white text-slate-900 rounded-2xl shadow-xl border border-white flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-500 flex items-center justify-center font-black text-lg shadow-inner">
                 ★
               </div>
               <div className="text-left">
-                <span className="text-[10px] text-slate-300 uppercase tracking-wider block font-bold">Overall Rating</span>
-                <span className="text-base font-black text-white">{avgRating} <span className="text-xs text-amber-300">/ 5.0</span></span>
+                <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-black">Overall Rating</span>
+                <span className="text-base font-black text-slate-900">{avgRating} <span className="text-xs text-amber-600 font-bold">/ 5.0</span></span>
               </div>
             </div>
           </div>

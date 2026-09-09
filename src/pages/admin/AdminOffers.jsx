@@ -76,14 +76,14 @@ export const AdminOffers = () => {
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brandOrange-500/20 border border-brandOrange-400/30 text-brandOrange-300 text-xs font-black tracking-widest uppercase">
-              <Gift className="w-3.5 h-3.5 text-brandOrange-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white text-slate-900 text-xs font-black tracking-wider uppercase shadow-md border border-white">
+              <Gift className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
               Promotions & Patient Loyalty
             </div>
-            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
+            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
               Offers & Coupons
             </h1>
-            <p className="text-slate-300 text-sm max-w-xl font-normal leading-relaxed">
+            <p className="text-white text-xs sm:text-sm font-bold max-w-xl leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
               Design seasonal homeopathic clinic vouchers, first-order patient discounts, and dispensary sales campaigns.
             </p>
           </div>
@@ -91,9 +91,9 @@ export const AdminOffers = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setCouponModalOpen(true)}
-              className="px-6 py-3 bg-gradient-to-r from-brandOrange-500 via-orange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-black text-xs rounded-2xl shadow-lg shadow-brandOrange-500/25 transition-all flex items-center gap-2"
+              className="px-6 py-3.5 bg-white hover:bg-orange-50 text-orange-600 font-black text-xs sm:text-sm rounded-2xl shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2.5 border border-white cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 stroke-[3]" />
               <span>Create Voucher</span>
             </button>
           </div>

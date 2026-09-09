@@ -37,26 +37,26 @@ export const AdminSeo = () => {
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brandOrange-500/20 border border-brandOrange-400/30 text-brandOrange-300 text-xs font-black tracking-widest uppercase">
-              <Globe className="w-3.5 h-3.5 text-brandOrange-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white text-slate-900 text-[10.5px] font-black tracking-widest uppercase shadow-md border border-white">
+              <Globe className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
               Search Engine Optimization
             </div>
-            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
+            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
               SEO & Indexing Management
             </h1>
-            <p className="text-slate-300 text-sm max-w-xl font-normal leading-relaxed">
+            <p className="text-white text-xs sm:text-sm max-w-xl font-bold leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
               Supercharge organic Google search visibility, customize OpenGraph social previews, and verify meta keywords.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="px-5 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-emerald-400/20 border border-emerald-400/30 text-emerald-300 flex items-center justify-center font-black">
+            <div className="px-5 py-3.5 bg-white text-slate-900 rounded-2xl shadow-xl border border-white flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center font-black text-sm shadow-inner">
                 {avgScore}%
               </div>
               <div className="text-left">
-                <span className="text-[10px] text-slate-300 uppercase tracking-wider block font-bold">Health Score</span>
-                <span className="text-xs font-bold text-white">Excellent Standing</span>
+                <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-black">Health Score</span>
+                <span className="text-xs sm:text-sm font-black text-slate-900">Excellent Standing</span>
               </div>
             </div>
           </div>

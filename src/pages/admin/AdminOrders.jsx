@@ -73,29 +73,31 @@ export const AdminOrders = () => {
 
         <div className="relative z-10 space-y-2">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/20 border border-white/30 text-white font-black text-[10px] uppercase tracking-widest shadow-xs backdrop-blur-md">
-              <ShoppingBag className="w-3.5 h-3.5 text-white" />
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 font-black text-[10.5px] uppercase tracking-wider shadow-md border border-white">
+              <ShoppingBag className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
               Dispensary Fulfillment & Logistics
             </span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 border border-white/35 text-white font-extrabold text-xs backdrop-blur-md shadow-xs">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 font-black text-xs shadow-md border border-white">
               {orders.length} Total Orders Registered
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-display drop-shadow-sm">
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-display drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
             Orders & Prescription Fulfillment
           </h1>
-          <p className="text-xs sm:text-sm text-white/95 max-w-xl font-semibold drop-shadow-2xs">
+          <p className="text-white text-xs sm:text-sm font-bold max-w-xl leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
             Monitor dispensary packing pipelines, courier dispatches, customer payment verifications, and delivery updates.
           </p>
         </div>
 
         <div className="relative z-10 flex items-center gap-3 shrink-0">
-          <div className="px-5 py-3 bg-white/20 backdrop-blur-md text-white rounded-2xl shadow-xl border border-white/35 flex items-center gap-3">
-            <IndianRupee className="w-5 h-5 text-white" />
+          <div className="px-5 py-3.5 bg-white text-slate-900 rounded-2xl shadow-xl border border-white flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center font-bold">
+              <IndianRupee className="w-5 h-5 stroke-[2.5]" />
+            </div>
             <div className="text-left">
-              <div className="text-[10px] text-white/80 font-bold uppercase tracking-wider">Volume Sum</div>
-              <div className="text-base font-black text-white font-display">₹{totalRevenue.toLocaleString()}</div>
+              <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Volume Sum</div>
+              <div className="text-lg font-black text-slate-950 font-display">₹{totalRevenue.toLocaleString()}</div>
             </div>
           </div>
         </div>

@@ -139,32 +139,32 @@ export const AdminProducts = () => {
 
         <div className="relative z-10 space-y-2">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/20 border border-white/30 text-white font-black text-[10px] uppercase tracking-widest shadow-xs backdrop-blur-md">
-              <Package className="w-3.5 h-3.5 text-white" />
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 font-black text-[10.5px] uppercase tracking-wider shadow-md border border-white">
+              <Package className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
               Dispensary Stock & Catalog
             </span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 border border-white/35 text-white font-extrabold text-xs backdrop-blur-md shadow-xs">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 font-black text-xs shadow-md border border-white">
               {products.length} Products Registered
             </span>
             {lowStockCount > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-600/80 border border-white/40 text-white font-black text-xs shadow-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-600 text-white font-black text-xs shadow-md border border-rose-500">
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
                 {lowStockCount} Low Stock
               </span>
             )}
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-display drop-shadow-sm">
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-display drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
             Products & Remedies Catalog
           </h1>
-          <p className="text-xs sm:text-sm text-white/95 max-w-xl font-semibold drop-shadow-2xs">
+          <p className="text-white text-xs sm:text-sm font-bold max-w-xl leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
             Manage potencies, herbal tinctures, dilution stocks, pricing strategies, and patient availability.
           </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="relative z-10 inline-flex items-center gap-2 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/10 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white/40 shrink-0"
+          className="relative z-10 inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white shrink-0"
         >
           <Plus className="w-4 h-4 stroke-[3]" />
           <span>Add New Remedy</span>
