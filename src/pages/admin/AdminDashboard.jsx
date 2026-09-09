@@ -233,15 +233,6 @@ export const AdminDashboard = () => {
               <Calendar className="w-4 h-4 text-orange-600 stroke-[2.5]" />
               <span>Appointments</span>
             </Link>
-
-            <Link
-              to="/"
-              target="_blank"
-              className="p-3.5 bg-white hover:bg-orange-50 text-slate-800 hover:text-orange-600 rounded-2xl transition-all border border-white shadow-xl shadow-black/15 flex items-center justify-center cursor-pointer"
-              title="Open Live Patient Store"
-            >
-              <ExternalLink className="w-4 h-4 stroke-[2.5]" />
-            </Link>
           </div>
 
         </div>
