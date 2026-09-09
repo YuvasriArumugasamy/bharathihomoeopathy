@@ -90,7 +90,7 @@ export const AdminOrders = () => {
         </div>
 
         <div className="relative z-10 flex items-center gap-3 shrink-0">
-          <div className="px-4 py-2.5 bg-gradient-to-tr from-slate-900 to-navy-950 text-white rounded-2xl shadow-md border border-slate-800 flex items-center gap-2.5">
+          <div className="px-4 py-2.5 bg-gradient-to-tr from-[#1F5975] to-[#246582] text-white rounded-2xl shadow-md border border-[#194459] flex items-center gap-2.5">
             <IndianRupee className="w-4 h-4 text-amber-400" />
             <div className="text-left">
               <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Volume Sum</div>

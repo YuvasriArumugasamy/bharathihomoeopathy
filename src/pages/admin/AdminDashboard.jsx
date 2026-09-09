@@ -171,12 +171,12 @@ export const AdminDashboard = () => {
     <div className="space-y-8 pb-12 font-sans">
       
       {/* 1. Hero Command Center Banner */}
-      <div className="relative rounded-[2.25rem] bg-gradient-to-br from-[#071322] via-[#0b1d31] to-[#122e4c] p-6 sm:p-8 lg:p-10 shadow-xl border border-navy-800/80 overflow-hidden text-white">
+      <div className="relative rounded-[2.25rem] bg-gradient-to-br from-[#4B7D8D] via-[#5A8E9E] to-[#C67B3C] p-6 sm:p-8 lg:p-10 shadow-xl border border-[#4B7D8D]/40 overflow-hidden text-white">
         
         {/* Ambient Glows */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-brandOrange-500/15 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute -bottom-10 left-1/3 w-80 h-80 bg-teal-500/10 rounded-full blur-[90px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.05)_0%,transparent_60%)] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/15 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute -bottom-10 left-1/3 w-80 h-80 bg-[#C67B3C]/20 rounded-full blur-[90px] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08)_0%,transparent_60%)] pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           

@@ -99,7 +99,7 @@ export const AdminInventory = () => {
         </div>
 
         <div className="relative z-10 flex items-center gap-3 shrink-0">
-          <div className="px-4.5 py-3 bg-gradient-to-tr from-slate-900 to-navy-950 text-white rounded-2xl shadow-md border border-slate-800 flex items-center gap-3">
+          <div className="px-4.5 py-3 bg-gradient-to-tr from-[#1F5975] to-[#246582] text-white rounded-2xl shadow-md border border-[#194459] flex items-center gap-3">
             <Package className="w-4.5 h-4.5 text-amber-400" />
             <div className="text-left">
               <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Units</div>

@@ -49,19 +49,19 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-navy-950/60 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-[#1F5975]/60 backdrop-blur-sm lg:hidden"
         />
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen w-64 bg-navy-950 text-slate-300 flex flex-col border-r border-navy-900 transition-transform duration-300 ${
+        className={`fixed top-0 left-0 z-50 h-screen w-64 bg-gradient-to-b from-[#1F5975] via-[#246582] to-[#1A4B63] text-white flex flex-col border-r border-[#194459] shadow-2xl transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Brand Header */}
-        <div className="h-20 flex items-center justify-between px-6 border-b border-navy-900 shrink-0">
+        <div className="h-20 flex items-center justify-between px-6 border-b border-white/10 shrink-0 bg-[#1A4B63]/40">
           <Link to="/admin" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-full overflow-hidden bg-white border-2 border-brandOrange-500/80 shadow-md ring-2 ring-brandOrange-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+            <div className="w-11 h-11 rounded-full overflow-hidden bg-white border-2 border-[#C86838] shadow-md ring-2 ring-[#C86838]/30 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
               <img 
                 src={assets.logo} 
                 alt="Dr. Bharathi Logo" 
@@ -71,28 +71,28 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
             </div>
             <div className="flex flex-col justify-center">
               <div className="flex items-baseline font-serif text-[17px] leading-none tracking-normal">
-                <span className="text-brandOrange-400 font-bold italic mr-1">Dr.</span>
-                <span className="text-white font-black tracking-wide group-hover:text-brandOrange-200 transition-colors drop-shadow-sm">
+                <span className="text-[#F5A26B] font-bold italic mr-1">Dr.</span>
+                <span className="text-white font-black tracking-wide group-hover:text-amber-100 transition-colors drop-shadow-xs">
                   Bharathi
                 </span>
               </div>
               <div className="flex items-center gap-1.5 mt-1.5">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-brandOrange-500/15 border border-brandOrange-500/30 text-[8.5px] font-extrabold uppercase tracking-[0.18em] text-brandOrange-300 font-display">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brandOrange-400 animate-pulse shrink-0" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#C86838]/25 border border-[#C86838]/50 text-[8.5px] font-extrabold uppercase tracking-[0.18em] text-white font-display shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#F5A26B] animate-pulse shrink-0" />
                   Admin Control
                 </span>
               </div>
             </div>
           </Link>
 
-          <button onClick={onClose} className="lg:hidden p-1 text-slate-400 hover:text-white">
+          <button onClick={onClose} className="lg:hidden p-1 text-white/70 hover:text-white">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Navigation Menu (Scrollbar Hidden) */}
         <nav className="flex-1 overflow-y-auto p-4 space-y-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 px-3 py-1.5 block">
+          <span className="text-[10px] font-black uppercase tracking-widest text-white/55 px-3 py-1.5 block">
             Management Modules
           </span>
 
@@ -103,10 +103,10 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
               end={item.end}
               onClick={() => onClose && onClose()}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-smooth ${
+                `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
                   isActive
-                    ? 'bg-brandOrange-500 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white hover:bg-navy-900'
+                    ? 'bg-gradient-to-r from-[#C86838] via-[#D97443] to-[#C86838] text-white shadow-lg shadow-[#C86838]/30 border border-white/25 scale-[1.02]'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
                 }`
               }
             >
@@ -117,22 +117,22 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
         </nav>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-navy-900 space-y-2 shrink-0 bg-navy-950">
+        <div className="p-4 border-t border-white/10 space-y-2 shrink-0 bg-[#1A4B63]/60">
           <Link
             to="/"
             target="_blank"
-            className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-navy-900 transition-colors"
+            className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-colors"
           >
             <span className="flex items-center gap-2">
               <ExternalLink className="w-3.5 h-3.5" />
               <span>Live Patient Store</span>
             </span>
-            <span className="text-[10px] bg-navy-900 px-1.5 py-0.5 rounded text-brandOrange-400">View</span>
+            <span className="text-[10px] bg-[#C86838] px-2 py-0.5 rounded-full text-white font-bold shadow-xs">View</span>
           </Link>
 
           <button
             onClick={logout}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-rose-200 hover:text-white hover:bg-rose-500/20 transition-colors"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out</span>

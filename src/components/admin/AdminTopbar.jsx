@@ -143,7 +143,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
             }}
             className="flex items-center gap-3 p-1.5 pl-2 pr-2.5 rounded-2xl hover:bg-slate-100/90 border border-transparent hover:border-slate-200/80 transition-all cursor-pointer group text-left"
           >
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-navy-950 via-slate-900 to-brandOrange-600 text-white font-black text-sm flex items-center justify-center shadow-md border-2 border-brandOrange-400/40 group-hover:border-brandOrange-500 group-hover:scale-105 transition-all">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#1F5975] via-[#246582] to-[#C86838] text-white font-black text-sm flex items-center justify-center shadow-md border-2 border-[#C86838]/60 group-hover:border-[#C86838] group-hover:scale-105 transition-all">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
             </div>
             <div className="hidden md:flex flex-col text-left">

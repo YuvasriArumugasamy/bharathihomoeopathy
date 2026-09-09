@@ -31,9 +31,9 @@ export const AdminSettings = () => {
     <div className="space-y-8 animate-in fade-in duration-300">
       
       {/* Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-navy-950 via-navy-900 to-slate-900 p-7 sm:p-9 rounded-[2.25rem] border border-slate-800 shadow-2xl text-white">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-brandOrange-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-        <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#4B7D8D] via-[#5A8E9E] to-[#C67B3C] p-7 sm:p-9 rounded-[2.25rem] border border-[#4B7D8D]/40 shadow-2xl text-white">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+        <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-[#C67B3C]/15 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
@@ -131,26 +131,28 @@ export const AdminSettings = () => {
               onClick={() => setActiveSection(sec.id)}
               className={`w-full text-left p-3.5 rounded-2xl transition-all flex items-center justify-between group ${
                 activeSection === sec.id
-                  ? 'bg-navy-950 text-white shadow-md'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-navy-900'
+                  ? 'bg-gradient-to-r from-[#1F5975] to-[#246582] text-white shadow-md'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-[#1F5975]'
               }`}
             >
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-xl ${
-                  activeSection === sec.id ? 'bg-brandOrange-500 text-white' : 'bg-slate-100 text-slate-500 group-hover:text-navy-900 group-hover:bg-slate-200'
+                  activeSection === sec.id ? 'bg-[#C86838] text-white shadow-xs' : 'bg-slate-100 text-slate-500 group-hover:text-[#1F5975] group-hover:bg-slate-200'
                 }`}>
                   <sec.icon className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className={`text-xs font-bold ${activeSection === sec.id ? 'text-white' : 'text-navy-950'}`}>
+                  <h4 className={`text-xs font-bold ${activeSection === sec.id ? 'text-white' : 'text-slate-800'}`}>
                     {sec.label}
                   </h4>
-                  <p className={`text-[10px] ${activeSection === sec.id ? 'text-slate-300' : 'text-slate-400'}`}>
+                  <p className={`text-[10px] ${activeSection === sec.id ? 'text-teal-100/80' : 'text-slate-400'}`}>
                     {sec.desc}
                   </p>
                 </div>
               </div>
-              <ChevronRight className={`w-4 h-4 ${activeSection === sec.id ? 'text-brandOrange-400' : 'text-slate-300'}`} />
+              <ChevronRight className={`w-4 h-4 transition-transform ${
+                activeSection === sec.id ? 'text-white translate-x-1' : 'text-slate-300 group-hover:text-slate-400'
+              }`} />
             </button>
           ))}
         </aside>
