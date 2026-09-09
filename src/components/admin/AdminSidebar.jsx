@@ -60,17 +60,28 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
       >
         {/* Brand Header */}
         <div className="h-20 flex items-center justify-between px-6 border-b border-navy-900 shrink-0">
-          <Link to="/admin" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-900 border border-brandOrange-500/40 p-0.5 shadow-md shrink-0">
+          <Link to="/admin" className="flex items-center gap-3 group">
+            <div className="w-11 h-11 rounded-full overflow-hidden bg-white border-2 border-brandOrange-500/80 shadow-md ring-2 ring-brandOrange-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
               <img 
                 src={assets.logo} 
                 alt="Dr. Bharathi Logo" 
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full object-cover scale-[1.08] rounded-full"
+                style={{ imageRendering: '-webkit-optimize-contrast' }}
               />
             </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-sm text-white tracking-tight">Dr. Bharathi</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-brandOrange-400">Admin Control</span>
+            <div className="flex flex-col justify-center">
+              <div className="flex items-baseline font-serif text-[17px] leading-none tracking-normal">
+                <span className="text-brandOrange-400 font-bold italic mr-1">Dr.</span>
+                <span className="text-white font-black tracking-wide group-hover:text-brandOrange-200 transition-colors drop-shadow-sm">
+                  Bharathi
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-brandOrange-500/15 border border-brandOrange-500/30 text-[8.5px] font-extrabold uppercase tracking-[0.18em] text-brandOrange-300 font-display">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brandOrange-400 animate-pulse shrink-0" />
+                  Admin Control
+                </span>
+              </div>
             </div>
           </Link>
 

@@ -15,7 +15,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
   };
 
   return (
-    <header className="h-20 bg-white/90 backdrop-blur-md border-b border-slate-200/90 px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30 shadow-sm transition-all">
+    <header className="h-20 bg-white/95 backdrop-blur-md border-b border-slate-200/90 px-4 sm:px-6 lg:px-8 flex items-center justify-between fixed top-0 right-0 left-0 lg:left-64 z-30 shadow-sm transition-all">
       
       {/* Left: Mobile Hamburger & Current Breadcrumb */}
       <div className="flex items-center gap-3">
@@ -87,7 +87,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
 
         {/* Profile Pill */}
         <div className="flex items-center gap-3 pl-3 border-l border-slate-200/80">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-navy-950 to-brandOrange-600 text-white font-black text-xs flex items-center justify-center shadow-md border border-white/20">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-navy-950 to-brandOrange-600 text-white font-black text-xs flex items-center justify-center shadow-md border-2 border-brandOrange-500/30">
             {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
           </div>
           <div className="hidden md:flex flex-col text-left">
