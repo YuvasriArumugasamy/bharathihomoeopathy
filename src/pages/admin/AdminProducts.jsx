@@ -12,7 +12,11 @@ import {
   X, 
   Star, 
   Sparkles,
-  AlertTriangle
+  AlertTriangle,
+  ArrowUpRight,
+  Boxes,
+  CheckCircle2,
+  ExternalLink
 } from 'lucide-react';
 import { initialAdminProducts } from '../../data/adminProductsData';
 import { useToast } from '../../context/ToastContext';
@@ -99,15 +103,9 @@ export const AdminProducts = () => {
         createdAt: new Date().toISOString().slice(0, 10)
       };
       setProducts(prev => [newProd, ...prev]);
-      showToast('New formulation added to dispensary catalog!', 'success');
+      showToast('New remedy added to dispensary catalogue!', 'success');
     }
     setModalOpen(false);
-  };
-
-  const handleDelete = (id) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
-    setDeleteConfirmId(null);
-    showToast('Product deactivated and removed from catalog', 'info');
   };
 
   const handleDuplicate = (product) => {
@@ -115,130 +113,223 @@ export const AdminProducts = () => {
       ...product,
       id: 'prod-' + Date.now(),
       name: `${product.name} (Copy)`,
-      sku: `${product.sku}-CP`,
-      slug: `${product.slug}-copy`
+      sku: `${product.sku}-COPY`,
+      slug: slugify(`${product.name}-copy`),
+      createdAt: new Date().toISOString().slice(0, 10)
     };
     setProducts(prev => [duplicated, ...prev]);
-    showToast('Product duplicated as draft', 'info');
+    showToast('Product duplicated as draft!', 'info');
   };
 
+  const handleDelete = (id) => {
+    setProducts(prev => prev.filter(p => p.id !== id));
+    setDeleteConfirmId(null);
+    showToast('Product removed from active catalogue', 'info');
+  };
+
+  const lowStockCount = products.filter(p => p.stock <= 10).length;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12 font-sans">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-brandOrange-600">Dispensary Stock</span>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-navy-900 tracking-tight">Products Management</h1>
-          <p className="text-xs text-slate-500">Manage formulations, pricing, inventory stock thresholds, and SEO.</p>
+      {/* 1. Hero Header Banner */}
+      <div className="relative bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-brandOrange-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 space-y-2">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brandOrange-50 border border-brandOrange-200 text-brandOrange-700 font-extrabold text-[10px] uppercase tracking-widest shadow-2xs">
+              <Package className="w-3.5 h-3.5 text-brandOrange-600" />
+              Dispensary Stock & Catalog
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold text-xs">
+              {products.length} Products Registered
+            </span>
+            {lowStockCount > 0 && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 border border-rose-200 text-rose-700 font-extrabold text-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                {lowStockCount} Low Stock
+              </span>
+            )}
+          </div>
+
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display">
+            Products & Remedies Catalog
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 max-w-xl font-medium">
+            Manage potencies, herbal tinctures, dilution stocks, pricing strategies, and patient availability.
+          </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-brandOrange-500 hover:bg-brandOrange-600 text-white rounded-xl text-xs font-bold shadow-md transition-smooth"
+          className="relative z-10 inline-flex items-center gap-2 px-5 py-3.5 bg-gradient-to-r from-brandOrange-500 via-orange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white rounded-2xl text-xs sm:text-sm font-black shadow-lg shadow-brandOrange-500/25 hover:shadow-brandOrange-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white/20 shrink-0"
         >
-          <Plus className="w-4 h-4" />
-          <span>Add New Product</span>
+          <Plus className="w-4 h-4 stroke-[3]" />
+          <span>Add New Remedy</span>
         </button>
       </div>
 
-      {/* Filter & Search Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="relative w-full md:max-w-xs">
+      {/* 2. Filter & Command Bar */}
+      <div className="bg-white/95 backdrop-blur-sm p-4 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="relative w-full md:max-w-md">
           <input
             type="text"
-            placeholder="Search by product name or SKU..."
+            placeholder="Search by remedy name or SKU..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-brandOrange-500"
+            className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 border border-slate-200/80 rounded-xl focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner font-medium placeholder:text-slate-400"
           />
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+          {search && (
+            <button onClick={() => setSearch('')} className="absolute right-3 top-3 text-slate-400 hover:text-slate-600">
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto text-xs">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto text-xs">
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="p-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700"
+            className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:outline-none focus:border-brandOrange-500 transition-all cursor-pointer shadow-2xs"
           >
-            {categoriesList.map(c => <option key={c} value={c}>{c}</option>)}
+            {categoriesList.map(c => <option key={c} value={c}>{c === 'All' ? 'All Categories' : c}</option>)}
           </select>
 
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="p-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700"
+            className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:outline-none focus:border-brandOrange-500 transition-all cursor-pointer shadow-2xs"
           >
             <option value="All">All Statuses</option>
             <option value="Active">Active</option>
             <option value="Draft">Draft</option>
             <option value="Out of Stock">Out of Stock</option>
           </select>
+
+          <span className="text-xs text-slate-500 font-bold hidden lg:inline">
+            <span className="text-slate-900 font-black">{filteredProducts.length}</span> items
+          </span>
         </div>
       </div>
 
-      {/* Products Table */}
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+      {/* 3. Luxury Products Table */}
+      <div className="bg-white rounded-[2rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="bg-slate-50 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-100">
-                <th className="py-3 px-4 font-bold">Product</th>
-                <th className="py-3 px-4 font-bold">Category</th>
-                <th className="py-3 px-4 font-bold">SKU</th>
-                <th className="py-3 px-4 font-bold">Price</th>
-                <th className="py-3 px-4 font-bold">Stock</th>
-                <th className="py-3 px-4 font-bold">Status</th>
-                <th className="py-3 px-4 font-bold text-right">Actions</th>
+              <tr className="bg-slate-50/90 text-slate-400 uppercase tracking-wider text-[10px] font-black border-b border-slate-100">
+                <th className="py-3.5 px-5">Remedy / Product</th>
+                <th className="py-3.5 px-4">Category</th>
+                <th className="py-3.5 px-4">SKU</th>
+                <th className="py-3.5 px-4">Price</th>
+                <th className="py-3.5 px-4">Stock Level</th>
+                <th className="py-3.5 px-4">Status</th>
+                <th className="py-3.5 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100/90">
               {filteredProducts.map((prod) => (
-                <tr key={prod.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <img src={prod.image} alt={prod.name} className="w-10 h-10 rounded-xl object-cover bg-slate-100 shrink-0" />
+                <tr key={prod.id} className="hover:bg-slate-50/80 transition-colors group">
+                  <td className="py-3.5 px-5">
+                    <div className="flex items-center gap-3.5">
+                      <img 
+                        src={prod.image} 
+                        alt={prod.name} 
+                        className="w-12 h-12 rounded-2xl object-cover bg-slate-100 border border-slate-200/80 shrink-0 shadow-xs group-hover:scale-105 transition-transform" 
+                      />
                       <div>
-                        <h4 className="font-bold text-navy-900 line-clamp-1">{prod.name}</h4>
-                        {prod.isBestSeller && <span className="text-[10px] text-brandOrange-600 font-extrabold">★ Best Seller</span>}
+                        <h4 className="font-extrabold text-slate-900 line-clamp-1 group-hover:text-brandOrange-600 transition-colors">
+                          {prod.name}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {prod.isBestSeller && (
+                            <span className="inline-flex items-center gap-1 text-[9px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                              <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
+                              Best Seller
+                            </span>
+                          )}
+                          {prod.isFeatured && (
+                            <span className="text-[9px] font-black text-purple-600 bg-purple-50 px-1.5 py-0.2 rounded border border-purple-200">
+                              Featured
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </td>
-                  <td className="py-3 px-4 font-semibold text-slate-600">{prod.category}</td>
-                  <td className="py-3 px-4 font-mono text-slate-500">{prod.sku}</td>
-                  <td className="py-3 px-4 font-extrabold text-navy-900">₹{prod.offerPrice || prod.regularPrice}</td>
-                  <td className="py-3 px-4">
-                    <span className={`font-bold ${prod.stock <= 5 ? 'text-rose-600' : 'text-slate-700'}`}>
-                      {prod.stock} units
+                  <td className="py-3.5 px-4">
+                    <span className="font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
+                      {prod.category}
                     </span>
                   </td>
-                  <td className="py-3 px-4">
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                      prod.status === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                  <td className="py-3.5 px-4 font-mono font-bold text-slate-500">
+                    {prod.sku}
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <div className="flex flex-col">
+                      <span className="font-black text-slate-900 text-sm font-display">
+                        ₹{prod.offerPrice || prod.regularPrice}
+                      </span>
+                      {prod.regularPrice > (prod.offerPrice || prod.regularPrice) && (
+                        <span className="text-[10px] text-slate-400 line-through font-semibold">
+                          ₹{prod.regularPrice}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <div className="flex flex-col gap-1 max-w-[100px]">
+                      <div className="flex justify-between text-[11px] font-bold">
+                        <span className={prod.stock <= 5 ? 'text-rose-600 font-black' : 'text-slate-700'}>
+                          {prod.stock} units
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full ${
+                            prod.stock <= 5 ? 'bg-rose-500' : prod.stock <= 15 ? 'bg-amber-500' : 'bg-emerald-500'
+                          }`}
+                          style={{ width: `${Math.min(100, (prod.stock / 50) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-2xs ${
+                      prod.status === 'Active' 
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                        : prod.status === 'Draft'
+                        ? 'bg-slate-100 text-slate-600 border-slate-200'
+                        : 'bg-rose-50 text-rose-700 border-rose-200'
                     }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        prod.status === 'Active' ? 'bg-emerald-500' : prod.status === 'Draft' ? 'bg-slate-400' : 'bg-rose-500'
+                      }`} />
                       {prod.status}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right">
+                  <td className="py-3.5 px-5 text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <button
                         onClick={() => handleDuplicate(prod)}
-                        title="Duplicate"
-                        className="p-1.5 text-slate-400 hover:text-navy-900 hover:bg-slate-100 rounded-lg"
+                        title="Duplicate Remedy"
+                        className="p-2 text-slate-400 hover:text-navy-950 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
                       >
                         <Copy className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleOpenEdit(prod)}
-                        title="Edit"
-                        className="p-1.5 text-slate-400 hover:text-brandOrange-600 hover:bg-brandOrange-50 rounded-lg"
+                        title="Edit Remedy"
+                        className="p-2 text-slate-400 hover:text-brandOrange-600 hover:bg-brandOrange-50 rounded-xl transition-colors cursor-pointer"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => setDeleteConfirmId(prod.id)}
-                        title="Delete"
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"
+                        title="Delete Remedy"
+                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -251,112 +342,130 @@ export const AdminProducts = () => {
         </div>
       </div>
 
-      {/* Add / Edit Modal */}
+      {/* 4. Add / Edit Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2.25rem] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl space-y-5 border border-slate-100">
             <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-              <h3 className="font-extrabold text-base text-navy-900">
-                {editingProduct ? 'Edit Product' : 'Add New Product'}
-              </h3>
-              <button onClick={() => setModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-brandOrange-50 text-brandOrange-600">
+                  <Package className="w-4 h-4" />
+                </div>
+                <h3 className="font-black text-slate-900 text-base font-display">
+                  {editingProduct ? 'Edit Remedy' : 'Add New Remedy to Dispensary'}
+                </h3>
+              </div>
+              <button onClick={() => setModalOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleSave} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Product Name *</label>
+                <label className="block font-bold text-slate-700 mb-1.5">Remedy Name *</label>
                 <input
                   type="text"
                   required
+                  placeholder="e.g., Arnica Montana 30C Dilution"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">SKU *</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">SKU / Code *</label>
                   <input
                     type="text"
                     required
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Category</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">Therapeutic Category</label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner cursor-pointer"
                   >
                     {categoriesList.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Regular Price (₹)</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">Regular Price (₹)</label>
                   <input
                     type="number"
                     value={formData.regularPrice}
                     onChange={(e) => setFormData({ ...formData, regularPrice: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Offer Price (₹)</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">Offer Price (₹)</label>
                   <input
                     type="number"
                     value={formData.offerPrice}
                     onChange={(e) => setFormData({ ...formData, offerPrice: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Stock Count</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">Inventory Stock</label>
                   <input
                     type="number"
                     value={formData.stock}
                     onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Short Description</label>
-                <textarea
-                  rows={2}
-                  value={formData.shortDescription}
-                  onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                <label className="block font-bold text-slate-700 mb-1.5">Image URL</label>
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={formData.image}
+                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
                 />
               </div>
 
-              <div className="flex gap-4 pt-2">
-                <label className="flex items-center gap-2 cursor-pointer">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5">Short Description</label>
+                <textarea
+                  rows={2}
+                  placeholder="Indication, key therapeutic uses, and dosage guidance..."
+                  value={formData.shortDescription}
+                  onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-4 pt-2">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={formData.isBestSeller}
                     onChange={(e) => setFormData({ ...formData, isBestSeller: e.target.checked })}
-                    className="rounded text-brandOrange-500"
+                    className="rounded text-brandOrange-500 focus:ring-brandOrange-500 w-4 h-4"
                   />
-                  <span>Mark as Best Seller</span>
+                  <span className="font-extrabold text-slate-700">Mark as Best Seller</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={formData.isFeatured}
                     onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                    className="rounded text-brandOrange-500"
+                    className="rounded text-brandOrange-500 focus:ring-brandOrange-500 w-4 h-4"
                   />
-                  <span>Featured on Home</span>
+                  <span className="font-extrabold text-slate-700">Feature on Patient Home</span>
                 </label>
               </div>
 
@@ -364,15 +473,15 @@ export const AdminProducts = () => {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl"
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold rounded-xl transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-brandOrange-500 hover:bg-brandOrange-600 text-white font-bold rounded-xl shadow-sm"
+                  className="px-6 py-2.5 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-black rounded-xl shadow-md shadow-brandOrange-500/25 transition-all cursor-pointer"
                 >
-                  Save Product
+                  Save Remedy
                 </button>
               </div>
             </form>
@@ -380,25 +489,25 @@ export const AdminProducts = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* 5. Delete Confirmation Modal */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
-            <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto">
-              <AlertTriangle className="w-6 h-6" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="bg-white rounded-[2rem] p-6 sm:p-8 max-w-sm w-full text-center space-y-4 shadow-2xl border border-slate-100">
+            <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto border border-rose-200 shadow-sm">
+              <AlertTriangle className="w-7 h-7" />
             </div>
-            <h3 className="font-bold text-navy-900 text-sm">Deactivate Product?</h3>
-            <p className="text-xs text-slate-500">This remedy will be marked inactive and removed from live patient browsing.</p>
-            <div className="flex gap-2 pt-2">
+            <h3 className="font-black text-slate-900 text-base font-display">Deactivate Remedy?</h3>
+            <p className="text-xs text-slate-500 font-medium">This homeopathic formulation will be removed from live patient browsing.</p>
+            <div className="flex gap-2.5 pt-2">
               <button
                 onClick={() => setDeleteConfirmId(null)}
-                className="flex-1 py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl"
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black rounded-xl transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDelete(deleteConfirmId)}
-                className="flex-1 py-2 bg-rose-600 text-white text-xs font-bold rounded-xl"
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl shadow-md shadow-rose-600/20 transition-all"
               >
                 Confirm Delete
               </button>
@@ -410,3 +519,5 @@ export const AdminProducts = () => {
     </div>
   );
 };
+
+export default AdminProducts;
