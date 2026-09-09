@@ -74,31 +74,32 @@ export const AdminCategories = () => {
     <div className="space-y-6 pb-12 font-sans">
       
       {/* 1. Hero Header Banner */}
-      <div className="relative bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-brandOrange-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-7 sm:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden text-white">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+        <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
         
         <div className="relative z-10 space-y-2">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brandOrange-50 border border-brandOrange-200 text-brandOrange-700 font-extrabold text-[10px] uppercase tracking-widest shadow-2xs">
-              <Layers className="w-3.5 h-3.5 text-brandOrange-600" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/20 border border-white/30 text-white font-black text-[10px] uppercase tracking-widest shadow-xs backdrop-blur-md">
+              <Layers className="w-3.5 h-3.5 text-white" />
               Dispensary Organization
             </span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold text-xs">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 border border-white/35 text-white font-extrabold text-xs backdrop-blur-md shadow-xs">
               {categories.length} Categories • {totalRemedies} Total Remedies
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display">
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-display drop-shadow-sm">
             Categories Management
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 max-w-xl font-medium">
+          <p className="text-xs sm:text-sm text-white/95 max-w-xl font-semibold drop-shadow-2xs">
             Organize homeopathic remedies by potencies, mother tinctures, biocombinations, and clinical therapeutic groups.
           </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="relative z-10 inline-flex items-center gap-2 px-5 py-3.5 bg-gradient-to-r from-brandOrange-500 via-orange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white rounded-2xl text-xs sm:text-sm font-black shadow-lg shadow-brandOrange-500/25 hover:shadow-brandOrange-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white/20 shrink-0"
+          className="relative z-10 inline-flex items-center gap-2 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/10 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white/40 shrink-0"
         >
           <FolderPlus className="w-4 h-4 stroke-[2.5]" />
           <span>Add New Category</span>

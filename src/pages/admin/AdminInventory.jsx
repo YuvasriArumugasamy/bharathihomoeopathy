@@ -76,34 +76,35 @@ export const AdminInventory = () => {
     <div className="space-y-6 pb-12 font-sans">
       
       {/* 1. Hero Header Banner */}
-      <div className="relative bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-brandOrange-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-7 sm:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden text-white">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+        <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 space-y-2">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brandOrange-50 border border-brandOrange-200 text-brandOrange-700 font-extrabold text-[10px] uppercase tracking-widest shadow-2xs">
-              <Boxes className="w-3.5 h-3.5 text-brandOrange-600" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/20 border border-white/30 text-white font-black text-[10px] uppercase tracking-widest shadow-xs backdrop-blur-md">
+              <Boxes className="w-3.5 h-3.5 text-white" />
               Dispensary Stock Control & Audits
             </span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold text-xs">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 border border-white/35 text-white font-extrabold text-xs backdrop-blur-md shadow-xs">
               {inventory.length} Tracked Formulations
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display">
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-display drop-shadow-sm">
             Dispensary Inventory Control
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 max-w-xl font-medium">
+          <p className="text-xs sm:text-sm text-white/95 max-w-xl font-semibold drop-shadow-2xs">
             Monitor real-time dispensary reserves, set safety stock replenishment thresholds, and record batch adjustments.
           </p>
         </div>
 
         <div className="relative z-10 flex items-center gap-3 shrink-0">
-          <div className="px-4.5 py-3 bg-gradient-to-tr from-[#1F5975] to-[#246582] text-white rounded-2xl shadow-md border border-[#194459] flex items-center gap-3">
-            <Package className="w-4.5 h-4.5 text-amber-400" />
+          <div className="px-5 py-3 bg-white/20 backdrop-blur-md text-white rounded-2xl shadow-xl border border-white/35 flex items-center gap-3">
+            <Package className="w-5 h-5 text-white" />
             <div className="text-left">
-              <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Units</div>
-              <div className="text-sm font-black text-white font-display">{totalStockUnits.toLocaleString()} in Stock</div>
+              <div className="text-[10px] text-white/80 font-bold uppercase tracking-wider">Total Units</div>
+              <div className="text-base font-black text-white font-display">{totalStockUnits.toLocaleString()} in Stock</div>
             </div>
           </div>
         </div>
