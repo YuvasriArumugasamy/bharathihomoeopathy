@@ -451,40 +451,40 @@ export const AdminDashboard = () => {
         </div>
 
         {/* Right: Order Status Pipeline */}
-        <div className="lg:col-span-4 bg-white/95 backdrop-blur-sm p-4.5 sm:p-7 lg:p-8 rounded-3xl sm:rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-6 flex flex-col justify-between">
+        <div className="lg:col-span-4 bg-white/95 backdrop-blur-sm p-5 sm:p-7 lg:p-8 rounded-3xl sm:rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-6 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <h3 className="font-extrabold text-lg text-slate-900 font-display">
+            <div className="flex items-center justify-between mb-1.5">
+              <h3 className="font-extrabold text-base sm:text-lg text-slate-900 font-display">
                 Fulfillment Pipeline
               </h3>
-              <span className="text-[10px] font-black uppercase tracking-wider text-brandOrange-600 bg-brandOrange-50 px-2 py-0.5 rounded-full border border-brandOrange-200">
+              <span className="text-[10.5px] font-black uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200 shadow-2xs">
                 84 Active
               </span>
             </div>
-            <p className="text-xs text-slate-500">Live order status distribution across dispensary</p>
+            <p className="text-xs text-slate-500 font-medium">Live order status distribution across dispensary</p>
           </div>
 
-          <div className="space-y-3.5 flex-1 justify-center flex flex-col">
+          <div className="space-y-4 flex-1 justify-center flex flex-col">
             {[
-              { label: 'Pending Confirmation', count: 6, color: 'from-amber-400 to-orange-500', barBg: 'bg-amber-500' },
-              { label: 'Confirmed / Paid', count: 12, color: 'from-sky-400 to-blue-500', barBg: 'bg-sky-500' },
-              { label: 'Dispensary Packing', count: 14, color: 'from-purple-400 to-violet-500', barBg: 'bg-purple-500' },
-              { label: 'Out with Courier', count: 18, color: 'from-indigo-400 to-blue-600', barBg: 'bg-indigo-500' },
-              { label: 'Delivered to Patient', count: 30, color: 'from-emerald-400 to-teal-500', barBg: 'bg-emerald-500' },
-              { label: 'Cancelled / Refunded', count: 4, color: 'from-rose-400 to-red-500', barBg: 'bg-rose-500' }
+              { label: 'Pending Confirmation', count: 6, color: 'from-amber-400 to-orange-500', barBg: 'bg-amber-500', dot: 'bg-amber-500' },
+              { label: 'Confirmed / Paid', count: 12, color: 'from-sky-400 to-blue-500', barBg: 'bg-sky-500', dot: 'bg-sky-500' },
+              { label: 'Dispensary Packing', count: 14, color: 'from-purple-400 to-violet-500', barBg: 'bg-purple-500', dot: 'bg-purple-500' },
+              { label: 'Out with Courier', count: 18, color: 'from-indigo-400 to-blue-600', barBg: 'bg-indigo-500', dot: 'bg-indigo-500' },
+              { label: 'Delivered to Patient', count: 30, color: 'from-emerald-400 to-teal-500', barBg: 'bg-emerald-500', dot: 'bg-emerald-500' },
+              { label: 'Cancelled / Refunded', count: 4, color: 'from-rose-400 to-red-500', barBg: 'bg-rose-500', dot: 'bg-rose-500' }
             ].map((st, i) => (
               <div key={i} className="space-y-1.5">
-                <div className="flex justify-between text-xs font-bold text-slate-700">
-                  <span className="flex items-center gap-1.5">
-                    <span className={`w-2 h-2 rounded-full ${st.barBg}`} />
-                    {st.label}
+                <div className="flex justify-between items-center text-xs font-bold text-slate-700">
+                  <span className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${st.dot} shrink-0`} />
+                    <span className="text-slate-700 font-bold">{st.label}</span>
                   </span>
-                  <span className="font-black text-slate-900">{st.count}</span>
+                  <span className="font-black text-slate-900 px-2 py-0.5 rounded-md bg-slate-100 text-[11.5px] shrink-0 border border-slate-200/50">{st.count}</span>
                 </div>
                 <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
                   <div 
                     className={`bg-gradient-to-r ${st.color} h-full rounded-full transition-all duration-700 shadow-2xs`} 
-                    style={{ width: `${(st.count / 84) * 100}%` }} 
+                    style={{ width: `${Math.max(6, (st.count / 84) * 100)}%` }} 
                   />
                 </div>
               </div>
@@ -493,7 +493,7 @@ export const AdminDashboard = () => {
 
           <Link
             to="/admin/orders"
-            className="w-full py-3.5 bg-navy-950 hover:bg-navy-900 text-white font-extrabold text-xs rounded-2xl text-center shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 group cursor-pointer border border-navy-800"
+            className="w-full py-3.5 bg-navy-950 hover:bg-navy-900 text-white font-extrabold text-xs rounded-2xl text-center shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 group cursor-pointer border border-navy-800 active:scale-[0.99]"
           >
             <span>Manage All 84 Orders</span>
             <ChevronRight className="w-4 h-4 text-amber-400 group-hover:translate-x-1 transition-transform" />

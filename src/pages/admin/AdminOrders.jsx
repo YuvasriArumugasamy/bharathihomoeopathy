@@ -105,7 +105,7 @@ export const AdminOrders = () => {
 
       {/* 2. Quick Status Overview KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white/95 backdrop-blur-sm p-4.5 rounded-2xl border border-amber-200/80 shadow-sm flex items-center justify-between">
+        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-amber-200/80 shadow-sm flex items-center justify-between">
           <div>
             <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">Pending Packaging</div>
             <div className="text-2xl font-black text-slate-900 font-display mt-0.5">{pendingCount}</div>
@@ -115,7 +115,7 @@ export const AdminOrders = () => {
           </div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm p-4.5 rounded-2xl border border-indigo-200/80 shadow-sm flex items-center justify-between">
+        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-indigo-200/80 shadow-sm flex items-center justify-between">
           <div>
             <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">With Courier</div>
             <div className="text-2xl font-black text-slate-900 font-display mt-0.5">{shippedCount}</div>
@@ -125,7 +125,7 @@ export const AdminOrders = () => {
           </div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm p-4.5 rounded-2xl border border-emerald-200/80 shadow-sm flex items-center justify-between">
+        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-emerald-200/80 shadow-sm flex items-center justify-between">
           <div>
             <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">Delivered</div>
             <div className="text-2xl font-black text-slate-900 font-display mt-0.5">{deliveredCount}</div>
@@ -135,7 +135,7 @@ export const AdminOrders = () => {
           </div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm p-4.5 rounded-2xl border border-sky-200/80 shadow-sm flex items-center justify-between">
+        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-sky-200/80 shadow-sm flex items-center justify-between">
           <div>
             <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Active</div>
             <div className="text-2xl font-black text-slate-900 font-display mt-0.5">{orders.length}</div>
