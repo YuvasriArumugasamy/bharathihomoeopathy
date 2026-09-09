@@ -187,7 +187,7 @@ export const AdminEnquiries = () => {
               onClick={() => setStatusFilter(st)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-smooth ${
                 statusFilter === st
-                  ? 'bg-navy-950 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-md'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-navy-900 border border-slate-200/60'
               }`}
             >
@@ -256,9 +256,6 @@ export const AdminEnquiries = () => {
 
                 {/* Patient / Sender Header */}
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-navy-950 to-slate-800 text-white font-black flex items-center justify-center text-xs shadow-sm flex-shrink-0">
-                    {enq.customer.name.charAt(0)}
-                  </div>
                   <div className="min-w-0 flex-1">
                     <h4 className="font-heading font-black text-sm text-navy-950 truncate group-hover:text-brandOrange-600 transition-colors">
                       {enq.customer.name}
@@ -346,9 +343,6 @@ export const AdminEnquiries = () => {
               {/* Patient Contact Strip */}
               <div className="p-4 bg-slate-50/90 rounded-[2rem] border border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-navy-950 to-slate-800 text-white font-black flex items-center justify-center text-sm shadow-xs">
-                    {selectedEnquiry.customer.name.charAt(0)}
-                  </div>
                   <div>
                     <h4 className="font-bold text-xs text-navy-950">{selectedEnquiry.customer.name}</h4>
                     <span className="text-[11px] text-slate-400 block">{selectedEnquiry.customer.email}</span>

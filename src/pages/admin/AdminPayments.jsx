@@ -180,7 +180,7 @@ export const AdminPayments = () => {
               onClick={() => setStatusFilter(st)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-smooth ${
                 statusFilter === st
-                  ? 'bg-navy-950 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-md'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-navy-900 border border-slate-200/60'
               }`}
             >
@@ -253,9 +253,6 @@ export const AdminPayments = () => {
                     {/* Patient */}
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg bg-navy-900 text-white font-bold flex items-center justify-center text-[10px]">
-                          {p.customerName.charAt(0)}
-                        </div>
                         <span className="font-bold text-slate-800">{p.customerName}</span>
                       </div>
                     </td>

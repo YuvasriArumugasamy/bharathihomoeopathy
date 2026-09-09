@@ -172,7 +172,7 @@ export const AdminReviews = () => {
               onClick={() => setFilterStatus(st)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-smooth ${
                 filterStatus === st
-                  ? 'bg-navy-950 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-md'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-navy-900 border border-slate-200/60'
               }`}
             >
@@ -220,14 +220,6 @@ export const AdminReviews = () => {
                 
                 {/* Author & Product Header */}
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-navy-950 to-slate-800 text-white font-black flex items-center justify-center text-xs shadow-xs">
-                    {rev.customer.avatar ? (
-                      <img src={rev.customer.avatar} alt={rev.customer.name} className="w-full h-full object-cover rounded-2xl" />
-                    ) : (
-                      rev.customer.name.charAt(0)
-                    )}
-                  </div>
-
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-heading font-black text-sm text-navy-950">

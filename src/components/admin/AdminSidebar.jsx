@@ -118,17 +118,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
 
         {/* Footer Actions */}
         <div className="p-4 border-t border-white/10 space-y-2 shrink-0 bg-[#1A4B63]/60">
-          <Link
-            to="/"
-            target="_blank"
-            className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-          >
-            <span className="flex items-center gap-2">
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Live Patient Store</span>
-            </span>
-            <span className="text-[10px] bg-gradient-to-r from-[#ff4e50] to-[#f97316] px-2.5 py-0.5 rounded-full text-white font-black shadow-xs">View</span>
-          </Link>
+
 
           <button
             onClick={logout}

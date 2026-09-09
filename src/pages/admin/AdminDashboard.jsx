@@ -312,60 +312,57 @@ export const AdminDashboard = () => {
               </p>
             </div>
 
-            {/* View, Time & Palette Filters - Optimized for Mobile */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 w-full sm:w-auto">
+            {/* View, Time & Palette Filters */}
+            <div className="flex flex-wrap items-center justify-start sm:justify-end gap-3 w-full lg:w-auto mt-4 sm:mt-0">
               
-              {/* Row 1 on mobile: Metric View Toggle + Palette Picker */}
-              <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
-                {/* Metric Toggle */}
-                <div className="flex items-center bg-slate-100 p-1 rounded-xl text-[11px] font-bold border border-slate-200/70 flex-1 sm:flex-none">
-                  <button
-                    onClick={() => setMetricView('revenue')}
-                    className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center ${
-                      metricView === 'revenue' 
-                        ? 'bg-white text-navy-950 font-black shadow-xs' 
-                        : 'text-slate-500 hover:text-slate-800'
-                    }`}
-                  >
-                    Revenue (₹)
-                  </button>
-                  <button
-                    onClick={() => setMetricView('orders')}
-                    className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center ${
-                      metricView === 'orders' 
-                        ? 'bg-white text-navy-950 font-black shadow-xs' 
-                        : 'text-slate-500 hover:text-slate-800'
-                    }`}
-                  >
-                    Orders
-                  </button>
-                </div>
-
-                {/* Palette Switcher */}
-                <div className="flex items-center bg-slate-100 p-1.5 rounded-xl gap-1.5 border border-slate-200/70 shrink-0" title="Choose Chart Color Palette">
-                  <Palette className="w-3.5 h-3.5 text-slate-400 mr-0.5" />
-                  {Object.keys(chartThemes).map((key) => (
-                    <button
-                      key={key}
-                      onClick={() => setChartTheme(key)}
-                      className={`w-4 h-4 rounded-full ${chartThemes[key].swatch} transition-all cursor-pointer ${
-                        chartTheme === key ? 'ring-2 ring-offset-1 ring-slate-800 scale-125 shadow-xs' : 'opacity-60 hover:opacity-100 hover:scale-110'
-                      }`}
-                      title={chartThemes[key].name}
-                    />
-                  ))}
-                </div>
+              {/* Metric View Toggle */}
+              <div className="flex items-center bg-slate-100 p-1 rounded-xl text-[11px] font-bold border border-slate-200/70 shrink-0">
+                <button
+                  onClick={() => setMetricView('revenue')}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center ${
+                    metricView === 'revenue' 
+                      ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-black shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Revenue (₹)
+                </button>
+                <button
+                  onClick={() => setMetricView('orders')}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center ${
+                    metricView === 'orders' 
+                      ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-black shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Orders
+                </button>
               </div>
 
-              {/* Row 2 on mobile: Time Range Tabs spanning full width */}
-              <div className="grid grid-cols-3 sm:flex items-center bg-slate-100 p-1 rounded-xl gap-1 text-[11px] font-bold border border-slate-200/70 w-full sm:w-auto">
+              {/* Palette Switcher */}
+              <div className="flex items-center bg-slate-100 p-1.5 rounded-xl gap-1.5 border border-slate-200/70 shrink-0" title="Choose Chart Color Palette">
+                <Palette className="w-3.5 h-3.5 text-slate-400 mr-0.5" />
+                {Object.keys(chartThemes).map((key) => (
+                  <button
+                    key={key}
+                    onClick={() => setChartTheme(key)}
+                    className={`w-4 h-4 rounded-full ${chartThemes[key].swatch} transition-all cursor-pointer ${
+                      chartTheme === key ? 'ring-2 ring-offset-1 ring-slate-800 scale-125 shadow-xs' : 'opacity-60 hover:opacity-100 hover:scale-110'
+                    }`}
+                    title={chartThemes[key].name}
+                  />
+                ))}
+              </div>
+
+              {/* Time Range Tabs */}
+              <div className="flex items-center bg-slate-100 p-1 rounded-xl gap-1 text-[11px] font-bold border border-slate-200/70 shrink-0">
                 {['7 Days', '30 Days', '90 Days'].map((t) => (
                   <button
                     key={t}
                     onClick={() => setTimeFilter(t)}
                     className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer text-center ${
                       timeFilter === t 
-                        ? 'bg-navy-950 text-white font-black shadow-sm' 
+                        ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-black shadow-sm' 
                         : 'text-slate-500 hover:text-slate-800'
                     }`}
                   >
@@ -484,10 +481,10 @@ export const AdminDashboard = () => {
 
           <Link
             to="/admin/orders"
-            className="w-full py-3.5 bg-navy-950 hover:bg-navy-900 text-white font-extrabold text-xs rounded-2xl text-center shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 group cursor-pointer border border-navy-800 active:scale-[0.99]"
+            className="w-full py-3.5 bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-extrabold text-xs rounded-2xl text-center shadow-md hover:shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2 group cursor-pointer border border-white/20 active:scale-[0.99]"
           >
             <span>Manage All 84 Orders</span>
-            <ChevronRight className="w-4 h-4 text-amber-400 group-hover:translate-x-1 transition-transform" />
+            <ChevronRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
@@ -618,25 +615,25 @@ export const AdminDashboard = () => {
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="text-slate-400 uppercase tracking-wider text-[10px] font-black border-b border-slate-100">
-                  <th className="pb-3">Order ID</th>
-                  <th className="pb-3">Patient</th>
-                  <th className="pb-3">Amount</th>
-                  <th className="pb-3">Status</th>
+                  <th className="pb-3 pr-4">Order ID</th>
+                  <th className="pb-3 px-4">Patient</th>
+                  <th className="pb-3 px-4">Amount</th>
+                  <th className="pb-3 pl-4">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100/80">
                 {adminDashboardData.recentOrders.map((ord) => (
                   <tr key={ord.id} className="hover:bg-slate-50/80 transition-colors group">
-                    <td className="py-3.5 font-mono font-black text-slate-900 group-hover:text-brandOrange-600 transition-colors">
+                    <td className="py-3.5 pr-4 font-mono font-black text-slate-900 group-hover:text-brandOrange-600 transition-colors">
                       {ord.id}
                     </td>
-                    <td className="py-3.5 font-bold text-slate-800">
+                    <td className="py-3.5 px-4 font-bold text-slate-800">
                       <span>{ord.customer}</span>
                     </td>
-                    <td className="py-3.5 font-black text-brandOrange-600">
+                    <td className="py-3.5 px-4 font-black text-brandOrange-600">
                       ₹{ord.amount.toLocaleString()}
                     </td>
-                    <td className="py-3.5">
+                    <td className="py-3.5 pl-4">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-2xs ${
                         ord.status === 'Delivered' 
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 

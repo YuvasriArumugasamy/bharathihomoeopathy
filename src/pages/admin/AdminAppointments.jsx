@@ -172,7 +172,7 @@ export const AdminAppointments = () => {
               onClick={() => setSelectedStatus(st)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-smooth ${
                 selectedStatus === st
-                  ? 'bg-navy-950 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-md'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-navy-900 border border-slate-200/60'
               }`}
             >
@@ -240,9 +240,6 @@ export const AdminAppointments = () => {
 
                 {/* Patient Profile Header */}
                 <div className="flex items-start gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-navy-900 via-navy-800 to-slate-800 text-white font-black flex items-center justify-center text-sm shadow-md flex-shrink-0">
-                    {apt.patient.name.charAt(0)}
-                  </div>
                   <div className="min-w-0 flex-1">
                     <h4 className="font-heading font-black text-base text-navy-950 truncate group-hover:text-brandOrange-600 transition-colors">
                       {apt.patient.name}
@@ -368,9 +365,6 @@ export const AdminAppointments = () => {
             </div>
 
             <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-navy-900 text-white font-bold flex items-center justify-center text-xs">
-                {rescheduleModalApt.patient.name.charAt(0)}
-              </div>
               <div>
                 <h4 className="font-bold text-xs text-navy-950">{rescheduleModalApt.patient.name}</h4>
                 <p className="text-[10px] text-slate-400 font-mono">{rescheduleModalApt.appointmentId} • {rescheduleModalApt.appointmentType}</p>

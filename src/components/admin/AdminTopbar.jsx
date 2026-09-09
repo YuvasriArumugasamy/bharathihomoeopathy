@@ -41,12 +41,6 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
         </button>
 
         <div className="flex items-center gap-2.5">
-          <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-slate-100 to-slate-50 border border-slate-200/80 shadow-xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-brandOrange-500 shrink-0" />
-            <span className="text-xs font-black text-slate-800 tracking-wide">Admin Portal</span>
-          </div>
-
-          <ChevronRight className="w-3.5 h-3.5 text-slate-400 hidden sm:block shrink-0" />
 
           <div className="flex items-center gap-2">
             <span className="font-serif font-bold text-sm sm:text-base tracking-tight text-slate-900">
@@ -61,21 +55,6 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
         </div>
       </div>
 
-      {/* Center: Live Store Quick Link */}
-      <div className="hidden md:flex items-center">
-        <Link
-          to="/"
-          target="_blank"
-          className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-brandOrange-500/10 to-orange-500/10 border border-brandOrange-400/30 text-brandOrange-800 hover:bg-brandOrange-500/20 hover:border-brandOrange-500/50 hover:shadow-xs transition-all text-xs font-black group"
-          title="Open Patient Store in new tab"
-        >
-          <ExternalLink className="w-3.5 h-3.5 text-brandOrange-600 group-hover:scale-110 transition-transform" />
-          <span>Patient Store</span>
-          <span className="text-[9px] bg-brandOrange-500 text-white font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider shadow-xs">
-            Live
-          </span>
-        </Link>
-      </div>
 
       {/* Right: Notifications & Profile */}
       <div className="flex items-center gap-3">
@@ -143,7 +122,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
             }}
             className="flex items-center gap-3 p-1.5 pl-2 pr-2.5 rounded-2xl hover:bg-slate-100/90 border border-transparent hover:border-slate-200/80 transition-all cursor-pointer group text-left"
           >
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#1F5975] via-[#246582] to-[#f97316] text-white font-black text-sm flex items-center justify-center shadow-md border-2 border-orange-400 group-hover:border-orange-500 group-hover:scale-105 transition-all">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-black text-sm flex items-center justify-center shadow-md border-2 border-orange-200 group-hover:border-orange-300 group-hover:scale-105 transition-all">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
             </div>
             <div className="hidden md:flex flex-col text-left">
@@ -178,15 +157,6 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
                 >
                   <Settings className="w-4 h-4 text-slate-400" />
                   <span>Portal Settings</span>
-                </Link>
-                <Link
-                  to="/"
-                  target="_blank"
-                  onClick={() => setProfileOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-navy-950 transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4 text-slate-400" />
-                  <span>Live Patient Store</span>
                 </Link>
               </div>
 

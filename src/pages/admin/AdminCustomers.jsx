@@ -158,7 +158,7 @@ export const AdminCustomers = () => {
               onClick={() => setStatusFilter(st)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-smooth ${
                 statusFilter === st
-                  ? 'bg-navy-950 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-md'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-navy-900 border border-slate-200/60'
               }`}
             >
@@ -200,9 +200,6 @@ export const AdminCustomers = () => {
                     {/* Patient Profile */}
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3.5">
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-navy-950 to-slate-800 text-white font-black flex items-center justify-center text-xs shadow-sm flex-shrink-0">
-                          {cust.firstName.charAt(0)}
-                        </div>
                         <div>
                           <h4 className="font-heading font-black text-sm text-navy-950 group-hover:text-brandOrange-600 transition-colors">
                             {cust.firstName} {cust.lastName}
@@ -320,11 +317,8 @@ export const AdminCustomers = () => {
                 </button>
               </div>
 
-              {/* Avatar & Bio */}
+              {/* Bio */}
               <div className="text-center space-y-3 p-5 bg-gradient-to-b from-slate-50 to-white rounded-[2rem] border border-slate-100">
-                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-navy-950 via-navy-900 to-slate-800 text-white font-black text-2xl flex items-center justify-center mx-auto shadow-lg ring-4 ring-white">
-                  {selectedCustomer.firstName.charAt(0)}
-                </div>
                 <div>
                   <h4 className="font-heading font-black text-xl text-navy-950">
                     {selectedCustomer.firstName} {selectedCustomer.lastName}
