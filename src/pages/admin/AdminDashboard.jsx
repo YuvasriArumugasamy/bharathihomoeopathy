@@ -171,56 +171,56 @@ export const AdminDashboard = () => {
     <div className="space-y-8 pb-12 font-sans">
       
       {/* 1. Hero Command Center Banner */}
-      <div className="relative rounded-[2.25rem] bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-10 shadow-2xl shadow-orange-500/25 border border-white/30 overflow-hidden text-white">
+      <div className="relative rounded-[2.25rem] bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-10 shadow-2xl shadow-orange-500/25 border border-white/40 overflow-hidden text-white">
         
         {/* Ambient Glows */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute -bottom-10 left-1/3 w-80 h-80 bg-amber-300/25 rounded-full blur-[90px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2)_0%,transparent_60%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25)_0%,transparent_60%)] pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           
           {/* Left Greeting & Status */}
           <div className="space-y-3 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/20 border border-white/30 text-white font-black text-[10px] uppercase tracking-widest shadow-xs backdrop-blur-md">
-                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 font-black text-[10.5px] uppercase tracking-wider shadow-md border border-white">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                 Live Dispensary Online
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 border border-white/35 text-white font-extrabold text-[10px] tracking-wide backdrop-blur-md shadow-xs">
-                <Calendar className="w-3 h-3 text-white" />
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 font-black text-[10.5px] tracking-wide shadow-md border border-white">
+                <Calendar className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
                 {new Date().toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white drop-shadow-sm">
-              Good Morning, <span className="font-serif italic font-normal text-white underline decoration-white/40 underline-offset-4">Dr. Bharathi</span>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+              Good Morning, <span className="font-serif italic font-bold text-white drop-shadow-md">Dr. Bharathi</span>
             </h1>
 
-            <p className="text-white/95 text-xs sm:text-sm font-semibold leading-relaxed max-w-xl drop-shadow-2xs">
+            <p className="text-white text-xs sm:text-sm font-bold leading-relaxed max-w-xl drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
               Real-time synchronization across patient consultations, homeopathic remedy orders, and clinic inventory today.
             </p>
 
-            {/* Micro Highlights Pill Bar */}
-            <div className="flex flex-wrap items-center gap-4 pt-1 text-xs">
-              <div className="flex items-center gap-2 bg-black/20 border border-white/25 px-3.5 py-1.5 rounded-xl backdrop-blur-md shadow-xs text-white">
-                <Clock className="w-3.5 h-3.5 text-white" />
-                <span className="text-white/90 font-semibold">Next appointment:</span>
-                <span className="text-white font-black">09:30 AM</span>
+            {/* Micro Highlights Pill Bar - High Contrast Solid White Cards */}
+            <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
+              <div className="flex items-center gap-2.5 bg-white text-slate-900 px-4 py-2 rounded-xl shadow-md font-bold border border-white">
+                <Clock className="w-4 h-4 text-orange-600 stroke-[2.5]" />
+                <span className="text-slate-600 font-medium">Next appointment:</span>
+                <span className="text-slate-950 font-black">09:30 AM</span>
               </div>
-              <div className="flex items-center gap-2 bg-black/20 border border-white/25 px-3.5 py-1.5 rounded-xl backdrop-blur-md shadow-xs text-white">
-                <ShoppingBag className="w-3.5 h-3.5 text-white" />
-                <span className="text-white/90 font-semibold">Pending fulfillment:</span>
-                <span className="text-white font-black">6 orders</span>
+              <div className="flex items-center gap-2.5 bg-white text-slate-900 px-4 py-2 rounded-xl shadow-md font-bold border border-white">
+                <ShoppingBag className="w-4 h-4 text-orange-600 stroke-[2.5]" />
+                <span className="text-slate-600 font-medium">Pending fulfillment:</span>
+                <span className="text-slate-950 font-black">6 orders</span>
               </div>
             </div>
           </div>
 
-          {/* Right: Quick Action Controls */}
+          {/* Right: Quick Action Controls - Crystal Clear Solid White Buttons */}
           <div className="relative z-10 flex flex-wrap items-center gap-3 shrink-0">
             <Link
               to="/admin/products"
-              className="inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 font-black rounded-2xl text-xs sm:text-sm shadow-xl shadow-black/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-white/40 cursor-pointer"
+              className="inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 font-black rounded-2xl text-xs sm:text-sm shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-white cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               <span>Add Remedy</span>
@@ -228,19 +228,19 @@ export const AdminDashboard = () => {
 
             <Link
               to="/admin/appointments"
-              className="inline-flex items-center gap-2 px-5 py-3.5 bg-white/20 hover:bg-white/30 text-white font-black rounded-2xl text-xs sm:text-sm shadow-md backdrop-blur-md border border-white/35 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+              className="inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-slate-900 hover:text-orange-600 font-black rounded-2xl text-xs sm:text-sm shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-white cursor-pointer"
             >
-              <Calendar className="w-4 h-4 text-white" />
+              <Calendar className="w-4 h-4 text-orange-600 stroke-[2.5]" />
               <span>Appointments</span>
             </Link>
 
             <Link
               to="/"
               target="_blank"
-              className="p-3.5 bg-white/20 hover:bg-white/30 text-white rounded-2xl transition-all border border-white/35 backdrop-blur-md shadow-md"
+              className="p-3.5 bg-white hover:bg-orange-50 text-slate-800 hover:text-orange-600 rounded-2xl transition-all border border-white shadow-xl shadow-black/15 flex items-center justify-center cursor-pointer"
               title="Open Live Patient Store"
             >
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-4 h-4 stroke-[2.5]" />
             </Link>
           </div>
 

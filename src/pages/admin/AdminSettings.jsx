@@ -37,24 +37,24 @@ export const AdminSettings = () => {
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brandOrange-500/20 border border-brandOrange-400/30 text-brandOrange-300 text-xs font-black tracking-widest uppercase">
-              <Settings className="w-3.5 h-3.5 text-brandOrange-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white text-slate-900 text-xs font-black tracking-wider uppercase shadow-md border border-white">
+              <Settings className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
               Clinic & Platform Administration
             </div>
-            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
+            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
               System Settings
             </h1>
-            <p className="text-slate-300 text-sm max-w-xl font-normal leading-relaxed">
+            <p className="text-white text-xs sm:text-sm font-bold max-w-xl leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
               Configure clinic operating hours, lead doctor profiles, Razorpay credentials, shipping rates, and patient dispatch notifications.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="px-5 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center gap-3.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="px-5 py-3 rounded-2xl bg-white text-slate-900 shadow-xl border border-white flex items-center gap-3.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <div className="text-left">
-                <span className="text-[10px] text-slate-300 uppercase tracking-wider block font-bold">System Status</span>
-                <span className="text-xs font-bold text-white">All Systems Operational</span>
+                <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold">System Status</span>
+                <span className="text-xs font-black text-slate-900">All Systems Operational</span>
               </div>
             </div>
           </div>
