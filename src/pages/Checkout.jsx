@@ -208,20 +208,43 @@ export const Checkout = () => {
 
                 <div className="w-12 sm:w-20 h-0.5 border-t-2 border-dashed border-slate-300" />
 
-                {/* Step 2 Pill */}
-                <button
-                  onClick={() => {
-                    if (validateAddressStep()) setStep('checkout');
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black transition-all duration-200 cursor-pointer ${
-                    step === 'checkout'
-                      ? 'bg-[#0b344d] text-white shadow-md ring-4 ring-[#0b344d]/10'
-                      : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
-                  }`}
-                >
-                  <span className={`w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-extrabold ${step === 'checkout' ? 'bg-[#f97316] text-white' : 'bg-slate-200 text-slate-600'}`}>2</span>
-                  <span>CHECKOUT</span>
-                </button>
+                {/* Step 2 Pill â€” disabled until address is fully filled */}
+                {(() => {
+                  const isAddrFilled =
+                    formData.firstName.trim() &&
+                    formData.lastName.trim() &&
+                    formData.phone.trim() &&
+                    formData.address.trim() &&
+                    formData.city.trim() &&
+                    formData.state.trim() &&
+                    /^\d{6}$/.test(formData.postalCode.trim());
+                  const isActive = step === 'checkout';
+                  return (
+                    <button
+                      disabled={!isAddrFilled && step !== 'checkout'}
+                      onClick={() => {
+                        if (validateAddressStep()) setStep('checkout');
+                      }}
+                      title={!isAddrFilled && step !== 'checkout' ? 'Please fill all address fields first' : ''}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black transition-all duration-200 ${
+                        isActive
+                          ? 'bg-[#0b344d] text-white shadow-md ring-4 ring-[#0b344d]/10 cursor-pointer'
+                          : isAddrFilled
+                          ? 'bg-white text-slate-500 border border-slate-200 hover:border-[#0b344d] hover:text-[#0b344d] cursor-pointer'
+                          : 'bg-slate-100 text-slate-300 border border-slate-200 cursor-not-allowed opacity-60'
+                      }`}
+                    >
+                      <span className={`w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-extrabold ${
+                        isActive
+                          ? 'bg-[#f97316] text-white'
+                          : isAddrFilled
+                          ? 'bg-slate-300 text-slate-600'
+                          : 'bg-slate-200 text-slate-400'
+                      }`}>2</span>
+                      <span>CHECKOUT</span>
+                    </button>
+                  );
+                })()}
               </div>
             </div>
 
