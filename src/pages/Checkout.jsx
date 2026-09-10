@@ -713,7 +713,8 @@ export const Checkout = () => {
 
       </div>
 
-      {/* â”€â”€â”€ PhonePe / UPI Payment Modal â”€â”€â”€ */}
+
+      {/* PhonePe / UPI Payment Modal */}
       {showPaymentModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
@@ -721,7 +722,6 @@ export const Checkout = () => {
         >
           <div
             className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 space-y-6"
-            style={{ animation: 'fadeInScale 0.25s ease-out' }}
             onClick={e => e.stopPropagation()}
           >
             {/* Close Button */}
@@ -729,7 +729,7 @@ export const Checkout = () => {
               onClick={() => { setShowPaymentModal(false); setSelectedPaymentMethod(null); }}
               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-all font-black text-sm"
             >
-              âœ•
+              X
             </button>
 
             {/* Header */}
@@ -738,7 +738,7 @@ export const Checkout = () => {
               <p className="text-[11px] text-slate-500 font-medium">Select how you would like to pay</p>
             </div>
 
-            {/* â”€â”€ Method Selector (Initial View) â”€â”€ */}
+            {/* Method Selector - shown when no method selected */}
             {!selectedPaymentMethod && (
               <div className="grid grid-cols-2 gap-4">
                 {/* PhonePe / UPI Option */}
@@ -751,21 +751,21 @@ export const Checkout = () => {
                   </div>
                   <div className="text-center">
                     <p className="text-xs font-black text-slate-900">PhonePe / UPI</p>
-                    <p className="text-[10px] text-purple-600 font-bold mt-0.5">Scan QR & Pay Instantly</p>
+                    <p className="text-[10px] text-purple-600 font-bold mt-0.5">Scan QR &amp; Pay Instantly</p>
                   </div>
                 </button>
 
                 {/* Cash on Delivery Option */}
                 <button
                   onClick={async () => {
-                    setSelectedPaymentMethod('COD');
                     setShowPaymentModal(false);
+                    setSelectedPaymentMethod(null);
                     await handlePlaceOrder();
                   }}
                   className="flex flex-col items-center gap-3 p-5 rounded-2xl border-2 border-emerald-200 bg-emerald-50/60 hover:border-emerald-500 hover:bg-emerald-100/70 hover:scale-[1.03] transition-all duration-200 cursor-pointer"
                 >
                   <div className="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-300">
-                    <span className="text-white text-xl">ðŸ’µ</span>
+                    <span className="text-white text-xl font-black">COD</span>
                   </div>
                   <div className="text-center">
                     <p className="text-xs font-black text-slate-900">Cash on Delivery</p>
@@ -775,25 +775,37 @@ export const Checkout = () => {
               </div>
             )}
 
-            {/* â”€â”€ UPI / QR Section â”€â”€ */}
+            {/* UPI / QR Section */}
             {selectedPaymentMethod === 'UPI' && (
               <div className="space-y-5">
                 <div className="flex flex-col items-center gap-4">
                   {/* QR Code Image */}
                   <div className="bg-white rounded-2xl p-3 shadow-lg border border-purple-100 ring-4 ring-purple-100">
                     <img
-                      src="/src/assets/WhatsApp Image 2026-09-10 at 10.05.20.jpeg"
+                      src={'/src/assets/WhatsApp%20Image%202026-09-10%20at%2010.05.20.jpeg'}
                       alt="PhonePe QR Code - Bharathi Homeopathy Clinic"
                       className="w-52 h-52 object-contain rounded-xl"
+                      onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
                     />
+                    <div style={{display:'none'}} className="w-52 h-52 flex items-center justify-center bg-purple-50 rounded-xl border-2 border-dashed border-purple-200">
+                      <div className="text-center p-4">
+                        <p className="text-purple-700 font-black text-sm">BARATHI</p>
+                        <p className="text-purple-700 font-black text-sm">HOMEOPATHY</p>
+                        <p className="text-purple-700 font-black text-sm">CLINIC</p>
+                        <p className="text-[10px] text-purple-500 mt-2 font-bold">PhonePe QR</p>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="text-center space-y-1.5">
                     <p className="text-xs font-black text-purple-700">Scan with any UPI App</p>
-                    <p className="text-[10px] text-slate-400 font-bold">PhonePe Â· Google Pay Â· Paytm Â· BHIM</p>
+                    <p className="text-[10px] text-slate-400 font-bold">PhonePe | Google Pay | Paytm | BHIM</p>
                     <div className="mt-2 px-5 py-3 bg-purple-50 rounded-2xl border border-purple-200">
                       <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Amount to Pay</p>
-                      <p className="text-2xl font-black text-purple-700">â‚¹{(subtotal + (subtotal * 0.05)).toFixed(2)}</p>
+                      <p className="text-2xl font-black text-purple-700">
+                        <span className="text-lg mr-0.5">&#8377;</span>
+                        {(subtotal + (subtotal * 0.05)).toFixed(2)}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -811,14 +823,14 @@ export const Checkout = () => {
                     {isPlacingOrder ? (
                       <span>Confirming Order...</span>
                     ) : (
-                      <span>âœ… I have Paid â€” Confirm Order</span>
+                      <span>I have Paid &mdash; Confirm Order</span>
                     )}
                   </button>
                   <button
                     onClick={() => setSelectedPaymentMethod(null)}
                     className="w-full py-2.5 text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors"
                   >
-                    â† Back to payment options
+                    &larr; Back to payment options
                   </button>
                 </div>
               </div>
@@ -827,7 +839,7 @@ export const Checkout = () => {
             {/* Security Footer */}
             <p className="text-[10px] text-slate-400 font-bold text-center flex items-center justify-center gap-1.5">
               <Lock className="w-3 h-3 text-emerald-500" />
-              <span>100% Secure Payment â€” Powered by BHIM UPI</span>
+              <span>100% Secure Payment &mdash; Powered by BHIM UPI</span>
             </p>
           </div>
         </div>
@@ -836,4 +848,3 @@ export const Checkout = () => {
     </div>
   );
 };
-
