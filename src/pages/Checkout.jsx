@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -55,6 +55,8 @@ export const Checkout = () => {
   const [errors, setErrors] = useState({});
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [placedOrder, setPlacedOrder] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
   // Auto-scroll to top when step changes
   useEffect(() => {
@@ -439,12 +441,12 @@ export const Checkout = () => {
                   <div className="space-y-3 text-xs text-slate-600 font-medium">
                     <div className="flex justify-between items-center">
                       <span>Sub Total</span>
-                      <span className="font-black text-slate-900">₹{subtotal.toFixed(2)}</span>
+                      <span className="font-black text-slate-900">â‚¹{subtotal.toFixed(2)}</span>
                     </div>
 
                     <div className="flex justify-between items-center">
                       <span>GST (inclusive of all taxes)</span>
-                      <span className="font-extrabold text-slate-900">₹{(subtotal * 0.05).toFixed(2)}</span>
+                      <span className="font-extrabold text-slate-900">â‚¹{(subtotal * 0.05).toFixed(2)}</span>
                     </div>
 
                     <div className="flex justify-between items-center">
@@ -459,7 +461,7 @@ export const Checkout = () => {
 
                     <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
                       <span className="font-black text-slate-900 text-sm">Total Amount</span>
-                      <span className="font-black text-xl text-[#f97316]">₹{(subtotal + (subtotal * 0.05)).toFixed(2)}</span>
+                      <span className="font-black text-xl text-[#f97316]">â‚¹{(subtotal + (subtotal * 0.05)).toFixed(2)}</span>
                     </div>
                   </div>
 
@@ -536,7 +538,7 @@ export const Checkout = () => {
                             />
                             <div className="space-y-1">
                               <h4 className="text-sm font-black text-slate-900">{item.name}</h4>
-                              <p className="text-xs text-slate-500 font-bold">Quantity: {item.quantity} • Total: ₹{(item.price * item.quantity).toFixed(2)}</p>
+                              <p className="text-xs text-slate-500 font-bold">Quantity: {item.quantity} â€¢ Total: â‚¹{(item.price * item.quantity).toFixed(2)}</p>
                             </div>
                           </div>
 
@@ -613,12 +615,12 @@ export const Checkout = () => {
                     <div className="space-y-3 text-xs text-slate-600 font-medium">
                       <div className="flex justify-between items-center">
                         <span>Sub Total</span>
-                        <span className="font-black text-slate-900">₹{subtotal.toFixed(2)}</span>
+                        <span className="font-black text-slate-900">â‚¹{subtotal.toFixed(2)}</span>
                       </div>
 
                       <div className="flex justify-between items-center">
                         <span>GST (inclusive of all taxes)</span>
-                        <span className="font-extrabold text-slate-900">₹{(subtotal * 0.05).toFixed(2)}</span>
+                        <span className="font-extrabold text-slate-900">â‚¹{(subtotal * 0.05).toFixed(2)}</span>
                       </div>
 
                       <div className="flex justify-between items-center">
@@ -633,7 +635,7 @@ export const Checkout = () => {
 
                       <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
                         <span className="font-black text-slate-900 text-sm">Total Amount</span>
-                        <span className="font-black text-2xl text-[#f97316]">₹{(subtotal + (subtotal * 0.05)).toFixed(2)}</span>
+                        <span className="font-black text-2xl text-[#f97316]">â‚¹{(subtotal + (subtotal * 0.05)).toFixed(2)}</span>
                       </div>
                     </div>
 
@@ -641,7 +643,13 @@ export const Checkout = () => {
                     <button
                       type="button"
                       disabled={isPlacingOrder}
-                      onClick={handlePlaceOrder}
+                      onClick={() => {
+                        if (!selectedCourier) {
+                          showToast('Please select a shipping partner to continue', 'warning');
+                          return;
+                        }
+                        setShowPaymentModal(true);
+                      }}
                       className="w-full py-4 px-6 text-xs sm:text-sm font-black text-white bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] hover:scale-[1.02] active:scale-95 rounded-2xl shadow-lg shadow-orange-500/25 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {isPlacingOrder ? (
@@ -681,6 +689,127 @@ export const Checkout = () => {
         )}
 
       </div>
+
+      {/* â”€â”€â”€ PhonePe / UPI Payment Modal â”€â”€â”€ */}
+      {showPaymentModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          onClick={() => { setShowPaymentModal(false); setSelectedPaymentMethod(null); }}
+        >
+          <div
+            className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 space-y-6"
+            style={{ animation: 'fadeInScale 0.25s ease-out' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => { setShowPaymentModal(false); setSelectedPaymentMethod(null); }}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-all font-black text-sm"
+            >
+              âœ•
+            </button>
+
+            {/* Header */}
+            <div className="text-center space-y-1 pt-1">
+              <h2 className="text-base font-black text-slate-900 uppercase tracking-wider">Choose Payment Method</h2>
+              <p className="text-[11px] text-slate-500 font-medium">Select how you would like to pay</p>
+            </div>
+
+            {/* â”€â”€ Method Selector (Initial View) â”€â”€ */}
+            {!selectedPaymentMethod && (
+              <div className="grid grid-cols-2 gap-4">
+                {/* PhonePe / UPI Option */}
+                <button
+                  onClick={() => setSelectedPaymentMethod('UPI')}
+                  className="flex flex-col items-center gap-3 p-5 rounded-2xl border-2 border-purple-200 bg-purple-50/60 hover:border-purple-500 hover:bg-purple-100/70 hover:scale-[1.03] transition-all duration-200 cursor-pointer"
+                >
+                  <div className="w-12 h-12 rounded-full bg-[#5f259f] flex items-center justify-center shadow-lg shadow-purple-300">
+                    <span className="text-white text-xl font-black">Pe</span>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs font-black text-slate-900">PhonePe / UPI</p>
+                    <p className="text-[10px] text-purple-600 font-bold mt-0.5">Scan QR & Pay Instantly</p>
+                  </div>
+                </button>
+
+                {/* Cash on Delivery Option */}
+                <button
+                  onClick={async () => {
+                    setSelectedPaymentMethod('COD');
+                    setShowPaymentModal(false);
+                    await handlePlaceOrder();
+                  }}
+                  className="flex flex-col items-center gap-3 p-5 rounded-2xl border-2 border-emerald-200 bg-emerald-50/60 hover:border-emerald-500 hover:bg-emerald-100/70 hover:scale-[1.03] transition-all duration-200 cursor-pointer"
+                >
+                  <div className="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-300">
+                    <span className="text-white text-xl">ðŸ’µ</span>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs font-black text-slate-900">Cash on Delivery</p>
+                    <p className="text-[10px] text-emerald-600 font-bold mt-0.5">Pay at your doorstep</p>
+                  </div>
+                </button>
+              </div>
+            )}
+
+            {/* â”€â”€ UPI / QR Section â”€â”€ */}
+            {selectedPaymentMethod === 'UPI' && (
+              <div className="space-y-5">
+                <div className="flex flex-col items-center gap-4">
+                  {/* QR Code Image */}
+                  <div className="bg-white rounded-2xl p-3 shadow-lg border border-purple-100 ring-4 ring-purple-100">
+                    <img
+                      src="/src/assets/WhatsApp Image 2026-09-10 at 10.05.20.jpeg"
+                      alt="PhonePe QR Code - Bharathi Homeopathy Clinic"
+                      className="w-52 h-52 object-contain rounded-xl"
+                    />
+                  </div>
+
+                  <div className="text-center space-y-1.5">
+                    <p className="text-xs font-black text-purple-700">Scan with any UPI App</p>
+                    <p className="text-[10px] text-slate-400 font-bold">PhonePe Â· Google Pay Â· Paytm Â· BHIM</p>
+                    <div className="mt-2 px-5 py-3 bg-purple-50 rounded-2xl border border-purple-200">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Amount to Pay</p>
+                      <p className="text-2xl font-black text-purple-700">â‚¹{(subtotal + (subtotal * 0.05)).toFixed(2)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <button
+                    disabled={isPlacingOrder}
+                    onClick={async () => {
+                      setShowPaymentModal(false);
+                      setSelectedPaymentMethod(null);
+                      await handlePlaceOrder();
+                    }}
+                    className="w-full py-3.5 px-6 text-sm font-black text-white bg-gradient-to-r from-[#5f259f] to-[#8b2fc9] hover:scale-[1.02] active:scale-95 rounded-2xl shadow-lg shadow-purple-500/30 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {isPlacingOrder ? (
+                      <span>Confirming Order...</span>
+                    ) : (
+                      <span>âœ… I have Paid â€” Confirm Order</span>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setSelectedPaymentMethod(null)}
+                    className="w-full py-2.5 text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors"
+                  >
+                    â† Back to payment options
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Security Footer */}
+            <p className="text-[10px] text-slate-400 font-bold text-center flex items-center justify-center gap-1.5">
+              <Lock className="w-3 h-3 text-emerald-500" />
+              <span>100% Secure Payment â€” Powered by BHIM UPI</span>
+            </p>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
