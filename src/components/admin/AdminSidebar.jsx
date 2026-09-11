@@ -83,11 +83,11 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
         {/* Brand Header */}
         <div className="h-20 flex items-center justify-between px-5 border-b border-white/10 shrink-0 bg-[#1A4B63]/60 backdrop-blur-md">
           <Link to="/admin" className="flex items-center gap-3 group min-w-0" onClick={() => onClose && onClose()}>
-            <div className="w-11 h-11 rounded-2xl overflow-hidden bg-white p-1 shadow-md shadow-black/20 border border-white/20 ring-2 ring-brandOrange-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+            <div className="w-11 h-11 rounded-full overflow-hidden bg-white border-2 border-brandOrange-400/80 shadow-md ring-2 ring-brandOrange-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
               <img 
                 src={assets.logo} 
                 alt="Dr. Bharathi Logo" 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover scale-[1.08] rounded-full"
                 style={{ imageRendering: '-webkit-optimize-contrast' }}
               />
             </div>
