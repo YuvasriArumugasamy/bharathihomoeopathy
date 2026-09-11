@@ -81,7 +81,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
         }`}
       >
         {/* Brand Header */}
-        <div className="h-20 flex items-center justify-between px-5 sm:px-6 border-b border-white/15 shrink-0 bg-[#1A4B63]/80 backdrop-blur-md">
+        <div className="h-[86px] flex items-center justify-between px-5 sm:px-6 border-b border-white/15 shrink-0 bg-[#1A4B63]/80 backdrop-blur-md">
           <Link to="/admin" className="flex items-center gap-3.5 group min-w-0" onClick={() => onClose && onClose()}>
             <div className="w-12 h-12 rounded-full overflow-hidden bg-white border-2 border-brandOrange-400 shadow-lg ring-2 ring-brandOrange-400/40 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
               <img 
@@ -93,16 +93,26 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
             </div>
             
             <div className="flex flex-col justify-center min-w-0">
-              <span className="font-heading font-black text-base sm:text-lg text-white tracking-tight leading-tight truncate drop-shadow-xs">
-                Dr. Bharathi’s
-              </span>
-              <span className="text-xs sm:text-sm font-black text-amber-300 tracking-wide leading-tight drop-shadow-xs">
-                Homeo Care
-              </span>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/15 border border-white/20 text-[9px] font-black uppercase tracking-wider text-white shadow-xs">
-                  <ShieldCheck className="w-3 h-3 text-amber-300" />
-                  Admin Portal
+              <div className="flex items-baseline font-serif tracking-tight leading-none mb-1">
+                <span className="text-amber-300 font-bold italic text-[17px] sm:text-lg mr-1 drop-shadow-xs">Dr.</span>
+                <span className="text-white font-black text-[17px] sm:text-lg tracking-tight drop-shadow-xs group-hover:text-amber-100 transition-colors">
+                  Bharathi’s
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <div className="h-[1px] w-2.5 bg-gradient-to-r from-transparent to-amber-300/70" />
+                <span className="text-[9px] font-black uppercase tracking-[0.22em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-orange-300 to-amber-200 drop-shadow-xs">
+                  HOMEO CARE
+                </span>
+                <div className="h-[1px] w-2.5 bg-gradient-to-l from-transparent to-amber-300/70" />
+              </div>
+
+              <div className="flex items-center">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-white/15 via-white/10 to-white/5 border border-white/20 text-[8px] font-black uppercase tracking-[0.14em] text-white shadow-xs backdrop-blur-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 ring-2 ring-emerald-400/30 animate-pulse shrink-0" />
+                  <ShieldCheck className="w-3 h-3 text-amber-300 shrink-0" />
+                  <span>Admin Portal</span>
                 </span>
               </div>
             </div>
