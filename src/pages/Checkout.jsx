@@ -180,10 +180,10 @@ export const Checkout = () => {
 
   // Courier Partners List with Logos / Badges
   const courierOptions = [
-    { id: 'ST COURIER', name: 'ST COURIER', tag: 'Fast Local Delivery', color: 'border-[#f97316] text-[#f97316] bg-orange-50/60' },
-    { id: 'DTDC', name: 'DTDC Express', tag: 'Pan-India Express', color: 'border-blue-500 text-blue-600 bg-blue-50/60' },
-    { id: 'INDIA POST', name: 'INDIA POST', tag: 'Government Postal', color: 'border-rose-500 text-rose-600 bg-rose-50/60' },
-    { id: 'EMS SPEED POST', name: 'EMS SPEED POST', tag: 'Priority Speed Delivery', color: 'border-purple-500 text-purple-600 bg-purple-50/60' }
+    { id: 'ST COURIER', name: 'ST COURIER', tag: 'Fast Local Delivery', badge: 'LOCAL', color: 'border-[#f97316] text-[#f97316] bg-orange-50/60' },
+    { id: 'DTDC', name: 'DTDC Express', tag: 'Pan-India Express', badge: 'EXPRESS', color: 'border-blue-500 text-blue-600 bg-blue-50/60' },
+    { id: 'INDIA POST', name: 'INDIA POST', tag: 'Government Postal', badge: 'POSTAL', color: 'border-rose-500 text-rose-600 bg-rose-50/60' },
+    { id: 'EMS SPEED POST', name: 'EMS SPEED POST', tag: 'Priority Speed Delivery', badge: 'SPEED', color: 'border-purple-500 text-purple-600 bg-purple-50/60' }
   ];
 
   // Estimated delivery range
@@ -459,12 +459,7 @@ export const Checkout = () => {
                     <div className="flex justify-between items-center">
                       <span>GST (inclusive of all taxes)</span>
                       <span className="font-extrabold text-slate-900">₹{(subtotal * 0.05).toFixed(2)}</span>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <span>Net Weight of Product</span>
-                      <span className="font-extrabold text-slate-900">0.100 kg</span>
-                    </div>
+                    </div>
 
                     <div className="flex justify-between items-center text-amber-600 font-bold">
                       <span>Shipping Fee</span>
@@ -525,7 +520,7 @@ export const Checkout = () => {
                         </p>
                         <p className="flex items-center gap-1.5 text-slate-500">
                           <Phone className="w-3.5 h-3.5 text-slate-400" />
-                          <span>+91 {formData.phone}</span>
+                          <span>+91 {formData.phone ? formData.phone.toString().replace(/^\+?91\s*/, '') : ''}</span>
                         </p>
                         <p className="flex items-start gap-1.5 text-slate-700 font-bold pt-1">
                           <MapPin className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -620,7 +615,7 @@ export const Checkout = () => {
                           </div>
                           
                           <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase border ${courier.color}`}>
-                            EXPRESS
+                            {courier.badge || 'EXPRESS'}
                           </span>
                         </label>
                       ))}
@@ -646,12 +641,7 @@ export const Checkout = () => {
                       <div className="flex justify-between items-center">
                         <span>GST (inclusive of all taxes)</span>
                         <span className="font-extrabold text-slate-900">₹{(subtotal * 0.05).toFixed(2)}</span>
-                      </div>
-
-                      <div className="flex justify-between items-center">
-                        <span>Net Weight of Product</span>
-                        <span className="font-extrabold text-slate-900">0.100 kg</span>
-                      </div>
+                      </div>
 
                       <div className="flex justify-between items-center">
                         <span>Shipping Fee</span>
