@@ -1,3 +1,4 @@
+import { getStoredProducts } from '../utils/productStorage';
 import { api } from '../utils/api';
 import { demoProducts } from '../data/products';
 
@@ -20,7 +21,7 @@ export const productService = {
     }
 
     // Local fallback filter and pagination
-    let filtered = [...demoProducts];
+    let filtered = getStoredProducts();
 
     if (params.search) {
       const q = params.search.toLowerCase();
@@ -72,7 +73,7 @@ export const productService = {
       console.warn("Product API fallback:", err.message);
     }
 
-    const found = demoProducts.find(p => p.id === id || p.slug === id);
+    const found = getStoredProducts().find(p => p.id === id || p.slug === id);
     if (found) return found;
     throw new Error("Product not found");
   },
@@ -84,7 +85,7 @@ export const productService = {
     } catch {
       // Fallback
     }
-    return demoProducts.filter(p => p.isBestSeller || p.isNew).slice(0, limit);
+    return getStoredProducts().filter(p => p.isBestSeller || p.isNew).slice(0, limit);
   },
 
   getBestSellers: async (limit = 8) => {
@@ -94,6 +95,6 @@ export const productService = {
     } catch {
       // Fallback
     }
-    return demoProducts.filter(p => p.isBestSeller).slice(0, limit);
+    return getStoredProducts().filter(p => p.isBestSeller).slice(0, limit);
   }
 };

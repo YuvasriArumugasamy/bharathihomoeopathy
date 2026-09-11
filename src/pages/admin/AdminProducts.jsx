@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { getStoredProducts, saveStoredProducts } from '../../utils/productStorage';
+import React, { useState, useEffect } from 'react';
 import { 
   Package, 
   Plus, 
@@ -25,7 +26,7 @@ import { slugify } from '../../utils/slugify';
 
 export const AdminProducts = () => {
   const { showToast } = useToast();
-  const [products, setProducts] = useState(initialAdminProducts);
+  const [products, setProducts] = useState(() => getStoredProducts());
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');

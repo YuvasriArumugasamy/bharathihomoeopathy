@@ -23,8 +23,22 @@ import { useToast } from '../context/ToastContext';
 import { ProductCard } from '../components/shop/ProductCard';
 import { ScrollReveal } from '../components/common/ScrollReveal';
 import { demoProducts } from '../data/products';
+import { getStoredProducts, isMatchingCategory } from '../utils/productStorage';
 
 export const Shop = () => {
+  const [allProducts, setAllProducts] = useState(() => getStoredProducts());
+
+  useEffect(() => {
+    const handleSync = () => {
+      setAllProducts(getStoredProducts());
+    };
+    window.addEventListener('drBharathiProductsUpdated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('drBharathiProductsUpdated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
   const [searchParams, setSearchParams] = useSearchParams();
   const initialCategory = searchParams.get('category') || 'All Categories';
   const initialSearch = searchParams.get('search') || '';
@@ -70,19 +84,19 @@ export const Shop = () => {
   ];
 
   const forms = [
-    { name: "Drops", count: demoProducts.filter(p => p.form === "Drops").length },
-    { name: "Globules", count: demoProducts.filter(p => p.form === "Globules").length },
-    { name: "Tablet", count: demoProducts.filter(p => p.form === "Tablet").length },
-    { name: "Syrup", count: demoProducts.filter(p => p.form === "Syrup").length },
+    { name: "Drops", count: allProducts.filter(p => p.form === "Drops").length },
+    { name: "Globules", count: allProducts.filter(p => p.form === "Globules").length },
+    { name: "Tablet", count: allProducts.filter(p => p.form === "Tablet").length },
+    { name: "Syrup", count: allProducts.filter(p => p.form === "Syrup").length },
   ];
 
   const brands = [
-    { name: "SBL", count: demoProducts.filter(p => p.brand === "SBL").length },
-    { name: "Willmar Schwabe", count: demoProducts.filter(p => p.brand === "Willmar Schwabe").length },
-    { name: "BJain", count: demoProducts.filter(p => p.brand === "BJain").length },
-    { name: "Wheezal", count: demoProducts.filter(p => p.brand === "Wheezal").length },
-    { name: "Dr. Reckeweg", count: demoProducts.filter(p => p.brand === "Dr. Reckeweg").length },
-    { name: "Bakson's", count: demoProducts.filter(p => p.brand === "Bakson's").length },
+    { name: "SBL", count: allProducts.filter(p => p.brand === "SBL").length },
+    { name: "Willmar Schwabe", count: allProducts.filter(p => p.brand === "Willmar Schwabe").length },
+    { name: "BJain", count: allProducts.filter(p => p.brand === "BJain").length },
+    { name: "Wheezal", count: allProducts.filter(p => p.brand === "Wheezal").length },
+    { name: "Dr. Reckeweg", count: allProducts.filter(p => p.brand === "Dr. Reckeweg").length },
+    { name: "Bakson's", count: allProducts.filter(p => p.brand === "Bakson's").length },
   ];
 
   const toggleFilter = (list, setList, item) => {
@@ -117,7 +131,7 @@ export const Shop = () => {
 
   // Dynamic search & filter pipeline
   const filteredProducts = useMemo(() => {
-    return demoProducts.filter((prod) => {
+    return allProducts.filter((prod) => {
       // 1. Search Query Filter
       if (searchTerm.trim()) {
         const q = searchTerm.trim().toLowerCase();
@@ -133,7 +147,7 @@ export const Shop = () => {
 
       // 2. Category Filter
       if (selectedCategory && selectedCategory !== 'All Categories') {
-        if (prod.category !== selectedCategory && prod.name !== selectedCategory) return false;
+        if (!isMatchingCategory(prod.category, selectedCategory) && prod.name !== selectedCategory) return false;
       }
 
       // 3. Price Filter
@@ -162,7 +176,7 @@ export const Shop = () => {
       if (sortBy === 'Popularity') return (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0);
       return 0; // Relevancy default
     });
-  }, [searchTerm, selectedCategory, minPrice, maxPrice, selectedForm, selectedBrand, sortBy]);
+  }, [allProducts, searchTerm, selectedCategory, minPrice, maxPrice, selectedForm, selectedBrand, sortBy]);
 
   // Pagination
   const ITEMS_PER_PAGE = 18;
@@ -298,14 +312,14 @@ export const Shop = () => {
                     <span>ALL CATEGORIES</span>
                   </span>
                   <span className={`text-[10px] font-bold ${selectedCategory === 'All Categories' ? 'text-white bg-black/15 px-2 py-0.5 rounded-full' : 'text-slate-400'}`}>
-                    ({demoProducts.length})
+                    ({allProducts.length})
                   </span>
                 </button>
 
                 <div className="pl-1 pt-1 space-y-1">
                   {categories.filter(c => c.value !== 'All Categories').map((cat, idx) => {
                     const isSelected = selectedCategory === cat.value;
-                    const catCount = demoProducts.filter(p => p.category === cat.value || p.name.includes(cat.name)).length || (3 + (idx % 5));
+                    const catCount = allProducts.filter(p => p.category === cat.value || p.name.includes(cat.name)).length || (3 + (idx % 5));
                     return (
                       <button
                         key={cat.name}
@@ -418,7 +432,7 @@ export const Shop = () => {
             {/* Laptop / Desktop Top Actions & Results Header Bar (Hidden on Mobile) */}
             <div className="hidden lg:flex bg-white border border-slate-200/90 rounded-xl px-4 py-2.5 items-center justify-between shadow-2xs text-xs">
               <div className="font-extrabold text-slate-900 text-sm">
-                {filteredProducts.length > 0 ? 'Getting products...' : 'No products found'}
+                {filteredProducts.length > 0 ? `Showing all ${filteredProducts.length} remedies` : 'No remedies found'}
               </div>
 
               <div className="flex items-center gap-3">
