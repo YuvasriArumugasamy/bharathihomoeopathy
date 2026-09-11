@@ -171,10 +171,14 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
         <div className="p-4 border-t border-white/15 shrink-0 bg-[#1A4B63]/90 backdrop-blur-md">
           <button
             onClick={logout}
-            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl text-sm font-black text-rose-100 hover:text-white bg-rose-500/25 hover:bg-rose-500/35 border border-rose-400/40 hover:border-rose-400/60 transition-all active:scale-98 cursor-pointer group shadow-sm"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl text-sm font-black text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:via-rose-500 hover:to-red-600 border border-red-400/40 shadow-lg shadow-red-950/40 hover:shadow-xl hover:shadow-red-950/60 hover:-translate-y-0.5 active:translate-y-0 active:scale-98 transition-all duration-200 cursor-pointer group"
           >
-            <LogOut className="w-4.5 h-4.5 group-hover:-translate-x-0.5 transition-transform text-rose-200" />
-            <span>Sign Out Session</span>
+            <div className="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center shrink-0 border border-white/30 group-hover:bg-white/30 transition-colors shadow-inner">
+              <LogOut className="w-4 h-4 text-white group-hover:-translate-x-0.5 transition-transform stroke-[2.5]" />
+            </div>
+            <span className="tracking-wide text-white drop-shadow-sm font-black text-[13.5px]">
+              Sign Out Session
+            </span>
           </button>
         </div>
 
