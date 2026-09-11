@@ -46,11 +46,6 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
             <span className="font-serif font-bold text-sm sm:text-base tracking-tight text-slate-900">
               Dr. Bharathi’s <span className="text-brandOrange-600 font-black">Homeo Care</span>
             </span>
-
-            <span className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-[10px] font-extrabold tracking-wide shadow-2xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ring-2 ring-emerald-200" />
-              Live Console
-            </span>
           </div>
         </div>
       </div>
