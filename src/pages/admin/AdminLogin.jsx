@@ -89,7 +89,7 @@ export const AdminLogin = () => {
 
   return (
     <div 
-      className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 overflow-x-hidden bg-cover bg-center font-sans"
+      className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 overflow-x-hidden bg-cover bg-center font-serif"
       style={{ backgroundImage: `url(${assets.paperBg})` }}
     >
 

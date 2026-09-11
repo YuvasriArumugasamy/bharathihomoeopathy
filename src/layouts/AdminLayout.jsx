@@ -9,7 +9,7 @@ export const AdminLayout = () => {
 
   return (
     <div 
-      className="min-h-screen bg-cover bg-center flex text-slate-800 font-sans w-full max-w-full overflow-x-hidden"
+      className="min-h-screen bg-cover bg-center flex text-slate-800 font-serif w-full max-w-full overflow-x-hidden"
       style={{ backgroundImage: `url(${assets.paperBg})` }}
     >
       

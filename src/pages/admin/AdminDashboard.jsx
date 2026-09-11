@@ -227,7 +227,7 @@ export const AdminDashboard = () => {
   };
 
   return (
-    <div className="space-y-8 pb-12 font-sans">
+    <div className="space-y-8 pb-12 font-serif">
       
       {/* 1. Hero Command Center Banner */}
       <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">

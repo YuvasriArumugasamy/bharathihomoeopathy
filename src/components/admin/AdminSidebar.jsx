@@ -73,7 +73,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen w-full lg:w-64 bg-gradient-to-b from-[#1F5975] via-[#246582] to-[#1A4B63] text-white flex flex-col border-r border-[#194459] shadow-2xl transition-transform duration-300 ease-out ${
+        className={`fixed top-0 left-0 z-50 h-screen w-full lg:w-64 bg-gradient-to-b from-[#1F5975] via-[#246582] to-[#1A4B63] text-white font-serif flex flex-col border-r border-[#194459] shadow-2xl transition-transform duration-300 ease-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
