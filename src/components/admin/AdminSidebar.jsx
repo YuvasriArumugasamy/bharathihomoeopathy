@@ -70,20 +70,20 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-[#143d52]/70 backdrop-blur-sm lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 z-40 bg-[#143d52]/80 backdrop-blur-md lg:hidden transition-opacity duration-300"
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen w-72 sm:w-64 bg-gradient-to-b from-[#1F5975] via-[#246582] to-[#1A4B63] text-white flex flex-col border-r border-[#194459] shadow-2xl transition-transform duration-300 ease-out rounded-r-[2rem] lg:rounded-none ${
+        className={`fixed top-0 left-0 z-50 h-screen w-full lg:w-64 bg-gradient-to-b from-[#1F5975] via-[#246582] to-[#1A4B63] text-white flex flex-col border-r border-[#194459] shadow-2xl transition-transform duration-300 ease-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Brand Header */}
-        <div className="h-20 flex items-center justify-between px-5 border-b border-white/10 shrink-0 bg-[#1A4B63]/60 backdrop-blur-md">
-          <Link to="/admin" className="flex items-center gap-3 group min-w-0" onClick={() => onClose && onClose()}>
-            <div className="w-11 h-11 rounded-full overflow-hidden bg-white border-2 border-brandOrange-400/80 shadow-md ring-2 ring-brandOrange-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+        <div className="h-20 flex items-center justify-between px-5 sm:px-6 border-b border-white/15 shrink-0 bg-[#1A4B63]/80 backdrop-blur-md">
+          <Link to="/admin" className="flex items-center gap-3.5 group min-w-0" onClick={() => onClose && onClose()}>
+            <div className="w-12 h-12 rounded-full overflow-hidden bg-white border-2 border-brandOrange-400 shadow-lg ring-2 ring-brandOrange-400/40 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
               <img 
                 src={assets.logo} 
                 alt="Dr. Bharathi Logo" 
@@ -93,15 +93,15 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
             </div>
             
             <div className="flex flex-col justify-center min-w-0">
-              <span className="font-heading font-black text-sm text-white tracking-tight leading-tight truncate">
+              <span className="font-heading font-black text-base sm:text-lg text-white tracking-tight leading-tight truncate drop-shadow-xs">
                 Dr. Bharathi’s
               </span>
-              <span className="text-[11px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brandOrange-400 via-amber-300 to-amber-200 leading-tight">
+              <span className="text-xs sm:text-sm font-black text-amber-300 tracking-wide leading-tight drop-shadow-xs">
                 Homeo Care
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/10 border border-white/10 text-[8px] font-black uppercase tracking-wider text-slate-300 shadow-2xs">
-                  <ShieldCheck className="w-2.5 h-2.5 text-brandOrange-400" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/15 border border-white/20 text-[9px] font-black uppercase tracking-wider text-white shadow-xs">
+                  <ShieldCheck className="w-3 h-3 text-amber-300" />
                   Admin Portal
                 </span>
               </div>
@@ -111,18 +111,18 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
           {/* Close Drawer Button (Mobile Only) */}
           <button 
             onClick={onClose} 
-            className="lg:hidden w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
+            className="lg:hidden w-10 h-10 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/20 text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0 shadow-sm"
             aria-label="Close sidebar"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5 stroke-[2.5]" />
           </button>
         </div>
 
         {/* Navigation Menu with Grouped Sections */}
-        <nav className="flex-1 overflow-y-auto px-3.5 py-4 space-y-5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <nav className="flex-1 overflow-y-auto px-4 py-5 space-y-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {navSections.map((section, sIdx) => (
-            <div key={sIdx} className="space-y-1">
-              <span className="text-[9.5px] font-black uppercase tracking-[0.2em] text-sky-200/75 px-3 py-1 block">
+            <div key={sIdx} className="space-y-1.5">
+              <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.18em] text-amber-300 px-3 py-1.5 block drop-shadow-xs">
                 {section.title}
               </span>
 
@@ -133,28 +133,30 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
                   end={item.end}
                   onClick={() => onClose && onClose()}
                   className={({ isActive }) =>
-                    `group flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-bold transition-all duration-200 ${
+                    `group flex items-center justify-between px-3.5 py-2.5 sm:py-3 rounded-2xl text-sm font-extrabold tracking-wide transition-all duration-200 ${
                       isActive
-                        ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-lg shadow-orange-500/30 border border-white/30'
-                        : 'text-white/85 hover:text-white hover:bg-white/10 hover:translate-x-1'
+                        ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-xl shadow-orange-500/35 border border-white/40'
+                        : 'text-white hover:text-white hover:bg-white/15 hover:translate-x-1'
                     }`
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 transition-all ${
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all ${
                           isActive 
-                            ? 'bg-white/25 text-white shadow-inner' 
-                            : 'bg-white/10 text-white/80 group-hover:text-white group-hover:bg-white/20'
+                            ? 'bg-white/30 text-white shadow-inner' 
+                            : 'bg-white/15 text-white group-hover:bg-white/25'
                         }`}>
-                          <item.icon className="w-3.5 h-3.5" />
+                          <item.icon className="w-4 h-4 stroke-[2.4]" />
                         </div>
-                        <span className="truncate tracking-tight">{item.name}</span>
+                        <span className="truncate text-[13.5px] sm:text-sm font-extrabold text-white tracking-wide drop-shadow-xs">
+                          {item.name}
+                        </span>
                       </div>
 
                       {isActive && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-white shadow-xs shrink-0 animate-pulse" />
+                        <span className="w-2 h-2 rounded-full bg-white shadow-sm shrink-0 animate-pulse" />
                       )}
                     </>
                   )}
@@ -165,18 +167,18 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
         </nav>
 
         {/* Footer Actions */}
-        <div className="p-3.5 border-t border-white/10 space-y-2.5 shrink-0 bg-[#1A4B63]/80 backdrop-blur-md">
+        <div className="p-4 border-t border-white/15 space-y-3 shrink-0 bg-[#1A4B63]/90 backdrop-blur-md">
           {/* Quick Doctor Profile Card */}
-          <div className="flex items-center gap-3 p-2 rounded-2xl bg-white/10 border border-white/10">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-black text-xs flex items-center justify-center shadow-md shrink-0 border border-white/20">
+          <div className="flex items-center gap-3.5 p-2.5 rounded-2xl bg-white/15 border border-white/20 shadow-sm">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-black text-sm flex items-center justify-center shadow-md shrink-0 border border-white/30">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'DB'}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-black text-white truncate">
+              <span className="text-sm font-black text-white truncate drop-shadow-xs">
                 {user?.name || 'Dr. Bharathi'}
               </span>
-              <span className="text-[10px] text-emerald-300 font-bold flex items-center gap-1 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              <span className="text-xs text-emerald-300 font-black flex items-center gap-1.5 mt-0.5 drop-shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0 ring-2 ring-emerald-400/40" />
                 Clinic Administrator
               </span>
             </div>
@@ -184,9 +186,9 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
 
           <button
             onClick={logout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-200 hover:text-white hover:bg-rose-500/25 border border-rose-400/30 hover:border-rose-400/50 transition-all active:scale-98 cursor-pointer group"
+            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl text-sm font-black text-rose-100 hover:text-white bg-rose-500/25 hover:bg-rose-500/35 border border-rose-400/40 hover:border-rose-400/60 transition-all active:scale-98 cursor-pointer group shadow-sm"
           >
-            <LogOut className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform text-rose-300" />
+            <LogOut className="w-4.5 h-4.5 group-hover:-translate-x-0.5 transition-transform text-rose-200" />
             <span>Sign Out Session</span>
           </button>
         </div>
