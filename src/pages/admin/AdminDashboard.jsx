@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   IndianRupee, 
@@ -28,6 +28,7 @@ import {
   Palette
 } from 'lucide-react';
 import { adminDashboardData } from '../../data/adminDashboardData';
+import { initialAdminOrders } from '../../data/adminOrdersData';
 
 export const AdminDashboard = () => {
   const getGreeting = () => {
@@ -41,6 +42,57 @@ export const AdminDashboard = () => {
   const [metricView, setMetricView] = useState('revenue'); // 'revenue' | 'orders'
   const [chartTheme, setChartTheme] = useState('teal'); // 'teal' | 'indigo' | 'purple' | 'amber'
   const chartPoints = adminDashboardData.salesData[timeFilter] || adminDashboardData.salesData['7 Days'];
+
+  // Real Orders pipeline calculation
+  const orders = initialAdminOrders || [];
+  const totalOrdersCount = orders.length;
+
+  const pipelineStatuses = [
+    { 
+      label: 'Pending Confirmation', 
+      count: orders.filter(o => o.orderStatus === 'Pending').length, 
+      color: 'from-amber-400 to-orange-500', 
+      barBg: 'bg-amber-500', 
+      dot: 'bg-amber-500' 
+    },
+    { 
+      label: 'Confirmed / Paid', 
+      count: orders.filter(o => o.orderStatus === 'Confirmed' || (o.paymentStatus === 'Paid' && o.orderStatus !== 'Delivered' && o.orderStatus !== 'Cancelled')).length, 
+      color: 'from-sky-400 to-blue-500', 
+      barBg: 'bg-sky-500', 
+      dot: 'bg-sky-500' 
+    },
+    { 
+      label: 'Dispensary Packing', 
+      count: orders.filter(o => o.orderStatus === 'Processing').length, 
+      color: 'from-purple-400 to-violet-500', 
+      barBg: 'bg-purple-500', 
+      dot: 'bg-purple-500' 
+    },
+    { 
+      label: 'Out with Courier', 
+      count: orders.filter(o => o.orderStatus === 'Shipped').length, 
+      color: 'from-indigo-400 to-blue-600', 
+      barBg: 'bg-indigo-500', 
+      dot: 'bg-indigo-500' 
+    },
+    { 
+      label: 'Delivered to Patient', 
+      count: orders.filter(o => o.orderStatus === 'Delivered').length, 
+      color: 'from-emerald-400 to-teal-500', 
+      barBg: 'bg-emerald-500', 
+      dot: 'bg-emerald-500' 
+    },
+    { 
+      label: 'Cancelled / Refunded', 
+      count: orders.filter(o => o.orderStatus === 'Cancelled').length, 
+      color: 'from-rose-400 to-red-500', 
+      barBg: 'bg-rose-500', 
+      dot: 'bg-rose-500' 
+    }
+  ];
+
+  const activeOrdersCount = orders.filter(o => o.orderStatus !== 'Delivered' && o.orderStatus !== 'Cancelled').length;
 
   const chartThemes = {
     teal: {
@@ -401,8 +453,14 @@ export const AdminDashboard = () => {
 
             <div className="flex items-center">
               <div className={`w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] sm:text-xs font-bold ${activeChartTheme.pill}`}>
-                <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                <span>Peak Period: Saturday (₹9,200)</span>
+                {chartPoints.length > 0 ? (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                    <span>Peak: {chartPoints.reduce((max, pt) => (metricView === 'revenue' ? pt.revenue : pt.orders) > (metricView === 'revenue' ? max.revenue : max.orders) ? pt : max, chartPoints[0])?.label || 'N/A'}</span>
+                  </>
+                ) : (
+                  <span>No activity recorded yet</span>
+                )}
               </div>
             </div>
           </div>
@@ -417,21 +475,14 @@ export const AdminDashboard = () => {
                 Fulfillment Pipeline
               </h3>
               <span className="text-[10.5px] font-black uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200 shadow-2xs">
-                84 Active
+                {activeOrdersCount} Active
               </span>
             </div>
             <p className="text-xs text-slate-500 font-medium">Live order status distribution across dispensary</p>
           </div>
 
           <div className="space-y-4 flex-1 justify-center flex flex-col">
-            {[
-              { label: 'Pending Confirmation', count: 6, color: 'from-amber-400 to-orange-500', barBg: 'bg-amber-500', dot: 'bg-amber-500' },
-              { label: 'Confirmed / Paid', count: 12, color: 'from-sky-400 to-blue-500', barBg: 'bg-sky-500', dot: 'bg-sky-500' },
-              { label: 'Dispensary Packing', count: 14, color: 'from-purple-400 to-violet-500', barBg: 'bg-purple-500', dot: 'bg-purple-500' },
-              { label: 'Out with Courier', count: 18, color: 'from-indigo-400 to-blue-600', barBg: 'bg-indigo-500', dot: 'bg-indigo-500' },
-              { label: 'Delivered to Patient', count: 30, color: 'from-emerald-400 to-teal-500', barBg: 'bg-emerald-500', dot: 'bg-emerald-500' },
-              { label: 'Cancelled / Refunded', count: 4, color: 'from-rose-400 to-red-500', barBg: 'bg-rose-500', dot: 'bg-rose-500' }
-            ].map((st, i) => (
+            {pipelineStatuses.map((st, i) => (
               <div key={i} className="space-y-1.5">
                 <div className="flex justify-between items-center text-xs font-bold text-slate-700">
                   <span className="flex items-center gap-2">
@@ -443,7 +494,7 @@ export const AdminDashboard = () => {
                 <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
                   <div 
                     className={`bg-gradient-to-r ${st.color} h-full rounded-full transition-all duration-700 shadow-2xs`} 
-                    style={{ width: `${Math.max(6, (st.count / 84) * 100)}%` }} 
+                    style={{ width: `${totalOrdersCount > 0 ? Math.max(4, Math.round((st.count / totalOrdersCount) * 100)) : 0}%` }} 
                   />
                 </div>
               </div>
@@ -454,7 +505,7 @@ export const AdminDashboard = () => {
             to="/admin/orders"
             className="w-full py-3.5 bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-extrabold text-xs rounded-2xl text-center shadow-md hover:shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2 group cursor-pointer border border-white/20 active:scale-[0.99]"
           >
-            <span>Manage All 84 Orders</span>
+            <span>{totalOrdersCount > 0 ? `Manage All ${totalOrdersCount} Orders` : 'Manage Orders'}</span>
             <ChevronRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -484,34 +535,40 @@ export const AdminDashboard = () => {
           </div>
 
           <div className="space-y-3">
-            {adminDashboardData.todayAppointments.map((apt) => (
-              <div key={apt.id} className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/60 transition-all group">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-navy-950 to-purple-800 text-white font-black text-xs flex flex-col items-center justify-center shrink-0 shadow-sm">
-                    <Clock className="w-3.5 h-3.5 text-amber-300 mb-0.5" />
-                    <span className="text-[10px] leading-none">{apt.time.split(' ')[0]}</span>
-                  </div>
-
-                  <div>
-                    <h4 className="font-black text-slate-900 text-xs sm:text-sm group-hover:text-brandOrange-600 transition-colors">
-                      {apt.patient}
-                    </h4>
-                    <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5 mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                      {apt.type} • {apt.doctor}
-                    </p>
-                  </div>
-                </div>
-
-                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
-                  apt.status === 'Confirmed'
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    : 'bg-amber-50 text-amber-700 border-amber-200'
-                }`}>
-                  {apt.status}
-                </span>
+            {adminDashboardData.todayAppointments.length === 0 ? (
+              <div className="text-center py-8 text-xs text-slate-400 font-medium bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                No appointments scheduled for today
               </div>
-            ))}
+            ) : (
+              adminDashboardData.todayAppointments.map((apt) => (
+                <div key={apt.id} className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/60 transition-all group">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-navy-950 to-purple-800 text-white font-black text-xs flex flex-col items-center justify-center shrink-0 shadow-sm">
+                      <Clock className="w-3.5 h-3.5 text-amber-300 mb-0.5" />
+                      <span className="text-[10px] leading-none">{apt.time.split(' ')[0]}</span>
+                    </div>
+
+                    <div>
+                      <h4 className="font-black text-slate-900 text-xs sm:text-sm group-hover:text-brandOrange-600 transition-colors">
+                        {apt.patient}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5 mt-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                        {apt.type} • {apt.doctor}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                    apt.status === 'Confirmed'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                  }`}>
+                    {apt.status}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -535,30 +592,36 @@ export const AdminDashboard = () => {
           </div>
 
           <div className="space-y-3">
-            {adminDashboardData.lowStockItems.map((item) => (
-              <div key={item.id} className="flex items-center justify-between p-3.5 rounded-2xl bg-rose-50/50 hover:bg-rose-50/80 border border-rose-200/70 transition-all group">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-rose-500 to-red-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-md shadow-rose-500/20">
-                    <Boxes className="w-5 h-5" />
-                  </div>
-
-                  <div>
-                    <h4 className="font-black text-slate-900 text-xs sm:text-sm group-hover:text-rose-600 transition-colors">
-                      {item.name}
-                    </h4>
-                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                      Threshold: {item.threshold} units • Status: <span className="font-bold text-rose-600">{item.status}</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <span className="text-base font-black text-rose-600 font-display">
-                    {item.currentStock} left
-                  </span>
-                </div>
+            {adminDashboardData.lowStockItems.length === 0 ? (
+              <div className="text-center py-8 text-xs text-slate-400 font-medium bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                All dispensary inventory levels are optimal
               </div>
-            ))}
+            ) : (
+              adminDashboardData.lowStockItems.map((item) => (
+                <div key={item.id} className="flex items-center justify-between p-3.5 rounded-2xl bg-rose-50/50 hover:bg-rose-50/80 border border-rose-200/70 transition-all group">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-rose-500 to-red-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-md shadow-rose-500/20">
+                      <Boxes className="w-5 h-5" />
+                    </div>
+
+                    <div>
+                      <h4 className="font-black text-slate-900 text-xs sm:text-sm group-hover:text-rose-600 transition-colors">
+                        {item.name}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                        Threshold: {item.threshold} units • Status: <span className="font-bold text-rose-600">{item.status}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-base font-black text-rose-600 font-display">
+                      {item.currentStock} left
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -582,72 +645,80 @@ export const AdminDashboard = () => {
             </Link>
           </div>
 
-          <div className="overflow-x-auto hidden sm:block">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="text-slate-400 uppercase tracking-wider text-[10px] font-black border-b border-slate-100">
-                  <th className="pb-3 pr-4">Order ID</th>
-                  <th className="pb-3 px-4">Patient</th>
-                  <th className="pb-3 px-4">Amount</th>
-                  <th className="pb-3 pl-4">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100/80">
+          {adminDashboardData.recentOrders.length === 0 && orders.length === 0 ? (
+            <div className="text-center py-8 text-xs text-slate-400 font-medium bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+              No orders recorded yet. Live orders will appear here in real-time.
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto hidden sm:block">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="text-slate-400 uppercase tracking-wider text-[10px] font-black border-b border-slate-100">
+                      <th className="pb-3 pr-4">Order ID</th>
+                      <th className="pb-3 px-4">Patient</th>
+                      <th className="pb-3 px-4">Amount</th>
+                      <th className="pb-3 pl-4">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100/80">
+                    {adminDashboardData.recentOrders.map((ord) => (
+                      <tr key={ord.id} className="hover:bg-slate-50/80 transition-colors group">
+                        <td className="py-3.5 pr-4 font-mono font-black text-slate-900 group-hover:text-brandOrange-600 transition-colors">
+                          {ord.id}
+                        </td>
+                        <td className="py-3.5 px-4 font-bold text-slate-800">
+                          <span>{ord.customer}</span>
+                        </td>
+                        <td className="py-3.5 px-4 font-black text-brandOrange-600">
+                          ₹{ord.amount.toLocaleString()}
+                        </td>
+                        <td className="py-3.5 pl-4">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-2xs ${
+                            ord.status === 'Delivered' 
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                              : ord.status === 'Processing'
+                              ? 'bg-purple-50 text-purple-700 border-purple-200'
+                              : 'bg-amber-50 text-amber-700 border-amber-200'
+                          }`}>
+                            {ord.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {/* Mobile Recent Orders Cards */}
+              <div className="sm:hidden flex flex-col gap-2.5 pt-3">
                 {adminDashboardData.recentOrders.map((ord) => (
-                  <tr key={ord.id} className="hover:bg-slate-50/80 transition-colors group">
-                    <td className="py-3.5 pr-4 font-mono font-black text-slate-900 group-hover:text-brandOrange-600 transition-colors">
-                      {ord.id}
-                    </td>
-                    <td className="py-3.5 px-4 font-bold text-slate-800">
-                      <span>{ord.customer}</span>
-                    </td>
-                    <td className="py-3.5 px-4 font-black text-brandOrange-600">
+                  <div
+                    key={ord.id + '-card'}
+                    className="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-100 flex items-center justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-black text-xs text-slate-900">{ord.id}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
+                          ord.status === 'Delivered' 
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                            : ord.status === 'Processing'
+                            ? 'bg-purple-50 text-purple-700 border-purple-200'
+                            : 'bg-amber-50 text-amber-700 border-amber-200'
+                        }`}>
+                          {ord.status}
+                        </span>
+                      </div>
+                      <p className="text-xs font-bold text-slate-700 mt-1">{ord.customer}</p>
+                    </div>
+                    <span className="font-black text-sm text-brandOrange-600 font-display">
                       ₹{ord.amount.toLocaleString()}
-                    </td>
-                    <td className="py-3.5 pl-4">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-2xs ${
-                        ord.status === 'Delivered' 
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                          : ord.status === 'Processing'
-                          ? 'bg-purple-50 text-purple-700 border-purple-200'
-                          : 'bg-amber-50 text-amber-700 border-amber-200'
-                      }`}>
-                        {ord.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {/* Mobile Recent Orders Cards */}
-          <div className="sm:hidden flex flex-col gap-2.5 pt-3">
-            {adminDashboardData.recentOrders.map((ord) => (
-              <div
-                key={ord.id + '-card'}
-                className="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-100 flex items-center justify-between"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-black text-xs text-slate-900">{ord.id}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
-                      ord.status === 'Delivered' 
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                        : ord.status === 'Processing'
-                        ? 'bg-purple-50 text-purple-700 border-purple-200'
-                        : 'bg-amber-50 text-amber-700 border-amber-200'
-                    }`}>
-                      {ord.status}
                     </span>
                   </div>
-                  <p className="text-xs font-bold text-slate-700 mt-1">{ord.customer}</p>
-                </div>
-                <span className="font-black text-sm text-brandOrange-600 font-display">
-                  â‚¹{ord.amount.toLocaleString()}
-                </span>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </div>
 
 {/* Top Selling Remedies */}
@@ -666,25 +737,31 @@ export const AdminDashboard = () => {
           </div>
 
           <div className="space-y-3">
-            {adminDashboardData.topProducts.map((p) => (
-              <div key={p.rank} className="flex items-center justify-between gap-3 text-xs p-2.5 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors group">
-                <div className="flex items-center gap-3 truncate">
-                  <span className={`font-black text-xs w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
-                    p.rank === 1 ? 'bg-amber-100 text-amber-800' : p.rank === 2 ? 'bg-slate-200 text-slate-700' : 'text-slate-400'
-                  }`}>
-                    {p.rank}
-                  </span>
-                  <img src={p.image} alt={p.name} className="w-10 h-10 rounded-xl object-cover bg-slate-100 border border-slate-200/80 shrink-0 shadow-sm group-hover:scale-105 transition-transform" />
-                  <div className="truncate">
-                    <h4 className="font-bold text-slate-900 truncate group-hover:text-brandOrange-600 transition-colors">{p.name}</h4>
-                    <p className="text-[10px] text-slate-500 font-semibold">{p.unitsSold} units sold</p>
-                  </div>
-                </div>
-                <span className="font-black text-slate-900 shrink-0 bg-slate-100/80 px-2.5 py-1 rounded-xl border border-slate-200/60 font-display">
-                  {p.revenue}
-                </span>
+            {adminDashboardData.topProducts.length === 0 ? (
+              <div className="text-center py-8 text-xs text-slate-400 font-medium bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                No sales data recorded yet
               </div>
-            ))}
+            ) : (
+              adminDashboardData.topProducts.map((p) => (
+                <div key={p.rank} className="flex items-center justify-between gap-3 text-xs p-2.5 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors group">
+                  <div className="flex items-center gap-3 truncate">
+                    <span className={`font-black text-xs w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                      p.rank === 1 ? 'bg-amber-100 text-amber-800' : p.rank === 2 ? 'bg-slate-200 text-slate-700' : 'text-slate-400'
+                    }`}>
+                      {p.rank}
+                    </span>
+                    <img src={p.image} alt={p.name} className="w-10 h-10 rounded-xl object-cover bg-slate-100 border border-slate-200/80 shrink-0 shadow-sm group-hover:scale-105 transition-transform" />
+                    <div className="truncate">
+                      <h4 className="font-bold text-slate-900 truncate group-hover:text-brandOrange-600 transition-colors">{p.name}</h4>
+                      <p className="text-[10px] text-slate-500 font-semibold">{p.unitsSold} units sold</p>
+                    </div>
+                  </div>
+                  <span className="font-black text-slate-900 shrink-0 bg-slate-100/80 px-2.5 py-1 rounded-xl border border-slate-200/60 font-display">
+                    {p.revenue}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
