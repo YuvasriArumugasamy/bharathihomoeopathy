@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   CreditCard, Search, CheckCircle2, RotateCcw, AlertTriangle, 
   ArrowDownLeft, X, IndianRupee, ShieldCheck, Banknote, Clock, 
@@ -341,7 +341,7 @@ export const AdminPayments = () => {
                   <div className="text-right">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">Amount</span>
                     <span className="font-black text-base text-navy-950 font-display block mt-0.5">
-                      â‚¹{(p.amount || 0).toLocaleString('en-IN')}
+                      ₹{(p.amount || 0).toLocaleString('en-IN')}
                     </span>
                   </div>
                 </div>

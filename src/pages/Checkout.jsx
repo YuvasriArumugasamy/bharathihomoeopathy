@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import phonepeQRImage from '../assets/WhatsApp Image 2026-09-10 at 10.05.20.jpeg';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -209,7 +209,7 @@ export const Checkout = () => {
 
                 <div className="w-12 sm:w-20 h-0.5 border-t-2 border-dashed border-slate-300" />
 
-                {/* Step 2 Pill â€” disabled until address is fully filled */}
+                {/* Step 2 Pill - disabled until address is fully filled */}
                 {(() => {
                   const isAddrFilled =
                     formData.firstName.trim() &&
@@ -465,12 +465,12 @@ export const Checkout = () => {
                   <div className="space-y-3 text-xs text-slate-600 font-medium">
                     <div className="flex justify-between items-center">
                       <span>Sub Total</span>
-                      <span className="font-black text-slate-900">â‚¹{subtotal.toFixed(2)}</span>
+                      <span className="font-black text-slate-900">₹{subtotal.toFixed(2)}</span>
                     </div>
 
                     <div className="flex justify-between items-center">
                       <span>GST (inclusive of all taxes)</span>
-                      <span className="font-extrabold text-slate-900">â‚¹{(subtotal * 0.05).toFixed(2)}</span>
+                      <span className="font-extrabold text-slate-900">₹{(subtotal * 0.05).toFixed(2)}</span>
                     </div>
 
                     <div className="flex justify-between items-center">
@@ -485,7 +485,7 @@ export const Checkout = () => {
 
                     <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
                       <span className="font-black text-slate-900 text-sm">Total Amount</span>
-                      <span className="font-black text-xl text-[#f97316]">â‚¹{(subtotal + (subtotal * 0.05)).toFixed(2)}</span>
+                      <span className="font-black text-xl text-[#f97316]">₹{(subtotal + (subtotal * 0.05)).toFixed(2)}</span>
                     </div>
                   </div>
 
@@ -562,7 +562,7 @@ export const Checkout = () => {
                             />
                             <div className="space-y-1">
                               <h4 className="text-sm font-black text-slate-900">{item.name}</h4>
-                              <p className="text-xs text-slate-500 font-bold">Quantity: {item.quantity} â€¢ Total: â‚¹{(item.price * item.quantity).toFixed(2)}</p>
+                              <p className="text-xs text-slate-500 font-bold">Quantity: {item.quantity} • Total: ₹{(item.price * item.quantity).toFixed(2)}</p>
                             </div>
                           </div>
 
@@ -639,12 +639,12 @@ export const Checkout = () => {
                     <div className="space-y-3 text-xs text-slate-600 font-medium">
                       <div className="flex justify-between items-center">
                         <span>Sub Total</span>
-                        <span className="font-black text-slate-900">â‚¹{subtotal.toFixed(2)}</span>
+                        <span className="font-black text-slate-900">₹{subtotal.toFixed(2)}</span>
                       </div>
 
                       <div className="flex justify-between items-center">
                         <span>GST (inclusive of all taxes)</span>
-                        <span className="font-extrabold text-slate-900">â‚¹{(subtotal * 0.05).toFixed(2)}</span>
+                        <span className="font-extrabold text-slate-900">₹{(subtotal * 0.05).toFixed(2)}</span>
                       </div>
 
                       <div className="flex justify-between items-center">
@@ -659,7 +659,7 @@ export const Checkout = () => {
 
                       <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
                         <span className="font-black text-slate-900 text-sm">Total Amount</span>
-                        <span className="font-black text-2xl text-[#f97316]">â‚¹{(subtotal + (subtotal * 0.05)).toFixed(2)}</span>
+                        <span className="font-black text-2xl text-[#f97316]">₹{(subtotal + (subtotal * 0.05)).toFixed(2)}</span>
                       </div>
                     </div>
 
