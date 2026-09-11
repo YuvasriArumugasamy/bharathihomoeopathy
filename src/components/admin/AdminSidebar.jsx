@@ -121,7 +121,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
         <nav className="flex-1 overflow-y-auto px-4 py-5 space-y-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {navSections.map((section, sIdx) => (
             <div key={sIdx} className="space-y-1.5">
-              <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.18em] text-amber-300 px-3 py-1.5 block drop-shadow-xs">
+              <span className="text-[11px] sm:text-xs font-serif font-bold uppercase tracking-[0.18em] text-amber-300 px-3 py-1.5 block drop-shadow-xs">
                 {section.title}
               </span>
 
@@ -149,7 +149,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
                         }`}>
                           <item.icon className="w-4 h-4 stroke-[2.4]" />
                         </div>
-                        <span className="truncate text-[13.5px] sm:text-sm font-extrabold text-white tracking-wide drop-shadow-xs">
+                        <span className="truncate text-[14px] sm:text-[14.5px] font-serif font-bold text-white tracking-wide drop-shadow-xs">
                           {item.name}
                         </span>
                       </div>
@@ -174,7 +174,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
             <div className="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center shrink-0 border border-white/30 group-hover:bg-white/30 transition-colors shadow-inner">
               <LogOut className="w-4 h-4 text-white group-hover:-translate-x-0.5 transition-transform stroke-[2.5]" />
             </div>
-            <span className="tracking-wide text-white drop-shadow-sm font-black text-[13.5px]">
+            <span className="tracking-wide text-white drop-shadow-sm font-serif font-bold text-[14px]">
               Sign Out Session
             </span>
           </button>
