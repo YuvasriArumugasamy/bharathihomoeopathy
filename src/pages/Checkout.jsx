@@ -1,3 +1,4 @@
+import { QRCodeSVG } from 'qrcode.react';
 import React, { useState, useEffect } from 'react';
 import phonepeQRImage from '../assets/WhatsApp Image 2026-09-10 at 10.05.20.jpeg';
 import { useNavigate, Link } from 'react-router-dom';
@@ -177,6 +178,10 @@ export const Checkout = () => {
       setIsPlacingOrder(false);
     }
   };
+
+  // Dynamic UPI Payment URL with exact order amount embedded
+  const payableAmount = (subtotal + (subtotal * 0.05)).toFixed(2);
+  const upiPaymentUrl = `upi://pay?pa=q826461256@ybl&pn=BARATHI%20HOMEOPATHY%20CLINIC&am=${payableAmount}&cu=INR&tn=Order%20Payment`;
 
   // Courier Partners List with Logos / Badges
   const courierOptions = [
@@ -771,23 +776,41 @@ export const Checkout = () => {
             {selectedPaymentMethod === 'UPI' && (
               <div className="space-y-5">
                 <div className="flex flex-col items-center gap-4">
-                  {/* QR Code Image */}
-                  <div className="bg-white rounded-2xl p-3 shadow-lg border border-purple-100 ring-4 ring-purple-100">
-                    <img
-                      src={phonepeQRImage}
-                      alt="PhonePe QR Code - Bharathi Homeopathy Clinic"
-                      className="w-52 h-52 object-contain rounded-xl"
-                      onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
-                    />
-                    <div style={{display:'none'}} className="w-52 h-52 flex items-center justify-center bg-purple-50 rounded-xl border-2 border-dashed border-purple-200">
-                      <div className="text-center p-4">
-                        <p className="text-purple-700 font-black text-sm">BARATHI</p>
-                        <p className="text-purple-700 font-black text-sm">HOMEOPATHY</p>
-                        <p className="text-purple-700 font-black text-sm">CLINIC</p>
-                        <p className="text-[10px] text-purple-500 mt-2 font-bold">PhonePe QR</p>
+                  {/* Dynamic Amount-Embedded UPI QR Code */}
+                  <div className="bg-white rounded-3xl p-5 shadow-xl border border-purple-200 ring-4 ring-purple-100 flex flex-col items-center">
+                    {/* PhonePe / BHIM Brand Header */}
+                    <div className="flex items-center gap-2 pb-3 text-[#5f259f] font-black text-xs">
+                      <div className="w-6 h-6 rounded-full bg-[#5f259f] text-white flex items-center justify-center text-xs font-black shadow-sm">
+                        Pe
                       </div>
+                      <span>BARATHI HOMEOPATHY CLINIC</span>
+                    </div>
+
+                    {/* Dynamic Razor-Sharp QR Code (NPCI UPI Standard with exact amount) */}
+                    <div className="p-3 bg-white rounded-2xl border border-slate-100 shadow-inner flex items-center justify-center">
+                      <QRCodeSVG
+                        value={upiPaymentUrl}
+                        size={210}
+                        level="M"
+                        includeMargin={false}
+                      />
+                    </div>
+
+                    <div className="pt-3 text-center">
+                      <p className="text-[11px] font-mono font-bold text-slate-500">
+                        UPI ID: <strong className="text-purple-700">q826461256@ybl</strong>
+                      </p>
                     </div>
                   </div>
+
+                  {/* Direct Mobile UPI App Button (for mobile phones) */}
+                  <a
+                    href={upiPaymentUrl}
+                    className="w-full py-3 px-4 text-xs font-black text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-sm sm:hidden"
+                  >
+                    <span>Tap to Pay with Google Pay / PhonePe / Paytm</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
 
                   <div className="text-center space-y-1.5">
                     <p className="text-xs font-black text-purple-700">Scan with any UPI App</p>
