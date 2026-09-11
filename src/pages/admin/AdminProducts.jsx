@@ -16,7 +16,9 @@ import {
   ArrowUpRight,
   Boxes,
   CheckCircle2,
-  ExternalLink
+  ExternalLink,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react';
 import { initialAdminProducts } from '../../data/adminProductsData';
 import { useToast } from '../../context/ToastContext';
@@ -85,6 +87,31 @@ export const AdminProducts = () => {
     setModalOpen(true);
   };
 
+  const handleImageFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select a valid image file (PNG, JPG, WEBP)', 'error');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image file size should be less than 5MB', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFormData(prev => ({ ...prev, image: reader.result }));
+      showToast('Image uploaded successfully!', 'success');
+    };
+    reader.onerror = () => {
+      showToast('Failed to read image file', 'error');
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSave = (e) => {
     e.preventDefault();
     if (!formData.name || !formData.sku) {
@@ -103,7 +130,7 @@ export const AdminProducts = () => {
         createdAt: new Date().toISOString().slice(0, 10)
       };
       setProducts(prev => [newProd, ...prev]);
-      showToast('New remedy added to dispensary catalogue!', 'success');
+      showToast('New product added to catalogue!', 'success');
     }
     setModalOpen(false);
   };
@@ -388,7 +415,7 @@ export const AdminProducts = () => {
                   <Package className="w-4 h-4" />
                 </div>
                 <h3 className="font-black text-slate-900 text-base font-display">
-                  {editingProduct ? 'Edit Remedy' : 'Add New Remedy to Dispensary'}
+                  {editingProduct ? 'Edit Product' : 'Add New Product'}
                 </h3>
               </div>
               <button onClick={() => setModalOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors">
@@ -398,7 +425,7 @@ export const AdminProducts = () => {
 
             <form onSubmit={handleSave} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">Remedy Name *</label>
+                <label className="block font-bold text-slate-700 mb-1.5">Product Name *</label>
                 <input
                   type="text"
                   required
@@ -463,14 +490,64 @@ export const AdminProducts = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">Image URL</label>
-                <input
-                  type="url"
-                  placeholder="https://..."
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
-                />
+                <label className="font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span>Product Image</span>
+                  <span className="text-[11px] text-slate-400 font-medium">File upload or URL</span>
+                </label>
+
+                <div className="space-y-3">
+                  {/* File Upload Trigger Box */}
+                  <div className="flex items-center gap-3.5">
+                    <label className="flex-1 border-2 border-dashed border-slate-200 hover:border-brandOrange-400 bg-slate-50 hover:bg-orange-50/40 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all group shadow-2xs">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageFileUpload}
+                        className="hidden"
+                      />
+                      <div className="w-10 h-10 rounded-xl bg-brandOrange-100 text-brandOrange-600 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform shadow-2xs">
+                        <Upload className="w-5 h-5" />
+                      </div>
+                      <span className="text-xs font-black text-slate-700 group-hover:text-brandOrange-600 transition-colors">
+                        Click here to upload image file
+                      </span>
+                      <span className="text-[10.5px] text-slate-400 mt-0.5 font-medium">
+                        Supports PNG, JPG, JPEG, WEBP (Max 5MB)
+                      </span>
+                    </label>
+
+                    {/* Image Preview Thumbnail if selected */}
+                    {formData.image && (
+                      <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-brandOrange-300 shadow-md shrink-0 group bg-slate-100">
+                        <img
+                          src={formData.image}
+                          alt="Product preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, image: '' })}
+                          className="absolute top-1 right-1 w-6 h-6 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center shadow-md transition-all cursor-pointer"
+                          title="Remove image"
+                        >
+                          <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Alternative URL Input */}
+                  <div className="relative">
+                    <input
+                      type="url"
+                      placeholder="Or paste image URL (https://...)"
+                      value={formData.image}
+                      onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                      className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner placeholder:text-slate-400"
+                    />
+                    <ImageIcon className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -517,7 +594,7 @@ export const AdminProducts = () => {
                   type="submit"
                   className="px-6 py-2.5 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-black rounded-xl shadow-md shadow-brandOrange-500/25 transition-all cursor-pointer"
                 >
-                  Save Remedy
+                  Save Product
                 </button>
               </div>
             </form>
