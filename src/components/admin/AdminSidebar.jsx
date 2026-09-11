@@ -11,7 +11,6 @@ import {
   CreditCard, 
   Tag, 
   Star, 
-  BookOpen, 
   MessageSquare, 
   Search, 
   Settings,
@@ -55,7 +54,6 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
       title: 'Marketing & Portal',
       items: [
         { name: 'Offers & Coupons', path: '/admin/offers', icon: Tag },
-        { name: 'Blog', path: '/admin/blog', icon: BookOpen },
         { name: 'SEO Management', path: '/admin/seo', icon: Search },
         { name: 'Settings', path: '/admin/settings', icon: Settings },
         { name: 'Notifications', path: '/admin/notifications', icon: Bell }
