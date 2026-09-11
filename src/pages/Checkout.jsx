@@ -58,6 +58,17 @@ export const Checkout = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
+  // Validate if all mandatory address fields are filled
+  const isAddressComplete = Boolean(
+    formData.firstName?.trim() &&
+    formData.lastName?.trim() &&
+    formData.phone?.trim() &&
+    formData.address?.trim() &&
+    formData.city?.trim() &&
+    formData.state?.trim() &&
+    /^\d{6}$/.test(formData.postalCode?.trim() || '')
+  );
+
   // Auto-scroll to top when step changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -210,26 +221,18 @@ export const Checkout = () => {
 
                 {/* Step 2 Pill - disabled until address is fully filled */}
                 {(() => {
-                  const isAddrFilled =
-                    formData.firstName.trim() &&
-                    formData.lastName.trim() &&
-                    formData.phone.trim() &&
-                    formData.address.trim() &&
-                    formData.city.trim() &&
-                    formData.state.trim() &&
-                    /^\d{6}$/.test(formData.postalCode.trim());
                   const isActive = step === 'checkout';
                   return (
                     <button
-                      disabled={!isAddrFilled && step !== 'checkout'}
+                      disabled={!isAddressComplete && step !== 'checkout'}
                       onClick={() => {
                         if (validateAddressStep()) setStep('checkout');
                       }}
-                      title={!isAddrFilled && step !== 'checkout' ? 'Please fill all address fields first' : ''}
+                      title={!isAddressComplete && step !== 'checkout' ? 'Please fill all address fields first' : ''}
                       className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black transition-all duration-200 ${
                         isActive
                           ? 'bg-[#0b344d] text-white shadow-md ring-4 ring-[#0b344d]/10 cursor-pointer'
-                          : isAddrFilled
+                          : isAddressComplete
                           ? 'bg-white text-slate-500 border border-slate-200 hover:border-[#0b344d] hover:text-[#0b344d] cursor-pointer'
                           : 'bg-slate-100 text-slate-300 border border-slate-200 cursor-not-allowed opacity-60'
                       }`}
@@ -237,7 +240,7 @@ export const Checkout = () => {
                       <span className={`w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-extrabold ${
                         isActive
                           ? 'bg-[#f97316] text-white'
-                          : isAddrFilled
+                          : isAddressComplete
                           ? 'bg-slate-300 text-slate-600'
                           : 'bg-slate-200 text-slate-400'
                       }`}>2</span>
@@ -474,15 +477,28 @@ export const Checkout = () => {
                     </div>
                   </div>
 
-                  {/* Continue Button to Step 2 */}
-                  <button
-                    type="button"
-                    onClick={handleProceedToCheckoutStep}
-                    className="w-full py-4 px-6 text-xs sm:text-sm font-black text-white bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] hover:scale-[1.02] active:scale-95 rounded-2xl shadow-lg shadow-orange-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <span>CONTINUE</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+                  {/* Continue Button to Step 2 - Active only when address is complete */}
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      disabled={!isAddressComplete}
+                      onClick={handleProceedToCheckoutStep}
+                      className={`w-full py-4 px-6 text-xs sm:text-sm font-black rounded-2xl transition-all flex items-center justify-center gap-2 ${
+                        isAddressComplete
+                          ? 'text-white bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] hover:scale-[1.02] active:scale-95 shadow-lg shadow-orange-500/25 cursor-pointer'
+                          : 'text-slate-400 bg-slate-200 border border-slate-300/80 cursor-not-allowed opacity-60 shadow-none'
+                      }`}
+                    >
+                      <span>CONTINUE</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+
+                    {!isAddressComplete && (
+                      <p className="text-[10px] text-slate-400 font-bold text-center">
+                        Please fill all required address fields (*) to continue
+                      </p>
+                    )}
+                  </div>
                 </div>
 
               </div>
