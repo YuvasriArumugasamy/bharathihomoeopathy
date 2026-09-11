@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { Search, Globe, Share2, FileText, CheckCircle2, AlertCircle, Edit, Save } from 'lucide-react';
+import { 
+  Search, Globe, Share2, FileText, CheckCircle2, AlertCircle, 
+  Edit, Save, X, ExternalLink, Sparkles, Check, ArrowRight, 
+  Layers, Code2, RefreshCw
+} from 'lucide-react';
 import { initialGlobalSeo, initialPageSeoList } from '../../data/adminSeoData';
 import { useToast } from '../../context/ToastContext';
 
@@ -9,61 +13,143 @@ export const AdminSeo = () => {
   const [pageList, setPageList] = useState(initialPageSeoList);
   const [editingPage, setEditingPage] = useState(null);
 
+  const avgScore = Math.round(pageList.reduce((sum, p) => sum + p.score, 0) / pageList.length);
+
   const handleSaveGlobal = (e) => {
     e.preventDefault();
-    showToast('Global SEO & OpenGraph settings updated!', 'success');
+    showToast('Global SEO, OpenGraph metadata, and indexing directives saved!', 'success');
   };
 
   const handleSavePageSeo = (e) => {
     e.preventDefault();
     setPageList(prev => prev.map(p => p.id === editingPage.id ? editingPage : p));
     setEditingPage(null);
-    showToast('Page SEO parameters updated!', 'success');
+    showToast(`SEO parameters for ${editingPage.pageName} successfully updated!`, 'success');
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 ">
       
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-brandOrange-600">Search Engine Optimization</span>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-navy-900 tracking-tight">SEO Management</h1>
-          <p className="text-xs text-slate-500">Configure search meta tags, Google snippet previews, XML sitemaps, and robots.txt rules.</p>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+        <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
+          <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+            SEO & Indexing Management
+          </h1>
         </div>
       </div>
 
-      {/* Pages SEO List */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
-        <h3 className="font-extrabold text-sm text-navy-900 uppercase tracking-wider">Page Meta Tags & Health Scores</h3>
+      {/* KPI Overview Bar */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Indexed Routes</span>
+            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-navy-900">
+              <Layers className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-2xl font-black text-navy-950">{pageList.length}</span>
+            <span className="text-xs text-slate-400 font-semibold">Active URLs</span>
+          </div>
+        </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avg Optimization</span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-2xl font-black text-emerald-600">{avgScore}/100</span>
+            <span className="text-xs text-emerald-700/80 font-semibold">Rank A+</span>
+          </div>
+        </div>
+
+        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">XML Sitemap</span>
+            <div className="w-9 h-9 rounded-xl bg-brandOrange-50 flex items-center justify-center text-brandOrange-600">
+              <Code2 className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-2xl font-black text-brandOrange-600">Active</span>
+            <span className="text-xs text-brandOrange-700/80 font-semibold">Auto-updating</span>
+          </div>
+        </div>
+
+        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Crawler Directives</span>
+            <div className="w-9 h-9 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600">
+              <RefreshCw className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-2xl font-black text-sky-600">Index, Follow</span>
+            <span className="text-xs text-sky-700/80 font-semibold">Robots.txt</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Pages SEO Health Table */}
+      <div className="bg-white/95 backdrop-blur-sm rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h3 className="font-heading font-black text-base text-navy-950">
+              Page Metadata & Organic Health Scores
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Individual page titles, meta descriptions, and focused patient search keywords.
+            </p>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto hidden md:block">
+          <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-50 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-100">
-                <th className="py-3 px-4 font-bold">Page</th>
-                <th className="py-3 px-4 font-bold">Route</th>
-                <th className="py-3 px-4 font-bold">Meta Title</th>
-                <th className="py-3 px-4 font-bold">Focus Keyword</th>
-                <th className="py-3 px-4 font-bold">SEO Score</th>
-                <th className="py-3 px-4 font-bold text-right">Edit</th>
+              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                <th className="py-4 px-6">Page Name</th>
+                <th className="py-4 px-5">Target Route</th>
+                <th className="py-4 px-5">Meta Title Header</th>
+                <th className="py-4 px-5">Focus Keyword</th>
+                <th className="py-4 px-5">SEO Health</th>
+                <th className="py-4 px-6 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {pageList.map((p) => (
-                <tr key={p.id} className="hover:bg-slate-50/80">
-                  <td className="py-3 px-4 font-bold text-navy-900">{p.pageName}</td>
-                  <td className="py-3 px-4 font-mono text-slate-500">{p.route}</td>
-                  <td className="py-3 px-4 text-slate-700 max-w-xs truncate">{p.metaTitle}</td>
-                  <td className="py-3 px-4 text-slate-600 font-semibold">{p.focusKeyword}</td>
-                  <td className="py-3 px-4">
-                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-bold text-[10px] rounded-full">
+                <tr key={p.id} className="hover:bg-slate-50/70 transition-colors group">
+                  <td className="py-4 px-6 font-heading font-black text-sm text-navy-950 group-hover:text-brandOrange-600 transition-colors">
+                    {p.pageName}
+                  </td>
+                  <td className="py-4 px-5 font-mono text-[11px] font-bold text-slate-600 bg-slate-50 px-2.5 py-1 rounded-lg">
+                    {p.route}
+                  </td>
+                  <td className="py-4 px-5 text-slate-700 max-w-xs truncate font-medium">
+                    {p.metaTitle}
+                  </td>
+                  <td className="py-4 px-5">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-xl bg-slate-100 font-bold text-navy-900 text-[11px] border border-slate-200/60">
+                      {p.focusKeyword}
+                    </span>
+                  </td>
+                  <td className="py-4 px-5">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 ring-1 ring-emerald-500/10">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       {p.score} / 100
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right">
+                  <td className="py-4 px-6 text-right">
                     <button
-                      onClick={() => setEditingPage(p)}
-                      className="p-1.5 text-slate-400 hover:text-brandOrange-600 hover:bg-brandOrange-50 rounded-lg"
+                      onClick={() => setEditingPage({ ...p })}
+                      className="p-2 text-slate-400 hover:text-brandOrange-600 hover:bg-brandOrange-50 rounded-xl transition-all"
+                      title="Edit Metadata"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
@@ -73,122 +159,208 @@ export const AdminSeo = () => {
             </tbody>
           </table>
         </div>
+        {/* Mobile SEO Page Cards */}
+        <div className="md:hidden flex flex-col gap-3.5 p-3.5 sm:p-4 bg-slate-50/60">
+          {pageList.map((p) => (
+            <div
+              key={p.id + '-card'}
+              onClick={() => setEditingPage({ ...p })}
+              className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_4px_16px_-2px_rgba(15,36,56,0.06)] p-4 flex flex-col gap-3 cursor-pointer active:scale-[0.98] transition-all hover:shadow-md hover:border-orange-300"
+            >
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h4 className="font-heading font-black text-sm text-navy-950">{p.pageName}</h4>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  {p.score} / 100
+                </span>
+              </div>
+
+              <div>
+                <span className="font-mono text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                  {p.route}
+                </span>
+                <p className="text-xs text-slate-700 font-medium mt-1.5 line-clamp-1">{p.metaTitle}</p>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                <span className="text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded text-[10px]">
+                  Key: {p.focusKeyword}
+                </span>
+                <span className="text-brandOrange-600 font-bold flex items-center gap-1">
+                  Edit SEO <Edit className="w-3.5 h-3.5" />
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Global Metadata & Live Google Search Preview */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+{/* Global Metadata & Live Google Preview Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Form */}
-        <div className="lg:col-span-6 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-          <h3 className="font-extrabold text-sm text-navy-900 uppercase tracking-wider">Global Search Metadata</h3>
+        {/* Global Metadata Form */}
+        <div className="lg:col-span-6 bg-white/95 backdrop-blur-sm p-7 rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-5">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-brandOrange-500">Site-wide Defaults</span>
+            <h3 className="font-heading font-black text-navy-950 text-lg">Global Meta Directives</h3>
+          </div>
 
-          <form onSubmit={handleSaveGlobal} className="space-y-3 text-xs">
+          <form onSubmit={handleSaveGlobal} className="space-y-4 text-xs">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Global Meta Title</label>
+              <label className="block font-bold text-slate-700 mb-1.5">
+                Default Meta Title <span className="text-[10px] text-slate-400 font-normal">({globalSeo.metaTitle.length}/60 chars)</span>
+              </label>
               <input
                 type="text"
                 value={globalSeo.metaTitle}
                 onChange={(e) => setGlobalSeo({ ...globalSeo, metaTitle: e.target.value })}
-                className="w-full p-2 bg-slate-50 border rounded-xl"
+                className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-bold text-navy-950 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Global Meta Description</label>
+              <label className="block font-bold text-slate-700 mb-1.5">
+                Default Meta Description <span className="text-[10px] text-slate-400 font-normal">({globalSeo.metaDescription.length}/160 chars)</span>
+              </label>
               <textarea
                 rows={3}
                 value={globalSeo.metaDescription}
                 onChange={(e) => setGlobalSeo({ ...globalSeo, metaDescription: e.target.value })}
-                className="w-full p-2 bg-slate-50 border rounded-xl"
+                className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all leading-relaxed"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Target Keywords</label>
+              <label className="block font-bold text-slate-700 mb-1.5">Primary Focus Keywords</label>
               <input
                 type="text"
                 value={globalSeo.keywords}
                 onChange={(e) => setGlobalSeo({ ...globalSeo, keywords: e.target.value })}
-                className="w-full p-2 bg-slate-50 border rounded-xl"
+                className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-medium text-slate-800"
               />
             </div>
 
-            <button
-              type="submit"
-              className="px-5 py-2.5 bg-brandOrange-500 hover:bg-brandOrange-600 text-white font-bold rounded-xl shadow-sm"
-            >
-              Save Global SEO
-            </button>
+            <div className="pt-2">
+              <button
+                type="submit"
+                className="px-6 py-3 bg-gradient-to-r from-brandOrange-500 via-orange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-black rounded-xl shadow-lg shadow-brandOrange-500/25 transition-all flex items-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                <span>Save Global SEO</span>
+              </button>
+            </div>
           </form>
         </div>
 
-        {/* Live Snippet Preview */}
-        <div className="lg:col-span-6 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-          <h3 className="font-extrabold text-sm text-navy-900 uppercase tracking-wider">Live Google Snippet Preview</h3>
+        {/* Live Search Engine Preview */}
+        <div className="lg:col-span-6 space-y-6">
+          
+          {/* Google SERP Preview Card */}
+          <div className="bg-white/95 backdrop-blur-sm p-7 rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Live Google SERP Preview</span>
+              <span className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Valid Snippet
+              </span>
+            </div>
 
-          <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1">
-            <span className="text-[11px] text-slate-500 font-mono block">https://drbharathihomeocare.com</span>
-            <h4 className="text-sm font-bold text-blue-700 hover:underline cursor-pointer">
-              {globalSeo.metaTitle}
-            </h4>
-            <p className="text-xs text-slate-600 leading-relaxed pt-1">
-              {globalSeo.metaDescription}
-            </p>
+            <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1.5 font-sans">
+              <div className="flex items-center gap-2 text-xs text-slate-600">
+                <div className="w-4 h-4 rounded-full bg-navy-900 text-white flex items-center justify-center text-[9px] font-bold">
+                  H
+                </div>
+                <span className="font-mono text-[11px] text-slate-500">https://drbharathihomeocare.com</span>
+              </div>
+              <h4 className="text-base font-medium text-blue-700 hover:underline cursor-pointer leading-tight">
+                {globalSeo.metaTitle}
+              </h4>
+              <p className="text-xs text-slate-600 leading-relaxed pt-0.5">
+                {globalSeo.metaDescription}
+              </p>
+            </div>
+
+            <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-start gap-3 text-xs text-emerald-800">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <span className="font-black">Dynamic Sitemap & Indexing Directives Active</span>
+                <p className="text-[11px] text-emerald-700 mt-0.5">
+                  Crawler instructions permit safe indexing of patient shop and appointment booking pages.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 text-xs text-emerald-800 space-y-1">
-            <span className="font-bold flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Sitemap & Robots Ready</span>
-            </span>
-            <p className="text-[11px] text-emerald-700">Dynamic sitemap XML is enabled for search engine crawler indexing.</p>
-          </div>
         </div>
 
       </div>
 
-      {/* Edit Page Modal */}
+      {/* Edit Page SEO Modal */}
       {editingPage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <h3 className="font-bold text-navy-900 text-sm">Edit SEO for {editingPage.pageName}</h3>
-
-            <form onSubmit={handleSavePageSeo} className="space-y-3 text-xs">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2.25rem] p-7 sm:p-8 max-w-md w-full space-y-5 shadow-2xl border border-slate-100">
+            <div className="flex justify-between items-start">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Meta Title</label>
+                <span className="text-[10px] font-black uppercase tracking-wider text-brandOrange-500">Route SEO Optimizer</span>
+                <h3 className="font-heading font-black text-navy-950 text-lg">
+                  Edit {editingPage.pageName} ({editingPage.route})
+                </h3>
+              </div>
+              <button 
+                onClick={() => setEditingPage(null)}
+                className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSavePageSeo} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5">Meta Title</label>
                 <input
                   type="text"
                   required
                   value={editingPage.metaTitle}
                   onChange={(e) => setEditingPage({ ...editingPage, metaTitle: e.target.value })}
-                  className="w-full p-2 bg-slate-50 border rounded-xl"
+                  className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-bold text-navy-950 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Meta Description</label>
+                <label className="block font-bold text-slate-700 mb-1.5">Meta Description</label>
                 <textarea
                   rows={3}
                   required
                   value={editingPage.metaDescription}
                   onChange={(e) => setEditingPage({ ...editingPage, metaDescription: e.target.value })}
-                  className="w-full p-2 bg-slate-50 border rounded-xl"
+                  className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all leading-relaxed"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Focus Keyword</label>
+                <label className="block font-bold text-slate-700 mb-1.5">Focus Search Keyword</label>
                 <input
                   type="text"
                   value={editingPage.focusKeyword}
                   onChange={(e) => setEditingPage({ ...editingPage, focusKeyword: e.target.value })}
-                  className="w-full p-2 bg-slate-50 border rounded-xl"
+                  className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-medium text-slate-800"
                 />
               </div>
 
-              <div className="flex gap-2 pt-2">
-                <button type="button" onClick={() => setEditingPage(null)} className="flex-1 py-2 bg-slate-100 font-bold rounded-xl">Cancel</button>
-                <button type="submit" className="flex-1 py-2 bg-brandOrange-500 text-white font-bold rounded-xl">Save SEO</button>
+              <div className="flex gap-3 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setEditingPage(null)}
+                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 bg-gradient-to-r from-brandOrange-500 via-orange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-black rounded-xl shadow-lg shadow-brandOrange-500/25 transition-all"
+                >
+                  Save Route SEO
+                </button>
               </div>
             </form>
           </div>

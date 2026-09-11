@@ -38,10 +38,10 @@ import { AdminInventory } from './pages/admin/AdminInventory';
 import { AdminPayments } from './pages/admin/AdminPayments';
 import { AdminOffers } from './pages/admin/AdminOffers';
 import { AdminReviews } from './pages/admin/AdminReviews';
-import { AdminBlog } from './pages/admin/AdminBlog';
 import { AdminEnquiries } from './pages/admin/AdminEnquiries';
 import { AdminSeo } from './pages/admin/AdminSeo';
 import { AdminSettings } from './pages/admin/AdminSettings';
+import { AdminNotifications } from './pages/admin/AdminNotifications';
 
 export default function App() {
   return (
@@ -103,10 +103,11 @@ export default function App() {
         <Route path="payments" element={<AdminPayments />} />
         <Route path="offers" element={<AdminOffers />} />
         <Route path="reviews" element={<AdminReviews />} />
-        <Route path="blog" element={<AdminBlog />} />
+        <Route path="blog" element={<Navigate to="/admin" replace />} />
         <Route path="enquiries" element={<AdminEnquiries />} />
         <Route path="seo" element={<AdminSeo />} />
         <Route path="settings" element={<AdminSettings />} />
+        <Route path="notifications" element={<AdminNotifications />} />
       </Route>
 
       {/* 404 Fallback */}
