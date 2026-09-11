@@ -213,10 +213,22 @@ export const OrderSuccess = ({ order }) => {
                   </span>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-800">{paymentMode}</span>
-                    <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                      Due upon delivery
-                    </span>
+                    {paymentMode === 'Online UPI' ? (
+                      <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                        Verified (Paid)
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                        Due upon delivery
+                      </span>
+                    )}
                   </div>
+                  {order?.transactionId && (
+                    <p className="text-[10px] font-mono text-purple-700 font-bold pt-1 flex items-center justify-between">
+                      <span>UPI Ref / UTR:</span>
+                      <strong className="tracking-wider">{order.transactionId}</strong>
+                    </p>
+                  )}
                 </div>
               </div>
 

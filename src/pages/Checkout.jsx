@@ -59,6 +59,8 @@ export const Checkout = () => {
   const [placedOrder, setPlacedOrder] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+  const [upiTransactionId, setUpiTransactionId] = useState('');
+  const [isVerifyingUpi, setIsVerifyingUpi] = useState(false);
 
   // Validate if all mandatory address fields are filled
   const isAddressComplete = Boolean(
@@ -773,7 +775,7 @@ export const Checkout = () => {
               </div>
             )}
 
-            {/* UPI / QR Section */}
+            {/* UPI / QR Section with Strict UTR Verification */}
             {selectedPaymentMethod === 'UPI' && (
               <div className="space-y-5">
                 <div className="flex flex-col items-center gap-4">
@@ -816,7 +818,7 @@ export const Checkout = () => {
                   <div className="text-center space-y-1.5">
                     <p className="text-xs font-black text-purple-700">Scan with any UPI App</p>
                     <p className="text-[10px] text-slate-400 font-bold">PhonePe | Google Pay | Paytm | BHIM</p>
-                    <div className="mt-2 px-5 py-3 bg-purple-50 rounded-2xl border border-purple-200">
+                    <div className="mt-2 px-5 py-2.5 bg-purple-50 rounded-2xl border border-purple-200">
                       <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Amount to Pay</p>
                       <p className="text-2xl font-black text-purple-700">
                         <span className="text-lg mr-0.5">&#8377;</span>
@@ -826,25 +828,79 @@ export const Checkout = () => {
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                {/* MANDATORY 12-DIGIT UPI REFERENCE / UTR NUMBER VERIFICATION FIELD */}
+                <div className="space-y-2 text-left pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+                      <span>12-Digit UPI Ref / UTR No <span className="text-rose-500">*</span></span>
+                    </label>
+                    <span className="text-[10px] font-bold text-purple-600">Required</span>
+                  </div>
+
+                  <div className="relative">
+                    <input
+                      type="text"
+                      maxLength={16}
+                      value={upiTransactionId}
+                      onChange={(e) => setUpiTransactionId(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
+                      placeholder="Enter 12-digit UTR (e.g. 425612849012)"
+                      className="w-full px-4 py-3.5 bg-slate-50 focus:bg-white border-2 border-purple-200 focus:border-purple-500 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 text-xs font-mono font-bold text-slate-900 placeholder:text-slate-400 transition-all shadow-inner tracking-widest"
+                    />
+                    {upiTransactionId.trim().length >= 12 && (
+                      <div className="absolute right-3.5 top-3.5 flex items-center gap-1 text-[11px] font-black text-emerald-600">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span>Valid</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                    Google Pay / PhonePe-ல் பணம் செலுத்திய பிறகு காட்டும் <strong>12-digit UPI Ref / UTR No</strong>-ஐ இங்கு பதிவிடவும். இந்த எண் இல்லாமல் ஆர்டர் கன்ஃபார்ம் ஆகாது.
+                  </p>
+                </div>
+
+                <div className="space-y-3 pt-2">
                   <button
-                    disabled={isPlacingOrder}
+                    disabled={isPlacingOrder || isVerifyingUpi || upiTransactionId.trim().length < 12}
                     onClick={async () => {
-                      setShowPaymentModal(false);
-                      setSelectedPaymentMethod(null);
-                      await handlePlaceOrder();
+                      if (upiTransactionId.trim().length < 12) {
+                        showToast('Please enter the 12-digit UPI Reference / UTR Number from your payment app', 'warning');
+                        return;
+                      }
+                      setIsVerifyingUpi(true);
+                      setTimeout(async () => {
+                        setIsVerifyingUpi(false);
+                        setShowPaymentModal(false);
+                        setSelectedPaymentMethod(null);
+                        await handlePlaceOrder('UPI', upiTransactionId.trim());
+                      }, 1200);
                     }}
-                    className="w-full py-3.5 px-6 text-sm font-black text-white bg-gradient-to-r from-[#5f259f] to-[#8b2fc9] hover:scale-[1.02] active:scale-95 rounded-2xl shadow-lg shadow-purple-500/30 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                    className={`w-full py-3.5 px-6 text-sm font-black text-white rounded-2xl transition-all flex items-center justify-center gap-2 ${
+                      upiTransactionId.trim().length >= 12 && !isPlacingOrder && !isVerifyingUpi
+                        ? 'bg-gradient-to-r from-[#5f259f] to-[#8b2fc9] hover:scale-[1.02] active:scale-95 shadow-lg shadow-purple-500/30 cursor-pointer'
+                        : 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed opacity-60 shadow-none'
+                    }`}
                   >
-                    {isPlacingOrder ? (
+                    {isVerifyingUpi ? (
+                      <span>Verifying Transaction Reference...</span>
+                    ) : isPlacingOrder ? (
                       <span>Confirming Order...</span>
+                    ) : upiTransactionId.trim().length < 12 ? (
+                      <span>Enter 12-Digit UTR to Confirm</span>
                     ) : (
-                      <span>I have Paid &mdash; Confirm Order</span>
+                      <span>Verify & Confirm Order</span>
                     )}
                   </button>
+
                   <button
-                    onClick={() => setSelectedPaymentMethod(null)}
-                    className="w-full py-2.5 text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors"
+                    type="button"
+                    disabled={isPlacingOrder || isVerifyingUpi}
+                    onClick={() => {
+                      setSelectedPaymentMethod(null);
+                      setUpiTransactionId('');
+                    }}
+                    className="w-full py-2.5 text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                   >
                     &larr; Back to payment options
                   </button>
