@@ -47,7 +47,6 @@ export const Checkout = () => {
     state: 'Tamil Nadu',
     postalCode: '627811',
     country: 'India',
-    gstNumber: '',
     saveAddress: true
   });
 
@@ -419,20 +418,6 @@ export const Checkout = () => {
                           <option value="India">India</option>
                         </select>
                       </div>
-                    </div>
-
-                    {/* GST Number */}
-                    <div>
-                      <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider mb-2">
-                        GST Number (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.gstNumber}
-                        onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
-                        placeholder="Enter 15-digit GSTIN if applicable"
-                        className="w-full px-4 py-3 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-[#f97316] focus:ring-4 focus:ring-orange-500/10 text-xs font-bold text-slate-900 placeholder-slate-400 shadow-2xs"
-                      />
                     </div>
 
                     {/* Save Address Checkbox */}
