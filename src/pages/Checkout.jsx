@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
+import phonepeQRImage from '../assets/WhatsApp Image 2026-09-10 at 10.05.20.jpeg';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -782,7 +783,7 @@ export const Checkout = () => {
                   {/* QR Code Image */}
                   <div className="bg-white rounded-2xl p-3 shadow-lg border border-purple-100 ring-4 ring-purple-100">
                     <img
-                      src={'/src/assets/WhatsApp%20Image%202026-09-10%20at%2010.05.20.jpeg'}
+                      src={phonepeQRImage}
                       alt="PhonePe QR Code - Bharathi Homeopathy Clinic"
                       className="w-52 h-52 object-contain rounded-xl"
                       onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
