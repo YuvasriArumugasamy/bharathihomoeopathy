@@ -42,6 +42,7 @@ import { AdminBlog } from './pages/admin/AdminBlog';
 import { AdminEnquiries } from './pages/admin/AdminEnquiries';
 import { AdminSeo } from './pages/admin/AdminSeo';
 import { AdminSettings } from './pages/admin/AdminSettings';
+import { AdminNotifications } from './pages/admin/AdminNotifications';
 
 export default function App() {
   return (
@@ -107,6 +108,7 @@ export default function App() {
         <Route path="enquiries" element={<AdminEnquiries />} />
         <Route path="seo" element={<AdminSeo />} />
         <Route path="settings" element={<AdminSettings />} />
+        <Route path="notifications" element={<AdminNotifications />} />
       </Route>
 
       {/* 404 Fallback */}

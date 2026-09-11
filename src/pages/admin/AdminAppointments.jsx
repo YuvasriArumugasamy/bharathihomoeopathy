@@ -60,36 +60,17 @@ export const AdminAppointments = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-8 ">
       
       {/* Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-7 sm:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white text-slate-900 text-xs font-black tracking-wider uppercase shadow-md border border-white">
-              <Stethoscope className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
-              Clinical Consultations
-            </div>
-            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-              Appointments Desk
-            </h1>
-            <p className="text-white text-xs sm:text-sm font-bold max-w-xl leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-              Streamline Dr. Bharathi’s daily clinical caseload, video consultations, and patient slot rescheduling.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="px-5 py-3 rounded-2xl bg-white text-slate-900 shadow-xl border border-white flex items-center gap-3.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <div className="text-left">
-                <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold">Doctor Availability</span>
-                <span className="text-xs font-black text-slate-900">Active on Consultation</span>
-              </div>
-            </div>
-          </div>
+        
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
+          <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+            Appointments & Consultations
+          </h1>
         </div>
       </div>
 
@@ -349,7 +330,7 @@ export const AdminAppointments = () => {
 
       {/* Reschedule Modal */}
       {rescheduleModalApt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-white rounded-[2.25rem] p-7 max-w-md w-full space-y-5 shadow-2xl border border-slate-100">
             <div className="flex justify-between items-start">
               <div>

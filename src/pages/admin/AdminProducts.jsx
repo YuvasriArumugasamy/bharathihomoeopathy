@@ -133,42 +133,22 @@ export const AdminProducts = () => {
     <div className="space-y-6 pb-12 font-sans">
       
       {/* 1. Hero Header Banner */}
-      <div className="relative bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-7 sm:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden text-white">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 space-y-2">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 font-black text-[10.5px] uppercase tracking-wider shadow-md border border-white">
-              <Package className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
-              Dispensary Stock & Catalog
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 font-black text-xs shadow-md border border-white">
-              {products.length} Products Registered
-            </span>
-            {lowStockCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-600 text-white font-black text-xs shadow-md border border-rose-500">
-                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                {lowStockCount} Low Stock
-              </span>
-            )}
-          </div>
-
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-display drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+        
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
+          <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
             Products & Remedies Catalog
           </h1>
-          <p className="text-white text-xs sm:text-sm font-bold max-w-xl leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-            Manage potencies, herbal tinctures, dilution stocks, pricing strategies, and patient availability.
-          </p>
+          <button
+            onClick={handleOpenAdd}
+            className="w-full sm:w-auto justify-center relative z-10 inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white shrink-0"
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>Add New Remedy</span>
+          </button>
         </div>
-
-        <button
-          onClick={handleOpenAdd}
-          className="relative z-10 inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white shrink-0"
-        >
-          <Plus className="w-4 h-4 stroke-[3]" />
-          <span>Add New Remedy</span>
-        </button>
       </div>
 
       {/* 2. Filter & Command Bar */}
@@ -217,7 +197,7 @@ export const AdminProducts = () => {
 
       {/* 3. Luxury Products Table */}
       <div className="bg-white rounded-[2rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="bg-slate-50/90 text-slate-400 uppercase tracking-wider text-[10px] font-black border-b border-slate-100">
@@ -341,11 +321,66 @@ export const AdminProducts = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile Card List */}
+        <div className="md:hidden flex flex-col gap-3 p-3">
+          {filteredProducts.map((prod) => (
+            <div
+              key={prod.id + '-card'}
+              onClick={() => handleOpenEdit(prod)}
+              className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 flex items-start gap-3 cursor-pointer active:scale-[0.98] transition-all hover:shadow-md hover:border-orange-200"
+            >
+              <img
+                src={prod.image}
+                alt={prod.name}
+                className="w-16 h-16 rounded-xl object-cover bg-slate-100 border border-slate-200/80 shrink-0 shadow-xs"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <h4 className="font-extrabold text-slate-900 text-sm leading-snug line-clamp-2 flex-1">{prod.name}</h4>
+                  <span className={`shrink-0 inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase border ${
+                    prod.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : prod.status === 'Draft' ? 'bg-slate-100 text-slate-600 border-slate-200'
+                    : 'bg-rose-50 text-rose-700 border-rose-200'
+                  }`}>
+                    <span className={`w-1 h-1 rounded-full ${
+                      prod.status === 'Active' ? 'bg-emerald-500' : prod.status === 'Draft' ? 'bg-slate-400' : 'bg-rose-500'
+                    }`} />
+                    {prod.status}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-lg">{prod.category}</span>
+                  {prod.isBestSeller && (
+                    <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-lg border border-amber-200">
+                      <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" /> Best Seller
+                    </span>
+                  )}
+                  {prod.isFeatured && (
+                    <span className="text-[9px] font-black text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded-lg border border-purple-200">Featured</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="font-black text-slate-900 text-sm">₹{prod.offerPrice || prod.regularPrice}</span>
+                    {prod.regularPrice > (prod.offerPrice || prod.regularPrice) && (
+                      <span className="text-[10px] text-slate-400 line-through font-semibold">₹{prod.regularPrice}</span>
+                    )}
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${prod.stock <= 5 ? 'text-rose-600 bg-rose-50' : 'text-slate-500 bg-slate-100'}`}>
+                    {prod.stock} in stock
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
       </div>
 
       {/* 4. Add / Edit Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md">
           <div className="bg-white rounded-[2.25rem] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl space-y-5 border border-slate-100">
             <div className="flex justify-between items-center pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">

@@ -180,7 +180,7 @@ export const AdminInventory = () => {
 
       {/* 4. Luxury Inventory Table */}
       <div className="bg-white rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="bg-slate-50/90 text-slate-400 uppercase tracking-wider text-[10px] font-black border-b border-slate-100">
@@ -248,9 +248,64 @@ export const AdminInventory = () => {
             </tbody>
           </table>
         </div>
+        {/* Mobile Inventory Cards */}
+        <div className="md:hidden flex flex-col gap-3.5 p-3.5 sm:p-4 bg-slate-50/60">
+          {filteredInventory.map((inv) => (
+            <div
+              key={inv.id + '-card'}
+              onClick={() => setAdjustModalItem(inv)}
+              className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_4px_16px_-2px_rgba(15,36,56,0.06)] p-4 flex flex-col gap-3 cursor-pointer active:scale-[0.98] transition-all hover:shadow-md hover:border-orange-300"
+            >
+              <div className="flex items-start gap-3.5">
+                <img
+                  src={inv.image}
+                  alt={inv.productName}
+                  className="w-12 h-12 rounded-xl object-cover bg-slate-100 border border-slate-200/80 shrink-0 shadow-xs"
+                />
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-extrabold text-slate-900 text-sm leading-snug">{inv.productName}</h4>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="font-mono text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                      {inv.sku}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                      {inv.category}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                <div>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase block">Current</span>
+                  <span className={`font-black text-xs font-display ${
+                    inv.currentStock <= 0 ? 'text-rose-600' : inv.currentStock <= inv.lowStockThreshold ? 'text-amber-600' : 'text-slate-900'
+                  }`}>
+                    {inv.currentStock} units
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase block">Reserved</span>
+                  <span className="font-bold text-xs text-slate-600">{inv.reservedStock}</span>
+                </div>
+                <div>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase block">Available</span>
+                  <span className="font-black text-xs text-emerald-600">{inv.availableStock}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-brandOrange-600 font-bold">
+                <span className="text-slate-400 text-[11px]">Click to modify</span>
+                <span className="inline-flex items-center gap-1 font-black">
+                  Adjust Stock <Plus className="w-3.5 h-3.5" />
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* 5. Inventory Adjustment Audit History Logs */}
+{/* 5. Inventory Adjustment Audit History Logs */}
       <div className="bg-white/95 backdrop-blur-sm p-6 sm:p-7 rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-4">
         <div className="flex justify-between items-center pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
@@ -288,7 +343,7 @@ export const AdminInventory = () => {
 
       {/* 6. Stock Adjustment Modal */}
       {adjustModalItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-150">
           <div className="bg-white rounded-[2rem] p-6 sm:p-8 max-w-md w-full space-y-5 shadow-2xl border border-slate-100">
             <div className="flex justify-between items-center pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">

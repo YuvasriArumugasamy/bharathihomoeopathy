@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   IndianRupee, 
@@ -30,6 +30,13 @@ import {
 import { adminDashboardData } from '../../data/adminDashboardData';
 
 export const AdminDashboard = () => {
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    if (hour < 21) return 'Good Evening';
+    return 'Good Night';
+  };
   const [timeFilter, setTimeFilter] = useState('7 Days');
   const [metricView, setMetricView] = useState('revenue'); // 'revenue' | 'orders'
   const [chartTheme, setChartTheme] = useState('teal'); // 'teal' | 'indigo' | 'purple' | 'amber'
@@ -171,53 +178,19 @@ export const AdminDashboard = () => {
     <div className="space-y-8 pb-12 font-sans">
       
       {/* 1. Hero Command Center Banner */}
-      <div className="relative rounded-[2.25rem] bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-10 shadow-2xl shadow-orange-500/25 border border-white/40 overflow-hidden text-white">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+        <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
         
-        {/* Ambient Glows */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute -bottom-10 left-1/3 w-80 h-80 bg-amber-300/25 rounded-full blur-[90px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25)_0%,transparent_60%)] pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
           
-          {/* Left Greeting & Status */}
-          <div className="space-y-3 max-w-2xl">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 font-black text-[10.5px] uppercase tracking-wider shadow-md border border-white">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live Dispensary Online
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 font-black text-[10.5px] tracking-wide shadow-md border border-white">
-                <Calendar className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
-                {new Date().toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
-              </span>
-            </div>
+          {/* Left Greeting */}
+          <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+            {getGreeting()}, Dr. Bharathi
+          </h1>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-              Good Morning, <span className="font-serif italic font-bold text-white drop-shadow-md">Dr. Bharathi</span>
-            </h1>
-
-            <p className="text-white text-xs sm:text-sm font-bold leading-relaxed max-w-xl drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-              Real-time synchronization across patient consultations, homeopathic remedy orders, and clinic inventory today.
-            </p>
-
-            {/* Micro Highlights Pill Bar - High Contrast Solid White Cards */}
-            <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
-              <div className="flex items-center gap-2.5 bg-white text-slate-900 px-4 py-2 rounded-xl shadow-md font-bold border border-white">
-                <Clock className="w-4 h-4 text-orange-600 stroke-[2.5]" />
-                <span className="text-slate-600 font-medium">Next appointment:</span>
-                <span className="text-slate-950 font-black">09:30 AM</span>
-              </div>
-              <div className="flex items-center gap-2.5 bg-white text-slate-900 px-4 py-2 rounded-xl shadow-md font-bold border border-white">
-                <ShoppingBag className="w-4 h-4 text-orange-600 stroke-[2.5]" />
-                <span className="text-slate-600 font-medium">Pending fulfillment:</span>
-                <span className="text-slate-950 font-black">6 orders</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Quick Action Controls - Crystal Clear Solid White Buttons */}
-          <div className="relative z-10 flex flex-wrap items-center gap-3 shrink-0">
+          {/* Right: Quick Action Controls */}
+          <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 shrink-0">
             <Link
               to="/admin/products"
               className="inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 font-black rounded-2xl text-xs sm:text-sm shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-white cursor-pointer"
@@ -234,9 +207,7 @@ export const AdminDashboard = () => {
               <span>Appointments</span>
             </Link>
           </div>
-
         </div>
-
       </div>
 
       {/* 2. Elevated 8 KPI Metric Cards Grid */}
@@ -611,7 +582,7 @@ export const AdminDashboard = () => {
             </Link>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden sm:block">
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="text-slate-400 uppercase tracking-wider text-[10px] font-black border-b border-slate-100">
@@ -649,9 +620,37 @@ export const AdminDashboard = () => {
               </tbody>
             </table>
           </div>
+          {/* Mobile Recent Orders Cards */}
+          <div className="sm:hidden flex flex-col gap-2.5 pt-3">
+            {adminDashboardData.recentOrders.map((ord) => (
+              <div
+                key={ord.id + '-card'}
+                className="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-100 flex items-center justify-between"
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-black text-xs text-slate-900">{ord.id}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
+                      ord.status === 'Delivered' 
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                        : ord.status === 'Processing'
+                        ? 'bg-purple-50 text-purple-700 border-purple-200'
+                        : 'bg-amber-50 text-amber-700 border-amber-200'
+                    }`}>
+                      {ord.status}
+                    </span>
+                  </div>
+                  <p className="text-xs font-bold text-slate-700 mt-1">{ord.customer}</p>
+                </div>
+                <span className="font-black text-sm text-brandOrange-600 font-display">
+                  â‚¹{ord.amount.toLocaleString()}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Top Selling Remedies */}
+{/* Top Selling Remedies */}
         <div className="lg:col-span-5 bg-white/95 backdrop-blur-sm p-6 sm:p-7 rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-4">
           <div className="flex justify-between items-center pb-3 border-b border-slate-100">
             <div>

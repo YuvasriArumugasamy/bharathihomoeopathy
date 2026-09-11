@@ -28,38 +28,17 @@ export const AdminSeo = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-8 ">
       
       {/* Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-7 sm:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white text-slate-900 text-[10.5px] font-black tracking-widest uppercase shadow-md border border-white">
-              <Globe className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
-              Search Engine Optimization
-            </div>
-            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-              SEO & Indexing Management
-            </h1>
-            <p className="text-white text-xs sm:text-sm max-w-xl font-bold leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-              Supercharge organic Google search visibility, customize OpenGraph social previews, and verify meta keywords.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="px-5 py-3.5 bg-white text-slate-900 rounded-2xl shadow-xl border border-white flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center font-black text-sm shadow-inner">
-                {avgScore}%
-              </div>
-              <div className="text-left">
-                <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-black">Health Score</span>
-                <span className="text-xs sm:text-sm font-black text-slate-900">Excellent Standing</span>
-              </div>
-            </div>
-          </div>
+        
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
+          <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+            SEO & Indexing Management
+          </h1>
         </div>
       </div>
 
@@ -131,7 +110,7 @@ export const AdminSeo = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-black uppercase tracking-wider text-slate-400">
@@ -180,9 +159,43 @@ export const AdminSeo = () => {
             </tbody>
           </table>
         </div>
+        {/* Mobile SEO Page Cards */}
+        <div className="md:hidden flex flex-col gap-3.5 p-3.5 sm:p-4 bg-slate-50/60">
+          {pageList.map((p) => (
+            <div
+              key={p.id + '-card'}
+              onClick={() => setEditingPage({ ...p })}
+              className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_4px_16px_-2px_rgba(15,36,56,0.06)] p-4 flex flex-col gap-3 cursor-pointer active:scale-[0.98] transition-all hover:shadow-md hover:border-orange-300"
+            >
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h4 className="font-heading font-black text-sm text-navy-950">{p.pageName}</h4>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  {p.score} / 100
+                </span>
+              </div>
+
+              <div>
+                <span className="font-mono text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                  {p.route}
+                </span>
+                <p className="text-xs text-slate-700 font-medium mt-1.5 line-clamp-1">{p.metaTitle}</p>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                <span className="text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded text-[10px]">
+                  Key: {p.focusKeyword}
+                </span>
+                <span className="text-brandOrange-600 font-bold flex items-center gap-1">
+                  Edit SEO <Edit className="w-3.5 h-3.5" />
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Global Metadata & Live Google Preview Grid */}
+{/* Global Metadata & Live Google Preview Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Global Metadata Form */}
@@ -284,7 +297,7 @@ export const AdminSeo = () => {
 
       {/* Edit Page SEO Modal */}
       {editingPage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-white rounded-[2.25rem] p-7 sm:p-8 max-w-md w-full space-y-5 shadow-2xl border border-slate-100">
             <div className="flex justify-between items-start">
               <div>

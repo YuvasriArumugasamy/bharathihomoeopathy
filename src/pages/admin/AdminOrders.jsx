@@ -67,39 +67,14 @@ export const AdminOrders = () => {
     <div className="space-y-6 pb-12 font-sans">
       
       {/* 1. Hero Header Banner */}
-      <div className="relative bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-7 sm:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden text-white">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 space-y-2">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 font-black text-[10.5px] uppercase tracking-wider shadow-md border border-white">
-              <ShoppingBag className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
-              Dispensary Fulfillment & Logistics
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 font-black text-xs shadow-md border border-white">
-              {orders.length} Total Orders Registered
-            </span>
-          </div>
-
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-display drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+        
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
+          <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
             Orders & Prescription Fulfillment
           </h1>
-          <p className="text-white text-xs sm:text-sm font-bold max-w-xl leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-            Monitor dispensary packing pipelines, courier dispatches, customer payment verifications, and delivery updates.
-          </p>
-        </div>
-
-        <div className="relative z-10 flex items-center gap-3 shrink-0">
-          <div className="px-5 py-3.5 bg-white text-slate-900 rounded-2xl shadow-xl border border-white flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center font-bold">
-              <IndianRupee className="w-5 h-5 stroke-[2.5]" />
-            </div>
-            <div className="text-left">
-              <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Volume Sum</div>
-              <div className="text-lg font-black text-slate-950 font-display">₹{totalRevenue.toLocaleString()}</div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -183,7 +158,7 @@ export const AdminOrders = () => {
 
       {/* 4. Luxury Orders Table */}
       <div className="bg-white rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="bg-slate-50/90 text-slate-400 uppercase tracking-wider text-[10px] font-black border-b border-slate-100">
@@ -263,11 +238,69 @@ export const AdminOrders = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden flex flex-col gap-3.5 p-3.5 sm:p-4 bg-slate-50/60">
+          {filteredOrders.map((ord) => (
+            <div
+              key={ord.id + '-card'}
+              onClick={() => setSelectedOrderDrawer(ord)}
+              className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_4px_16px_-2px_rgba(15,36,56,0.06)] p-4 flex flex-col gap-3 cursor-pointer active:scale-[0.98] transition-all hover:shadow-md hover:border-orange-300"
+            >
+              <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+                <span className="font-mono font-black text-xs text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/80">
+                  {ord.orderId}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border shadow-2xs ${
+                    ord.paymentStatus === 'Paid' 
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${ord.paymentStatus === 'Paid' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                    {ord.paymentStatus}
+                  </span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border shadow-2xs ${
+                    ord.orderStatus === 'Delivered' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                    ord.orderStatus === 'Shipped' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' :
+                    ord.orderStatus === 'Processing' ? 'bg-purple-50 text-purple-800 border-purple-200' : 
+                    'bg-amber-50 text-amber-800 border-amber-200'
+                  }`}>
+                    {ord.orderStatus}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h4 className="font-extrabold text-slate-900 text-sm">{ord.customer.name}</h4>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">{ord.customer.phone}</p>
+                  <p className="text-[11px] text-slate-400 mt-1">{ord.createdAt}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="font-black text-slate-900 text-base font-display block">
+                    ₹{ord.total.toLocaleString()}
+                  </span>
+                  <span className="font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded text-[10px] mt-1 inline-block">
+                    {ord.paymentMethod}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-brandOrange-600 font-bold">
+                <span className="text-slate-400 text-[11px]">{ord.items?.length || 1} item(s)</span>
+                <span className="inline-flex items-center gap-1">
+                  View Full Details <Eye className="w-3.5 h-3.5" />
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* 5. Luxury Order Details Drawer */}
       {selectedOrderDrawer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-end bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[60] flex items-center justify-end bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-lg h-full overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl animate-in slide-in-from-right duration-300 border-l border-slate-100 flex flex-col justify-between">
             
             <div className="space-y-6">

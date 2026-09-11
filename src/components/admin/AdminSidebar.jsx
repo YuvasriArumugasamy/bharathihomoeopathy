@@ -14,7 +14,8 @@ import {
   BookOpen, 
   MessageSquare, 
   Search, 
-  Settings, 
+  Settings,
+  Bell, 
   ShieldCheck, 
   X, 
   ExternalLink,
@@ -40,7 +41,8 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
     { name: 'Blog', path: '/admin/blog', icon: BookOpen },
     { name: 'Enquiries', path: '/admin/enquiries', icon: MessageSquare },
     { name: 'SEO Management', path: '/admin/seo', icon: Search },
-    { name: 'Settings', path: '/admin/settings', icon: Settings }
+    { name: 'Settings', path: '/admin/settings', icon: Settings },
+    { name: 'Notifications', path: '/admin/notifications', icon: Bell }
   ];
 
   return (

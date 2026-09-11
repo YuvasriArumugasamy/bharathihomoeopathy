@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { 
   CreditCard, Search, CheckCircle2, RotateCcw, AlertTriangle, 
   ArrowDownLeft, X, IndianRupee, ShieldCheck, Banknote, Clock, 
@@ -66,38 +66,17 @@ export const AdminPayments = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-8 ">
       
       {/* Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-7 sm:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white text-slate-900 text-xs font-black tracking-wider uppercase shadow-md border border-white">
-              <CreditCard className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
-              Financial Settlements & Treasury
-            </div>
-            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-              Payments & Refunds
-            </h1>
-            <p className="text-white text-xs sm:text-sm font-bold max-w-xl leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-              Track live Razorpay transactions, Cash-on-Delivery reconcilements, order settlement ledger, and clinic refunds.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="px-5 py-3.5 rounded-2xl bg-white text-slate-900 shadow-xl border border-white flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black">
-                <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
-              </div>
-              <div className="text-left">
-                <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold">Gateway Integration</span>
-                <span className="text-xs font-black text-slate-950">Razorpay Live 256-bit</span>
-              </div>
-            </div>
-          </div>
+        
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
+          <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+            Payments & Transactions
+          </h1>
         </div>
       </div>
 
@@ -209,7 +188,7 @@ export const AdminPayments = () => {
 
       {/* Payments Ledger Table */}
       <div className="bg-white/95 backdrop-blur-sm rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-black uppercase tracking-wider text-slate-400">
@@ -321,11 +300,87 @@ export const AdminPayments = () => {
             </tbody>
           </table>
         </div>
+        {/* Mobile Payments Cards */}
+        <div className="md:hidden flex flex-col gap-3.5 p-3.5 sm:p-4 bg-slate-50/60">
+          {filtered.length === 0 ? (
+            <div className="p-8 text-center text-slate-400">
+              <p className="font-bold text-sm text-slate-600">No payment records found.</p>
+            </div>
+          ) : (
+            filtered.map((p) => (
+              <div
+                key={p.id + '-card'}
+                className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_4px_16px_-2px_rgba(15,36,56,0.06)] p-4 flex flex-col gap-3"
+              >
+                <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+                  <span className="font-mono text-[11px] font-black text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/80">
+                    {p.paymentId}
+                  </span>
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ring-1 ${statusStyles[p.paymentStatus] || 'bg-slate-100 text-slate-700'}`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${
+                      p.paymentStatus === 'Paid' ? 'bg-emerald-500' :
+                      p.paymentStatus === 'Pending' ? 'bg-amber-500' : 'bg-purple-500'
+                    }`} />
+                    {p.paymentStatus}
+                  </span>
+                </div>
+
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h4 className="font-extrabold text-slate-900 text-sm">{p.customerName}</h4>
+                    <p className="font-mono text-xs text-slate-500 mt-0.5">Order: {p.orderId}</p>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/60 mt-1">
+                      {p.paymentMethod === 'Razorpay' ? (
+                        <CreditCard className="w-3 h-3 text-sky-500" />
+                      ) : (
+                        <Banknote className="w-3 h-3 text-emerald-500" />
+                      )}
+                      {p.paymentMethod}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Amount</span>
+                    <span className="font-black text-base text-navy-950 font-display block mt-0.5">
+                      â‚¹{(p.amount || 0).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-end">
+                  {p.paymentStatus === 'Pending' ? (
+                    <button
+                      onClick={() => handleMarkAsPaid(p.id)}
+                      className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs shadow-xs transition-all flex items-center justify-center gap-1"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      Mark Paid
+                    </button>
+                  ) : p.paymentStatus === 'Paid' ? (
+                    <button
+                      onClick={() => {
+                        setRefundModalItem(p);
+                        setRefundReason('');
+                      }}
+                      className="w-full py-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200/80 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Issue Refund
+                    </button>
+                  ) : (
+                    <span className="text-slate-400 font-medium text-xs italic">
+                      Reversed
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
-      {/* Refund Modal */}
+{/* Refund Modal */}
       {refundModalItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-white rounded-[2.25rem] p-7 max-w-md w-full space-y-5 shadow-2xl border border-slate-100">
             <div className="flex justify-between items-start">
               <div>
