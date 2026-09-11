@@ -16,7 +16,6 @@ import {
   Search, 
   Settings,
   Bell, 
-  ShieldCheck, 
   X, 
   LogOut
 } from 'lucide-react';
@@ -24,7 +23,7 @@ import { useAuth } from '../../context/AuthContext';
 import assets from '../../assets';
 
 export const AdminSidebar = ({ isOpen, onClose }) => {
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
 
   const navSections = [
     {
@@ -100,20 +99,12 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 mb-1.5">
+              <div className="flex items-center gap-1.5">
                 <div className="h-[1px] w-2.5 bg-gradient-to-r from-transparent to-amber-300/70" />
-                <span className="text-[9px] font-black uppercase tracking-[0.22em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-orange-300 to-amber-200 drop-shadow-xs">
+                <span className="text-[9.5px] font-black uppercase tracking-[0.22em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-orange-300 to-amber-200 drop-shadow-xs">
                   HOMEO CARE
                 </span>
                 <div className="h-[1px] w-2.5 bg-gradient-to-l from-transparent to-amber-300/70" />
-              </div>
-
-              <div className="flex items-center">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-white/15 via-white/10 to-white/5 border border-white/20 text-[8px] font-black uppercase tracking-[0.14em] text-white shadow-xs backdrop-blur-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 ring-2 ring-emerald-400/30 animate-pulse shrink-0" />
-                  <ShieldCheck className="w-3 h-3 text-amber-300 shrink-0" />
-                  <span>Admin Portal</span>
-                </span>
               </div>
             </div>
           </Link>
@@ -177,23 +168,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
         </nav>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-white/15 space-y-3 shrink-0 bg-[#1A4B63]/90 backdrop-blur-md">
-          {/* Quick Doctor Profile Card */}
-          <div className="flex items-center gap-3.5 p-2.5 rounded-2xl bg-white/15 border border-white/20 shadow-sm">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-black text-sm flex items-center justify-center shadow-md shrink-0 border border-white/30">
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'DB'}
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-sm font-black text-white truncate drop-shadow-xs">
-                {user?.name || 'Dr. Bharathi'}
-              </span>
-              <span className="text-xs text-emerald-300 font-black flex items-center gap-1.5 mt-0.5 drop-shadow-xs">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0 ring-2 ring-emerald-400/40" />
-                Clinic Administrator
-              </span>
-            </div>
-          </div>
-
+        <div className="p-4 border-t border-white/15 shrink-0 bg-[#1A4B63]/90 backdrop-blur-md">
           <button
             onClick={logout}
             className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl text-sm font-black text-rose-100 hover:text-white bg-rose-500/25 hover:bg-rose-500/35 border border-rose-400/40 hover:border-rose-400/60 transition-all active:scale-98 cursor-pointer group shadow-sm"
