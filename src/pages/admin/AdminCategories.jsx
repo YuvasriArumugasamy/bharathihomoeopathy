@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layers, Plus, Edit, Trash2, Search, Check, X, Star, Sparkles, FolderPlus, ArrowUpRight } from 'lucide-react';
+import { Layers, Plus, Edit, Trash2, Search, Check, X, Star, Sparkles, FolderPlus, ArrowUpRight, Upload } from 'lucide-react';
 import { initialAdminCategories } from '../../data/adminCategoriesData';
 import { useToast } from '../../context/ToastContext';
 import { slugify } from '../../utils/slugify';
@@ -27,7 +27,7 @@ export const AdminCategories = () => {
     setFormData({
       name: '',
       description: '',
-      image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=400&q=80',
+      image: '',
       status: 'Active',
       isFeatured: false
     });
@@ -38,6 +38,31 @@ export const AdminCategories = () => {
     setEditingCategory(cat);
     setFormData({ ...cat });
     setModalOpen(true);
+  };
+
+  const handleImageFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select a valid image file (PNG, JPG, WEBP)', 'error');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image file size should be less than 5MB', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFormData(prev => ({ ...prev, image: reader.result }));
+      showToast('Image uploaded successfully!', 'success');
+    };
+    reader.onerror = () => {
+      showToast('Failed to read image file', 'error');
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSave = (e) => {
@@ -232,14 +257,47 @@ export const AdminCategories = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">Image URL</label>
-                <input
-                  type="url"
-                  placeholder="https://..."
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-700 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
-                />
+                <label className="block font-bold text-slate-700 mb-1.5">Category Image</label>
+
+                {/* File Upload Trigger Box & Preview */}
+                <div className="flex items-center gap-3.5">
+                  <label className="flex-1 border-2 border-dashed border-slate-200 hover:border-brandOrange-400 bg-slate-50 hover:bg-orange-50/40 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all group shadow-2xs">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageFileUpload}
+                      className="hidden"
+                    />
+                    <div className="w-10 h-10 rounded-xl bg-brandOrange-100 text-brandOrange-600 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform shadow-2xs">
+                      <Upload className="w-5 h-5" />
+                    </div>
+                    <span className="text-xs font-black text-slate-700 group-hover:text-brandOrange-600 transition-colors">
+                      Click here to upload image file
+                    </span>
+                    <span className="text-[10.5px] text-slate-400 mt-0.5 font-medium">
+                      Supports PNG, JPG, JPEG, WEBP (Max 5MB)
+                    </span>
+                  </label>
+
+                  {/* Image Preview Thumbnail if selected */}
+                  {formData.image && (
+                    <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-brandOrange-300 shadow-md shrink-0 group bg-slate-100">
+                      <img
+                        src={formData.image}
+                        alt="Category preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, image: '' })}
+                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center shadow-md transition-all cursor-pointer"
+                        title="Remove image"
+                      >
+                        <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
