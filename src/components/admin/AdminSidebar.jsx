@@ -70,18 +70,18 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 z-40 bg-[#143d52]/70 backdrop-blur-sm lg:hidden transition-opacity duration-300"
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen w-72 sm:w-64 bg-gradient-to-b from-[#0A1724] via-[#0F2438] to-[#07111B] text-white flex flex-col border-r border-white/10 shadow-2xl transition-transform duration-300 ease-out rounded-r-[2rem] lg:rounded-none ${
+        className={`fixed top-0 left-0 z-50 h-screen w-72 sm:w-64 bg-gradient-to-b from-[#1F5975] via-[#246582] to-[#1A4B63] text-white flex flex-col border-r border-[#194459] shadow-2xl transition-transform duration-300 ease-out rounded-r-[2rem] lg:rounded-none ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Brand Header */}
-        <div className="h-20 flex items-center justify-between px-5 border-b border-white/10 shrink-0 bg-[#07111B]/60 backdrop-blur-md">
+        <div className="h-20 flex items-center justify-between px-5 border-b border-white/10 shrink-0 bg-[#1A4B63]/60 backdrop-blur-md">
           <Link to="/admin" className="flex items-center gap-3 group min-w-0" onClick={() => onClose && onClose()}>
             <div className="w-11 h-11 rounded-2xl overflow-hidden bg-white p-1 shadow-md shadow-black/20 border border-white/20 ring-2 ring-brandOrange-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
               <img 
@@ -122,7 +122,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
         <nav className="flex-1 overflow-y-auto px-3.5 py-4 space-y-5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {navSections.map((section, sIdx) => (
             <div key={sIdx} className="space-y-1">
-              <span className="text-[9.5px] font-black uppercase tracking-[0.2em] text-slate-400/90 px-3 py-1 block">
+              <span className="text-[9.5px] font-black uppercase tracking-[0.2em] text-sky-200/75 px-3 py-1 block">
                 {section.title}
               </span>
 
@@ -135,8 +135,8 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
                   className={({ isActive }) =>
                     `group flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-bold transition-all duration-200 ${
                       isActive
-                        ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-lg shadow-orange-500/25 border border-white/25'
-                        : 'text-slate-300 hover:text-white hover:bg-white/10 hover:translate-x-1'
+                        ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-lg shadow-orange-500/30 border border-white/30'
+                        : 'text-white/85 hover:text-white hover:bg-white/10 hover:translate-x-1'
                     }`
                   }
                 >
@@ -146,7 +146,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
                         <div className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 transition-all ${
                           isActive 
                             ? 'bg-white/25 text-white shadow-inner' 
-                            : 'bg-white/5 text-slate-300 group-hover:text-white group-hover:bg-white/10'
+                            : 'bg-white/10 text-white/80 group-hover:text-white group-hover:bg-white/20'
                         }`}>
                           <item.icon className="w-3.5 h-3.5" />
                         </div>
@@ -165,9 +165,9 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
         </nav>
 
         {/* Footer Actions */}
-        <div className="p-3.5 border-t border-white/10 space-y-2.5 shrink-0 bg-[#07111B]/80 backdrop-blur-md">
+        <div className="p-3.5 border-t border-white/10 space-y-2.5 shrink-0 bg-[#1A4B63]/80 backdrop-blur-md">
           {/* Quick Doctor Profile Card */}
-          <div className="flex items-center gap-3 p-2 rounded-2xl bg-white/5 border border-white/10">
+          <div className="flex items-center gap-3 p-2 rounded-2xl bg-white/10 border border-white/10">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-black text-xs flex items-center justify-center shadow-md shrink-0 border border-white/20">
               {user?.name ? user.name.charAt(0).toUpperCase() : 'DB'}
             </div>
@@ -175,7 +175,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
               <span className="text-xs font-black text-white truncate">
                 {user?.name || 'Dr. Bharathi'}
               </span>
-              <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1 mt-0.5">
+              <span className="text-[10px] text-emerald-300 font-bold flex items-center gap-1 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
                 Clinic Administrator
               </span>
@@ -184,9 +184,9 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
 
           <button
             onClick={logout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-300 hover:text-white hover:bg-rose-500/20 border border-rose-500/20 hover:border-rose-500/40 transition-all active:scale-98 cursor-pointer group"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-200 hover:text-white hover:bg-rose-500/25 border border-rose-400/30 hover:border-rose-400/50 transition-all active:scale-98 cursor-pointer group"
           >
-            <LogOut className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform text-rose-400" />
+            <LogOut className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform text-rose-300" />
             <span>Sign Out Session</span>
           </button>
         </div>
