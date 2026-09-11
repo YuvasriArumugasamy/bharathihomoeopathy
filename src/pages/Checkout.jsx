@@ -25,7 +25,8 @@ import {
   ArrowRight,
   Package,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  ExternalLink
 } from 'lucide-react';
 
 export const Checkout = () => {
