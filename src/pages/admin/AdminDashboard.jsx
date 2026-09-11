@@ -248,7 +248,7 @@ export const AdminDashboard = () => {
               className="inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 font-black rounded-2xl text-xs sm:text-sm shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-white cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
-              <span>Add Remedy</span>
+              <span>Add Product</span>
             </Link>
 
             <Link
