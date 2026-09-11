@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { 
   Boxes, 
   AlertTriangle, 
@@ -75,44 +75,19 @@ export const AdminInventory = () => {
   return (
     <div className="space-y-6 pb-12 font-sans">
       
-      {/* 1. Hero Header Banner */}
-      <div className="relative bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-7 sm:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden text-white">
+            {/* 1. Hero Header Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 space-y-2">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 font-black text-[10.5px] uppercase tracking-wider shadow-md border border-white">
-              <Boxes className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
-              Dispensary Stock Control & Audits
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 font-black text-xs shadow-md border border-white">
-              {inventory.length} Tracked Formulations
-            </span>
-          </div>
-
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-display drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+        
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
+          <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
             Dispensary Inventory Control
           </h1>
-          <p className="text-white text-xs sm:text-sm font-bold max-w-xl leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-            Monitor real-time dispensary reserves, set safety stock replenishment thresholds, and record batch adjustments.
-          </p>
-        </div>
-
-        <div className="relative z-10 flex items-center gap-3 shrink-0">
-          <div className="px-5 py-3.5 bg-white text-slate-900 rounded-2xl shadow-xl border border-white flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center font-bold">
-              <Package className="w-5 h-5 stroke-[2.5]" />
-            </div>
-            <div className="text-left">
-              <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Total Units</div>
-              <div className="text-lg font-black text-slate-950 font-display">{totalStockUnits.toLocaleString()} in Stock</div>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* 2. KPI Stock Overview Cards */}
+{/* 2. KPI Stock Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
         <div className="relative bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center justify-between overflow-hidden group">
           <div className="space-y-1">

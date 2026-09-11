@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { 
   Users, Search, Filter, ShieldAlert, CheckCircle2, Eye, Ban, X, 
   User, Phone, Mail, MapPin, ShoppingBag, IndianRupee, ShieldCheck, 
@@ -46,38 +46,19 @@ export const AdminCustomers = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       
-      {/* Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-7 sm:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white">
+            {/* 1. Hero Header Banner */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white text-slate-900 text-xs font-black tracking-wider uppercase shadow-md border border-white">
-              <Users className="w-3.5 h-3.5 text-orange-600 stroke-[2.5]" />
-              Patient & Customer CRM
-            </div>
-            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-              Patient Directory
-            </h1>
-            <p className="text-white text-xs sm:text-sm font-bold max-w-xl leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-              Access holistic medical profiles, registered prescription shipping addresses, consultation histories, and order volume.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="px-5 py-3 rounded-2xl bg-white text-slate-900 shadow-xl border border-white flex items-center gap-3.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <div className="text-left">
-                <span className="text-[10px] text-slate-500 uppercase tracking-wider block font-bold">Lifetime Sales</span>
-                <span className="text-sm font-black text-slate-950">₹{totalLifetimeRevenue.toLocaleString('en-IN')}</span>
-              </div>
-            </div>
-          </div>
+        
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
+          <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+            Patient Directory
+          </h1>
         </div>
       </div>
 
-      {/* KPI Overview Bar */}
+{/* KPI Overview Bar */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
           <div className="flex items-center justify-between">
