@@ -146,7 +146,7 @@ export const AdminProducts = () => {
             className="w-full sm:w-auto justify-center relative z-10 inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white shrink-0"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
-            <span>Add New Remedy</span>
+            <span>Add New Product</span>
           </button>
         </div>
       </div>
