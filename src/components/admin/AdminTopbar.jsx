@@ -34,7 +34,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
       <div className="flex items-center gap-3 sm:gap-4">
         <button
           onClick={onToggleSidebar}
-          className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-navy-950 transition-colors"
+          className="lg:hidden w-10 h-10 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 hover:text-navy-950 border border-slate-200/90 flex items-center justify-center shadow-2xs hover:shadow-sm transition-all active:scale-95 cursor-pointer"
           aria-label="Open sidebar"
         >
           <Menu className="w-5 h-5" />
@@ -57,13 +57,20 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
         {/* Notification Bell */}
         <Link
           to="/admin/notifications"
-          className="p-2.5 rounded-xl bg-slate-100/90 hover:bg-slate-200/80 text-slate-700 hover:text-navy-950 border border-slate-200/70 transition-all duration-200 hover:shadow-sm active:scale-95 relative cursor-pointer group"
+          className="relative w-10 h-10 rounded-2xl bg-white hover:bg-gradient-to-br hover:from-orange-50 hover:to-amber-50/60 text-slate-600 hover:text-brandOrange-600 border border-slate-200/90 hover:border-orange-300 flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06)] hover:shadow-[0_6px_20px_-2px_rgba(249,115,22,0.22)] transition-all duration-300 hover:-translate-y-0.5 active:scale-95 cursor-pointer group"
           aria-label="Notifications"
+          title="Notifications"
         >
-          <Bell className="w-4.5 h-4.5 group-hover:rotate-12 transition-transform duration-200" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-tr from-brandOrange-600 to-amber-500 text-white font-black text-[10px] rounded-full flex items-center justify-center shadow-md ring-2 ring-white animate-pulse">
+          <Bell className="w-5 h-5 text-slate-600 group-hover:text-brandOrange-600 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300" />
+          
+          {unreadCount > 0 ? (
+            <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-gradient-to-r from-brandOrange-600 to-amber-500 text-white font-black text-[10px] rounded-full flex items-center justify-center shadow-md shadow-brandOrange-500/30 ring-2 ring-white animate-pulse">
               {unreadCount}
+            </span>
+          ) : (
+            <span className="absolute top-2.5 right-2.5 flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brandOrange-400 opacity-60" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-gradient-to-tr from-brandOrange-500 to-amber-500 ring-2 ring-white" />
             </span>
           )}
         </Link>
