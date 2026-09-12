@@ -8,6 +8,7 @@ import { useToast } from '../context/ToastContext';
 import { orderService } from '../services/orderService';
 import { OrderSuccess } from '../components/checkout/OrderSuccess';
 import { EmptyState } from '../components/common/EmptyState';
+import CustomPhoneInput from '../components/common/CustomPhoneInput';
 import { 
   ShieldCheck, 
   MapPin, 
@@ -332,22 +333,15 @@ export const Checkout = () => {
 
                     {/* Phone Number with Country Code */}
                     <div>
-                      <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider mb-2">
-                        Phone Number (10 digits) <span className="text-rose-500">*</span>
-                      </label>
-                      <div className="flex gap-2">
-                        <select className="px-3 py-3 bg-slate-50 border border-slate-200/90 rounded-2xl text-xs font-bold text-slate-700 cursor-pointer">
-                          <option>+91</option>
-                        </select>
-                        <input
-                          type="tel"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          placeholder="9345865212"
-                          className="flex-1 px-4 py-3 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-[#f97316] focus:ring-4 focus:ring-orange-500/10 text-xs font-bold text-slate-900 placeholder-slate-400 shadow-2xs"
-                        />
-                      </div>
-                      {errors.phone && <p className="text-[10px] text-rose-500 mt-1 font-bold">{errors.phone}</p>}
+                      <CustomPhoneInput
+                        label="Phone Number"
+                        required={true}
+                        country="in"
+                        value={formData.phone}
+                        onChange={(phone) => setFormData({ ...formData, phone })}
+                        placeholder="Enter phone number"
+                        error={errors.phone}
+                      />
                     </div>
 
                     {/* Complete Address */}
