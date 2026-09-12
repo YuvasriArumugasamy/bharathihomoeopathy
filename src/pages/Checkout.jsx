@@ -9,7 +9,13 @@ import { orderService } from '../services/orderService';
 import { OrderSuccess } from '../components/checkout/OrderSuccess';
 import { EmptyState } from '../components/common/EmptyState';
 import CustomPhoneInput from '../components/common/CustomPhoneInput';
-import { countries } from '../data/countries';
+import { Country, State } from 'country-state-city';
+
+const popularIsoCodes = ['IN', 'AE', 'US', 'GB', 'SG', 'MY', 'AU', 'CA', 'SA', 'LK'];
+const allCountriesList = Country.getAllCountries();
+const popularCountriesList = popularIsoCodes
+  .map((code) => Country.getCountryByCode(code))
+  .filter(Boolean);
 import { 
   ShieldCheck, 
   MapPin, 
@@ -53,6 +59,28 @@ export const Checkout = () => {
     country: localStorage.getItem('user_country') || 'India',
     saveAddress: true
   });
+
+  // Dynamically resolve states according to current selected country
+  const currentCountryObj = allCountriesList.find(
+    (c) => c.name.toLowerCase() === (formData.country || 'India').toLowerCase() || c.isoCode === formData.country
+  ) || Country.getCountryByCode('IN');
+
+  const availableStates = currentCountryObj
+    ? State.getStatesOfCountry(currentCountryObj.isoCode)
+    : [];
+
+  const handleCountryChange = (countryName) => {
+    const foundC = allCountriesList.find((c) => c.name === countryName) || Country.getCountryByCode('IN');
+    const states = foundC ? State.getStatesOfCountry(foundC.isoCode) : [];
+    const firstState = states.length > 0 ? states[0].name : '';
+    setFormData((prev) => ({
+      ...prev,
+      country: countryName,
+      state: firstState
+    }));
+    localStorage.setItem('user_country', countryName);
+    window.dispatchEvent(new Event('country_changed'));
+  };
 
   const [selectedCourier, setSelectedCourier] = useState('ST COURIER');
   const [isLocating, setIsLocating] = useState(false);
@@ -397,35 +425,23 @@ export const Checkout = () => {
 
                     {/* State & Country Dropdowns */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* State Field: Select for India, Text Input for International */}
+                      {/* State / Province Field: Dynamically populated based on selected country */}
                       <div>
                         <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider mb-2">
                           State / Province <span className="text-rose-500">*</span>
                         </label>
-                        {formData.country === 'India' ? (
+                        {availableStates.length > 0 ? (
                           <select
                             value={formData.state}
                             onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                             className="w-full px-4 py-3 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-[#f97316] focus:ring-4 focus:ring-orange-500/10 text-xs font-bold text-slate-900 shadow-2xs cursor-pointer hover:border-slate-300 transition-all"
                           >
-                            <option value="Tamil Nadu">Tamil Nadu</option>
-                            <option value="Kerala">Kerala</option>
-                            <option value="Karnataka">Karnataka</option>
-                            <option value="Andhra Pradesh">Andhra Pradesh</option>
-                            <option value="Telangana">Telangana</option>
-                            <option value="Maharashtra">Maharashtra</option>
-                            <option value="Delhi">Delhi</option>
-                            <option value="Gujarat">Gujarat</option>
-                            <option value="Uttar Pradesh">Uttar Pradesh</option>
-                            <option value="West Bengal">West Bengal</option>
-                            <option value="Rajasthan">Rajasthan</option>
-                            <option value="Punjab">Punjab</option>
-                            <option value="Haryana">Haryana</option>
-                            <option value="Bihar">Bihar</option>
-                            <option value="Odisha">Odisha</option>
-                            <option value="Madhya Pradesh">Madhya Pradesh</option>
-                            <option value="Goa">Goa</option>
-                            <option value="Assam">Assam</option>
+                            <option value="" disabled>Select State / Province</option>
+                            {availableStates.map((s) => (
+                              <option key={s.isoCode || s.name} value={s.name}>
+                                {s.name}
+                              </option>
+                            ))}
                           </select>
                         ) : (
                           <input
@@ -445,35 +461,21 @@ export const Checkout = () => {
                           Country <span className="text-rose-500">*</span>
                         </label>
                         <select
-                          value={formData.country || 'India'}
-                          onChange={(e) => {
-                            const newCountry = e.target.value;
-                            setFormData((prev) => ({
-                              ...prev,
-                              country: newCountry,
-                              state: newCountry === 'India' ? (prev.state || 'Tamil Nadu') : prev.state
-                            }));
-                            localStorage.setItem('user_country', newCountry);
-                            window.dispatchEvent(new Event('country_changed'));
-                          }}
+                          value={currentCountryObj?.name || formData.country || 'India'}
+                          onChange={(e) => handleCountryChange(e.target.value)}
                           className="w-full px-4 py-3 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-[#f97316] focus:ring-4 focus:ring-orange-500/10 text-xs font-bold text-slate-900 shadow-2xs cursor-pointer hover:border-slate-300 transition-all"
                         >
                           <optgroup label="Popular Regions">
-                            <option value="India">India</option>
-                            <option value="United Arab Emirates">United Arab Emirates</option>
-                            <option value="United States of America">United States of America</option>
-                            <option value="United Kingdom">United Kingdom</option>
-                            <option value="Singapore">Singapore</option>
-                            <option value="Malaysia">Malaysia</option>
-                            <option value="Australia">Australia</option>
-                            <option value="Canada">Canada</option>
-                            <option value="Saudi Arabia">Saudi Arabia</option>
-                            <option value="Sri Lanka">Sri Lanka</option>
+                            {popularCountriesList.map((c) => (
+                              <option key={`pop-${c.isoCode}`} value={c.name}>
+                                {c.name}
+                              </option>
+                            ))}
                           </optgroup>
                           <optgroup label="All Countries">
-                            {countries.map((c) => (
-                              <option key={c} value={c}>
-                                {c}
+                            {allCountriesList.map((c) => (
+                              <option key={c.isoCode} value={c.name}>
+                                {c.name}
                               </option>
                             ))}
                           </optgroup>

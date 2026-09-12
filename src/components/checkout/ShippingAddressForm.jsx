@@ -1,7 +1,13 @@
 import React from 'react';
 import { MapPin, Phone, Mail, User } from 'lucide-react';
 import CustomPhoneInput from '../common/CustomPhoneInput';
-import { countries } from '../../data/countries';
+import { Country, State } from 'country-state-city';
+
+const popularIsoCodes = ['IN', 'AE', 'US', 'GB', 'SG', 'MY', 'AU', 'CA', 'SA', 'LK'];
+const allCountriesList = Country.getAllCountries();
+const popularCountriesList = popularIsoCodes
+  .map((code) => Country.getCountryByCode(code))
+  .filter(Boolean);
 
 export const ShippingAddressForm = ({
   formData,
@@ -12,6 +18,23 @@ export const ShippingAddressForm = ({
   orderNotes,
   onOrderNotesChange
 }) => {
+  const currentCountryObj = allCountriesList.find(
+    (c) => c.name.toLowerCase() === (formData.country || 'India').toLowerCase() || c.isoCode === formData.country
+  ) || Country.getCountryByCode('IN');
+
+  const availableStates = currentCountryObj
+    ? State.getStatesOfCountry(currentCountryObj.isoCode)
+    : [];
+
+  const handleCountrySelect = (e) => {
+    const countryName = e.target.value;
+    const foundC = allCountriesList.find((c) => c.name === countryName) || Country.getCountryByCode('IN');
+    const states = foundC ? State.getStatesOfCountry(foundC.isoCode) : [];
+    onChange({ target: { name: 'country', value: countryName } });
+    onChange({ target: { name: 'state', value: states.length > 0 ? states[0].name : '' } });
+    localStorage.setItem('user_country', countryName);
+    window.dispatchEvent(new Event('country_changed'));
+  };
   return (
     <div className="space-y-6">
       
@@ -135,18 +158,36 @@ export const ShippingAddressForm = ({
           {/* State */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              State <span className="text-rose-500">*</span>
+              State / Province <span className="text-rose-500">*</span>
             </label>
-            <input
-              type="text"
-              name="state"
-              value={formData.state || ''}
-              onChange={onChange}
-              placeholder="e.g. Tamil Nadu"
-              className={`w-full px-3 py-2 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:bg-white ${
-                errors.state ? 'border-rose-400 bg-rose-50/40' : 'border-slate-200 focus:border-brandOrange-500'
-              }`}
-            />
+            {availableStates.length > 0 ? (
+              <select
+                name="state"
+                value={formData.state || ''}
+                onChange={onChange}
+                className={`w-full px-3 py-2 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:bg-white cursor-pointer ${
+                  errors.state ? 'border-rose-400 bg-rose-50/40' : 'border-slate-200 focus:border-brandOrange-500'
+                }`}
+              >
+                <option value="" disabled>Select State / Province</option>
+                {availableStates.map((s) => (
+                  <option key={s.isoCode || s.name} value={s.name}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                name="state"
+                value={formData.state || ''}
+                onChange={onChange}
+                placeholder="e.g. State / Province / Region"
+                className={`w-full px-3 py-2 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:bg-white ${
+                  errors.state ? 'border-rose-400 bg-rose-50/40' : 'border-slate-200 focus:border-brandOrange-500'
+                }`}
+              />
+            )}
             {errors.state && <p className="text-[10px] text-rose-500 mt-1">{errors.state}</p>}
           </div>
 
@@ -161,8 +202,7 @@ export const ShippingAddressForm = ({
               autoComplete="postal-code"
               value={formData.postalCode || ''}
               onChange={onChange}
-              placeholder="600001"
-              maxLength={6}
+              placeholder={formData.country === 'India' ? '600001' : 'Postal Code'}
               className={`w-full px-3 py-2 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:bg-white ${
                 errors.postalCode ? 'border-rose-400 bg-rose-50/40' : 'border-slate-200 focus:border-brandOrange-500'
               }`}
@@ -177,23 +217,22 @@ export const ShippingAddressForm = ({
             </label>
             <select
               name="country"
-              value={formData.country || 'India'}
-              onChange={onChange}
+              value={currentCountryObj?.name || formData.country || 'India'}
+              onChange={handleCountrySelect}
               className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-brandOrange-500 font-medium cursor-pointer"
             >
               <optgroup label="Popular Regions">
-                <option value="India">India</option>
-                <option value="United Arab Emirates">United Arab Emirates</option>
-                <option value="United States of America">United States of America</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="Singapore">Singapore</option>
-                <option value="Malaysia">Malaysia</option>
-                <option value="Australia">Australia</option>
-                <option value="Canada">Canada</option>
+                {popularCountriesList.map((c) => (
+                  <option key={`pop-${c.isoCode}`} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
               </optgroup>
               <optgroup label="All Countries">
-                {countries.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                {allCountriesList.map((c) => (
+                  <option key={c.isoCode} value={c.name}>
+                    {c.name}
+                  </option>
                 ))}
               </optgroup>
             </select>
