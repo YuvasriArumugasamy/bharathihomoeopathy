@@ -265,9 +265,9 @@ export const Checkout = () => {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 
                 {/* Left: Shipping Address Input Card */}
-                <div className="lg:col-span-8 bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.06)] space-y-6 relative overflow-hidden">
+                <div className="lg:col-span-8 bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.06)] space-y-6 relative">
                   {/* Top Accent Gradient Line */}
-                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d]" />
+                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d] rounded-t-3xl" />
 
                   {/* "Use My Location" Switch Header */}
                   <div className="flex items-center justify-between pb-4 border-b border-slate-100">

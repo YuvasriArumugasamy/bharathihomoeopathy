@@ -62,8 +62,8 @@ export default function CustomPhoneInput({
           inputClass={`!w-full !h-[48px] !pl-[56px] !pr-4 !bg-white !border ${
             error ? '!border-rose-400 !ring-2 !ring-rose-200' : '!border-slate-200/90 hover:!border-slate-300'
           } !rounded-2xl !text-[13px] !font-bold !text-slate-900 !placeholder-slate-400 !shadow-2xs focus:!border-brandOrange-500 focus:!ring-4 focus:!ring-brandOrange-500/10 !transition-all !duration-200`}
-          buttonClass="!bg-slate-50/90 !border !border-slate-200/90 !border-r-slate-200/80 !rounded-l-2xl hover:!bg-slate-100 !transition-colors !w-[48px] !flex !items-center !justify-center"
-          dropdownClass="!w-[300px] sm:!w-[340px] !max-h-[260px] !bg-white !rounded-2xl !shadow-2xl !border !border-slate-200/90 !mt-2 !overflow-y-auto !text-xs !font-bold !text-slate-800 !p-1.5 custom-phone-scroll !z-50"
+          buttonClass="!bg-slate-50/90 !border !border-slate-200/90 !border-r-slate-200/80 !rounded-l-2xl hover:!bg-slate-100 !transition-colors !w-[48px]"
+          dropdownClass="!w-[300px] sm:!w-[340px] !max-w-[calc(100vw-32px)] !max-h-[260px] !bg-white !rounded-2xl !shadow-2xl !border !border-slate-200/90 !mt-2 !overflow-y-auto !text-xs !font-bold !text-slate-800 !p-1.5 custom-phone-scroll !z-[9999] !left-0 !right-auto"
           searchClass="!sticky !top-0 !bg-white !p-2 !z-10 !border-b !border-slate-100"
         />
       </div>

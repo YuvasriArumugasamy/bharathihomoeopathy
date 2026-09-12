@@ -123,9 +123,9 @@ export const Appointment = () => {
           
           {/* Left: Appointment Booking Form */}
           <ScrollReveal direction="left" className="lg:col-span-8">
-            <div className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 p-6 sm:p-10 shadow-[0_15px_45px_rgba(15,23,42,0.08)] relative overflow-hidden">
+            <div className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 p-6 sm:p-10 shadow-[0_15px_45px_rgba(15,23,42,0.08)] relative">
             {/* Top Accent Gradient Line */}
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#ff4e50] via-[#f97316] via-amber-400 to-[#0b344d]" />
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#ff4e50] via-[#f97316] via-amber-400 to-[#0b344d] rounded-t-3xl" />
 
             <div className="relative z-10">
               {/* Header Title */}

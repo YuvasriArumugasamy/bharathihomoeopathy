@@ -366,6 +366,12 @@ body {
 }
 
 .custom-phone-wrapper .react-tel-input .flag-dropdown {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 48px !important;
+  display: block !important;
   border-radius: 1rem 0 0 1rem !important;
   background-color: #f8fafc !important;
   border-color: #e2e8f0 !important;
@@ -380,15 +386,16 @@ body {
 .custom-phone-wrapper .react-tel-input .selected-flag {
   border-radius: 1rem 0 0 1rem !important;
   width: 100% !important;
-  padding: 0 10px 0 12px !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height: 100% !important;
+  padding: 0 8px 0 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .custom-phone-wrapper .react-tel-input .selected-flag .arrow {
   left: auto !important;
-  right: 8px !important;
+  right: 6px !important;
   margin-top: -2px !important;
   border-top-color: #64748b !important;
 }
@@ -398,13 +405,20 @@ body {
 }
 
 .custom-phone-wrapper .react-tel-input .country-list {
+  position: absolute !important;
+  left: 0 !important;
+  right: auto !important;
+  top: 100% !important;
+  margin: 6px 0 0 0 !important;
+  width: 320px !important;
+  max-width: min(340px, calc(100vw - 32px)) !important;
   border-radius: 1rem !important;
-  box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.15), 0 5px 15px -5px rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.2), 0 0 0 1px rgba(15, 23, 42, 0.08) !important;
   border: 1px solid #e2e8f0 !important;
-  margin-top: 8px !important;
   font-family: inherit;
   background: #ffffff !important;
   padding: 6px !important;
+  z-index: 9999 !important;
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 #f8fafc;
 }
@@ -414,15 +428,22 @@ body {
   background: #ffffff !important;
   position: sticky !important;
   top: 0 !important;
-  z-index: 10 !important;
+  z-index: 20 !important;
   border-bottom: 1px solid #f1f5f9 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list .search-emoji {
+  display: none !important;
 }
 
 .custom-phone-wrapper .react-tel-input .country-list .search-box {
   width: 100% !important;
+  box-sizing: border-box !important;
   margin: 0 !important;
-  padding: 8px 12px 8px 30px !important;
-  border: 1px solid #e2e8f0 !important;
+  padding: 8px 12px 8px 32px !important;
+  border: 1.5px solid #e2e8f0 !important;
   border-radius: 0.75rem !important;
   font-size: 12px !important;
   font-weight: 600 !important;
@@ -430,7 +451,7 @@ body {
   background-color: #f8fafc !important;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
-  background-position: 8px center !important;
+  background-position: 10px center !important;
   background-size: 14px 14px !important;
 }
 
@@ -438,19 +459,33 @@ body {
   border-color: #f97316 !important;
   background-color: #ffffff !important;
   outline: none !important;
-  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15) !important;
 }
 
 .custom-phone-wrapper .react-tel-input .country-list .country {
-  padding: 8px 10px !important;
+  padding: 8px 12px !important;
   border-radius: 0.75rem !important;
   display: flex !important;
   align-items: center !important;
+  gap: 10px !important;
   font-size: 12px !important;
   font-weight: 600 !important;
   color: #1e293b !important;
   transition: all 0.15s ease;
   margin-bottom: 2px;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list .country .flag {
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list .country .country-name {
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  color: #1e293b !important;
 }
 
 .custom-phone-wrapper .react-tel-input .country-list .country:hover,
@@ -459,7 +494,13 @@ body {
   color: #c2410c !important;
 }
 
+.custom-phone-wrapper .react-tel-input .country-list .country:hover .country-name,
+.custom-phone-wrapper .react-tel-input .country-list .country.highlight .country-name {
+  color: #c2410c !important;
+}
+
 .custom-phone-wrapper .react-tel-input .country-list .country .dial-code {
+  flex-shrink: 0 !important;
   color: #ea580c !important;
   font-weight: 700 !important;
   margin-left: auto !important;

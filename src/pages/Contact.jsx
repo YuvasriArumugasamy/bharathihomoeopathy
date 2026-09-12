@@ -152,9 +152,9 @@ export const Contact = () => {
 
           {/* Right: Enquiry Form Card */}
           <ScrollReveal direction="right" className="lg:col-span-7">
-            <div className="bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-10 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] relative overflow-hidden">
+            <div className="bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-10 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] relative">
             {/* Top Accent Gradient Line */}
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d]" />
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d] rounded-t-3xl" />
 
             {!submitted ? (
               <form onSubmit={handleSubmit} className="space-y-4.5 text-xs">
