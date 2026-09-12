@@ -9,6 +9,7 @@ import { orderService } from '../services/orderService';
 import { OrderSuccess } from '../components/checkout/OrderSuccess';
 import { EmptyState } from '../components/common/EmptyState';
 import CustomPhoneInput from '../components/common/CustomPhoneInput';
+import SearchableSelect from '../components/common/SearchableSelect';
 import { Country, State } from 'country-state-city';
 
 const popularIsoCodes = ['IN', 'AE', 'US', 'GB', 'SG', 'MY', 'AU', 'CA', 'SA', 'LK'];
@@ -16,6 +17,20 @@ const allCountriesList = Country.getAllCountries();
 const popularCountriesList = popularIsoCodes
   .map((code) => Country.getCountryByCode(code))
   .filter(Boolean);
+const countrySelectOptions = [
+  ...popularCountriesList.map((c) => ({
+    label: c.name,
+    value: c.name,
+    flag: c.flag
+  })),
+  ...allCountriesList
+    .filter((c) => !popularIsoCodes.includes(c.isoCode))
+    .map((c) => ({
+      label: c.name,
+      value: c.name,
+      flag: c.flag
+    }))
+];
 import { 
   ShieldCheck, 
   MapPin, 
@@ -423,26 +438,22 @@ export const Checkout = () => {
                       </div>
                     </div>
 
-                    {/* State & Country Dropdowns */}
+                    {/* State & Country Dropdowns with Search */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* State / Province Field: Dynamically populated based on selected country */}
+                      {/* State / Province Field: Type-to-search dropdown for selected country */}
                       <div>
                         <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider mb-2">
                           State / Province <span className="text-rose-500">*</span>
                         </label>
                         {availableStates.length > 0 ? (
-                          <select
+                          <SearchableSelect
                             value={formData.state}
-                            onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                            className="w-full px-4 py-3 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-[#f97316] focus:ring-4 focus:ring-orange-500/10 text-xs font-bold text-slate-900 shadow-2xs cursor-pointer hover:border-slate-300 transition-all"
-                          >
-                            <option value="" disabled>Select State / Province</option>
-                            {availableStates.map((s) => (
-                              <option key={s.isoCode || s.name} value={s.name}>
-                                {s.name}
-                              </option>
-                            ))}
-                          </select>
+                            onChange={(val) => setFormData((prev) => ({ ...prev, state: val }))}
+                            options={availableStates.map((s) => ({ label: s.name, value: s.name }))}
+                            placeholder="Select State / Province"
+                            searchPlaceholder={`Search state in ${currentCountryObj?.name || 'country'}...`}
+                            error={errors.state}
+                          />
                         ) : (
                           <input
                             type="text"
@@ -455,31 +466,18 @@ export const Checkout = () => {
                         {errors.state && <p className="text-[10px] text-rose-500 mt-1 font-bold">{errors.state}</p>}
                       </div>
 
-                      {/* Country Field: Fully Selectable Dropdown */}
+                      {/* Country Field: Type-to-search dropdown */}
                       <div>
                         <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider mb-2">
                           Country <span className="text-rose-500">*</span>
                         </label>
-                        <select
+                        <SearchableSelect
                           value={currentCountryObj?.name || formData.country || 'India'}
-                          onChange={(e) => handleCountryChange(e.target.value)}
-                          className="w-full px-4 py-3 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-[#f97316] focus:ring-4 focus:ring-orange-500/10 text-xs font-bold text-slate-900 shadow-2xs cursor-pointer hover:border-slate-300 transition-all"
-                        >
-                          <optgroup label="Popular Regions">
-                            {popularCountriesList.map((c) => (
-                              <option key={`pop-${c.isoCode}`} value={c.name}>
-                                {c.name}
-                              </option>
-                            ))}
-                          </optgroup>
-                          <optgroup label="All Countries">
-                            {allCountriesList.map((c) => (
-                              <option key={c.isoCode} value={c.name}>
-                                {c.name}
-                              </option>
-                            ))}
-                          </optgroup>
-                        </select>
+                          onChange={(val) => handleCountryChange(val)}
+                          options={countrySelectOptions}
+                          placeholder="Select Country"
+                          searchPlaceholder="Type to search country..."
+                        />
                       </div>
                     </div>
 

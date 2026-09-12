@@ -1,6 +1,7 @@
 import React from 'react';
 import { MapPin, Phone, Mail, User } from 'lucide-react';
 import CustomPhoneInput from '../common/CustomPhoneInput';
+import SearchableSelect from '../common/SearchableSelect';
 import { Country, State } from 'country-state-city';
 
 const popularIsoCodes = ['IN', 'AE', 'US', 'GB', 'SG', 'MY', 'AU', 'CA', 'SA', 'LK'];
@@ -8,6 +9,20 @@ const allCountriesList = Country.getAllCountries();
 const popularCountriesList = popularIsoCodes
   .map((code) => Country.getCountryByCode(code))
   .filter(Boolean);
+const countrySelectOptions = [
+  ...popularCountriesList.map((c) => ({
+    label: c.name,
+    value: c.name,
+    flag: c.flag
+  })),
+  ...allCountriesList
+    .filter((c) => !popularIsoCodes.includes(c.isoCode))
+    .map((c) => ({
+      label: c.name,
+      value: c.name,
+      flag: c.flag
+    }))
+];
 
 export const ShippingAddressForm = ({
   formData,
@@ -26,8 +41,7 @@ export const ShippingAddressForm = ({
     ? State.getStatesOfCountry(currentCountryObj.isoCode)
     : [];
 
-  const handleCountrySelect = (e) => {
-    const countryName = e.target.value;
+  const handleCountrySelect = (countryName) => {
     const foundC = allCountriesList.find((c) => c.name === countryName) || Country.getCountryByCode('IN');
     const states = foundC ? State.getStatesOfCountry(foundC.isoCode) : [];
     onChange({ target: { name: 'country', value: countryName } });
@@ -161,21 +175,14 @@ export const ShippingAddressForm = ({
               State / Province <span className="text-rose-500">*</span>
             </label>
             {availableStates.length > 0 ? (
-              <select
-                name="state"
+              <SearchableSelect
                 value={formData.state || ''}
-                onChange={onChange}
-                className={`w-full px-3 py-2 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:bg-white cursor-pointer ${
-                  errors.state ? 'border-rose-400 bg-rose-50/40' : 'border-slate-200 focus:border-brandOrange-500'
-                }`}
-              >
-                <option value="" disabled>Select State / Province</option>
-                {availableStates.map((s) => (
-                  <option key={s.isoCode || s.name} value={s.name}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => onChange({ target: { name: 'state', value: val } })}
+                options={availableStates.map((s) => ({ label: s.name, value: s.name }))}
+                placeholder="Select State / Province"
+                searchPlaceholder={`Search state in ${currentCountryObj?.name || 'country'}...`}
+                error={errors.state}
+              />
             ) : (
               <input
                 type="text"
@@ -215,27 +222,13 @@ export const ShippingAddressForm = ({
             <label className="block text-xs font-semibold text-slate-700 mb-1">
               Country
             </label>
-            <select
-              name="country"
+            <SearchableSelect
               value={currentCountryObj?.name || formData.country || 'India'}
               onChange={handleCountrySelect}
-              className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:bg-white focus:border-brandOrange-500 font-medium cursor-pointer"
-            >
-              <optgroup label="Popular Regions">
-                {popularCountriesList.map((c) => (
-                  <option key={`pop-${c.isoCode}`} value={c.name}>
-                    {c.name}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="All Countries">
-                {allCountriesList.map((c) => (
-                  <option key={c.isoCode} value={c.name}>
-                    {c.name}
-                  </option>
-                ))}
-              </optgroup>
-            </select>
+              options={countrySelectOptions}
+              placeholder="Select Country"
+              searchPlaceholder="Type to search country..."
+            />
           </div>
 
         </div>
