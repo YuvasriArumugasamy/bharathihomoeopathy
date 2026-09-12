@@ -12,15 +12,13 @@ const popularCountriesList = popularIsoCodes
 const countrySelectOptions = [
   ...popularCountriesList.map((c) => ({
     label: c.name,
-    value: c.name,
-    flag: c.flag
+    value: c.name
   })),
   ...allCountriesList
     .filter((c) => !popularIsoCodes.includes(c.isoCode))
     .map((c) => ({
       label: c.name,
-      value: c.name,
-      flag: c.flag
+      value: c.name
     }))
 ];
 
@@ -181,6 +179,7 @@ export const ShippingAddressForm = ({
                 options={availableStates.map((s) => ({ label: s.name, value: s.name }))}
                 placeholder="Select State / Province"
                 searchPlaceholder={`Search state in ${currentCountryObj?.name || 'country'}...`}
+                direction="up"
                 error={errors.state}
               />
             ) : (
@@ -228,6 +227,7 @@ export const ShippingAddressForm = ({
               options={countrySelectOptions}
               placeholder="Select Country"
               searchPlaceholder="Type to search country..."
+              direction="up"
             />
           </div>
 

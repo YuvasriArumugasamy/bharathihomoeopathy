@@ -20,15 +20,13 @@ const popularCountriesList = popularIsoCodes
 const countrySelectOptions = [
   ...popularCountriesList.map((c) => ({
     label: c.name,
-    value: c.name,
-    flag: c.flag
+    value: c.name
   })),
   ...allCountriesList
     .filter((c) => !popularIsoCodes.includes(c.isoCode))
     .map((c) => ({
       label: c.name,
-      value: c.name,
-      flag: c.flag
+      value: c.name
     }))
 ];
 import { 
@@ -252,7 +250,7 @@ export const Checkout = () => {
   const formattedDelivery = `${deliveryStart.getDate().toString().padStart(2, '0')} SEP - ${deliveryEnd.getDate().toString().padStart(2, '0')} SEP`;
 
   return (
-    <div className="bg-slate-50/60 min-h-screen py-8 sm:py-12 w-full overflow-x-hidden">
+    <div className="bg-slate-50/60 min-h-screen py-8 sm:py-12 w-full relative z-20 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 w-full">
         
         {!placedOrder ? (
@@ -452,6 +450,7 @@ export const Checkout = () => {
                             options={availableStates.map((s) => ({ label: s.name, value: s.name }))}
                             placeholder="Select State / Province"
                             searchPlaceholder={`Search state in ${currentCountryObj?.name || 'country'}...`}
+                            direction="up"
                             error={errors.state}
                           />
                         ) : (
@@ -477,6 +476,7 @@ export const Checkout = () => {
                           options={countrySelectOptions}
                           placeholder="Select Country"
                           searchPlaceholder="Type to search country..."
+                          direction="up"
                         />
                       </div>
                     </div>
