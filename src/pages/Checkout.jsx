@@ -9,6 +9,7 @@ import { orderService } from '../services/orderService';
 import { OrderSuccess } from '../components/checkout/OrderSuccess';
 import { EmptyState } from '../components/common/EmptyState';
 import CustomPhoneInput from '../components/common/CustomPhoneInput';
+import { countries } from '../data/countries';
 import { 
   ShieldCheck, 
   MapPin, 
@@ -49,7 +50,7 @@ export const Checkout = () => {
     city: 'Tenkasi',
     state: 'Tamil Nadu',
     postalCode: '627811',
-    country: 'India',
+    country: localStorage.getItem('user_country') || 'India',
     saveAddress: true
   });
 
@@ -126,8 +127,11 @@ export const Checkout = () => {
     if (!formData.address.trim()) errs.address = 'Complete address is required';
     if (!formData.city.trim()) errs.city = 'City is required';
     if (!formData.state.trim()) errs.state = 'State is required';
-    if (!formData.postalCode.trim()) errs.postalCode = 'Postal Code is required';
-    else if (!/^\d{6}$/.test(formData.postalCode.trim())) errs.postalCode = 'Enter a valid 6-digit PIN code';
+    if (!formData.postalCode.trim()) {
+      errs.postalCode = 'Postal Code is required';
+    } else if (formData.country === 'India' && !/^\d{6}$/.test(formData.postalCode.trim())) {
+      errs.postalCode = 'Enter a valid 6-digit PIN code';
+    }
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -393,34 +397,86 @@ export const Checkout = () => {
 
                     {/* State & Country Dropdowns */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* State Field: Select for India, Text Input for International */}
                       <div>
                         <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider mb-2">
-                          State <span className="text-rose-500">*</span>
+                          State / Province <span className="text-rose-500">*</span>
                         </label>
-                        <select
-                          value={formData.state}
-                          onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                          className="w-full px-4 py-3 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-[#f97316] text-xs font-bold text-slate-900 shadow-2xs cursor-pointer"
-                        >
-                          <option value="Tamil Nadu">Tamil Nadu</option>
-                          <option value="Kerala">Kerala</option>
-                          <option value="Karnataka">Karnataka</option>
-                          <option value="Andhra Pradesh">Andhra Pradesh</option>
-                          <option value="Maharashtra">Maharashtra</option>
-                          <option value="Delhi">Delhi</option>
-                        </select>
+                        {formData.country === 'India' ? (
+                          <select
+                            value={formData.state}
+                            onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                            className="w-full px-4 py-3 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-[#f97316] focus:ring-4 focus:ring-orange-500/10 text-xs font-bold text-slate-900 shadow-2xs cursor-pointer hover:border-slate-300 transition-all"
+                          >
+                            <option value="Tamil Nadu">Tamil Nadu</option>
+                            <option value="Kerala">Kerala</option>
+                            <option value="Karnataka">Karnataka</option>
+                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                            <option value="Telangana">Telangana</option>
+                            <option value="Maharashtra">Maharashtra</option>
+                            <option value="Delhi">Delhi</option>
+                            <option value="Gujarat">Gujarat</option>
+                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                            <option value="West Bengal">West Bengal</option>
+                            <option value="Rajasthan">Rajasthan</option>
+                            <option value="Punjab">Punjab</option>
+                            <option value="Haryana">Haryana</option>
+                            <option value="Bihar">Bihar</option>
+                            <option value="Odisha">Odisha</option>
+                            <option value="Madhya Pradesh">Madhya Pradesh</option>
+                            <option value="Goa">Goa</option>
+                            <option value="Assam">Assam</option>
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            value={formData.state}
+                            onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                            placeholder="Enter state or province"
+                            className="w-full px-4 py-3 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-[#f97316] focus:ring-4 focus:ring-orange-500/10 text-xs font-bold text-slate-900 shadow-2xs hover:border-slate-300 transition-all placeholder-slate-400"
+                          />
+                        )}
+                        {errors.state && <p className="text-[10px] text-rose-500 mt-1 font-bold">{errors.state}</p>}
                       </div>
 
+                      {/* Country Field: Fully Selectable Dropdown */}
                       <div>
                         <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider mb-2">
-                          Country
+                          Country <span className="text-rose-500">*</span>
                         </label>
                         <select
-                          disabled
-                          value="India"
-                          className="w-full px-4 py-3 bg-slate-100 border border-slate-200/90 rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed"
+                          value={formData.country || 'India'}
+                          onChange={(e) => {
+                            const newCountry = e.target.value;
+                            setFormData((prev) => ({
+                              ...prev,
+                              country: newCountry,
+                              state: newCountry === 'India' ? (prev.state || 'Tamil Nadu') : prev.state
+                            }));
+                            localStorage.setItem('user_country', newCountry);
+                            window.dispatchEvent(new Event('country_changed'));
+                          }}
+                          className="w-full px-4 py-3 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-[#f97316] focus:ring-4 focus:ring-orange-500/10 text-xs font-bold text-slate-900 shadow-2xs cursor-pointer hover:border-slate-300 transition-all"
                         >
-                          <option value="India">India</option>
+                          <optgroup label="Popular Regions">
+                            <option value="India">India</option>
+                            <option value="United Arab Emirates">United Arab Emirates</option>
+                            <option value="United States of America">United States of America</option>
+                            <option value="United Kingdom">United Kingdom</option>
+                            <option value="Singapore">Singapore</option>
+                            <option value="Malaysia">Malaysia</option>
+                            <option value="Australia">Australia</option>
+                            <option value="Canada">Canada</option>
+                            <option value="Saudi Arabia">Saudi Arabia</option>
+                            <option value="Sri Lanka">Sri Lanka</option>
+                          </optgroup>
+                          <optgroup label="All Countries">
+                            {countries.map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                          </optgroup>
                         </select>
                       </div>
                     </div>
