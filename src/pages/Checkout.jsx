@@ -314,7 +314,7 @@ export const Checkout = () => {
                   {/* Top Accent Gradient Line */}
                   <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d] rounded-t-3xl" />
 
-                  {/* "Use My Location" Switch Header */}
+                  {/* "Use My Location" Header */}
                   <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                     <button
                       type="button"
@@ -325,7 +325,6 @@ export const Checkout = () => {
                       <Navigation className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} />
                       <span>{isLocating ? 'Locating...' : 'Use My Location'}</span>
                     </button>
-                    <span className="text-xs text-slate-400 font-medium">Auto-fill via GPS</span>
                   </div>
 
                   {/* Form Inputs Grid */}
