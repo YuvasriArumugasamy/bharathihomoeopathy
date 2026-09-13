@@ -99,18 +99,30 @@ export const Footer = () => {
                 { name: 'Home', path: '/' },
                 { name: 'About Us', path: '/about' },
                 { name: 'All Products', path: '/shop' },
+                { name: 'Track Order', action: () => window.dispatchEvent(new Event('open_track_order')) },
                 { name: 'Special Offers', path: '/offers' },
                 { name: 'Book Appointment', path: '/appointment' },
                 { name: 'Contact Clinic', path: '/contact' },
               ].map((link) => (
                 <li key={link.name}>
-                  <Link 
-                    to={link.path} 
-                    className="group/link flex items-center gap-1.5 text-slate-300 hover:text-amber-300 transition-all duration-200 hover:translate-x-1 font-medium"
-                  >
-                    <ChevronRight className="w-3 h-3 text-brandOrange-400 opacity-60 group-hover/link:opacity-100 transition-opacity shrink-0" />
-                    <span>{link.name}</span>
-                  </Link>
+                  {link.action ? (
+                    <button
+                      onClick={link.action}
+                      className="group/link flex items-center gap-1.5 text-amber-300 hover:text-white transition-all duration-200 hover:translate-x-1 font-bold cursor-pointer text-left"
+                    >
+                      <ChevronRight className="w-3 h-3 text-amber-400 opacity-80 group-hover/link:opacity-100 transition-opacity shrink-0" />
+                      <span>{link.name}</span>
+                      <span className="text-[9px] bg-amber-400/20 text-amber-300 px-1 rounded uppercase font-black">Live</span>
+                    </button>
+                  ) : (
+                    <Link 
+                      to={link.path} 
+                      className="group/link flex items-center gap-1.5 text-slate-300 hover:text-amber-300 transition-all duration-200 hover:translate-x-1 font-medium"
+                    >
+                      <ChevronRight className="w-3 h-3 text-brandOrange-400 opacity-60 group-hover/link:opacity-100 transition-opacity shrink-0" />
+                      <span>{link.name}</span>
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

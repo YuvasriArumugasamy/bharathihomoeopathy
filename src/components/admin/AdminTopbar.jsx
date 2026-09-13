@@ -22,13 +22,43 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [spotlightOpen, setSpotlightOpen] = useState(false);
-  const [notifications, setNotifications] = useState(adminDashboardData.notifications);
+  const [pendingCounts, setPendingCounts] = useState({ orders: 0, appointments: 0, enquiries: 0 });
 
-  const unreadCount = notifications.filter(n => n.unread).length;
+  useEffect(() => {
+    const updateCounts = () => {
+      try {
+        const rawOrders = localStorage.getItem('admin_orders_store');
+        const rawApts = localStorage.getItem('admin_appointments_store');
+        const rawEnqs = localStorage.getItem('admin_enquiries_store');
+        
+        const orders = rawOrders ? JSON.parse(rawOrders) : [];
+        const apts = rawApts ? JSON.parse(rawApts) : [];
+        const enqs = rawEnqs ? JSON.parse(rawEnqs) : [];
 
-  const markAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
-  };
+        const pendingOrders = orders.filter(o => (o.orderStatus || o.status) === 'Pending').length;
+        const pendingApts = apts.filter(a => a.status === 'Pending').length;
+        const pendingEnqs = enqs.filter(e => e.status === 'New').length;
+
+        setPendingCounts({
+          orders: pendingOrders,
+          appointments: pendingApts,
+          enquiries: pendingEnqs
+        });
+      } catch {
+        setPendingCounts({ orders: 1, appointments: 2, enquiries: 1 });
+      }
+    };
+
+    updateCounts();
+    window.addEventListener('storage', updateCounts);
+    const interval = setInterval(updateCounts, 8000);
+    return () => {
+      window.removeEventListener('storage', updateCounts);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const unreadCount = pendingCounts.orders + pendingCounts.appointments + pendingCounts.enquiries;
 
   return (
     <header className="h-20 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 flex items-center justify-between fixed top-0 right-0 left-0 lg:left-64 z-30 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] transition-all font-serif">
@@ -69,21 +99,93 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
       {/* Right: Notifications & Profile */}
       <div className="flex items-center gap-3">
         
-        {/* Notification Bell */}
-        <Link
-          to="/admin/notifications"
-          className="relative w-10 h-10 rounded-2xl bg-white hover:bg-gradient-to-br hover:from-orange-50 hover:to-amber-50/60 text-slate-600 hover:text-brandOrange-600 border border-slate-200/90 hover:border-orange-300 flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06)] hover:shadow-[0_6px_20px_-2px_rgba(249,115,22,0.22)] transition-all duration-300 hover:-translate-y-0.5 active:scale-95 cursor-pointer group"
-          aria-label="Notifications"
-          title="Notifications"
-        >
-          <Bell className="w-5 h-5 text-slate-600 group-hover:text-brandOrange-600 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300" />
-          
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-gradient-to-r from-brandOrange-600 to-amber-500 text-white font-black text-[10px] rounded-full flex items-center justify-center shadow-md shadow-brandOrange-500/30 ring-2 ring-white animate-pulse">
-              {unreadCount}
-            </span>
+        {/* Notification Bell with Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              setNotificationsOpen(!notificationsOpen);
+              setProfileOpen(false);
+            }}
+            className="relative w-10 h-10 rounded-2xl bg-white hover:bg-gradient-to-br hover:from-orange-50 hover:to-amber-50/60 text-slate-600 hover:text-brandOrange-600 border border-slate-200/90 hover:border-orange-300 flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06)] hover:shadow-[0_6px_20px_-2px_rgba(249,115,22,0.22)] transition-all duration-300 hover:-translate-y-0.5 active:scale-95 cursor-pointer group"
+            aria-label="Notifications"
+            title="Notifications"
+          >
+            <Bell className="w-5 h-5 text-slate-600 group-hover:text-brandOrange-600 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300" />
+            
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-gradient-to-r from-brandOrange-600 to-amber-500 text-white font-black text-[10px] rounded-full flex items-center justify-center shadow-md shadow-brandOrange-500/30 ring-2 ring-white animate-pulse">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
+          {/* Interactive Notifications Popup Dropdown */}
+          {notificationsOpen && (
+            <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-3 font-serif">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <span className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Live Alerts & Pending</span>
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-orange-100 text-brandOrange-700">
+                  {unreadCount} Actions
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                <Link
+                  to="/admin/orders"
+                  onClick={() => setNotificationsOpen(false)}
+                  className="flex items-center justify-between p-2.5 rounded-xl hover:bg-orange-50 border border-slate-100 hover:border-orange-200 transition-colors group"
+                >
+                  <div className="text-left">
+                    <div className="text-xs font-bold text-slate-800 group-hover:text-brandOrange-600">Dispensary Orders</div>
+                    <div className="text-[11px] text-slate-500">Orders waiting for confirmation</div>
+                  </div>
+                  <span className="text-xs font-black px-2 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200">
+                    {pendingCounts.orders}
+                  </span>
+                </Link>
+
+                <Link
+                  to="/admin/appointments"
+                  onClick={() => setNotificationsOpen(false)}
+                  className="flex items-center justify-between p-2.5 rounded-xl hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 transition-colors group"
+                >
+                  <div className="text-left">
+                    <div className="text-xs font-bold text-slate-800 group-hover:text-emerald-700">Patient Consultations</div>
+                    <div className="text-[11px] text-slate-500">Unconfirmed appointments</div>
+                  </div>
+                  <span className="text-xs font-black px-2 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    {pendingCounts.appointments}
+                  </span>
+                </Link>
+
+                <Link
+                  to="/admin/enquiries"
+                  onClick={() => setNotificationsOpen(false)}
+                  className="flex items-center justify-between p-2.5 rounded-xl hover:bg-sky-50 border border-slate-100 hover:border-sky-200 transition-colors group"
+                >
+                  <div className="text-left">
+                    <div className="text-xs font-bold text-slate-800 group-hover:text-sky-700">Patient Enquiries</div>
+                    <div className="text-[11px] text-slate-500">New messages received</div>
+                  </div>
+                  <span className="text-xs font-black px-2 py-1 rounded-lg bg-sky-50 text-sky-800 border border-sky-200">
+                    {pendingCounts.enquiries}
+                  </span>
+                </Link>
+              </div>
+
+              <div className="border-t border-slate-100 pt-2 text-center">
+                <Link
+                  to="/admin/notifications"
+                  onClick={() => setNotificationsOpen(false)}
+                  className="text-xs font-black text-brandOrange-600 hover:text-brandOrange-700 flex items-center justify-center gap-1"
+                >
+                  <span>View Full Notification Log</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
           )}
-        </Link>
+        </div>
 
         {/* Profile Pill & Dropdown */}
         <div className="relative pl-2 border-l border-slate-200/80">

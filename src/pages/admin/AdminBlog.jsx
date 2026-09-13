@@ -1,19 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, Plus, Edit, Trash2, Search, X, Check, Eye, 
   Calendar, User, Sparkles, Folder, Clock, ArrowRight, Tag
 } from 'lucide-react';
-import { initialAdminBlogs } from '../../data/adminBlogData';
+import { blogService } from '../../services/blogService';
 import { useToast } from '../../context/ToastContext';
 import { slugify } from '../../utils/slugify';
 
 export const AdminBlog = () => {
   const { showToast } = useToast();
-  const [blogs, setBlogs] = useState(initialAdminBlogs);
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBlog, setEditingBlog] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+
+  useEffect(() => {
+    const loadBlogs = async () => {
+      setLoading(true);
+      try {
+        const data = await blogService.getAdminBlogs();
+        setBlogs(data);
+      } catch (err) {
+        showToast('Failed to load blogs: ' + err.message, 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadBlogs();
+  }, []);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -58,36 +74,43 @@ export const AdminBlog = () => {
     setModalOpen(true);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.title.trim()) return;
 
-    if (editingBlog) {
-      setBlogs(prev => prev.map(b => b.id === editingBlog.id ? { 
-        ...b, 
-        ...formData, 
-        slug: slugify(formData.title) 
-      } : b));
-      showToast('Article updated successfully!', 'success');
-    } else {
-      const newPost = {
-        ...formData,
-        id: 'blog-' + Date.now(),
-        slug: slugify(formData.title),
-        author: 'Dr. Bharathi Care Team',
-        publishDate: new Date().toISOString().slice(0, 10),
-        views: 0,
-        createdAt: new Date().toISOString().slice(0, 10)
-      };
-      setBlogs(prev => [newPost, ...prev]);
-      showToast('New health article published to wellness journal!', 'success');
+    try {
+      if (editingBlog) {
+        const updatedFields = {
+          ...formData,
+          slug: slugify(formData.title)
+        };
+        await blogService.updateBlog(editingBlog.id, updatedFields);
+        setBlogs(prev => prev.map(b => b.id === editingBlog.id ? { ...b, ...updatedFields } : b));
+        showToast('Article updated and saved successfully!', 'success');
+      } else {
+        const newPost = await blogService.createBlog({
+          ...formData,
+          slug: slugify(formData.title),
+          author: 'Dr. Bharathi Care Team',
+          views: 0
+        });
+        setBlogs(prev => [newPost, ...prev]);
+        showToast('New health article published to wellness journal!', 'success');
+      }
+      setModalOpen(false);
+    } catch (err) {
+      showToast('Error saving article: ' + err.message, 'error');
     }
-    setModalOpen(false);
   };
 
-  const handleDelete = (id) => {
-    setBlogs(prev => prev.filter(b => b.id !== id));
-    showToast('Article removed from publication', 'info');
+  const handleDelete = async (id) => {
+    try {
+      await blogService.deleteBlog(id);
+      setBlogs(prev => prev.filter(b => b.id !== id));
+      showToast('Article removed from publication and saved', 'info');
+    } catch (err) {
+      showToast('Failed to delete: ' + err.message, 'error');
+    }
   };
 
   return (

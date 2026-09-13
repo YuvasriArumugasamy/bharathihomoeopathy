@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Search, 
@@ -16,6 +16,7 @@ import {
 import { SectionHeader } from '../components/common/SectionHeader';
 import { assets } from '../assets';
 import { useToast } from '../context/ToastContext';
+import { blogService } from '../services/blogService';
 
 export const Blog = () => {
   const { showToast } = useToast();
@@ -23,8 +24,37 @@ export const Blog = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [readingModalPost, setReadingModalPost] = useState(null);
+  const [blogPosts, setBlogPosts] = useState([]);
 
-  const blogPosts = [
+  useEffect(() => {
+    const fetchLiveBlogs = async () => {
+      try {
+        const live = await blogService.getPublishedBlogs();
+        if (live && live.length > 0) {
+          const mapped = live.map(b => ({
+            id: b.id,
+            title: b.title,
+            category: b.category?.toUpperCase() || 'WELLNESS',
+            date: b.publishDate || 'Recent',
+            author: b.author || 'Dr. Bharathi Care Team',
+            readTime: b.readTime || '4 min read',
+            excerpt: b.shortDescription || b.excerpt || '',
+            image: b.featuredImage || b.image || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=700&q=80',
+            content: b.content || b.shortDescription || ''
+          }));
+          setBlogPosts(mapped);
+          return;
+        }
+      } catch (err) {
+        console.warn("Could not load dynamic blogs:", err);
+      }
+      // fallback if empty
+      setBlogPosts(defaultPosts);
+    };
+    fetchLiveBlogs();
+  }, []);
+
+  const defaultPosts = [
     {
       id: 1,
       title: "How Homeopathy Works: The Natural Way to Heal",

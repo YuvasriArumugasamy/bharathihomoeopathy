@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Mail, Phone, Clock, MessageCircle, ChevronDown } from 'lucide-react';
+import { MapPin, Mail, Phone, Clock, MessageCircle, ChevronDown, Truck } from 'lucide-react';
 
 export const TopContactBar = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -17,8 +17,6 @@ export const TopContactBar = () => {
     }
   }, []);
 
-
-
   return (
     <div className="bg-[#236888] text-white text-xs py-1.5 sm:py-2 px-3 sm:px-6 lg:px-8 border-b border-[#1b536d] w-full">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4 w-full">
@@ -31,6 +29,17 @@ export const TopContactBar = () => {
           >
             <span>SELECT YOUR COUNTRY / REGION</span>
             <span className="text-amber-300 group-hover:translate-x-0.5 transition-transform shrink-0">👉</span>
+          </button>
+        </div>
+
+        {/* Center: Track Order Trigger */}
+        <div className="hidden sm:flex items-center justify-center">
+          <button
+            onClick={() => window.dispatchEvent(new Event('open_track_order'))}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-amber-300 hover:text-white font-bold text-[10.5px] sm:text-[11px] tracking-wide transition-all cursor-pointer border border-white/10 shadow-xs"
+          >
+            <Truck className="w-3.5 h-3.5" />
+            <span>TRACK ORDER</span>
           </button>
         </div>
 

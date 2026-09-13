@@ -15,6 +15,7 @@ import {
   Search, 
   Settings,
   Bell, 
+  BookOpen,
   X, 
   LogOut
 } from 'lucide-react';
@@ -53,6 +54,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
     {
       title: 'Marketing & Portal',
       items: [
+        { name: 'Blog & Articles', path: '/admin/blog', icon: BookOpen },
         { name: 'Offers & Coupons', path: '/admin/offers', icon: Tag },
         { name: 'SEO Management', path: '/admin/seo', icon: Search },
         { name: 'Settings', path: '/admin/settings', icon: Settings },

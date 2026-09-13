@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { TopContactBar } from '../components/common/TopContactBar';
 import { Navbar } from '../components/common/Navbar';
@@ -7,11 +7,20 @@ import { FloatingActions } from '../components/common/FloatingActions';
 import { MobileBottomBar } from '../components/common/MobileBottomBar';
 import { AuthModal } from '../components/auth/AuthModal';
 import { CountryModal } from '../components/common/CountryModal';
+import { TrackOrderModal } from '../components/common/TrackOrderModal';
+import { PwaInstallPrompt } from '../components/common/PwaInstallPrompt';
 import { assets } from '../assets';
 
 export const MainLayout = () => {
   const location = useLocation();
   const isShopPage = location.pathname === '/shop' || location.pathname.startsWith('/shop');
+  const [trackOrderOpen, setTrackOrderOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpenTrack = () => setTrackOrderOpen(true);
+    window.addEventListener('open_track_order', handleOpenTrack);
+    return () => window.removeEventListener('open_track_order', handleOpenTrack);
+  }, []);
 
   return (
     <div 
@@ -25,6 +34,12 @@ export const MainLayout = () => {
     >
       {/* Country Selection Modal */}
       <CountryModal />
+
+      {/* Live Order Tracking Modal */}
+      <TrackOrderModal 
+        isOpen={trackOrderOpen} 
+        onClose={() => setTrackOrderOpen(false)} 
+      />
 
       {/* Top Bar that scrolls away */}
       <TopContactBar />
@@ -50,6 +65,11 @@ export const MainLayout = () => {
 
       {/* Global Patient Auth Popup Modal (Register / Sign In) */}
       <AuthModal />
+
+      {/* PWA Mobile App Install Banner */}
+      <PwaInstallPrompt />
     </div>
   );
 };
+
+export default MainLayout;
