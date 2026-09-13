@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   CheckCircle2, 
@@ -122,6 +122,24 @@ export const About = () => {
     }
   ];
 
+  const videoContainerRef = useRef(null);
+  const [loadVideo, setLoadVideo] = useState(false);
+
+  useEffect(() => {
+    if (!videoContainerRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0] && entries[0].isIntersecting) {
+          setLoadVideo(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '250px' }
+    );
+    observer.observe(videoContainerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="space-y-16 pb-12 w-full max-w-full overflow-x-hidden">
       
@@ -203,18 +221,27 @@ export const About = () => {
           {/* Top Accent Gradient Bar */}
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d]" />
           
-          {/* Animated Video Showcase Card */}
-          <div className="lg:col-span-5 rounded-3xl overflow-hidden aspect-[4/5] bg-slate-900 shadow-2xl border-2 border-white ring-4 ring-slate-100 relative group">
-            <video
-              src={assets.animoCoverRing}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="metadata"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-            />
-
+          {/* Animated Video Showcase Card with Lazy Loading */}
+          <div ref={videoContainerRef} className="lg:col-span-5 rounded-3xl overflow-hidden aspect-[4/5] bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 shadow-2xl border-2 border-white ring-4 ring-slate-100 relative group flex items-center justify-center">
+            {loadVideo ? (
+              <video
+                src={assets.animoCoverRing}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="none"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center text-white/80 animate-pulse">
+                <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-4 border border-white/20">
+                  <Sparkles className="w-8 h-8 text-amber-300" />
+                </div>
+                <h4 className="text-lg font-bold text-white mb-1">Dr. Bharathi's Clinic</h4>
+                <p className="text-xs text-amber-200/80 font-medium">Holistic Healing & Natural Wellness</p>
+              </div>
+            )}
           </div>
 
           {/* Right Column Details */}

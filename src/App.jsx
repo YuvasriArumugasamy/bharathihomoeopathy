@@ -8,6 +8,7 @@ import { AdminLayout } from './layouts/AdminLayout';
 // Common & Route Guards
 import { ProtectedRoute, AdminProtectedRoute } from './components/common/ProtectedRoute';
 import { ScrollToTop } from './components/common/ScrollToTop';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 // Customer Pages
 import { Home } from './pages/Home';
@@ -46,7 +47,7 @@ import { AdminNotifications } from './pages/admin/AdminNotifications';
 
 export default function App() {
   return (
-    <>
+    <ErrorBoundary>
       <ScrollToTop />
       <Routes>
       {/* Patient & Customer Routes */}
@@ -114,6 +115,6 @@ export default function App() {
       {/* 404 Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-    </>
+    </ErrorBoundary>
   );
 }

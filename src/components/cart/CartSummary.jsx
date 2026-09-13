@@ -5,6 +5,7 @@ import { useCart } from '../../context/CartContext';
 
 export const CartSummary = ({ isCheckoutPage = false, onPlaceOrder, isPlacingOrder = false }) => {
   const {
+    items,
     subtotal,
     discount,
     shipping,
@@ -24,6 +25,17 @@ export const CartSummary = ({ isCheckoutPage = false, onPlaceOrder, isPlacingOrd
       applyCoupon(couponCode.trim());
       setCouponCode('');
     }
+  };
+
+  const handleWhatsAppOrder = () => {
+    if (!items || items.length === 0) return;
+    const itemList = items
+      .map((i, idx) => `${idx + 1}. ${i.name || i.title} (Qty: ${i.quantity}) - ₹${((i.price || 0) * (i.quantity || 1)).toLocaleString('en-IN')}`)
+      .join('\n');
+    const msg = `*Dr. Bharathi Homeo Care - Quick WhatsApp Order*\n\nHello Doctor, I would like to place an order for the following remedies:\n\n${itemList}\n\n*Total Amount:* ₹${grandTotal.toLocaleString('en-IN')}\n\nPlease confirm availability & delivery details. Thank you!`;
+    const phone = '919360577726';
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const amountToFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
@@ -154,13 +166,26 @@ export const CartSummary = ({ isCheckoutPage = false, onPlaceOrder, isPlacingOrd
 
       {/* CTA Button */}
       {!isCheckoutPage ? (
-        <Link
-          to="/checkout"
-          className="w-full flex items-center justify-center gap-2 py-3.5 px-6 text-sm font-bold text-white bg-gradient-to-r from-brandOrange-500 to-[#f97316] hover:from-brandOrange-600 hover:to-[#ea580c] active:scale-[0.98] rounded-xl shadow-md shadow-orange-500/20 transition-all cursor-pointer"
-        >
-          <span>Proceed to Checkout</span>
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+        <div className="space-y-2.5">
+          <Link
+            to="/checkout"
+            className="w-full flex items-center justify-center gap-2 py-3.5 px-6 text-sm font-bold text-white bg-gradient-to-r from-brandOrange-500 to-[#f97316] hover:from-brandOrange-600 hover:to-[#ea580c] active:scale-[0.98] rounded-xl shadow-md shadow-orange-500/20 transition-all cursor-pointer"
+          >
+            <span>Proceed to Checkout</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+
+          {items && items.length > 0 && (
+            <button
+              type="button"
+              onClick={handleWhatsAppOrder}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-300 rounded-xl transition-all cursor-pointer active:scale-95 shadow-xs"
+            >
+              <i className="fa-brands fa-whatsapp text-emerald-600 text-base" />
+              <span>Order via WhatsApp (1-Click)</span>
+            </button>
+          )}
+        </div>
       ) : (
         <button
           onClick={onPlaceOrder}

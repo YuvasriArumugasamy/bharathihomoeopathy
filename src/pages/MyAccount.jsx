@@ -30,9 +30,12 @@ import {
   AlertCircle,
   QrCode,
   Share2,
-  Printer
+  Printer,
+  RotateCcw
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { mockAccountData } from '../data/accountData';
 import { useToast } from '../context/ToastContext';
 import { OrderInvoiceModal } from '../components/admin/OrderInvoiceModal';
@@ -43,6 +46,8 @@ import { getStoredPrescriptions } from '../services/prescriptionService';
 
 export const MyAccount = () => {
   const { user, logout, openAuthModal } = useAuth();
+  const { addToCart } = useCart();
+  const navigate = useNavigate();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('orders');
 
@@ -113,11 +118,40 @@ export const MyAccount = () => {
       orderId,
       date: dateStr,
       items: itemsSummary,
+      itemsList: Array.isArray(raw.items) ? raw.items : null,
       itemsCount,
       amount,
       status
     };
   });
+
+  const handleReorder = (order) => {
+    let reorderedCount = 0;
+    if (Array.isArray(order.itemsList) && order.itemsList.length > 0) {
+      order.itemsList.forEach(item => {
+        addToCart({
+          id: item.id || item.productId || `HOM-${Date.now()}`,
+          name: item.name || item.title || 'Classical Homeopathic Remedy',
+          price: item.price || 150,
+          image: item.image || '/logo.png',
+          category: item.category || 'Remedy'
+        }, item.quantity || 1);
+        reorderedCount++;
+      });
+    } else {
+      addToCart({
+        id: `REORDER-${order.id}`,
+        name: typeof order.items === 'string' ? order.items : 'Dr. Bharathi Homeopathic Formulation',
+        price: order.amount || 250,
+        image: '/logo.png',
+        category: 'Prescription Refill'
+      }, 1);
+      reorderedCount = 1;
+    }
+
+    showToast(`Added ${reorderedCount} remedy item(s) to your cart!`, 'success');
+    navigate('/cart');
+  };
 
   const storedAppointments = getStoredAppointments();
   const activeAppointment = (storedAppointments && storedAppointments.length > 0)
@@ -419,7 +453,16 @@ export const MyAccount = () => {
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2 self-start sm:self-center">
+                          <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
+                            <button
+                              type="button"
+                              onClick={() => handleReorder(order)}
+                              className="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 border border-emerald-200/70 shadow-2xs active:scale-95"
+                              title="Add remedies from this order back into your cart"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Re-order</span>
+                            </button>
                             <button
                               type="button"
                               onClick={() => setInvoiceModalOrder(order)}
