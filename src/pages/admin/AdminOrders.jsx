@@ -80,6 +80,23 @@ export const AdminOrders = () => {
     showToast(`Payment status updated to ${newStatus} and saved!`, 'success');
   };
 
+  const handleUpdateCourier = (orderId, courier, trackingNumber) => {
+    setOrders(prev => prev.map(o => (o.id === orderId || o.orderId === orderId || o._id === orderId) ? { ...o, courier, trackingNumber } : o));
+    if (selectedOrderDrawer && (selectedOrderDrawer.id === orderId || selectedOrderDrawer.orderId === orderId)) {
+      setSelectedOrderDrawer(prev => ({ ...prev, courier, trackingNumber }));
+    }
+    try {
+      const raw = localStorage.getItem('admin_orders_store');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const updated = parsed.map(o => (o.id === orderId || o.orderId === orderId || o._id === orderId) ? { ...o, courier, trackingNumber } : o);
+        localStorage.setItem('admin_orders_store', JSON.stringify(updated));
+      }
+    } catch (err) {
+      console.warn("Could not save courier:", err);
+    }
+  };
+
   const copyOrderId = (id) => {
     navigator.clipboard?.writeText(id);
     showToast(`Copied Order ID: ${id}`, 'info');
@@ -427,6 +444,32 @@ export const AdminOrders = () => {
                       <option value="Paid">Paid</option>
                       <option value="Refunded">Refunded</option>
                     </select>
+                  </div>
+                </div>
+
+                {/* Courier Partner & Tracking AWB */}
+                <div className="pt-3 border-t border-slate-200/60 space-y-2">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Courier Partner</label>
+                      <input
+                        type="text"
+                        value={selectedOrderDrawer.courier || ''}
+                        onChange={(e) => handleUpdateCourier(selectedOrderDrawer.id, e.target.value, selectedOrderDrawer.trackingNumber || '')}
+                        placeholder="e.g. ST Courier / DTDC"
+                        className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-brandOrange-500 text-xs shadow-2xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Tracking / AWB No.</label>
+                      <input
+                        type="text"
+                        value={selectedOrderDrawer.trackingNumber || ''}
+                        onChange={(e) => handleUpdateCourier(selectedOrderDrawer.id, selectedOrderDrawer.courier || '', e.target.value)}
+                        placeholder="e.g. ST-84920412"
+                        className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-mono font-medium text-slate-900 focus:outline-none focus:border-brandOrange-500 text-xs shadow-2xs"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

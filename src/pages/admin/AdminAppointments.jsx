@@ -393,6 +393,19 @@ export const AdminAppointments = () => {
                     <Stethoscope className="w-3.5 h-3.5 text-brandOrange-600" />
                     <span className="text-[10px] hidden sm:inline font-black">Write Rx</span>
                   </button>
+
+                  {apt.consultationMode === 'Online' && (
+                    <a
+                      href={`https://wa.me/${(apt.patient?.phone || '').replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${apt.patient?.name || 'Patient'}, Dr. Bharathi is ready for your scheduled homeopathic video consultation on ${apt.date} at ${apt.time}. Please connect here on WhatsApp Video Call.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold rounded-xl transition-all border border-sky-200/80 flex items-center gap-1 cursor-pointer"
+                      title="Launch WhatsApp Video Call Consultation"
+                    >
+                      <Video className="w-3.5 h-3.5 text-sky-600" />
+                      <span className="text-[10px] hidden sm:inline font-black">Video Call</span>
+                    </a>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-1.5">

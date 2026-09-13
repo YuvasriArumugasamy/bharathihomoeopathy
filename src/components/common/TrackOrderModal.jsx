@@ -245,6 +245,28 @@ export const TrackOrderModal = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
+              {/* Courier & AWB Tracking Card */}
+              {(matchedOrder.courier || matchedOrder.trackingNumber) && (
+                <div className="p-3.5 rounded-2xl bg-sky-50 border border-sky-200/80 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-sky-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <Truck className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-sky-950 block">Shipping Partner: {matchedOrder.courier || 'Express Delivery'}</span>
+                      {matchedOrder.trackingNumber ? (
+                        <span className="font-mono text-slate-600 text-[11px]">AWB Docket: <strong className="text-sky-900">{matchedOrder.trackingNumber}</strong></span>
+                      ) : (
+                        <span className="text-[10px] text-slate-500">Tracking code will be updated once scanned at courier hub</span>
+                      )}
+                    </div>
+                  </div>
+                  <span className="px-2 py-1 rounded-lg bg-sky-100 text-sky-800 text-[10px] font-black uppercase border border-sky-200 shrink-0">
+                    {matchedOrder.orderStatus === 'Delivered' ? 'DELIVERED' : 'IN TRANSIT'}
+                  </span>
+                </div>
+              )}
+
               {/* WhatsApp Help CTA */}
               <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5 text-xs text-emerald-900 font-medium">

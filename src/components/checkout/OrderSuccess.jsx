@@ -317,7 +317,7 @@ export const OrderSuccess = ({ order }) => {
         {/* Support & Contact Footer */}
         <div className="pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
           <a
-            href="https://wa.me/919876543210?text=Hello%20Dr.%20Bharathi's%20Homeo%20Care,%20I%20have%20an%20inquiry%20about%20my%20Order%20"
+            href={`https://wa.me/919025854711?text=${encodeURIComponent(`Hello Dr. Bharathi's Homeo Care, I have placed Order ${orderNumber} and would like tracking updates.`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="p-3.5 rounded-2xl bg-emerald-50/70 hover:bg-emerald-100/70 border border-emerald-200/80 transition-all flex items-center gap-3 cursor-pointer group"
@@ -327,12 +327,12 @@ export const OrderSuccess = ({ order }) => {
             </div>
             <div>
               <p className="text-xs font-black text-emerald-950">WhatsApp Order Desk</p>
-              <p className="text-[10px] text-emerald-700 font-bold">Instant updates & consultation</p>
+              <p className="text-[10px] text-emerald-700 font-bold">Instant updates: +91 90258 54711</p>
             </div>
           </a>
 
           <a
-            href="tel:+919876543210"
+            href="tel:+919025854711"
             className="p-3.5 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 transition-all flex items-center gap-3 cursor-pointer group"
           >
             <div className="w-9 h-9 rounded-xl bg-[#0b344d] text-white flex items-center justify-center shadow-md shadow-slate-400/20 group-hover:scale-105 transition-transform">
@@ -340,7 +340,7 @@ export const OrderSuccess = ({ order }) => {
             </div>
             <div>
               <p className="text-xs font-black text-slate-900">Clinic Helpline Desk</p>
-              <p className="text-[10px] text-slate-500 font-bold">+91 98765 43210 (10 AM - 8 PM)</p>
+              <p className="text-[10px] text-slate-500 font-bold">+91 90258 54711 (10 AM - 8 PM)</p>
             </div>
           </a>
         </div>

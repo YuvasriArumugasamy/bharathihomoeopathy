@@ -105,6 +105,75 @@ export const Checkout = () => {
   const [upiTransactionId, setUpiTransactionId] = useState('');
   const [isVerifyingUpi, setIsVerifyingUpi] = useState(false);
 
+  // Coupon state
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState('');
+
+  const handleApplyCoupon = (e) => {
+    e?.preventDefault?.();
+    setCouponError('');
+    const code = couponCode.trim().toUpperCase();
+    if (!code) return;
+
+    try {
+      const rawCoupons = localStorage.getItem('admin_coupons_store');
+      let couponsList = [];
+      if (rawCoupons) {
+        couponsList = JSON.parse(rawCoupons);
+      }
+      if (!couponsList || couponsList.length === 0) {
+        couponsList = [
+          { code: 'HOMECARE10', discountType: 'Percentage', discountValue: 10, minimumOrderValue: 499, maximumDiscount: 200, status: 'Active' },
+          { code: 'WELLNESS20', discountType: 'Percentage', discountValue: 20, minimumOrderValue: 999, maximumDiscount: 500, status: 'Active' },
+          { code: 'FLAT150', discountType: 'Fixed Amount', discountValue: 150, minimumOrderValue: 1200, status: 'Active' }
+        ];
+      }
+
+      const match = couponsList.find(c => c.code.toUpperCase() === code && c.status === 'Active');
+      if (!match) {
+        setCouponError('Invalid or expired coupon code');
+        showToast('Invalid or expired coupon code', 'error');
+        return;
+      }
+
+      if (match.minimumOrderValue && subtotal < match.minimumOrderValue) {
+        const msg = `Minimum cart value of ₹${match.minimumOrderValue} required for this coupon`;
+        setCouponError(msg);
+        showToast(msg, 'warning');
+        return;
+      }
+
+      let discountVal = 0;
+      if (match.discountType === 'Percentage') {
+        discountVal = Math.round(subtotal * (match.discountValue / 100));
+        if (match.maximumDiscount) {
+          discountVal = Math.min(discountVal, match.maximumDiscount);
+        }
+      } else {
+        discountVal = Number(match.discountValue) || 0;
+      }
+
+      setAppliedCoupon({
+        code: match.code,
+        discount: discountVal,
+        type: match.discountType,
+        value: match.discountValue
+      });
+      showToast(`Coupon ${match.code} applied! ₹${discountVal} saved.`, 'success');
+      setCouponCode('');
+    } catch (err) {
+      showToast('Error applying coupon', 'error');
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError('');
+    showToast('Coupon removed', 'info');
+  };
+
   // Validate if all mandatory address fields are filled
   const isAddressComplete = Boolean(
     formData.firstName?.trim() &&
@@ -113,7 +182,7 @@ export const Checkout = () => {
     formData.address?.trim() &&
     formData.city?.trim() &&
     formData.state?.trim() &&
-    /^\d{6}$/.test(formData.postalCode?.trim() || '')
+    formData.postalCode?.trim()
   );
 
   // Auto-scroll to top when step changes
@@ -121,12 +190,14 @@ export const Checkout = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step]);
 
+  // If cart is completely empty, show friendly empty state
   if (items.length === 0 && !placedOrder) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="max-w-4xl mx-auto px-4 py-16">
         <EmptyState
-          title="Your Cart is Empty"
-          description="You cannot proceed to checkout without items in your cart."
+          icon={ShoppingBag}
+          title="Your Prescription Cart is Empty"
+          message="Please add constitutional homeopathic remedies or tinctures to your cart before proceeding to checkout."
           actionText="Explore Remedies"
           actionLink="/shop"
         />
@@ -186,7 +257,12 @@ export const Checkout = () => {
     }
   };
 
-  const handlePlaceOrder = async () => {
+  const gstAmount = Number((subtotal * 0.05).toFixed(2));
+  const couponDiscountAmount = appliedCoupon ? appliedCoupon.discount : 0;
+  const payableAmount = Math.max(0, subtotal + gstAmount - couponDiscountAmount).toFixed(2);
+  const upiPaymentUrl = `upi://pay?pa=q826461256@ybl&pn=BARATHI%20HOMEOPATHY%20CLINIC&am=${payableAmount}&cu=INR&tn=Order%20Payment`;
+
+  const handlePlaceOrder = async (method = 'COD', utr = '') => {
     if (!selectedCourier) {
       showToast('Please select a shipping partner to continue', 'warning');
       return;
@@ -208,8 +284,12 @@ export const Checkout = () => {
           country: formData.country
         },
         courier: selectedCourier,
-        paymentMethod: 'COD',
-        totalAmount: grandTotal
+        paymentMethod: method,
+        paymentStatus: method === 'UPI' ? 'Paid' : 'Pending',
+        transactionId: utr || '',
+        appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
+        discountAmount: couponDiscountAmount,
+        totalAmount: Number(payableAmount)
       };
 
       const res = await orderService.createOrder(payload);
@@ -227,10 +307,6 @@ export const Checkout = () => {
       setIsPlacingOrder(false);
     }
   };
-
-  // Dynamic UPI Payment URL with exact order amount embedded
-  const payableAmount = (subtotal + (subtotal * 0.05)).toFixed(2);
-  const upiPaymentUrl = `upi://pay?pa=q826461256@ybl&pn=BARATHI%20HOMEOPATHY%20CLINIC&am=${payableAmount}&cu=INR&tn=Order%20Payment`;
 
   // Courier Partners List with Logos / Badges
   const courierOptions = [
@@ -679,6 +755,59 @@ export const Checkout = () => {
                     </div>
                   </div>
 
+                  {/* Have a Promo Code / Coupon Card */}
+                  <div className="bg-white/95 backdrop-blur-2xl rounded-3xl p-5 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.06)] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                        <span>Have a Promo Code or Coupon?</span>
+                      </span>
+                    </div>
+
+                    {!appliedCoupon ? (
+                      <form onSubmit={handleApplyCoupon} className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="e.g. HOMECARE10 or WELLNESS20"
+                          value={couponCode}
+                          onChange={(e) => {
+                            setCouponCode(e.target.value.toUpperCase());
+                            setCouponError('');
+                          }}
+                          className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-mono font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#f97316] uppercase"
+                        />
+                        <button
+                          type="submit"
+                          disabled={!couponCode.trim()}
+                          className="px-4 py-2.5 bg-[#0b344d] hover:bg-[#154e73] text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all disabled:opacity-40 cursor-pointer"
+                        >
+                          Apply
+                        </button>
+                      </form>
+                    ) : (
+                      <div className="p-3 bg-emerald-50 border border-emerald-200/80 rounded-2xl flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          <div>
+                            <span className="text-xs font-mono font-black text-emerald-900">{appliedCoupon.code}</span>
+                            <span className="text-[11px] text-emerald-700 block">₹{appliedCoupon.discount} discount applied!</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveCoupon}
+                          className="text-[10px] text-rose-500 hover:text-rose-700 font-black uppercase px-2 py-1 bg-white rounded-lg border border-rose-200 cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+
+                    {couponError && (
+                      <p className="text-[10px] text-rose-500 font-bold">{couponError}</p>
+                    )}
+                  </div>
+
                   {/* Price Details Card */}
                   <div className="bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] space-y-5 relative overflow-hidden">
                     <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d]" />
@@ -695,10 +824,17 @@ export const Checkout = () => {
                         <span className="font-black text-slate-900">₹{subtotal.toFixed(2)}</span>
                       </div>
 
+                      {appliedCoupon && (
+                        <div className="flex justify-between items-center text-emerald-600 font-bold">
+                          <span>Coupon Discount ({appliedCoupon.code})</span>
+                          <span className="font-black">-₹{appliedCoupon.discount.toFixed(2)}</span>
+                        </div>
+                      )}
+
                       <div className="flex justify-between items-center">
                         <span>GST (inclusive of all taxes)</span>
                         <span className="font-extrabold text-slate-900">₹{(subtotal * 0.05).toFixed(2)}</span>
-                      </div>
+                      </div>
 
                       <div className="flex justify-between items-center">
                         <span>Shipping Fee</span>
@@ -707,7 +843,7 @@ export const Checkout = () => {
 
                       <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
                         <span className="font-black text-slate-900 text-sm">Total Amount</span>
-                        <span className="font-black text-2xl text-[#f97316]">₹{(subtotal + (subtotal * 0.05)).toFixed(2)}</span>
+                        <span className="font-black text-2xl text-[#f97316]">₹{payableAmount}</span>
                       </div>
                     </div>
 

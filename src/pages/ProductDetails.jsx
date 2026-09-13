@@ -53,6 +53,62 @@ export const ProductDetails = () => {
   const [showImageModal, setShowImageModal] = useState(false);
 
   useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`product_reviews_${id}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setReviewsList(parsed);
+        }
+      }
+    } catch {
+      // fallback
+    }
+  }, [id]);
+
+  const handleReviewSubmit = (e) => {
+    e.preventDefault();
+    if (!newReview.name.trim() || !newReview.comment.trim()) {
+      showToast('Please fill in your name and comments', 'warning');
+      return;
+    }
+
+    const reviewObj = {
+      name: newReview.name.trim(),
+      rating: Number(newReview.rating) || 5,
+      date: new Date().toISOString().slice(0, 10),
+      title: newReview.title.trim() || 'Verified Experience',
+      comment: newReview.comment.trim()
+    };
+
+    const updatedList = [reviewObj, ...reviewsList];
+    setReviewsList(updatedList);
+    try {
+      localStorage.setItem(`product_reviews_${id}`, JSON.stringify(updatedList));
+
+      // Also sync to admin reviews queue
+      const rawAdminReviews = localStorage.getItem('admin_reviews_store');
+      const adminReviews = rawAdminReviews ? JSON.parse(rawAdminReviews) : [];
+      adminReviews.unshift({
+        id: 'rev-' + Date.now(),
+        productName: product?.name || 'Homeopathic Remedy',
+        author: reviewObj.name,
+        rating: reviewObj.rating,
+        status: 'Approved',
+        comment: reviewObj.comment,
+        createdAt: new Date().toISOString().slice(0, 10)
+      });
+      localStorage.setItem('admin_reviews_store', JSON.stringify(adminReviews));
+    } catch (err) {
+      console.warn("Could not save review to storage:", err);
+    }
+
+    setNewReview({ name: '', rating: 5, title: '', comment: '' });
+    setShowReviewForm(false);
+    showToast('Thank you! Your verified review has been published.', 'success');
+  };
+
+  useEffect(() => {
     if (showImageModal) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -141,28 +197,7 @@ export const ProductDetails = () => {
         text: product.shortDescription || product.name,
         url: window.location.href,
       }).catch(() => {});
-    } else {
-      navigator.clipboard?.writeText?.(window.location.href);
-      showToast('Product link copied to clipboard!', 'success');
     }
-  };
-
-  const handleReviewSubmit = (e) => {
-    e.preventDefault();
-    if (!newReview.name || !newReview.comment) {
-      showToast('Please provide your name and review comments', 'warning');
-      return;
-    }
-    setReviewsList(prev => [
-      {
-        ...newReview,
-        date: new Date().toISOString().slice(0, 10)
-      },
-      ...prev
-    ]);
-    setNewReview({ name: '', rating: 5, title: '', comment: '' });
-    setShowReviewForm(false);
-    showToast('Thank you! Your verified review has been posted.', 'success');
   };
 
   const relatedProducts = getStoredProducts().filter(p => p.id !== product.id && p.category === product.category).slice(0, 4);
