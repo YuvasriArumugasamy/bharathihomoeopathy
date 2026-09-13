@@ -24,6 +24,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { orderService } from '../../services/orderService';
+import { cloudSyncService } from '../../services/cloudSyncService';
 import { useToast } from '../../context/ToastContext';
 import { exportToCsv } from '../../utils/exportUtils';
 import { sendOrderWhatsApp } from '../../utils/whatsappUtils';
@@ -39,18 +40,24 @@ export const AdminOrders = () => {
   const [invoiceModalOrder, setInvoiceModalOrder] = useState(null);
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      setLoading(true);
-      try {
-        const data = await orderService.getAdminOrders();
-        setOrders(data);
-      } catch (err) {
-        showToast('Failed to load orders: ' + err.message, 'error');
-      } finally {
-        setLoading(false);
-      }
+    setLoading(true);
+    orderService.getAdminOrders().then(data => {
+      setOrders(data);
+      setLoading(false);
+    }).catch(err => {
+      showToast('Failed to load orders: ' + err.message, 'error');
+      setLoading(false);
+    });
+
+    // Real-time Cloud Sync Listener across devices
+    const unsubscribe = cloudSyncService.listenToCloudOrders((liveOrders) => {
+      setOrders(liveOrders);
+      setLoading(false);
+    });
+
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
     };
-    fetchOrders();
   }, []);
 
   const filteredOrders = orders.filter((o) => {
@@ -138,10 +145,28 @@ export const AdminOrders = () => {
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
         
-        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
-          <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-            Orders & Prescription Fulfillment
-          </h1>
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left w-full">
+          <div>
+            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+              Orders & Prescription Fulfillment
+            </h1>
+            <div className="flex items-center gap-2 mt-1.5 justify-center sm:justify-start">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 text-[11px] font-black uppercase tracking-wider shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                <span>Live Cross-Device Cloud Sync</span>
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleExportOrders}
+            className="inline-flex items-center gap-2 px-5 py-3 bg-white hover:bg-slate-50 text-navy-950 rounded-2xl text-xs font-black shadow-xl hover:shadow-2xl transition-all cursor-pointer active:scale-95"
+            title="Export all orders to Excel CSV file"
+          >
+            <Download className="w-4 h-4 text-brandOrange-500" />
+            <span>Export to Excel (CSV)</span>
+          </button>
         </div>
       </div>
 

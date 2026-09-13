@@ -6,6 +6,7 @@ import {
   Download, MessageSquare, Paperclip, Eye, ExternalLink
 } from 'lucide-react';
 import { appointmentService } from '../../services/appointmentService';
+import { cloudSyncService } from '../../services/cloudSyncService';
 import { useToast } from '../../context/ToastContext';
 import { exportToCsv } from '../../utils/exportUtils';
 import { sendAppointmentWhatsApp } from '../../utils/whatsappUtils';
@@ -25,18 +26,24 @@ export const AdminAppointments = () => {
   const [rxModalApt, setRxModalApt] = useState(null);
 
   useEffect(() => {
-    const fetchAppointments = async () => {
-      setLoading(true);
-      try {
-        const data = await appointmentService.getAdminAppointments();
-        setAppointments(data);
-      } catch (err) {
-        showToast('Failed to load appointments: ' + err.message, 'error');
-      } finally {
-        setLoading(false);
-      }
+    setLoading(true);
+    appointmentService.getAdminAppointments().then(data => {
+      setAppointments(data);
+      setLoading(false);
+    }).catch(err => {
+      showToast('Failed to load appointments: ' + err.message, 'error');
+      setLoading(false);
+    });
+
+    // Real-time Cloud Sync Listener across devices
+    const unsubscribe = cloudSyncService.listenToCloudAppointments((liveApts) => {
+      setAppointments(liveApts);
+      setLoading(false);
+    });
+
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
     };
-    fetchAppointments();
   }, []);
 
   // Stats calculation
@@ -118,10 +125,23 @@ export const AdminAppointments = () => {
             <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
               Clinical Consultations & Appointments
             </h1>
-            <p className="text-white/90 text-xs sm:text-sm font-sans mt-1">
-              Real-time patient scheduling, in-clinic tokens, and tele-health management
-            </p>
+            <div className="flex items-center gap-2 mt-1.5 justify-center sm:justify-start">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 text-[11px] font-black uppercase tracking-wider shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+                <span>Live Cross-Device Cloud Sync</span>
+              </span>
+            </div>
           </div>
+
+          <button
+            type="button"
+            onClick={handleExportAppointments}
+            className="inline-flex items-center gap-2 px-5 py-3 bg-white hover:bg-slate-50 text-navy-950 rounded-2xl text-xs font-black shadow-xl hover:shadow-2xl transition-all cursor-pointer active:scale-95 shrink-0"
+            title="Export all appointments to Excel CSV file"
+          >
+            <Download className="w-4 h-4 text-brandOrange-500" />
+            <span>Export to Excel (CSV)</span>
+          </button>
         </div>
       </div>
 

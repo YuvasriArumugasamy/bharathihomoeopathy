@@ -15,7 +15,8 @@ export default defineConfig({
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-icons': ['lucide-react'],
           'vendor-geo': ['country-state-city'],
-          'vendor-qrcode': ['qrcode.react']
+          'vendor-qrcode': ['qrcode.react'],
+          'vendor-firebase': ['firebase/app', 'firebase/firestore', 'firebase/auth']
         }
       }
     }

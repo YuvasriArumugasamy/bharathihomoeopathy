@@ -1,5 +1,6 @@
 import { api } from '../utils/api';
 import { customerService } from './customerService';
+import { cloudSyncService } from './cloudSyncService';
 
 const ORDERS_STORAGE_KEY = 'admin_orders_store';
 
@@ -142,6 +143,13 @@ export const orderService = {
     const currentOrders = getStoredOrders();
     saveStoredOrders([newOrder, ...currentOrders]);
 
+    // Push order in real-time to Firebase Firestore Cloud (Accessible from any device)
+    try {
+      cloudSyncService.syncOrderToCloud(newOrder);
+    } catch (cErr) {
+      console.warn("Cloud sync error:", cErr.message);
+    }
+
     // Automatically sync patient directory
     try {
       customerService.syncCustomer({
@@ -226,6 +234,10 @@ export const orderService = {
     saveStoredOrders(orders);
 
     try {
+      await cloudSyncService.updateCloudOrderStatus(id, { orderStatus: newStatus });
+    } catch {}
+
+    try {
       await api.patch(`/orders/${id}/status`, { orderStatus: newStatus });
     } catch (err) {
       console.warn("Order status updated in local persistent store:", err.message);
@@ -236,6 +248,10 @@ export const orderService = {
   updateAdminPaymentStatus: async (id, newPaymentStatus) => {
     const orders = getStoredOrders().map(o => (o.id === id || o._id === id || o.orderId === id) ? { ...o, paymentStatus: newPaymentStatus } : o);
     saveStoredOrders(orders);
+
+    try {
+      await cloudSyncService.updateCloudOrderStatus(id, { paymentStatus: newPaymentStatus });
+    } catch {}
 
     try {
       await api.patch(`/orders/${id}/payment-status`, { paymentStatus: newPaymentStatus });

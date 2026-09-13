@@ -1,5 +1,6 @@
 import { api } from '../utils/api';
 import { customerService } from './customerService';
+import { cloudSyncService } from './cloudSyncService';
 
 const APPOINTMENTS_STORAGE_KEY = 'admin_appointments_store';
 
@@ -100,6 +101,13 @@ export const appointmentService = {
 
     const current = getStoredAppointments();
     saveStoredAppointments([newAppointment, ...current]);
+
+    // Push appointment in real-time to Cloud Firestore
+    try {
+      cloudSyncService.syncAppointmentToCloud(newAppointment);
+    } catch (cErr) {
+      console.warn("Cloud appointment sync error:", cErr.message);
+    }
 
     try {
       customerService.syncCustomer({
