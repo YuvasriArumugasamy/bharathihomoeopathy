@@ -11,6 +11,7 @@ export const ProductCard = ({ product }) => {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { showToast } = useToast();
   const { format: formatPrice } = useCurrency();
+  const [selectedSize, setSelectedSize] = useState(() => product?.size || "30 ml");
 
   if (!product) return null;
 
@@ -32,7 +33,6 @@ export const ProductCard = ({ product }) => {
 
   // Size options
   const defaultSize = product.size || "30 ml";
-  const [selectedSize, setSelectedSize] = useState(defaultSize);
 
   const sizeOptions = [
     defaultSize,
