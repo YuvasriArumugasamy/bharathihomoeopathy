@@ -28,6 +28,7 @@ import { ProductSkeleton } from '../components/common/ProductSkeleton';
 import { ErrorState } from '../components/common/ErrorState';
 import { SectionHeader } from '../components/common/SectionHeader';
 import { ScrollReveal } from '../components/common/ScrollReveal';
+import { useCurrency } from '../utils/currencyUtils';
 import { demoProducts } from '../data/products';
 
 export const ProductDetails = () => {
@@ -36,6 +37,7 @@ export const ProductDetails = () => {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { showToast } = useToast();
+  const { format: formatPrice } = useCurrency();
 
   const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState('');
@@ -165,6 +167,7 @@ export const ProductDetails = () => {
   const originalPrice = product.originalPrice || product.price;
   const hasDiscount = originalPrice > displayPrice;
   const discountPercent = product.discount || (hasDiscount ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100) : 0);
+  const priceDisplay = formatPrice(displayPrice);
 
   const imagesList = product.images && product.images.length > 0 ? product.images : [product.image];
 
@@ -328,8 +331,15 @@ export const ProductDetails = () => {
           </div>
 
           {/* Pricing Row */}
-          <div className="flex items-baseline gap-3 bg-slate-50/70 p-4 rounded-2xl border border-slate-100">
-            <span className="text-3xl sm:text-4xl font-black text-slate-900">₹{displayPrice}</span>
+          <div className="flex flex-wrap items-baseline gap-3 bg-slate-50/70 p-4 rounded-2xl border border-slate-100">
+            <div className="flex flex-wrap items-baseline gap-2.5">
+              <span className="text-3xl sm:text-4xl font-black text-slate-900">{priceDisplay.primary}</span>
+              {priceDisplay.secondary && (
+                <span className="text-xs sm:text-sm font-extrabold text-[#00a699] bg-teal-50 px-2.5 py-1 rounded-xl border border-teal-200" title={`Equivalent in ${priceDisplay.code}`}>
+                  {priceDisplay.secondary}
+                </span>
+              )}
+            </div>
             {hasDiscount && (
               <span className="text-lg text-slate-400 line-through font-bold">₹{originalPrice}</span>
             )}

@@ -8,6 +8,7 @@ import { MobileBottomBar } from '../components/common/MobileBottomBar';
 import { AuthModal } from '../components/auth/AuthModal';
 import { CountryModal } from '../components/common/CountryModal';
 import { TrackOrderModal } from '../components/common/TrackOrderModal';
+import { SymptomGuideModal } from '../components/common/SymptomGuideModal';
 import { PwaInstallPrompt } from '../components/common/PwaInstallPrompt';
 import { assets } from '../assets';
 
@@ -34,6 +35,9 @@ export const MainLayout = () => {
     >
       {/* Country Selection Modal */}
       <CountryModal />
+
+      {/* Interactive Symptom & Classical Remedy Guide Modal */}
+      <SymptomGuideModal />
 
       {/* Live Order Tracking Modal */}
       <TrackOrderModal 

@@ -36,6 +36,7 @@ import { useAuth } from '../context/AuthContext';
 import { mockAccountData } from '../data/accountData';
 import { useToast } from '../context/ToastContext';
 import { OrderInvoiceModal } from '../components/admin/OrderInvoiceModal';
+import { PrescriptionSlipModal } from '../components/account/PrescriptionSlipModal';
 import { getStoredOrders } from '../services/orderService';
 import { getStoredAppointments } from '../services/appointmentService';
 import { getStoredPrescriptions } from '../services/prescriptionService';
@@ -541,11 +542,26 @@ export const MyAccount = () => {
 
                     <div className="relative z-10 flex flex-wrap items-center gap-3 pt-1">
                       <button
-                        onClick={() => showToast('Digital Prescription PDF download started', 'success')}
+                        onClick={() => {
+                          const rx = (storedPrescriptions && storedPrescriptions.length > 0)
+                            ? storedPrescriptions[0]
+                            : {
+                                prescriptionId: 'RX-2026-8801',
+                                patient: { name: user?.name || 'Valued Patient', phone: user?.phone || '+91 98765 43210' },
+                                diagnosis: activeAppointment.concern || 'Homeopathic Constitutional Care',
+                                remedies: [
+                                  { name: 'Rhus Toxicodendron 200CH', dosage: '4 pills twice daily after meals', duration: '15 Days' },
+                                  { name: 'Arnica Montana 30C Liquid Drops', dosage: '3 drops in lukewarm water at bedtime', duration: '15 Days' }
+                                ],
+                                dietRestrictions: 'Avoid raw onions, garlic, and caffeine 30 mins before taking remedies.',
+                                followUpDate: activeAppointment.date || 'After 15 Days'
+                              };
+                          setSelectedPrescription(rx);
+                        }}
                         className="px-5 py-2.5 bg-white hover:bg-slate-100 text-navy-950 text-xs font-black rounded-xl shadow-lg transition-all cursor-pointer flex items-center gap-2"
                       >
                         <Download className="w-4 h-4 text-brandOrange-500" />
-                        <span>Download Prescription PDF</span>
+                        <span>View / Print Prescription PDF</span>
                       </button>
                       
                       <button
@@ -929,113 +945,11 @@ export const MyAccount = () => {
       {/* ========================================================================= */}
       {/* 4. INTERACTIVE MODAL 2: DIGITAL PRESCRIPTION SLIP VIEWER */}
       {/* ========================================================================= */}
-      {selectedPrescription && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/70 backdrop-blur-md animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-200 relative overflow-hidden">
-            
-            <button
-              onClick={() => setSelectedPrescription(null)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            {/* Prescription Header */}
-            <div className="border-b-2 border-slate-900 pb-4 flex justify-between items-start">
-              <div>
-                <h3 className="font-black text-xl text-navy-950">Dr. Bharathi's Homeo Care</h3>
-                <p className="text-xs text-brandOrange-600 font-extrabold">Constitutional Homeopathy & Healing Center</p>
-                <p className="text-[11px] text-slate-500 font-medium">Reg No: HOM-TN-2016-8941 • Dr. Bharathi B.H.M.S, M.D.</p>
-                {selectedPrescription.diagnosis && (
-                  <p className="text-xs font-bold text-slate-800 mt-1">
-                    Diagnosis: <span className="text-brandOrange-600">{selectedPrescription.diagnosis}</span>
-                  </p>
-                )}
-              </div>
-              <div className="text-right">
-                <span className="font-mono font-black text-xs text-navy-950 bg-slate-100 px-2.5 py-1 rounded-lg">
-                  {selectedPrescription.prescriptionId || selectedPrescription.id}
-                </span>
-                <p className="text-[10px] text-slate-400 font-bold mt-1">Date: {selectedPrescription.date}</p>
-                {selectedPrescription.patient?.name && (
-                  <p className="text-[10px] text-slate-500 font-bold">Patient: {selectedPrescription.patient.name}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Prescribed Remedies */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="font-serif font-black text-2xl text-navy-950 italic">Rx</span>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">OFFICIAL CLINIC FORMULATION</span>
-              </div>
-
-              <div className="bg-amber-50/60 border border-amber-200 p-4 rounded-2xl space-y-2.5 text-xs text-slate-800">
-                {selectedPrescription.remedies && selectedPrescription.remedies.length > 0 ? (
-                  selectedPrescription.remedies.map((r, idx) => (
-                    <div key={idx} className="flex justify-between items-start pb-2 border-b border-amber-200/60 last:border-none last:pb-0 gap-3">
-                      <div>
-                        <span className="font-black text-navy-950 block">{idx + 1}. {r.name}</span>
-                        {r.duration && <span className="text-[10px] text-slate-500 font-medium">Duration: {r.duration}</span>}
-                      </div>
-                      <span className="text-brandOrange-700 font-extrabold text-right shrink-0">{r.dosage}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold">1. Arnica Montana 30C (Liquid Drops)</span>
-                    <span className="text-brandOrange-600 font-bold">4 pills twice daily</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Dietary Advice */}
-            {selectedPrescription.dietRestrictions && (
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600 space-y-0.5">
-                <strong className="text-slate-900 font-bold block">Dietary & Dosage Advice:</strong>
-                <p>{selectedPrescription.dietRestrictions}</p>
-              </div>
-            )}
-
-            {/* Doctor Seal & Signature */}
-            <div className="flex justify-between items-center pt-4 border-t border-slate-100 text-xs">
-              <div className="flex items-center gap-2 text-slate-500 font-medium text-[11px]">
-                <QrCode className="w-8 h-8 text-slate-800" />
-                <span>Verified Digital Slip</span>
-              </div>
-
-              <div className="text-right">
-                <p className="font-serif italic font-bold text-navy-950 text-sm">Dr. Bharathi B.H.M.S</p>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Chief Homeopath Seal</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                onClick={() => {
-                  window.print();
-                }}
-                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-navy-950 text-xs font-black rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2"
-              >
-                <Printer className="w-4 h-4" />
-                <span>Print Slip</span>
-              </button>
-              <button
-                onClick={() => {
-                  showToast('Prescription PDF saved to downloads', 'success');
-                  setSelectedPrescription(null);
-                }}
-                className="flex-1 py-3 bg-gradient-to-r from-brandOrange-500 to-amber-500 text-white text-xs font-black rounded-xl shadow-md transition-colors cursor-pointer flex items-center justify-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                <span>Download PDF</span>
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
+      <PrescriptionSlipModal
+        prescription={selectedPrescription}
+        isOpen={!!selectedPrescription}
+        onClose={() => setSelectedPrescription(null)}
+      />
 
       {/* Medical Bill (Invoice) Modal */}
       <OrderInvoiceModal

@@ -432,6 +432,16 @@ export const Navbar = () => {
             ))}
           </nav>
 
+          {/* Quick Symptom Guide Trigger Button */}
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event('open_symptom_guide'))}
+            className="ml-3 px-3.5 py-1.5 rounded-full bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-300/40 text-[11px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shrink-0"
+            title="Open Homeopathic Symptom Guide"
+          >
+            <span>🌿</span>
+            <span>Symptom Guide</span>
+          </button>
         </div>
       </div>
 
@@ -542,6 +552,29 @@ export const Navbar = () => {
                   <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-brandOrange-500 group-hover:translate-x-0.5 transition-all" />
                 </NavLink>
               ))}
+
+              {/* Mobile Symptom Guide Trigger Button */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    window.dispatchEvent(new Event('open_symptom_guide'));
+                  }}
+                  className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-[#0b344d] to-[#124d70] text-white text-xs font-black shadow-md cursor-pointer transition-all active:scale-98"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center text-sm shadow-xs">
+                      🌿
+                    </div>
+                    <div className="text-left">
+                      <p className="text-xs font-black text-white">Symptom & Remedy Guide</p>
+                      <p className="text-[10px] text-amber-300 font-medium">Quick classical remedy reference</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-amber-300" />
+                </button>
+              </div>
             </div>
           </div>
 

@@ -4,11 +4,13 @@ import { ChevronDown, Heart, Plus, Star, ShoppingCart } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useToast } from '../../context/ToastContext';
+import { useCurrency } from '../../utils/currencyUtils';
 
 export const ProductCard = ({ product }) => {
   const { items, addToCart, updateQuantity } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { showToast } = useToast();
+  const { format: formatPrice } = useCurrency();
 
   if (!product) return null;
 
@@ -23,6 +25,7 @@ export const ProductCard = ({ product }) => {
   const originalPrice = Number(product.originalPrice || product.price || 0);
   const hasDiscount = originalPrice > displayPrice;
   const discountPercent = product.discount || (hasDiscount ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100) : 0);
+  const priceDisplay = formatPrice(displayPrice);
 
   const isOutOfStock = product.stock !== undefined && Number(product.stock) <= 0;
   const isLowStock = product.stock !== undefined && Number(product.stock) > 0 && Number(product.stock) <= 5;
@@ -203,8 +206,13 @@ export const ProductCard = ({ product }) => {
               </span>
             )}
             <span className="font-extrabold text-sm sm:text-base text-slate-900">
-              ₹{Math.round(displayPrice)}
+              {priceDisplay.primary}
             </span>
+            {priceDisplay.secondary && (
+              <span className="text-[9px] font-extrabold text-[#00a699] mt-0.5 tracking-tight">
+                {priceDisplay.secondary}
+              </span>
+            )}
           </div>
 
           {/* Add Button / Counter Stepper */}
