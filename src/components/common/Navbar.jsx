@@ -330,7 +330,7 @@ export const Navbar = () => {
             <div className="relative flex items-center justify-center">
               <Heart className="w-5 h-5 text-rose-500 fill-rose-500 group-hover:text-rose-600 group-hover:fill-rose-600 group-hover:scale-110 transition-all duration-200" />
               {totalWishlist > 0 && (
-                <span className="absolute -top-2 -right-2 w-4 h-4 bg-navy-950 text-white font-extrabold text-[10px] rounded-full flex items-center justify-center shadow-sm animate-in zoom-in ring-2 ring-white">
+                <span className="absolute -top-2 -right-2 w-4 h-4 bg-[#236888] text-white font-extrabold text-[10px] rounded-full flex items-center justify-center shadow-sm animate-in zoom-in ring-2 ring-white">
                   {totalWishlist}
                 </span>
               )}
