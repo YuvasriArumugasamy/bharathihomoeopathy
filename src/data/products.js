@@ -3,11 +3,11 @@ import { assets } from '../assets';
 export const demoProducts = [
   {
     id: "HOM-102",
-    name: "rtfgtrf",
-    slug: "rtfgtrf",
-    sku: "HOM-102",
+    name: "Dr. Bharathi Arnica Montana 200CH Pellets",
+    slug: "dr-bharathi-arnica-montana-200ch-pellets",
+    sku: "HOM-DHC-102",
     category: "Homeopathy Medicines",
-    form: "Drops",
+    form: "Globules",
     brand: "Dr. Bharathi's Standard",
     size: "30 ml",
     price: 349,
@@ -15,14 +15,14 @@ export const demoProducts = [
     originalPrice: 399,
     discount: 13,
     stock: 25,
-    rating: 4.8,
-    reviewsCount: 18,
+    rating: 4.9,
+    reviewsCount: 28,
     isBestSeller: true,
     isFeatured: true,
     image: assets.p1,
-    shortDescription: "Certified Homeopathic formulation prepared by clinic dispensary.",
-    description: "Certified clinical homeopathic remedy indicated for holistic wellness and symptom relief.",
-    ingredients: ["Active Homeopathic Dilution", "Dispensing Base Alcohol Base"]
+    shortDescription: "Certified Homeopathic formulation for muscle soreness, sprains & trauma relief.",
+    description: "Certified clinical homeopathic remedy indicated for holistic wellness, trauma healing, muscle soreness, and joint stiffness.",
+    ingredients: ["Active Arnica Montana 200CH", "Pure Sucrose Cane Sugar Pellets"]
   },
   {
     id: "prod-1",

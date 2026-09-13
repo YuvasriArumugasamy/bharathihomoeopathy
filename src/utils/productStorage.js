@@ -22,7 +22,17 @@ export const getStoredProducts = () => {
     if (stored) {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        return parsed.map(p => {
+          if (p.id === 'HOM-102' && p.name === 'rtfgtrf') {
+            return {
+              ...p,
+              name: "Dr. Bharathi Arnica Montana 200CH Pellets",
+              slug: "dr-bharathi-arnica-montana-200ch-pellets",
+              sku: "HOM-DHC-102"
+            };
+          }
+          return p;
+        });
       }
     }
   } catch (err) {
