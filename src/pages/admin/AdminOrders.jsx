@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShoppingBag, 
   Search, 
@@ -16,41 +16,68 @@ import {
   ChevronRight,
   ShieldCheck,
   MapPin,
-  Calendar
+  Calendar,
+  Loader2,
+  Printer,
+  Download,
+  Send,
+  MessageSquare
 } from 'lucide-react';
-import { initialAdminOrders } from '../../data/adminOrdersData';
+import { orderService } from '../../services/orderService';
 import { useToast } from '../../context/ToastContext';
+import { exportToCsv } from '../../utils/exportUtils';
+import { sendOrderWhatsApp } from '../../utils/whatsappUtils';
+import { OrderInvoiceModal } from '../../components/admin/OrderInvoiceModal';
 
 export const AdminOrders = () => {
   const { showToast } = useToast();
-  const [orders, setOrders] = useState(initialAdminOrders);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedOrderDrawer, setSelectedOrderDrawer] = useState(null);
+  const [invoiceModalOrder, setInvoiceModalOrder] = useState(null);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoading(true);
+      try {
+        const data = await orderService.getAdminOrders();
+        setOrders(data);
+      } catch (err) {
+        showToast('Failed to load orders: ' + err.message, 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
 
   const filteredOrders = orders.filter((o) => {
     if (selectedStatus !== 'All' && o.orderStatus !== selectedStatus) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
-      return o.orderId.toLowerCase().includes(q) || o.customer.name.toLowerCase().includes(q);
+      return (o.orderId || o.orderNumber || '').toLowerCase().includes(q) || (o.customer?.name || '').toLowerCase().includes(q);
     }
     return true;
   });
 
-  const handleUpdateStatus = (orderId, newStatus) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, orderStatus: newStatus } : o));
-    if (selectedOrderDrawer && selectedOrderDrawer.id === orderId) {
+  const handleUpdateStatus = async (orderId, newStatus) => {
+    await orderService.updateAdminOrderStatus(orderId, newStatus);
+    setOrders(prev => prev.map(o => (o.id === orderId || o.orderId === orderId || o._id === orderId) ? { ...o, orderStatus: newStatus } : o));
+    if (selectedOrderDrawer && (selectedOrderDrawer.id === orderId || selectedOrderDrawer.orderId === orderId)) {
       setSelectedOrderDrawer(prev => ({ ...prev, orderStatus: newStatus }));
     }
-    showToast(`Order status updated to ${newStatus}`, 'success');
+    showToast(`Order status updated to ${newStatus} and saved!`, 'success');
   };
 
-  const handleUpdatePaymentStatus = (orderId, newStatus) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, paymentStatus: newStatus } : o));
-    if (selectedOrderDrawer && selectedOrderDrawer.id === orderId) {
+  const handleUpdatePaymentStatus = async (orderId, newStatus) => {
+    await orderService.updateAdminPaymentStatus(orderId, newStatus);
+    setOrders(prev => prev.map(o => (o.id === orderId || o.orderId === orderId || o._id === orderId) ? { ...o, paymentStatus: newStatus } : o));
+    if (selectedOrderDrawer && (selectedOrderDrawer.id === orderId || selectedOrderDrawer.orderId === orderId)) {
       setSelectedOrderDrawer(prev => ({ ...prev, paymentStatus: newStatus }));
     }
-    showToast(`Payment status updated to ${newStatus}`, 'success');
+    showToast(`Payment status updated to ${newStatus} and saved!`, 'success');
   };
 
   const copyOrderId = (id) => {
@@ -62,6 +89,29 @@ export const AdminOrders = () => {
   const pendingCount = orders.filter(o => o.orderStatus === 'Pending').length;
   const shippedCount = orders.filter(o => o.orderStatus === 'Shipped').length;
   const deliveredCount = orders.filter(o => o.orderStatus === 'Delivered').length;
+
+  const handleExportOrders = () => {
+    const columns = [
+      { label: 'Order ID', accessor: (o) => o.orderId || o.orderNumber || o.id },
+      { label: 'Date', accessor: (o) => o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : '' },
+      { label: 'Patient Name', accessor: (o) => o.customer?.name || o.shippingAddress?.fullName || '' },
+      { label: 'Phone', accessor: (o) => o.customer?.phone || o.shippingAddress?.phone || '' },
+      { label: 'City', accessor: (o) => o.shippingAddress?.city || o.customer?.city || '' },
+      { label: 'State', accessor: (o) => o.shippingAddress?.state || 'Tamil Nadu' },
+      { label: 'Total Amount (INR)', accessor: (o) => Number(o.total || 0) },
+      { label: 'Payment Method', accessor: (o) => o.paymentMethod || 'Online' },
+      { label: 'Payment Status', accessor: (o) => o.paymentStatus || 'Pending' },
+      { label: 'Order Status', accessor: (o) => o.orderStatus || 'Pending' },
+      { label: 'Courier Partner', accessor: (o) => o.courierPartner || '' },
+      { label: 'Tracking Number', accessor: (o) => o.trackingNumber || '' }
+    ];
+    const ok = exportToCsv('Dispensary_Orders', columns, filteredOrders);
+    if (ok) {
+      showToast('Dispensary orders exported to Excel / CSV!', 'success');
+    } else {
+      showToast('No orders available to export', 'warning');
+    }
+  };
 
   return (
     <div className="space-y-6 pb-12 font-serif">
@@ -153,6 +203,14 @@ export const AdminOrders = () => {
               {st}
             </button>
           ))}
+          <button
+            onClick={handleExportOrders}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black transition-all shadow-xs cursor-pointer ml-auto md:ml-2"
+            title="Export orders to Excel / CSV"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export CSV</span>
+          </button>
         </div>
       </div>
 
@@ -225,13 +283,29 @@ export const AdminOrders = () => {
                     </span>
                   </td>
                   <td className="py-3.5 px-5 text-right">
-                    <button
-                      onClick={() => setSelectedOrderDrawer(ord)}
-                      className="inline-flex items-center gap-1 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 hover:text-navy-950 font-black rounded-xl transition-all cursor-pointer border border-slate-200/70"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-brandOrange-500" />
-                      <span>Details</span>
-                    </button>
+                    <div className="inline-flex items-center gap-1.5 justify-end">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setInvoiceModalOrder(ord); }}
+                        className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-navy-950 rounded-xl transition-all cursor-pointer border border-slate-200/70"
+                        title="Print Medical Invoice"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-slate-600" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); sendOrderWhatsApp(ord); }}
+                        className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl transition-all cursor-pointer border border-emerald-200/80"
+                        title="Send WhatsApp Dispatch Notice"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedOrderDrawer(ord)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 hover:text-navy-950 font-black rounded-xl transition-all cursor-pointer border border-slate-200/70 text-xs"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-brandOrange-500" />
+                        <span>Details</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -390,15 +464,42 @@ export const AdminOrders = () => {
               </div>
             </div>
 
-            {/* Total Footer */}
-            <div className="pt-4 border-t border-slate-100 flex justify-between items-center text-sm font-extrabold text-slate-900">
-              <span className="font-display">Total Amount Payable</span>
-              <span className="text-brandOrange-600 text-xl font-black font-display">₹{selectedOrderDrawer.total.toLocaleString()}</span>
+            {/* Total Footer & Quick Actions */}
+            <div className="pt-4 border-t border-slate-100 space-y-3">
+              <div className="flex justify-between items-center text-sm font-extrabold text-slate-900">
+                <span className="font-display">Total Amount Payable</span>
+                <span className="text-brandOrange-600 text-xl font-black font-display">₹{Number(selectedOrderDrawer.total || 0).toLocaleString('en-IN')}</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <button
+                  onClick={() => setInvoiceModalOrder(selectedOrderDrawer)}
+                  className="w-full py-2.5 px-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5 text-brandOrange-400" />
+                  <span>Print Invoice</span>
+                </button>
+
+                <button
+                  onClick={() => sendOrderWhatsApp(selectedOrderDrawer)}
+                  className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>Send WhatsApp</span>
+                </button>
+              </div>
             </div>
 
           </div>
         </div>
       )}
+
+      {/* Printable Invoice Modal */}
+      <OrderInvoiceModal
+        order={invoiceModalOrder}
+        isOpen={!!invoiceModalOrder}
+        onClose={() => setInvoiceModalOrder(null)}
+      />
 
     </div>
   );

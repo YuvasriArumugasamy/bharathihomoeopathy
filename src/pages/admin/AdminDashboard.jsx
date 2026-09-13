@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   IndianRupee, 
@@ -28,7 +28,8 @@ import {
   Palette
 } from 'lucide-react';
 import { adminDashboardData } from '../../data/adminDashboardData';
-import { initialAdminOrders } from '../../data/adminOrdersData';
+import { orderService } from '../../services/orderService';
+import { productService } from '../../services/productService';
 
 export const AdminDashboard = () => {
   const getGreeting = () => {
@@ -41,11 +42,47 @@ export const AdminDashboard = () => {
   const [timeFilter, setTimeFilter] = useState('7 Days');
   const [metricView, setMetricView] = useState('revenue'); // 'revenue' | 'orders'
   const [chartTheme, setChartTheme] = useState('teal'); // 'teal' | 'indigo' | 'purple' | 'amber'
+  const [orders, setOrders] = useState([]);
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        const [liveOrders, liveProducts] = await Promise.all([
+          orderService.getAdminOrders(),
+          productService.getAdminProducts()
+        ]);
+        setOrders(liveOrders || []);
+        setProducts(liveProducts || []);
+      } catch (err) {
+        console.warn("Failed to load dashboard dynamic data:", err.message);
+      }
+    };
+    loadDashboardData();
+  }, []);
+
   const chartPoints = adminDashboardData.salesData[timeFilter] || adminDashboardData.salesData['7 Days'];
 
   // Real Orders pipeline calculation
-  const orders = initialAdminOrders || [];
   const totalOrdersCount = orders.length;
+  const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+  const pendingOrders = orders.filter(o => o.orderStatus === 'Pending').length;
+  const lowStockCount = products.filter(p => (Number(p.stock) || 0) <= (Number(p.lowStockThreshold) || 5)).length;
+
+  const dynamicKpiStats = adminDashboardData.kpiStats.map((kpi) => {
+    if (kpi.id === 'rev') return { ...kpi, value: `₹${totalRevenue.toLocaleString('en-IN')}` };
+    if (kpi.id === 'orders') return { ...kpi, value: totalOrdersCount.toString() };
+    if (kpi.id === 'pending_ord') return { ...kpi, value: pendingOrders.toString() };
+    if (kpi.id === 'low_stock') return { ...kpi, value: lowStockCount.toString() };
+    return kpi;
+  });
+
+  const recentOrdersList = orders.length > 0 ? orders.slice(0, 5).map(ord => ({
+    id: ord.orderId || ord.id,
+    customer: ord.customer?.name || ord.shippingAddress?.fullName || 'Patient',
+    amount: Number(ord.total) || 0,
+    status: ord.orderStatus || 'Pending'
+  })) : adminDashboardData.recentOrders;
 
   const pipelineStatuses = [
     { 
@@ -264,7 +301,7 @@ export const AdminDashboard = () => {
 
       {/* 2. Elevated 8 KPI Metric Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {adminDashboardData.kpiStats.map((kpi) => {
+        {dynamicKpiStats.map((kpi) => {
           const IconComponent = iconMap[kpi.icon] || ShoppingBag;
           const style = kpiCardStyles[kpi.id] || kpiCardStyles['rev'];
 
@@ -662,7 +699,7 @@ export const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100/80">
-                    {adminDashboardData.recentOrders.map((ord) => (
+                    {recentOrdersList.map((ord) => (
                       <tr key={ord.id} className="hover:bg-slate-50/80 transition-colors group">
                         <td className="py-3.5 pr-4 font-mono font-black text-slate-900 group-hover:text-brandOrange-600 transition-colors">
                           {ord.id}
@@ -691,7 +728,7 @@ export const AdminDashboard = () => {
               </div>
               {/* Mobile Recent Orders Cards */}
               <div className="sm:hidden flex flex-col gap-2.5 pt-3">
-                {adminDashboardData.recentOrders.map((ord) => (
+                {recentOrdersList.map((ord) => (
                   <div
                     key={ord.id + '-card'}
                     className="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-100 flex items-center justify-between"

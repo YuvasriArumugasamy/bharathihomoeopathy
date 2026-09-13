@@ -9,8 +9,32 @@ import { useToast } from '../../context/ToastContext';
 export const AdminOffers = () => {
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('coupons');
-  const [coupons, setCoupons] = useState(initialAdminCoupons);
-  const [offers, setOffers] = useState(initialAdminOffers);
+  
+  const [coupons, setCoupons] = useState(() => {
+    try {
+      const saved = localStorage.getItem('admin_coupons_store');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return initialAdminCoupons;
+  });
+
+  const [offers, setOffers] = useState(() => {
+    try {
+      const saved = localStorage.getItem('admin_offers_store');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return initialAdminOffers;
+  });
 
   const [couponModalOpen, setCouponModalOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState(null);
@@ -48,7 +72,13 @@ export const AdminOffers = () => {
       status: 'Active',
       createdAt: new Date().toISOString().slice(0, 10)
     };
-    setCoupons(prev => [added, ...prev]);
+    const updated = [added, ...coupons];
+    setCoupons(updated);
+    try {
+      localStorage.setItem('admin_coupons_store', JSON.stringify(updated));
+    } catch (err) {
+      console.warn("Could not save coupons:", err);
+    }
     setCouponModalOpen(false);
     setNewCoupon({
       code: '',
@@ -62,7 +92,13 @@ export const AdminOffers = () => {
   };
 
   const handleDeleteCoupon = (id) => {
-    setCoupons(prev => prev.filter(c => c.id !== id));
+    const updated = coupons.filter(c => c.id !== id);
+    setCoupons(updated);
+    try {
+      localStorage.setItem('admin_coupons_store', JSON.stringify(updated));
+    } catch (err) {
+      console.warn("Could not save coupons:", err);
+    }
     showToast('Coupon code deactivated and removed', 'info');
   };
 

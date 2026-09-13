@@ -9,12 +9,24 @@ import { useToast } from '../../context/ToastContext';
 
 export const AdminSettings = () => {
   const { showToast } = useToast();
-  const [settings, setSettings] = useState(initialAdminSettings);
+  const [settings, setSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem('admin_clinic_settings');
+      return saved ? JSON.parse(saved) : initialAdminSettings;
+    } catch {
+      return initialAdminSettings;
+    }
+  });
   const [activeSection, setActiveSection] = useState('general');
 
   const handleSave = (e) => {
     e.preventDefault();
-    showToast('Clinic operational settings and store parameters updated!', 'success');
+    try {
+      localStorage.setItem('admin_clinic_settings', JSON.stringify(settings));
+    } catch (err) {
+      console.warn('Failed to save settings to storage:', err);
+    }
+    showToast('Clinic operational settings and store parameters updated and saved!', 'success');
   };
 
   const navItems = [

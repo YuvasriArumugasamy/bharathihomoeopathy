@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Package, 
   Plus, 
@@ -11,21 +11,23 @@ import {
   Check, 
   X, 
   Star, 
-  Sparkles,
-  AlertTriangle,
-  ArrowUpRight,
-  Boxes,
-  CheckCircle2,
-  ExternalLink,
-  Upload
+  Sparkles, 
+  AlertTriangle, 
+  ArrowUpRight, 
+  Boxes, 
+  CheckCircle2, 
+  ExternalLink, 
+  Upload,
+  Loader2
 } from 'lucide-react';
-import { initialAdminProducts } from '../../data/adminProductsData';
+import { productService } from '../../services/productService';
 import { useToast } from '../../context/ToastContext';
 import { slugify } from '../../utils/slugify';
 
 export const AdminProducts = () => {
   const { showToast } = useToast();
-  const [products, setProducts] = useState(initialAdminProducts);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');
@@ -33,6 +35,22 @@ export const AdminProducts = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  // Load products from service on mount
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const data = await productService.getAdminProducts();
+        setProducts(data);
+      } catch (err) {
+        showToast('Failed to load products: ' + err.message, 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -111,7 +129,7 @@ export const AdminProducts = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.sku) {
       showToast('Product name and SKU are required', 'warning');
@@ -119,8 +137,10 @@ export const AdminProducts = () => {
     }
 
     if (editingProduct) {
-      setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...formData, slug: slugify(formData.name) } : p));
-      showToast('Product updated successfully!', 'success');
+      const updatedData = { ...formData, slug: slugify(formData.name) };
+      await productService.updateAdminProduct(editingProduct.id || editingProduct._id, updatedData);
+      setProducts(prev => prev.map(p => (p.id === editingProduct.id || p._id === editingProduct._id) ? { ...p, ...updatedData } : p));
+      showToast('Product updated successfully and saved!', 'success');
     } else {
       const newProd = {
         ...formData,
@@ -128,13 +148,14 @@ export const AdminProducts = () => {
         slug: slugify(formData.name),
         createdAt: new Date().toISOString().slice(0, 10)
       };
+      await productService.createAdminProduct(newProd);
       setProducts(prev => [newProd, ...prev]);
-      showToast('New product added to catalogue!', 'success');
+      showToast('New product added to catalogue and saved!', 'success');
     }
     setModalOpen(false);
   };
 
-  const handleDuplicate = (product) => {
+  const handleDuplicate = async (product) => {
     const duplicated = {
       ...product,
       id: 'prod-' + Date.now(),
@@ -143,14 +164,16 @@ export const AdminProducts = () => {
       slug: slugify(`${product.name}-copy`),
       createdAt: new Date().toISOString().slice(0, 10)
     };
+    await productService.createAdminProduct(duplicated);
     setProducts(prev => [duplicated, ...prev]);
-    showToast('Product duplicated as draft!', 'info');
+    showToast('Product duplicated and saved as draft!', 'info');
   };
 
-  const handleDelete = (id) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
+  const handleDelete = async (id) => {
+    await productService.deleteAdminProduct(id);
+    setProducts(prev => prev.filter(p => p.id !== id && p._id !== id));
     setDeleteConfirmId(null);
-    showToast('Product removed from active catalogue', 'info');
+    showToast('Product removed from active catalogue and saved', 'info');
   };
 
   const lowStockCount = products.filter(p => p.stock <= 10).length;

@@ -1,20 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   MessageSquare, Search, Check, Send, X, Clock, User, Mail, Phone, 
   AlertCircle, CheckCircle2, MessageCircle, ArrowRight, CornerDownRight, 
   HelpCircle, Sparkles, Filter, ShieldCheck, Tag
 } from 'lucide-react';
-import { initialAdminEnquiries } from '../../data/adminReviewsData';
+import { enquiryService } from '../../services/enquiryService';
 import { useToast } from '../../context/ToastContext';
 
 export const AdminEnquiries = () => {
   const { showToast } = useToast();
-  const [enquiries, setEnquiries] = useState(initialAdminEnquiries);
+  const [enquiries, setEnquiries] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedEnquiry, setSelectedEnquiry] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const fetchEnquiries = async () => {
+      setLoading(true);
+      try {
+        const data = await enquiryService.getAdminEnquiries();
+        setEnquiries(data);
+      } catch (err) {
+        showToast('Failed to load enquiries: ' + err.message, 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEnquiries();
+  }, []);
 
   // Metrics
   const totalCount = enquiries.length;
@@ -27,22 +43,23 @@ export const AdminEnquiries = () => {
     const matchesType = typeFilter === 'All' || enq.type === typeFilter;
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch = !q || 
-      enq.customer.name.toLowerCase().includes(q) ||
-      enq.customer.email.toLowerCase().includes(q) ||
-      enq.subject.toLowerCase().includes(q) ||
-      enq.enquiryId.toLowerCase().includes(q) ||
-      (enq.customer.phone && enq.customer.phone.includes(q));
+      (enq.customer?.name && enq.customer.name.toLowerCase().includes(q)) ||
+      (enq.customer?.email && enq.customer.email.toLowerCase().includes(q)) ||
+      (enq.subject && enq.subject.toLowerCase().includes(q)) ||
+      (enq.enquiryId && enq.enquiryId.toLowerCase().includes(q)) ||
+      (enq.customer?.phone && enq.customer.phone.includes(q));
     return matchesStatus && matchesType && matchesSearch;
   });
 
-  const handleSendReply = (e) => {
+  const handleSendReply = async (e) => {
     e.preventDefault();
-    if (!replyText.trim()) return;
+    if (!replyText.trim() || !selectedEnquiry) return;
 
+    const trimmedMsg = replyText.trim();
     const newReply = {
       id: 'rep-' + Date.now(),
       sender: 'Dr. Bharathi Support Team',
-      message: replyText.trim(),
+      message: trimmedMsg,
       createdAt: 'Just now'
     };
 
@@ -57,6 +74,8 @@ export const AdminEnquiries = () => {
       status: 'Resolved',
       replies: [...(prev.replies || []), newReply]
     }));
+
+    await enquiryService.addReply(selectedEnquiry.id, trimmedMsg);
 
     setReplyText('');
     showToast('Official response dispatched to customer email!', 'success');

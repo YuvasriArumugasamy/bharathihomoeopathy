@@ -9,7 +9,18 @@ import { useToast } from '../../context/ToastContext';
 
 export const AdminReviews = () => {
   const { showToast } = useToast();
-  const [reviews, setReviews] = useState(initialAdminReviews);
+  const [reviews, setReviews] = useState(() => {
+    try {
+      const saved = localStorage.getItem('admin_reviews_store');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return initialAdminReviews;
+  });
   const [filterStatus, setFilterStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [featuredOnly, setFeaturedOnly] = useState(false);
@@ -33,13 +44,23 @@ export const AdminReviews = () => {
     return matchesStatus && matchesFeatured && matchesSearch;
   });
 
+  const saveReviews = (newList) => {
+    try {
+      localStorage.setItem('admin_reviews_store', JSON.stringify(newList));
+    } catch (e) {
+      console.warn("Could not save reviews:", e);
+    }
+  };
+
   const handleUpdateStatus = (id, newStatus) => {
-    setReviews(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
+    const updated = reviews.map(r => r.id === id ? { ...r, status: newStatus } : r);
+    setReviews(updated);
+    saveReviews(updated);
     showToast(`Review marked as ${newStatus}`, 'success');
   };
 
   const handleToggleFeatured = (id) => {
-    setReviews(prev => prev.map(r => {
+    const updated = reviews.map(r => {
       if (r.id === id) {
         const nextFeatured = !r.isFeatured;
         showToast(
@@ -49,7 +70,9 @@ export const AdminReviews = () => {
         return { ...r, isFeatured: nextFeatured };
       }
       return r;
-    }));
+    });
+    setReviews(updated);
+    saveReviews(updated);
   };
 
   const statusStyles = {

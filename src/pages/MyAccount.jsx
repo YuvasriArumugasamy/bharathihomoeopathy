@@ -35,6 +35,10 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { mockAccountData } from '../data/accountData';
 import { useToast } from '../context/ToastContext';
+import { OrderInvoiceModal } from '../components/admin/OrderInvoiceModal';
+import { getStoredOrders } from '../services/orderService';
+import { getStoredAppointments } from '../services/appointmentService';
+import { getStoredPrescriptions } from '../services/prescriptionService';
 
 export const MyAccount = () => {
   const { user, logout, openAuthModal } = useAuth();
@@ -44,6 +48,7 @@ export const MyAccount = () => {
   // Modals & Active Selections
   const [selectedOrderForTracking, setSelectedOrderForTracking] = useState(null);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
+  const [invoiceModalOrder, setInvoiceModalOrder] = useState(null);
   const [orderFilter, setOrderFilter] = useState('all'); // 'all' | 'Processing' | 'Delivered'
 
   // Editable Profile & Address States
@@ -78,16 +83,56 @@ export const MyAccount = () => {
     refillReminders: true
   });
 
+  // Live persistent orders from storage merged with mock fallback
+  const storedOrders = getStoredOrders();
+  const rawOrdersList = storedOrders && storedOrders.length > 0 ? storedOrders : (mockAccountData?.recentOrders || []);
+  
+  const allOrders = rawOrdersList.map(raw => {
+    const orderId = raw.orderId || raw.id || 'ORD-000';
+    const dateStr = raw.createdAt 
+      ? new Date(raw.createdAt).toISOString().slice(0, 10) 
+      : (raw.date || new Date().toISOString().slice(0, 10));
+    
+    let itemsSummary = 'Dr. Bharathi Homeopathic Formulation';
+    let itemsCount = 1;
+    if (Array.isArray(raw.items) && raw.items.length > 0) {
+      itemsSummary = raw.items.map(i => i.name).join(', ');
+      itemsCount = raw.items.reduce((acc, curr) => acc + (curr.quantity || 1), 0);
+    } else if (typeof raw.items === 'string') {
+      itemsSummary = raw.items;
+      itemsCount = raw.itemsCount || 1;
+    }
+
+    const amount = Number(raw.total || raw.amount || 0);
+    const status = raw.orderStatus || raw.status || 'Processing';
+
+    return {
+      ...raw,
+      id: orderId,
+      orderId,
+      date: dateStr,
+      items: itemsSummary,
+      itemsCount,
+      amount,
+      status
+    };
+  });
+
+  const storedAppointments = getStoredAppointments();
+  const activeAppointment = (storedAppointments && storedAppointments.length > 0)
+    ? storedAppointments[0]
+    : mockAccountData?.upcomingAppointment;
+
+  const storedPrescriptions = getStoredPrescriptions();
+
   const navTabs = [
-    { id: 'orders', label: 'Order History & Shipments', icon: ShoppingBag, count: 3 },
-    { id: 'appointments', label: 'Doctor Consultations', icon: Stethoscope, count: 1 },
+    { id: 'orders', label: 'Order History & Shipments', icon: ShoppingBag, count: allOrders.length },
+    { id: 'appointments', label: 'Doctor Consultations', icon: Stethoscope, count: storedAppointments?.length || 1 },
     { id: 'address', label: 'Delivery Address Book', icon: MapPin },
-    { id: 'medical', label: 'Prescription Vault', icon: FileText, count: 2 },
+    { id: 'medical', label: 'Prescription Vault', icon: FileText, count: storedPrescriptions.length },
     { id: 'settings', label: 'Account & Privacy', icon: Settings },
   ];
 
-  // Filtering recent orders
-  const allOrders = mockAccountData?.recentOrders || [];
   const filteredOrders = allOrders.filter(order => {
     if (orderFilter === 'all') return true;
     return order.status.toLowerCase() === orderFilter.toLowerCase();
@@ -373,13 +418,25 @@ export const MyAccount = () => {
                             </div>
                           </div>
 
-                          <button
-                            onClick={() => setSelectedPrescription(order)}
-                            className="px-3.5 py-1.5 bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-brandOrange-700 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 self-start sm:self-center"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>View Medicines</span>
-                          </button>
+                          <div className="flex items-center gap-2 self-start sm:self-center">
+                            <button
+                              type="button"
+                              onClick={() => setInvoiceModalOrder(order)}
+                              className="px-3.5 py-1.5 bg-orange-50 hover:bg-orange-100 text-brandOrange-700 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 border border-orange-200/60 shadow-2xs"
+                              title="Print / Save Medical Bill Invoice"
+                            >
+                              <Printer className="w-3.5 h-3.5 text-brandOrange-500" />
+                              <span>Medical Bill</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedPrescription(order)}
+                              className="px-3.5 py-1.5 bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-brandOrange-700 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>View Medicines</span>
+                            </button>
+                          </div>
                         </div>
 
                         {/* Interactive Step Progress Stepper */}
@@ -439,7 +496,7 @@ export const MyAccount = () => {
                 </div>
 
                 {/* Main Upcoming Appointment Spotlight Card */}
-                {mockAccountData?.upcomingAppointment && (
+                {activeAppointment && (
                   <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#0b344d] via-[#124d70] to-[#0b344d] text-white space-y-6 shadow-2xl border border-white/10 relative overflow-hidden">
                     
                     <div className="absolute top-0 right-0 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
@@ -451,35 +508,35 @@ export const MyAccount = () => {
                         </div>
                         <div>
                           <span className="text-[10px] font-black text-amber-300 uppercase tracking-widest block">CHIEF HOMEOPATH CONSULTATION</span>
-                          <h3 className="font-black text-xl text-white">{mockAccountData.upcomingAppointment.doctor}</h3>
+                          <h3 className="font-black text-xl text-white">{activeAppointment.doctor || 'Dr. Bharathi (Homeopathic Doctor)'}</h3>
                           <p className="text-xs text-slate-300 font-medium">B.H.M.S, M.D. (Homeopathy) • 15+ Yrs Exp</p>
                         </div>
                       </div>
 
                       <span className="px-3.5 py-1.5 bg-amber-400/20 border border-amber-300/40 rounded-full text-xs font-black text-amber-300 uppercase tracking-wider backdrop-blur-md">
-                        {mockAccountData.upcomingAppointment.status}
+                        {activeAppointment.status || 'Confirmed'}
                       </span>
                     </div>
 
                     <div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 space-y-0.5">
                         <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">📅 Date</span>
-                        <p className="font-extrabold text-base text-white">{mockAccountData.upcomingAppointment.date}</p>
+                        <p className="font-extrabold text-base text-white">{activeAppointment.date}</p>
                       </div>
 
                       <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 space-y-0.5">
                         <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">⏰ Scheduled Time</span>
-                        <p className="font-extrabold text-base text-amber-300">{mockAccountData.upcomingAppointment.time}</p>
+                        <p className="font-extrabold text-base text-amber-300">{activeAppointment.time}</p>
                       </div>
 
                       <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 space-y-0.5">
                         <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">🏥 Consultation Mode</span>
-                        <p className="font-extrabold text-base text-white">{mockAccountData.upcomingAppointment.type}</p>
+                        <p className="font-extrabold text-base text-white">{activeAppointment.consultationMode || activeAppointment.type || 'Clinic Visit'}</p>
                       </div>
                     </div>
 
                     <div className="relative z-10 p-4 rounded-2xl bg-white/5 border border-white/10 text-xs text-slate-200 font-medium leading-relaxed">
-                      <strong className="text-amber-300">Consultation Focus:</strong> {mockAccountData.upcomingAppointment.notes}
+                      <strong className="text-amber-300">Consultation Focus:</strong> {activeAppointment.concern || activeAppointment.notes || 'Homeopathic Constitutional Care'}
                     </div>
 
                     <div className="relative z-10 flex flex-wrap items-center gap-3 pt-1">
@@ -661,37 +718,54 @@ export const MyAccount = () => {
                 <div className="space-y-4 pt-2">
                   <h3 className="text-sm font-black text-navy-950 uppercase tracking-wider">Active Digital Prescriptions</h3>
 
-                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-black text-xs text-navy-950 bg-white px-2.5 py-0.5 rounded-lg border border-slate-200">
-                          #RX-2026-08
-                        </span>
-                        <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-black rounded-full uppercase">
-                          ACTIVE REMEDY
-                        </span>
-                      </div>
-                      <p className="text-xs font-bold text-slate-800">Arnica Montana 30C + Five Phos 6X</p>
-                      <p className="text-[11px] text-slate-400 font-medium">Issued by Dr. Bharathi on 20 Aug 2026</p>
+                  {storedPrescriptions.length === 0 ? (
+                    <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-200/80">
+                      <p className="text-xs text-slate-500 font-semibold">No digital prescriptions issued yet.</p>
                     </div>
+                  ) : (
+                    storedPrescriptions.map((rx) => (
+                      <div key={rx.id} className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-black text-xs text-navy-950 bg-white px-2.5 py-0.5 rounded-lg border border-slate-200">
+                              #{rx.prescriptionId || rx.id}
+                            </span>
+                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-black rounded-full uppercase">
+                              ACTIVE REMEDY
+                            </span>
+                          </div>
+                          <p className="text-xs font-bold text-slate-800">
+                            {rx.diagnosis || (rx.remedies && rx.remedies.map(r => r.name).join(' + ')) || 'Homeopathic Constitutional Care'}
+                          </p>
+                          <p className="text-[11px] text-slate-400 font-medium">
+                            Issued by {rx.doctor || 'Dr. Bharathi'} on {rx.date} • {rx.remedies?.length || 1} Remedies Prescribed
+                          </p>
+                        </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setSelectedPrescription({ items: 'Arnica Montana 30C + Five Phos 6X', id: 'DEMO-1001', date: '2026-08-20' })}
-                        className="px-4 py-2 bg-white border border-slate-200 hover:border-brandOrange-400 text-navy-950 text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
-                      >
-                        <Eye className="w-3.5 h-3.5 text-brandOrange-500" />
-                        <span>View Slip</span>
-                      </button>
-                      <button
-                        onClick={() => showToast('Prescription PDF download initiated', 'success')}
-                        className="px-4 py-2 bg-navy-950 hover:bg-navy-900 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
-                      >
-                        <Download className="w-3.5 h-3.5 text-amber-300" />
-                        <span>Download PDF</span>
-                      </button>
-                    </div>
-                  </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPrescription(rx)}
+                            className="px-4 py-2 bg-white border border-slate-200 hover:border-brandOrange-400 text-navy-950 text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-brandOrange-500" />
+                            <span>View Slip</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedPrescription(rx);
+                              setTimeout(() => window.print(), 200);
+                            }}
+                            className="px-4 py-2 bg-navy-950 hover:bg-navy-900 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                          >
+                            <Download className="w-3.5 h-3.5 text-amber-300" />
+                            <span>Print / PDF</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
 
               </div>
@@ -871,13 +945,21 @@ export const MyAccount = () => {
               <div>
                 <h3 className="font-black text-xl text-navy-950">Dr. Bharathi's Homeo Care</h3>
                 <p className="text-xs text-brandOrange-600 font-extrabold">Constitutional Homeopathy & Healing Center</p>
-                <p className="text-[11px] text-slate-500 font-medium">Reg No: HOMEO-TN-44982 • Chennai, TN</p>
+                <p className="text-[11px] text-slate-500 font-medium">Reg No: HOM-TN-2016-8941 • Dr. Bharathi B.H.M.S, M.D.</p>
+                {selectedPrescription.diagnosis && (
+                  <p className="text-xs font-bold text-slate-800 mt-1">
+                    Diagnosis: <span className="text-brandOrange-600">{selectedPrescription.diagnosis}</span>
+                  </p>
+                )}
               </div>
               <div className="text-right">
                 <span className="font-mono font-black text-xs text-navy-950 bg-slate-100 px-2.5 py-1 rounded-lg">
-                  {selectedPrescription.id}
+                  {selectedPrescription.prescriptionId || selectedPrescription.id}
                 </span>
                 <p className="text-[10px] text-slate-400 font-bold mt-1">Date: {selectedPrescription.date}</p>
+                {selectedPrescription.patient?.name && (
+                  <p className="text-[10px] text-slate-500 font-bold">Patient: {selectedPrescription.patient.name}</p>
+                )}
               </div>
             </div>
 
@@ -888,17 +970,33 @@ export const MyAccount = () => {
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">OFFICIAL CLINIC FORMULATION</span>
               </div>
 
-              <div className="bg-amber-50/60 border border-amber-200 p-4 rounded-2xl space-y-2 text-xs font-bold text-slate-800">
-                <div className="flex justify-between items-center pb-2 border-b border-amber-200/60">
-                  <span>1. Arnica Montana 30C (Global Liquid Drops)</span>
-                  <span className="text-brandOrange-600">2 drops twice daily</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>2. Five Phos 6X (Biochemic Remedy)</span>
-                  <span className="text-brandOrange-600">4 tablets before meals</span>
-                </div>
+              <div className="bg-amber-50/60 border border-amber-200 p-4 rounded-2xl space-y-2.5 text-xs text-slate-800">
+                {selectedPrescription.remedies && selectedPrescription.remedies.length > 0 ? (
+                  selectedPrescription.remedies.map((r, idx) => (
+                    <div key={idx} className="flex justify-between items-start pb-2 border-b border-amber-200/60 last:border-none last:pb-0 gap-3">
+                      <div>
+                        <span className="font-black text-navy-950 block">{idx + 1}. {r.name}</span>
+                        {r.duration && <span className="text-[10px] text-slate-500 font-medium">Duration: {r.duration}</span>}
+                      </div>
+                      <span className="text-brandOrange-700 font-extrabold text-right shrink-0">{r.dosage}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold">1. Arnica Montana 30C (Liquid Drops)</span>
+                    <span className="text-brandOrange-600 font-bold">4 pills twice daily</span>
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Dietary Advice */}
+            {selectedPrescription.dietRestrictions && (
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600 space-y-0.5">
+                <strong className="text-slate-900 font-bold block">Dietary & Dosage Advice:</strong>
+                <p>{selectedPrescription.dietRestrictions}</p>
+              </div>
+            )}
 
             {/* Doctor Seal & Signature */}
             <div className="flex justify-between items-center pt-4 border-t border-slate-100 text-xs">
@@ -938,6 +1036,13 @@ export const MyAccount = () => {
           </div>
         </div>
       )}
+
+      {/* Medical Bill (Invoice) Modal */}
+      <OrderInvoiceModal
+        order={invoiceModalOrder}
+        isOpen={!!invoiceModalOrder}
+        onClose={() => setInvoiceModalOrder(null)}
+      />
 
     </div>
   );

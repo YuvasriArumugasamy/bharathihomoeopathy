@@ -332,9 +332,11 @@ export const ProductDetails = () => {
               <button
                 onClick={handleAddToCart}
                 disabled={product.stock <= 0 || isAdding}
-                className="flex-1 flex items-center justify-center gap-2.5 py-3.5 px-6 text-xs sm:text-sm font-black text-white bg-[#0b344d] hover:bg-[#104363] rounded-2xl transition-all duration-200 shadow-md active:scale-95 disabled:opacity-50 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2.5 py-3.5 px-6 text-xs sm:text-sm font-black text-white bg-[#0b344d] hover:bg-[#104363] rounded-2xl transition-all duration-200 shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
-                {isAdding ? (
+                {product.stock <= 0 ? (
+                  <span>Out of Stock</span>
+                ) : isAdding ? (
                   <>
                     <Check className="w-4 h-4" />
                     <span>Added to Cart</span>
@@ -350,14 +352,19 @@ export const ProductDetails = () => {
             </div>
 
             {/* Buy Now Direct Button */}
-            <button
-              onClick={handleBuyNow}
-              disabled={product.stock <= 0}
-              className="w-full py-4 px-6 text-xs sm:text-sm font-black text-white bg-gradient-to-r from-brandOrange-500 via-amber-500 to-brandOrange-600 hover:scale-[1.02] active:scale-95 rounded-2xl shadow-lg shadow-brandOrange-500/25 transition-all duration-200 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
-            >
-              <i className="fa-solid fa-bolt text-amber-200" />
-              <span>Buy Now with Instant Checkout</span>
-            </button>
+            {product.stock > 0 ? (
+              <button
+                onClick={handleBuyNow}
+                className="w-full py-4 px-6 text-xs sm:text-sm font-black text-white bg-gradient-to-r from-brandOrange-500 via-amber-500 to-brandOrange-600 hover:scale-[1.02] active:scale-95 rounded-2xl shadow-lg shadow-brandOrange-500/25 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
+              >
+                <i className="fa-solid fa-bolt text-amber-200" />
+                <span>Buy Now with Instant Checkout</span>
+              </button>
+            ) : (
+              <div className="w-full py-3.5 px-6 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 font-bold text-xs text-center">
+                This homeopathic remedy is currently out of stock. Contact clinic reception for emergency dispensary compounding.
+              </div>
+            )}
           </div>
 
           {/* Delivery & Trust Micro-Cards (4 Badges) */}

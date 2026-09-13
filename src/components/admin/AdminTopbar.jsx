@@ -10,15 +10,18 @@ import {
   Settings, 
   LogOut, 
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Search
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { adminDashboardData } from '../../data/adminDashboardData';
+import { AdminSpotlightSearchModal } from './AdminSpotlightSearchModal';
 
 export const AdminTopbar = ({ onToggleSidebar }) => {
   const { user, logout } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [spotlightOpen, setSpotlightOpen] = useState(false);
   const [notifications, setNotifications] = useState(adminDashboardData.notifications);
 
   const unreadCount = notifications.filter(n => n.unread).length;
@@ -41,7 +44,6 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
         </button>
 
         <div className="flex items-center gap-2.5">
-
           <div className="flex items-center gap-2">
             <span className="font-serif font-bold text-sm sm:text-base tracking-tight text-slate-900">
               Dr. Bharathi’s <span className="text-brandOrange-600 font-black">Homeo Care</span>
@@ -50,6 +52,19 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
         </div>
       </div>
 
+      {/* Center: Global Clinic Spotlight Search (Ctrl + K) Button */}
+      <button
+        type="button"
+        onClick={() => setSpotlightOpen(true)}
+        className="hidden md:flex items-center gap-2.5 px-4 py-2 bg-slate-100 hover:bg-orange-50/70 text-slate-500 hover:text-brandOrange-700 rounded-2xl border border-slate-200/90 hover:border-orange-300 text-xs font-bold transition-all shadow-2xs cursor-pointer group"
+        title="Quick Search Patients, Remedies, Orders (Ctrl + K)"
+      >
+        <Search className="w-4 h-4 text-slate-400 group-hover:text-brandOrange-500 transition-colors" />
+        <span className="text-slate-500 group-hover:text-slate-800">Search patients, slots, remedies...</span>
+        <kbd className="px-2 py-0.5 text-[10px] font-mono font-bold bg-white text-slate-400 rounded-lg border border-slate-200 shadow-2xs">
+          Ctrl + K
+        </kbd>
+      </button>
 
       {/* Right: Notifications & Profile */}
       <div className="flex items-center gap-3">
@@ -134,6 +149,12 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
         </div>
 
       </div>
+
+      {/* Global Spotlight Search Modal (Ctrl + K) */}
+      <AdminSpotlightSearchModal
+        isOpen={spotlightOpen}
+        onClose={() => setSpotlightOpen(false)}
+      />
 
     </header>
   );

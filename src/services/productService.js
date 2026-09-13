@@ -1,7 +1,58 @@
 import { api } from '../utils/api';
-import { demoProducts } from '../data/products';
+import { initialAdminProducts } from '../data/adminProductsData';
+
+const PRODUCTS_STORAGE_KEY = 'admin_products_store';
+
+const getStoredProducts = () => {
+  try {
+    const raw = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (err) {
+    console.warn("Failed to load products from storage:", err.message);
+  }
+  // Initialize with initial catalogue
+  try {
+    localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(initialAdminProducts));
+  } catch {
+    // Ignore storage quota errors
+  }
+  return initialAdminProducts;
+};
+
+const saveStoredProducts = (products) => {
+  try {
+    localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
+  } catch (err) {
+    console.warn("Failed to persist products to storage:", err.message);
+  }
+};
+
+const getInventoryStockMap = () => {
+  try {
+    const raw = localStorage.getItem('admin_inventory_store');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        const map = {};
+        parsed.forEach(item => {
+          if (item.productId) map[item.productId] = Number(item.currentStock);
+          if (item.sku) map[item.sku] = Number(item.currentStock);
+          if (item.id) map[item.id] = Number(item.currentStock);
+        });
+        return map;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return {};
+};
 
 export const productService = {
+  // Public customer catalogue with live storage fallback
   getProducts: async (params = {}) => {
     try {
       const queryParams = new URLSearchParams();
@@ -14,53 +65,61 @@ export const productService = {
       if (params.maxPrice) queryParams.append('maxPrice', params.maxPrice);
 
       const res = await api.get(`/products?${queryParams.toString()}`);
-      if (res && res.data) return res;
+      if (res && res.data && res.data.length > 0) return res;
     } catch (err) {
-      console.warn("Using local product dataset fallback:", err.message);
+      // Backend unavailable, seamless local storage fallback
     }
 
-    // Local fallback filter and pagination
-    let filtered = [...demoProducts];
+    let products = getStoredProducts().filter(p => p.status === 'Active');
 
     if (params.search) {
       const q = params.search.toLowerCase();
-      filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(q) ||
+      products = products.filter(p =>
+        p.name?.toLowerCase().includes(q) ||
         p.shortDescription?.toLowerCase().includes(q) ||
         p.category?.toLowerCase().includes(q)
       );
     }
 
     if (params.category && params.category !== 'All Products' && params.category !== 'all') {
-      filtered = filtered.filter(p => p.category === params.category);
+      products = products.filter(p => p.category === params.category);
     }
 
-    if (params.minPrice) filtered = filtered.filter(p => p.price >= Number(params.minPrice));
-    if (params.maxPrice) filtered = filtered.filter(p => p.price <= Number(params.maxPrice));
+    if (params.minPrice) products = products.filter(p => (p.offerPrice || p.regularPrice) >= Number(params.minPrice));
+    if (params.maxPrice) products = products.filter(p => (p.offerPrice || p.regularPrice) <= Number(params.maxPrice));
 
     if (params.sort) {
-      if (params.sort === 'priceLow' || params.sort === 'price-low') filtered.sort((a, b) => a.price - b.price);
-      else if (params.sort === 'priceHigh' || params.sort === 'price-high') filtered.sort((a, b) => b.price - a.price);
-      else if (params.sort === 'nameAZ' || params.sort === 'name-az') filtered.sort((a, b) => a.name.localeCompare(b.name));
-      else if (params.sort === 'nameZA' || params.sort === 'name-za') filtered.sort((a, b) => b.name.localeCompare(a.name));
-      else if (params.sort === 'rating') filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      if (params.sort === 'priceLow' || params.sort === 'price-low') products.sort((a, b) => (a.offerPrice || a.regularPrice) - (b.offerPrice || b.regularPrice));
+      else if (params.sort === 'priceHigh' || params.sort === 'price-high') products.sort((a, b) => (b.offerPrice || b.regularPrice) - (a.offerPrice || a.regularPrice));
+      else if (params.sort === 'nameAZ' || params.sort === 'name-az') products.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      else if (params.sort === 'nameZA' || params.sort === 'name-za') products.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
     }
+
+    // Normalizing price & live inventory stock fields for store components
+    const stockMap = getInventoryStockMap();
+    const mapped = products.map(p => {
+      const liveStock = stockMap[p.id] !== undefined 
+        ? stockMap[p.id] 
+        : (stockMap[p.sku] !== undefined ? stockMap[p.sku] : (p.stock !== undefined ? p.stock : 10));
+      return {
+        ...p,
+        stock: liveStock,
+        price: p.offerPrice || p.regularPrice,
+        originalPrice: p.regularPrice,
+        salePrice: p.offerPrice
+      };
+    });
 
     const page = Number(params.page) || 1;
     const limit = Number(params.limit) || 12;
-    const total = filtered.length;
+    const total = mapped.length;
     const totalPages = Math.ceil(total / limit) || 1;
-    const paginated = filtered.slice((page - 1) * limit, page * limit);
+    const paginated = mapped.slice((page - 1) * limit, page * limit);
 
     return {
       success: true,
       data: paginated,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages
-      }
+      pagination: { page, limit, total, totalPages }
     };
   },
 
@@ -68,32 +127,138 @@ export const productService = {
     try {
       const res = await api.get(`/products/${id}`);
       if (res && res.data) return res.data;
-    } catch (err) {
-      console.warn("Product API fallback:", err.message);
+    } catch {
+      // Fallback
     }
 
-    const found = demoProducts.find(p => p.id === id || p.slug === id);
-    if (found) return found;
+    const found = getStoredProducts().find(p => p.id === id || p.slug === id || p._id === id);
+    if (found) {
+      const stockMap = getInventoryStockMap();
+      const liveStock = stockMap[found.id] !== undefined 
+        ? stockMap[found.id] 
+        : (stockMap[found.sku] !== undefined ? stockMap[found.sku] : (found.stock !== undefined ? found.stock : 10));
+      return {
+        ...found,
+        stock: liveStock,
+        price: found.offerPrice || found.regularPrice,
+        originalPrice: found.regularPrice,
+        salePrice: found.offerPrice
+      };
+    }
     throw new Error("Product not found");
   },
 
   getFeaturedProducts: async (limit = 8) => {
     try {
       const res = await api.get(`/products/featured?limit=${limit}`);
-      if (res && res.data) return res.data;
+      if (res && res.data && res.data.length > 0) return res.data;
     } catch {
       // Fallback
     }
-    return demoProducts.filter(p => p.isBestSeller || p.isNew).slice(0, limit);
+    const stockMap = getInventoryStockMap();
+    return getStoredProducts()
+      .filter(p => p.isFeatured || p.isBestSeller)
+      .slice(0, limit)
+      .map(p => ({
+        ...p,
+        stock: stockMap[p.id] !== undefined ? stockMap[p.id] : (p.stock !== undefined ? p.stock : 10),
+        price: p.offerPrice || p.regularPrice,
+        originalPrice: p.regularPrice,
+        salePrice: p.offerPrice
+      }));
   },
 
   getBestSellers: async (limit = 8) => {
     try {
-      const res = await api.get(`/products/best-sellers?limit=${limit}`);
-      if (res && res.data) return res.data;
+      const res = await api.get(`/products/bestsellers?limit=${limit}`);
+      if (res && res.data && res.data.length > 0) return res.data;
     } catch {
       // Fallback
     }
-    return demoProducts.filter(p => p.isBestSeller).slice(0, limit);
+    const stockMap = getInventoryStockMap();
+    return getStoredProducts()
+      .filter(p => p.isBestSeller)
+      .slice(0, limit)
+      .map(p => ({
+        ...p,
+        stock: stockMap[p.id] !== undefined ? stockMap[p.id] : (p.stock !== undefined ? p.stock : 10),
+        price: p.offerPrice || p.regularPrice,
+        originalPrice: p.regularPrice,
+        salePrice: p.offerPrice
+      }));
+  },
+
+  // ----------------------------------------------------
+  // ADMIN PORTAL CRUD OPERATIONS
+  // ----------------------------------------------------
+  getAdminProducts: async () => {
+    try {
+      const res = await api.get('/products/admin/all');
+      if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
+        saveStoredProducts(res.data);
+        return res.data;
+      }
+    } catch (err) {
+      console.warn("Backend admin products unavailable, loading persistent store:", err.message);
+    }
+    return getStoredProducts();
+  },
+
+  createAdminProduct: async (productData) => {
+    const current = getStoredProducts();
+    const newProduct = {
+      ...productData,
+      id: productData.id || ('prod-' + Date.now()),
+      createdAt: productData.createdAt || new Date().toISOString().slice(0, 10)
+    };
+
+    // Save locally immediately so UI never loses changes
+    const updated = [newProduct, ...current];
+    saveStoredProducts(updated);
+
+    // Attempt backend sync
+    try {
+      const res = await api.post('/products', productData);
+      if (res && res.data) {
+        newProduct._id = res.data._id;
+        saveStoredProducts([newProduct, ...current]);
+      }
+    } catch (err) {
+      console.warn("Product synced to persistent local store (backend offline):", err.message);
+    }
+
+    return { success: true, data: newProduct };
+  },
+
+  updateAdminProduct: async (id, productData) => {
+    const current = getStoredProducts();
+    const updated = current.map(p => (p.id === id || p._id === id) ? { ...p, ...productData } : p);
+    saveStoredProducts(updated);
+
+    // Attempt backend sync
+    try {
+      await api.put(`/products/${id}`, productData);
+    } catch (err) {
+      console.warn("Product updated in persistent local store (backend offline):", err.message);
+    }
+
+    return { success: true, data: productData };
+  },
+
+  deleteAdminProduct: async (id) => {
+    const current = getStoredProducts();
+    const updated = current.filter(p => p.id !== id && p._id !== id);
+    saveStoredProducts(updated);
+
+    // Attempt backend sync
+    try {
+      await api.delete(`/products/${id}`);
+    } catch (err) {
+      console.warn("Product deleted in persistent local store (backend offline):", err.message);
+    }
+
+    return { success: true };
   }
 };
+
+export default productService;

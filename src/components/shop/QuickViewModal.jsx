@@ -105,9 +105,11 @@ export const QuickViewModal = ({ product, onClose }) => {
               <button
                 onClick={handleAddToCart}
                 disabled={product.stock <= 0 || isAdding}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-bold text-white bg-navy-900 hover:bg-brandOrange-500 rounded-xl transition-smooth shadow-md"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-bold text-white bg-navy-900 hover:bg-brandOrange-500 rounded-xl transition-smooth shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isAdding ? (
+                {product.stock <= 0 ? (
+                  <span>Out of Stock</span>
+                ) : isAdding ? (
                   <>
                     <Check className="w-4 h-4" />
                     <span>Added to Cart</span>

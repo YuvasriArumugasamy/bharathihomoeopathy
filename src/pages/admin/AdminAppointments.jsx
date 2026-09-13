@@ -1,21 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Calendar, Clock, Video, Building2, Check, X, Search, Filter, 
   User, Phone, Mail, FileText, ChevronRight, AlertCircle, 
-  CalendarCheck, CalendarClock, UserCheck, Stethoscope, Sparkles
+  CalendarCheck, CalendarClock, UserCheck, Stethoscope, Sparkles,
+  Download, MessageSquare, Paperclip, Eye, ExternalLink
 } from 'lucide-react';
-import { initialAdminAppointments } from '../../data/adminAppointmentsData';
+import { appointmentService } from '../../services/appointmentService';
 import { useToast } from '../../context/ToastContext';
+import { exportToCsv } from '../../utils/exportUtils';
+import { sendAppointmentWhatsApp } from '../../utils/whatsappUtils';
+import { PrescriptionComposerModal } from '../../components/admin/PrescriptionComposerModal';
 
 export const AdminAppointments = () => {
   const { showToast } = useToast();
-  const [appointments, setAppointments] = useState(initialAdminAppointments);
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedMode, setSelectedMode] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [rescheduleModalApt, setRescheduleModalApt] = useState(null);
   const [rescheduleDate, setRescheduleDate] = useState('');
   const [rescheduleTime, setRescheduleTime] = useState('11:00 AM');
+  const [viewAttachment, setViewAttachment] = useState(null);
+  const [rxModalApt, setRxModalApt] = useState(null);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      setLoading(true);
+      try {
+        const data = await appointmentService.getAdminAppointments();
+        setAppointments(data);
+      } catch (err) {
+        showToast('Failed to load appointments: ' + err.message, 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAppointments();
+  }, []);
 
   // Stats calculation
   const totalCount = appointments.length;
@@ -28,21 +50,23 @@ export const AdminAppointments = () => {
     const matchesMode = selectedMode === 'All' || a.consultationMode === selectedMode;
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch = !q || 
-      a.patient.name.toLowerCase().includes(q) || 
-      a.patient.phone.toLowerCase().includes(q) ||
-      a.appointmentId.toLowerCase().includes(q);
+      (a.patient?.name || '').toLowerCase().includes(q) || 
+      (a.patient?.phone || '').toLowerCase().includes(q) ||
+      (a.appointmentId || '').toLowerCase().includes(q);
     return matchesStatus && matchesMode && matchesSearch;
   });
 
-  const handleUpdateStatus = (id, newStatus) => {
-    setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: newStatus } : a));
-    showToast(`Appointment marked as ${newStatus}`, 'success');
+  const handleUpdateStatus = async (id, newStatus) => {
+    await appointmentService.updateAppointmentStatus(id, newStatus);
+    setAppointments(prev => prev.map(a => (a.id === id || a.appointmentId === id) ? { ...a, status: newStatus } : a));
+    showToast(`Appointment marked as ${newStatus} and saved!`, 'success');
   };
 
-  const handleConfirmReschedule = (e) => {
+  const handleConfirmReschedule = async (e) => {
     e.preventDefault();
     if (!rescheduleDate) return;
-    setAppointments(prev => prev.map(a => a.id === rescheduleModalApt.id ? { 
+    await appointmentService.rescheduleAppointment(rescheduleModalApt.id || rescheduleModalApt.appointmentId, rescheduleDate, rescheduleTime);
+    setAppointments(prev => prev.map(a => (a.id === rescheduleModalApt.id || a.appointmentId === rescheduleModalApt.appointmentId) ? { 
       ...a, 
       date: rescheduleDate, 
       time: rescheduleTime, 
@@ -50,6 +74,28 @@ export const AdminAppointments = () => {
     } : a));
     setRescheduleModalApt(null);
     showToast('Appointment rescheduled and patient notified!', 'success');
+  };
+
+  const handleExportAppointments = () => {
+    const columns = [
+      { label: 'Appointment ID', accessor: (a) => a.appointmentId || a.id },
+      { label: 'Patient Name', accessor: (a) => a.patient?.name || '' },
+      { label: 'Phone', accessor: (a) => a.patient?.phone || '' },
+      { label: 'Email', accessor: (a) => a.patient?.email || '' },
+      { label: 'Age / Gender', accessor: (a) => `${a.patient?.age || ''} / ${a.patient?.gender || ''}` },
+      { label: 'Concern', accessor: (a) => a.concern || 'General Consultation' },
+      { label: 'Doctor', accessor: (a) => a.doctor || 'Dr. Bharathi' },
+      { label: 'Consultation Mode', accessor: (a) => a.consultationMode || 'In-Clinic' },
+      { label: 'Date', accessor: (a) => a.date || '' },
+      { label: 'Time', accessor: (a) => a.time || '' },
+      { label: 'Status', accessor: (a) => a.status || 'Pending' }
+    ];
+    const ok = exportToCsv('Doctor_Bharathi_Appointments', columns, filtered);
+    if (ok) {
+      showToast('Appointments exported to Excel / CSV!', 'success');
+    } else {
+      showToast('No appointments to export', 'warning');
+    }
   };
 
   const statusStyles = {
@@ -62,15 +108,20 @@ export const AdminAppointments = () => {
   return (
     <div className="space-y-8 ">
       
-      {/* Hero Header */}
+      {/* 1. Hero Header Banner */}
       <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
         
         <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
-          <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-            Appointments & Consultations
-          </h1>
+          <div>
+            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+              Clinical Consultations & Appointments
+            </h1>
+            <p className="text-white/90 text-xs sm:text-sm font-sans mt-1">
+              Real-time patient scheduling, in-clinic tokens, and tele-health management
+            </p>
+          </div>
         </div>
       </div>
 
@@ -78,7 +129,7 @@ export const AdminAppointments = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Scheduled</span>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Bookings</span>
             <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-navy-900">
               <Calendar className="w-4 h-4" />
             </div>
@@ -98,7 +149,7 @@ export const AdminAppointments = () => {
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-2xl font-black text-emerald-600">{confirmedCount}</span>
-            <span className="text-xs text-emerald-700/80 font-semibold">Ready for slot</span>
+            <span className="text-xs text-emerald-700/80 font-semibold">Scheduled</span>
           </div>
         </div>
 
@@ -151,7 +202,7 @@ export const AdminAppointments = () => {
             <button
               key={st}
               onClick={() => setSelectedStatus(st)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-smooth ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-smooth cursor-pointer ${
                 selectedStatus === st
                   ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-md'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-navy-900 border border-slate-200/60'
@@ -168,7 +219,7 @@ export const AdminAppointments = () => {
             <button
               key={mode}
               onClick={() => setSelectedMode(mode)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 selectedMode === mode
                   ? 'bg-brandOrange-50 text-brandOrange-600 border border-brandOrange-200 font-black'
                   : 'text-slate-500 hover:bg-slate-50'
@@ -178,6 +229,16 @@ export const AdminAppointments = () => {
             </button>
           ))}
         </div>
+
+        {/* Export Action */}
+        <button
+          onClick={handleExportAppointments}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs transition-all shadow-xs cursor-pointer ml-auto md:ml-0"
+          title="Export appointments to Excel / CSV"
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span>Export CSV</span>
+        </button>
       </div>
 
       {/* Appointments List Grid */}
@@ -266,14 +327,37 @@ export const AdminAppointments = () => {
                       </span>
                     )}
                     <span className="text-[11px] text-slate-500 font-medium truncate">
-                      {apt.appointmentType}
+                      {apt.concern || 'General Consultation'}
                     </span>
                   </div>
 
-                  {apt.patientNote && (
+                  {apt.notes && (
                     <div className="mt-2 pt-2 border-t border-slate-200/60 flex items-start gap-2 text-slate-600 text-[11px] italic bg-white/60 p-2.5 rounded-xl">
                       <FileText className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
-                      <p className="line-clamp-2">"{apt.patientNote}"</p>
+                      <p className="line-clamp-2">"{apt.notes}"</p>
+                    </div>
+                  )}
+
+                  {apt.attachment && (
+                    <div className="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between bg-orange-50/70 p-2.5 rounded-xl border border-orange-200/60">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Paperclip className="w-3.5 h-3.5 text-brandOrange-600 shrink-0" />
+                        <span className="text-[11px] font-bold text-slate-800 truncate">
+                          {apt.attachmentName || 'Patient Medical Report'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setViewAttachment({
+                          url: apt.attachment,
+                          name: apt.attachmentName || 'Medical Report',
+                          patient: apt.patient?.name
+                        })}
+                        className="px-2 py-1 bg-white hover:bg-orange-100 text-brandOrange-600 font-bold text-[10px] rounded-lg border border-orange-200/80 flex items-center gap-1 transition-colors shrink-0 cursor-pointer shadow-2xs"
+                      >
+                        <Eye className="w-3 h-3" />
+                        View
+                      </button>
                     </div>
                   )}
                 </div>
@@ -282,22 +366,40 @@ export const AdminAppointments = () => {
 
               {/* Card Actions Footer */}
               <div className="p-4 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between gap-2 text-xs">
-                <button
-                  onClick={() => {
-                    setRescheduleModalApt(apt);
-                    setRescheduleDate(apt.date || '');
-                    setRescheduleTime(apt.time || '11:00 AM');
-                  }}
-                  className="px-3.5 py-2 font-bold text-brandOrange-600 hover:text-brandOrange-700 hover:bg-brandOrange-50 rounded-xl transition-all"
-                >
-                  Reschedule
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => {
+                      setRescheduleModalApt(apt);
+                      setRescheduleDate(apt.date || '');
+                      setRescheduleTime(apt.time || '11:00 AM');
+                    }}
+                    className="px-3 py-1.5 font-bold text-brandOrange-600 hover:text-brandOrange-700 hover:bg-brandOrange-50 rounded-xl transition-all"
+                  >
+                    Reschedule
+                  </button>
+                  <button
+                    onClick={() => sendAppointmentWhatsApp(apt)}
+                    className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl transition-all border border-emerald-200/80 flex items-center gap-1"
+                    title="Send WhatsApp Confirmation"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="text-[10px] hidden sm:inline">WhatsApp</span>
+                  </button>
+                  <button
+                    onClick={() => setRxModalApt(apt)}
+                    className="p-1.5 bg-orange-50 hover:bg-orange-100 text-brandOrange-700 font-bold rounded-xl transition-all border border-orange-200/80 flex items-center gap-1 cursor-pointer"
+                    title="Write Digital Prescription (Rx)"
+                  >
+                    <Stethoscope className="w-3.5 h-3.5 text-brandOrange-600" />
+                    <span className="text-[10px] hidden sm:inline font-black">Write Rx</span>
+                  </button>
+                </div>
 
                 <div className="flex items-center gap-1.5">
                   {apt.status === 'Pending' && (
                     <button
                       onClick={() => handleUpdateStatus(apt.id, 'Confirmed')}
-                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-xs transition-all flex items-center gap-1"
+                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
                     >
                       <Check className="w-3.5 h-3.5" />
                       Confirm
@@ -306,7 +408,7 @@ export const AdminAppointments = () => {
                   {apt.status === 'Confirmed' && (
                     <button
                       onClick={() => handleUpdateStatus(apt.id, 'Completed')}
-                      className="px-3.5 py-1.5 bg-navy-950 hover:bg-navy-900 text-white font-bold rounded-xl shadow-xs transition-all flex items-center gap-1"
+                      className="px-3.5 py-1.5 bg-navy-950 hover:bg-navy-900 text-white font-bold rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
                     >
                       <Check className="w-3.5 h-3.5" />
                       Mark Done
@@ -315,7 +417,7 @@ export const AdminAppointments = () => {
                   {apt.status !== 'Cancelled' && apt.status !== 'Completed' && (
                     <button
                       onClick={() => handleUpdateStatus(apt.id, 'Cancelled')}
-                      className="px-2.5 py-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 font-bold rounded-xl transition-all text-[11px]"
+                      className="px-2.5 py-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 font-bold rounded-xl transition-all text-[11px] cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -330,69 +432,59 @@ export const AdminAppointments = () => {
 
       {/* Reschedule Modal */}
       {rescheduleModalApt && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white rounded-[2.25rem] p-7 max-w-md w-full space-y-5 shadow-2xl border border-slate-100">
-            <div className="flex justify-between items-start">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] p-6 max-w-md w-full space-y-4 shadow-2xl border border-slate-100">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-brandOrange-500">Consultation Calendar</span>
-                <h3 className="font-heading font-black text-navy-950 text-lg">Reschedule Appointment</h3>
+                <h3 className="font-heading font-black text-navy-950 text-base">Reschedule Appointment</h3>
+                <p className="text-xs text-slate-500">Patient: {rescheduleModalApt.patient?.name}</p>
               </div>
               <button 
                 onClick={() => setRescheduleModalApt(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-all"
+                className="w-7 h-7 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
-              <div>
-                <h4 className="font-bold text-xs text-navy-950">{rescheduleModalApt.patient.name}</h4>
-                <p className="text-[10px] text-slate-400 font-mono">{rescheduleModalApt.appointmentId} • {rescheduleModalApt.appointmentType}</p>
-              </div>
-            </div>
-
             <form onSubmit={handleConfirmReschedule} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">New Consultation Date</label>
-                <input
+                <label className="block font-bold text-slate-700 mb-1">New Consultation Date</label>
+                <input 
                   type="date"
                   required
-                  min={new Date().toISOString().split('T')[0]}
                   value={rescheduleDate}
                   onChange={(e) => setRescheduleDate(e.target.value)}
-                  className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-brandOrange-500 focus:bg-white font-medium text-slate-800 transition-all"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-brandOrange-500 font-bold text-navy-900"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">Available Time Slot</label>
+                <label className="block font-bold text-slate-700 mb-1">Select Time Slot</label>
                 <select
                   value={rescheduleTime}
                   onChange={(e) => setRescheduleTime(e.target.value)}
-                  className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-brandOrange-500 focus:bg-white font-medium text-slate-800 transition-all"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-brandOrange-500 font-bold text-navy-900"
                 >
-                  <option value="09:30 AM">09:30 AM (Morning Clinic)</option>
-                  <option value="11:00 AM">11:00 AM (Morning Clinic)</option>
-                  <option value="04:30 PM">04:30 PM (Evening Consultation)</option>
-                  <option value="06:00 PM">06:00 PM (Evening Consultation)</option>
-                  <option value="07:30 PM">07:30 PM (Special Case)</option>
+                  {['09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM'].map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
                 </select>
               </div>
 
-              <div className="flex gap-3 pt-3">
+              <div className="pt-2 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setRescheduleModalApt(null)}
-                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all"
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 bg-gradient-to-r from-brandOrange-500 via-orange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-black rounded-xl shadow-lg shadow-brandOrange-500/25 transition-all"
+                  className="px-4 py-2 bg-brandOrange-500 hover:bg-brandOrange-600 text-white font-bold rounded-xl shadow-md transition-all cursor-pointer"
                 >
-                  Save & Notify Patient
+                  Confirm New Slot
                 </button>
               </div>
             </form>
@@ -400,6 +492,71 @@ export const AdminAppointments = () => {
         </div>
       )}
 
+      {/* Attachment Preview Modal Lightbox */}
+      {viewAttachment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] p-6 max-w-2xl w-full max-h-[90vh] flex flex-col space-y-4 shadow-2xl border border-slate-100">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Paperclip className="w-5 h-5 text-brandOrange-500" />
+                <div>
+                  <h3 className="font-heading font-black text-navy-950 text-base">{viewAttachment.name}</h3>
+                  <p className="text-xs text-slate-500">Patient: {viewAttachment.patient}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <a 
+                  href={viewAttachment.url} 
+                  download={viewAttachment.name}
+                  className="p-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-brandOrange-600 font-bold text-xs flex items-center gap-1.5 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download</span>
+                </a>
+                <button 
+                  onClick={() => setViewAttachment(null)}
+                  className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-auto flex items-center justify-center bg-slate-50 rounded-2xl p-4 border border-slate-100 min-h-[300px]">
+              {viewAttachment.url.startsWith('data:image') ? (
+                <img 
+                  src={viewAttachment.url} 
+                  alt="Medical Attachment" 
+                  className="max-h-[60vh] max-w-full object-contain rounded-xl shadow-md"
+                />
+              ) : (
+                <div className="text-center p-8 space-y-3">
+                  <FileText className="w-16 h-16 text-brandOrange-500 mx-auto" />
+                  <p className="font-bold text-navy-950 text-sm">{viewAttachment.name}</p>
+                  <a 
+                    href={viewAttachment.url} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brandOrange-500 text-white font-bold text-xs shadow-md"
+                  >
+                    Open Document <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Prescription Composer Modal */}
+      <PrescriptionComposerModal
+        appointment={rxModalApt}
+        isOpen={!!rxModalApt}
+        onClose={() => setRxModalApt(null)}
+      />
+
     </div>
   );
 };
+
+export default AdminAppointments;

@@ -1,15 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layers, Plus, Edit, Trash2, Search, Check, X, Star, Sparkles, FolderPlus, ArrowUpRight, Upload } from 'lucide-react';
 import { initialAdminCategories } from '../../data/adminCategoriesData';
+import { categoryService } from '../../services/categoryService';
 import { useToast } from '../../context/ToastContext';
 import { slugify } from '../../utils/slugify';
 
 export const AdminCategories = () => {
   const { showToast } = useToast();
-  const [categories, setCategories] = useState(initialAdminCategories);
+  const [categories, setCategories] = useState(() => {
+    try {
+      const saved = localStorage.getItem('admin_categories_store');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return initialAdminCategories;
+  });
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+
+  useEffect(() => {
+    const fetchCats = async () => {
+      const data = await categoryService.getAdminCategories();
+      if (data && Array.isArray(data)) {
+        setCategories(data);
+      }
+    };
+    fetchCats();
+  }, []);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -65,12 +87,14 @@ export const AdminCategories = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
 
     if (editingCategory) {
-      setCategories(prev => prev.map(c => c.id === editingCategory.id ? { ...c, ...formData, slug: slugify(formData.name) } : c));
+      const updatedCat = { ...editingCategory, ...formData, slug: slugify(formData.name) };
+      setCategories(prev => prev.map(c => c.id === editingCategory.id ? updatedCat : c));
+      await categoryService.updateAdminCategory(editingCategory.id || editingCategory._id, updatedCat);
       showToast('Category updated successfully!', 'success');
     } else {
       const newCat = {
@@ -81,17 +105,19 @@ export const AdminCategories = () => {
         createdAt: new Date().toISOString().slice(0, 10)
       };
       setCategories(prev => [...prev, newCat]);
+      await categoryService.createAdminCategory(newCat);
       showToast('New category added to dispensary!', 'success');
     }
     setModalOpen(false);
   };
 
-  const handleDelete = (cat) => {
+  const handleDelete = async (cat) => {
     if (cat.productCount > 0) {
       showToast(`Cannot delete category because ${cat.productCount} active products are assigned to it.`, 'warning');
       return;
     }
     setCategories(prev => prev.filter(c => c.id !== cat.id));
+    await categoryService.deleteAdminCategory(cat.id || cat._id);
     showToast('Category deleted successfully', 'info');
   };
 

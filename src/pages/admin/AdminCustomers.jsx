@@ -1,18 +1,30 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Users, Search, Filter, ShieldAlert, CheckCircle2, Eye, Ban, X, 
   User, Phone, Mail, MapPin, ShoppingBag, IndianRupee, ShieldCheck, 
-  ExternalLink, Sparkles, UserX, UserCheck
+  ExternalLink, Sparkles, UserX, UserCheck, Download
 } from 'lucide-react';
 import { initialAdminCustomers } from '../../data/adminCustomersData';
+import { customerService } from '../../services/customerService';
 import { useToast } from '../../context/ToastContext';
+import { exportToCsv } from '../../utils/exportUtils';
 
 export const AdminCustomers = () => {
   const { showToast } = useToast();
-  const [customers, setCustomers] = useState(initialAdminCustomers);
+  const [customers, setCustomers] = useState(() => customerService.getStoredCustomers());
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      const data = await customerService.getAdminCustomers();
+      if (data && Array.isArray(data) && data.length > 0) {
+        setCustomers(data);
+      }
+    };
+    fetchCustomers();
+  }, []);
 
   // Computed metrics
   const totalPatients = customers.length;
@@ -33,8 +45,9 @@ export const AdminCustomers = () => {
 
   const handleToggleBlock = (customer) => {
     const newStatus = customer.status === 'Active' ? 'Blocked' : 'Active';
-    setCustomers(prev => prev.map(c => c.id === customer.id ? { ...c, status: newStatus } : c));
-    if (selectedCustomer && selectedCustomer.id === customer.id) {
+    customerService.toggleBlockCustomer(customer.id || customer._id);
+    setCustomers(prev => prev.map(c => (c.id === customer.id || c._id === customer.id) ? { ...c, status: newStatus } : c));
+    if (selectedCustomer && (selectedCustomer.id === customer.id || selectedCustomer._id === customer.id)) {
       setSelectedCustomer(prev => ({ ...prev, status: newStatus }));
     }
     showToast(
@@ -43,10 +56,31 @@ export const AdminCustomers = () => {
     );
   };
 
+  const handleExportCustomers = () => {
+    const columns = [
+      { label: 'Patient ID', accessor: (c) => c.customerId || c.id },
+      { label: 'Name', accessor: (c) => `${c.firstName} ${c.lastName || ''}`.trim() },
+      { label: 'Email', accessor: (c) => c.email || '' },
+      { label: 'Phone', accessor: (c) => c.phone || '' },
+      { label: 'City', accessor: (c) => c.city || '' },
+      { label: 'State', accessor: (c) => c.state || 'Tamil Nadu' },
+      { label: 'Orders Count', accessor: (c) => c.ordersCount || 0 },
+      { label: 'Total Spent (INR)', accessor: (c) => Number(c.totalSpent || 0) },
+      { label: 'Account Status', accessor: (c) => c.status || 'Active' },
+      { label: 'Joined Date', accessor: (c) => c.joinedDate || '' }
+    ];
+    const ok = exportToCsv('Patient_Directory', columns, filtered);
+    if (ok) {
+      showToast('Patient Directory exported to Excel / CSV!', 'success');
+    } else {
+      showToast('No patients to export', 'warning');
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       
-            {/* 1. Hero Header Banner */}
+      {/* 1. Hero Header Banner */}
       <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
@@ -58,7 +92,7 @@ export const AdminCustomers = () => {
         </div>
       </div>
 
-{/* KPI Overview Bar */}
+      {/* KPI Overview Bar */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
           <div className="flex items-center justify-between">
@@ -130,14 +164,14 @@ export const AdminCustomers = () => {
           />
         </div>
 
-        {/* Status Filters */}
-        <div className="flex items-center gap-1.5">
+        {/* Status Filters & Export */}
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1 hidden sm:inline">Filter:</span>
           {['All', 'Active', 'Blocked'].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-smooth ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-smooth cursor-pointer ${
                 statusFilter === st
                   ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-md'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-navy-900 border border-slate-200/60'
@@ -146,6 +180,14 @@ export const AdminCustomers = () => {
               {st === 'All' ? 'All Patients' : st}
             </button>
           ))}
+          <button
+            onClick={handleExportCustomers}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs transition-all shadow-xs cursor-pointer ml-auto sm:ml-2"
+            title="Export patient directory to Excel / CSV"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export CSV</span>
+          </button>
         </div>
       </div>
 
@@ -181,12 +223,14 @@ export const AdminCustomers = () => {
                     {/* Patient Profile */}
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3.5">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-brandOrange-100 to-amber-100 text-brandOrange-700 flex items-center justify-center font-black text-sm border border-brandOrange-200/60 shadow-2xs">
+                          {cust.firstName[0]}
+                        </div>
                         <div>
-                          <h4 className="font-heading font-black text-sm text-navy-950 group-hover:text-brandOrange-600 transition-colors">
+                          <p className="font-heading font-black text-navy-950 text-sm group-hover:text-brandOrange-600 transition-colors">
                             {cust.firstName} {cust.lastName}
-                          </h4>
-                          <span className="text-[11px] text-slate-400 flex items-center gap-1 font-medium">
-                            <Mail className="w-3 h-3 text-slate-400" />
+                          </p>
+                          <span className="text-slate-400 text-[11px] font-medium block">
                             {cust.email}
                           </span>
                         </div>
@@ -194,73 +238,66 @@ export const AdminCustomers = () => {
                     </td>
 
                     {/* Patient ID */}
-                    <td className="py-4 px-5">
-                      <span className="font-mono text-[11px] font-bold text-slate-600 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/70">
+                    <td className="py-4 px-5 font-mono font-bold text-slate-500">
+                      <span className="bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200 text-[11px]">
                         {cust.customerId}
                       </span>
                     </td>
 
                     {/* Phone & Location */}
-                    <td className="py-4 px-5">
-                      <div className="space-y-0.5">
-                        <span className="font-semibold text-slate-700 flex items-center gap-1">
-                          <Phone className="w-3 h-3 text-slate-400" />
-                          {cust.phone || 'N/A'}
-                        </span>
-                        <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-slate-400" />
-                          {cust.address?.city ? `${cust.address.city}, ${cust.address.state}` : 'Tamil Nadu, IN'}
-                        </span>
-                      </div>
+                    <td className="py-4 px-5 text-slate-600">
+                      <p className="font-medium text-navy-900">{cust.phone || 'N/A'}</p>
+                      <p className="text-slate-400 text-[11px] flex items-center gap-1 mt-0.5">
+                        <MapPin className="w-3 h-3 text-slate-400" />
+                        {cust.city || 'Tamil Nadu'}
+                      </p>
                     </td>
 
-                    {/* Orders */}
+                    {/* Order Count */}
                     <td className="py-4 px-5">
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100/80 text-navy-900 font-bold text-xs border border-slate-200/60">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100 font-bold text-navy-900 text-xs">
                         <ShoppingBag className="w-3.5 h-3.5 text-brandOrange-500" />
-                        {cust.ordersCount} orders
+                        <span>{cust.ordersCount || 0} Orders</span>
                       </div>
                     </td>
 
-                    {/* Spent */}
-                    <td className="py-4 px-5">
-                      <span className="font-black text-sm text-brandOrange-600">
-                        ₹{(cust.totalSpent || 0).toLocaleString('en-IN')}
-                      </span>
+                    {/* Total Spent */}
+                    <td className="py-4 px-5 font-black text-brandOrange-600 text-sm font-display">
+                      ₹{(cust.totalSpent || 0).toLocaleString('en-IN')}
                     </td>
 
                     {/* Status */}
                     <td className="py-4 px-5">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
                         cust.status === 'Active' 
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 ring-1 ring-emerald-500/10' 
-                          : 'bg-rose-50 text-rose-700 border-rose-200 ring-1 ring-rose-500/10'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                          : 'bg-rose-50 text-rose-700 border-rose-200'
                       }`}>
-                        <div className={`w-1.5 h-1.5 rounded-full ${cust.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                        {cust.status}
+                        {cust.status === 'Active' ? <CheckCircle2 className="w-3 h-3" /> : <ShieldAlert className="w-3 h-3" />}
+                        <span>{cust.status}</span>
                       </span>
                     </td>
 
-                    {/* Actions */}
+                    {/* Action */}
                     <td className="py-4 px-6 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => setSelectedCustomer(cust)}
-                          className="px-3.5 py-1.5 bg-slate-100 hover:bg-navy-950 hover:text-white text-navy-900 font-bold rounded-xl text-xs transition-all shadow-2xs flex items-center gap-1.5"
+                          className="p-2 text-slate-400 hover:text-navy-950 hover:bg-slate-100 rounded-xl transition-all"
+                          title="View Patient Dossier"
                         >
-                          <Eye className="w-3.5 h-3.5" />
-                          Profile
+                          <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleToggleBlock(cust)}
-                          title={cust.status === 'Active' ? 'Block Patient' : 'Unblock Patient'}
-                          className={`p-1.5 rounded-xl border transition-all ${
-                            cust.status === 'Active'
-                              ? 'text-slate-400 hover:text-rose-600 hover:bg-rose-50 border-slate-200'
-                              : 'text-rose-600 bg-rose-50 hover:bg-rose-100 border-rose-200'
+                          className={`p-2 rounded-xl transition-all ${
+                            cust.status === 'Active' 
+                              ? 'text-slate-400 hover:text-rose-600 hover:bg-rose-50' 
+                              : 'text-rose-600 bg-rose-50 hover:bg-rose-100'
                           }`}
+                          title={cust.status === 'Active' ? 'Block Patient' : 'Unblock Patient'}
                         >
-                          <Ban className="w-3.5 h-3.5" />
+                          <Ban className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -271,39 +308,43 @@ export const AdminCustomers = () => {
           </table>
         </div>
 
-        {/* Mobile Card View */}
-        <div className="md:hidden flex flex-col gap-3.5 p-3.5 sm:p-4 bg-slate-50/60">
+        {/* Mobile View Card Grid */}
+        <div className="md:hidden divide-y divide-slate-100">
           {filtered.length === 0 ? (
-            <div className="p-8 text-center text-slate-400">
-              <p className="font-bold text-sm text-slate-600">No patient records match your search.</p>
+            <div className="p-8 text-center text-slate-400 text-xs">
+              No patients found matching your search.
             </div>
           ) : (
             filtered.map((cust) => (
-              <div
-                key={cust.id + '-card'}
+              <div 
+                key={cust.id}
                 onClick={() => setSelectedCustomer(cust)}
-                className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_4px_16px_-2px_rgba(15,36,56,0.06)] p-4 flex flex-col gap-3 cursor-pointer active:scale-[0.98] transition-all hover:shadow-md hover:border-orange-300"
+                className="p-4 space-y-3 hover:bg-slate-50/60 transition-all cursor-pointer"
               >
-                <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
-                  <span className="font-mono font-bold text-[11px] text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200/70">
-                    {cust.customerId}
-                  </span>
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-2xs ${
-                    cust.status === 'Active'
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      : 'bg-rose-50 text-rose-700 border-rose-200'
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-brandOrange-100 text-brandOrange-600 font-black flex items-center justify-center text-sm">
+                      {cust.firstName[0]}
+                    </div>
+                    <div>
+                      <h4 className="font-heading font-black text-navy-950 text-sm">
+                        {cust.firstName} {cust.lastName}
+                      </h4>
+                      <span className="font-mono text-[10px] text-slate-400">
+                        {cust.customerId}
+                      </span>
+                    </div>
+                  </div>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
+                    cust.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'
                   }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${cust.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                     {cust.status}
                   </span>
                 </div>
 
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h4 className="font-heading font-black text-sm text-navy-950">
-                      {cust.firstName} {cust.lastName}
-                    </h4>
-                    <p className="text-xs text-slate-500 font-medium flex items-center gap-1 mt-0.5">
+                <div className="flex justify-between items-center text-xs pt-1">
+                  <div>
+                    <p className="font-medium text-slate-700 flex items-center gap-1">
                       <Phone className="w-3 h-3 text-slate-400" />
                       {cust.phone || 'N/A'}
                     </p>
@@ -326,7 +367,7 @@ export const AdminCustomers = () => {
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-brandOrange-600 font-bold">
                   <span className="text-slate-400 text-[11px] flex items-center gap-1">
                     <MapPin className="w-3 h-3 text-slate-400" />
-                    {cust.address?.city ? `${cust.address.city}, ${cust.address.state}` : 'Tamil Nadu, IN'}
+                    {cust.city || 'Tamil Nadu, IN'}
                   </span>
                   <span className="inline-flex items-center gap-1">
                     View Full Dossier <Eye className="w-3.5 h-3.5" />
@@ -358,7 +399,7 @@ export const AdminCustomers = () => {
                 </div>
                 <button 
                   onClick={() => setSelectedCustomer(null)} 
-                  className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-all"
+                  className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-all cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -371,7 +412,7 @@ export const AdminCustomers = () => {
                     {selectedCustomer.firstName} {selectedCustomer.lastName}
                   </h4>
                   <p className="text-xs text-slate-400 font-mono mt-0.5">
-                    {selectedCustomer.customerId} • Joined {selectedCustomer.createdAt || 'Aug 2026'}
+                    {selectedCustomer.customerId} • Joined {selectedCustomer.joinedDate || '2026'}
                   </p>
                 </div>
                 <div className="flex items-center justify-center gap-2 pt-1">
@@ -389,7 +430,7 @@ export const AdminCustomers = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Remedy Orders</span>
-                  <span className="text-xl font-black text-navy-950 mt-1 block">{selectedCustomer.ordersCount}</span>
+                  <span className="text-xl font-black text-navy-950 mt-1 block">{selectedCustomer.ordersCount || 0}</span>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Spent</span>
@@ -413,9 +454,8 @@ export const AdminCustomers = () => {
                     {selectedCustomer.email}
                   </p>
                   <div className="pt-2 border-t border-slate-200/60 leading-relaxed">
-                    <p className="font-bold text-navy-900">{selectedCustomer.address?.addressLine1 || 'Main St'}</p>
-                    {selectedCustomer.address?.addressLine2 && <p>{selectedCustomer.address.addressLine2}</p>}
-                    <p>{selectedCustomer.address?.city || 'Chennai'}, {selectedCustomer.address?.state || 'Tamil Nadu'} - {selectedCustomer.address?.pincode || '600001'}</p>
+                    <p className="font-bold text-navy-900">{selectedCustomer.city || 'Coimbatore, Tamil Nadu'}</p>
+                    <p>{selectedCustomer.state || 'Tamil Nadu'}</p>
                   </div>
                 </div>
               </div>
@@ -426,7 +466,7 @@ export const AdminCustomers = () => {
             <div className="pt-4 border-t border-slate-100 space-y-3">
               <button
                 onClick={() => handleToggleBlock(selectedCustomer)}
-                className={`w-full py-3 px-4 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 ${
+                className={`w-full py-3 px-4 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   selectedCustomer.status === 'Active'
                     ? 'bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200'
                     : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200'
@@ -444,3 +484,5 @@ export const AdminCustomers = () => {
     </div>
   );
 };
+
+export default AdminCustomers;

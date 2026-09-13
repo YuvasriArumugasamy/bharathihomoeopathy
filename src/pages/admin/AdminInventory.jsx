@@ -11,18 +11,45 @@ import {
   Sparkles, 
   Package, 
   CheckCircle2, 
-  AlertCircle,
-  Clock,
-  Layers,
-  Search
+  AlertCircle, 
+  Clock, 
+  Layers, 
+  Search,
+  Download
 } from 'lucide-react';
 import { initialAdminInventory, initialInventoryHistory } from '../../data/adminInventoryData';
 import { useToast } from '../../context/ToastContext';
+import { exportToCsv } from '../../utils/exportUtils';
 
 export const AdminInventory = () => {
   const { showToast } = useToast();
-  const [inventory, setInventory] = useState(initialAdminInventory);
-  const [history, setHistory] = useState(initialInventoryHistory);
+  
+  const [inventory, setInventory] = useState(() => {
+    try {
+      const saved = localStorage.getItem('admin_inventory_store');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return initialAdminInventory;
+  });
+
+  const [history, setHistory] = useState(() => {
+    try {
+      const saved = localStorage.getItem('admin_inventory_history_store');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return initialInventoryHistory;
+  });
+
   const [search, setSearch] = useState('');
   const [adjustModalItem, setAdjustModalItem] = useState(null);
   const [adjustType, setAdjustType] = useState('Add Stock');
@@ -38,6 +65,26 @@ export const AdminInventory = () => {
     inv.sku.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleExportInventory = () => {
+    const columns = [
+      { label: 'SKU / Batch', accessor: (i) => i.sku },
+      { label: 'Remedy Name', accessor: (i) => i.productName },
+      { label: 'Category', accessor: (i) => i.category || 'Dispensary Formulation' },
+      { label: 'Current Stock', accessor: (i) => i.currentStock },
+      { label: 'Reserved Stock', accessor: (i) => i.reservedStock || 0 },
+      { label: 'Available Stock', accessor: (i) => i.availableStock },
+      { label: 'Low Stock Threshold', accessor: (i) => i.lowStockThreshold },
+      { label: 'Stock Status', accessor: (i) => i.currentStock === 0 ? 'Out of Stock' : (i.currentStock <= i.lowStockThreshold ? 'Low Stock' : 'Optimal') },
+      { label: 'Last Replenished', accessor: (i) => i.lastUpdated || '' }
+    ];
+    const ok = exportToCsv('Dispensary_Stock_Inventory', columns, filteredInventory);
+    if (ok) {
+      showToast('Inventory stock sheet exported to Excel / CSV!', 'success');
+    } else {
+      showToast('No inventory items to export', 'warning');
+    }
+  };
+
   const handleConfirmAdjustment = (e) => {
     e.preventDefault();
     if (!adjustModalItem || adjustQty <= 0) return;
@@ -47,12 +94,32 @@ export const AdminInventory = () => {
     else if (adjustType === 'Remove Stock') newStock = Math.max(0, newStock - adjustQty);
     else if (adjustType === 'Set Stock') newStock = adjustQty;
 
-    setInventory(prev => prev.map(item => item.id === adjustModalItem.id ? {
+    const updatedInventory = inventory.map(item => item.id === adjustModalItem.id ? {
       ...item,
       currentStock: newStock,
       availableStock: Math.max(0, newStock - item.reservedStock),
       lastUpdated: new Date().toISOString().slice(0, 10)
-    } : item));
+    } : item);
+
+    setInventory(updatedInventory);
+    try {
+      localStorage.setItem('admin_inventory_store', JSON.stringify(updatedInventory));
+      
+      // Also synchronize to product catalogue store
+      const rawProducts = localStorage.getItem('admin_products_store');
+      if (rawProducts) {
+        const parsedProducts = JSON.parse(rawProducts);
+        const updatedProducts = parsedProducts.map(p => {
+          if (p.id === adjustModalItem.productId || p.sku === adjustModalItem.sku || p.id === adjustModalItem.id) {
+            return { ...p, stock: newStock };
+          }
+          return p;
+        });
+        localStorage.setItem('admin_products_store', JSON.stringify(updatedProducts));
+      }
+    } catch (err) {
+      console.warn("Could not persist inventory:", err);
+    }
 
     const historyRecord = {
       id: 'inv-hist-' + Date.now(),
@@ -67,7 +134,14 @@ export const AdminInventory = () => {
       createdAt: 'Just now'
     };
 
-    setHistory(prev => [historyRecord, ...prev]);
+    const updatedHistory = [historyRecord, ...history];
+    setHistory(updatedHistory);
+    try {
+      localStorage.setItem('admin_inventory_history_store', JSON.stringify(updatedHistory));
+    } catch (err) {
+      console.warn("Could not persist inventory history:", err);
+    }
+
     setAdjustModalItem(null);
     showToast(`Inventory updated for ${adjustModalItem.productName}`, 'success');
   };
@@ -148,9 +222,19 @@ export const AdminInventory = () => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
         </div>
 
-        <span className="text-xs text-slate-500 font-bold">
-          Showing <span className="text-slate-900 font-black">{filteredInventory.length}</span> items
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-500 font-bold">
+            Showing <span className="text-slate-900 font-black">{filteredInventory.length}</span> items
+          </span>
+          <button
+            onClick={handleExportInventory}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs transition-all shadow-xs cursor-pointer"
+            title="Export inventory to Excel / CSV"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export CSV</span>
+          </button>
+        </div>
       </div>
 
       {/* 4. Luxury Inventory Table */}

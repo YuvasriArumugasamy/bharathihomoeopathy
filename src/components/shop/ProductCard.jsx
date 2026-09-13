@@ -24,6 +24,9 @@ export const ProductCard = ({ product }) => {
   const hasDiscount = originalPrice > displayPrice;
   const discountPercent = product.discount || (hasDiscount ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100) : 0);
 
+  const isOutOfStock = product.stock !== undefined && Number(product.stock) <= 0;
+  const isLowStock = product.stock !== undefined && Number(product.stock) > 0 && Number(product.stock) <= 5;
+
   // Size options
   const defaultSize = product.size || "30 ml";
   const [selectedSize, setSelectedSize] = useState(defaultSize);
@@ -37,7 +40,7 @@ export const ProductCard = ({ product }) => {
     e?.preventDefault?.();
     e?.stopPropagation?.();
 
-    if (product.stock <= 0) {
+    if (isOutOfStock) {
       showToast('This formulation is currently out of stock', 'warning');
       return;
     }
@@ -102,35 +105,53 @@ export const ProductCard = ({ product }) => {
         <button
           type="button"
           onClick={handleAddToCart}
-          disabled={product.stock <= 0}
-          title="Add to Cart"
+          disabled={isOutOfStock}
+          title={isOutOfStock ? "Out of Stock" : "Add to Cart"}
           aria-label="Add to Cart"
-          className="w-7 h-7 sm:w-7.5 sm:h-7.5 rounded-[12px] bg-gradient-to-b from-[#fafdff] to-[#edf4fa] hover:from-white hover:to-[#e6f0fa] border border-[#e1ebf5] shadow-[0_1.5px_4px_rgba(0,0,0,0.04)] flex items-center justify-center transition-all cursor-pointer active:scale-95"
+          className={`w-7 h-7 sm:w-7.5 sm:h-7.5 rounded-[12px] bg-gradient-to-b from-[#fafdff] to-[#edf4fa] hover:from-white hover:to-[#e6f0fa] border border-[#e1ebf5] shadow-[0_1.5px_4px_rgba(0,0,0,0.04)] flex items-center justify-center transition-all ${
+            isOutOfStock ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer active:scale-95'
+          }`}
         >
           <ShoppingCart className="w-3.5 h-3.5 sm:w-3.5 sm:h-3.5 stroke-[1.8] text-[#334e68] hover:text-[#00a699]" />
         </button>
       </div>
 
       {/* Product Image */}
-      <Link
-        to={`/product/${productId}`}
-        className="w-full h-36 sm:h-40 flex items-center justify-center p-2 pt-4 rounded-lg bg-white overflow-hidden block"
-      >
-        <img
-          src={product.image}
-          alt={product.name}
-          className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
-          loading="lazy"
-        />
-      </Link>
+      <div className="relative w-full h-36 sm:h-40 flex items-center justify-center p-2 pt-4 rounded-lg bg-white overflow-hidden">
+        <Link
+          to={`/product/${productId}`}
+          className="w-full h-full flex items-center justify-center"
+        >
+          <img
+            src={product.image}
+            alt={product.name}
+            className={`max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300 ${
+              isOutOfStock ? 'opacity-40 grayscale-[40%]' : ''
+            }`}
+            loading="lazy"
+          />
+        </Link>
+        {isOutOfStock && (
+          <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 z-10 py-1 bg-rose-600/90 text-white text-[10px] font-black tracking-widest text-center uppercase rounded-md shadow-sm pointer-events-none">
+            Out of Stock
+          </div>
+        )}
+      </div>
 
       {/* Product Details Section */}
       <div className="flex-1 flex flex-col justify-between mt-2">
         <div>
-          {/* Star Rating Badge (Matching reference: e.g. 3.7 ★ in light amber pill) */}
-          <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#fff8f0] border border-[#ffedd5] text-amber-800 text-[11px] font-bold mb-1.5">
-            <span>{ratingValue.toFixed(1)}</span>
-            <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+          {/* Star Rating & Low Stock Badge */}
+          <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+            <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#fff8f0] border border-[#ffedd5] text-amber-800 text-[11px] font-bold">
+              <span>{ratingValue.toFixed(1)}</span>
+              <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+            </div>
+            {isLowStock && (
+              <span className="inline-flex items-center text-[10px] font-black text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded">
+                Only {product.stock} left
+              </span>
+            )}
           </div>
 
           {/* Product Title */}
@@ -187,7 +208,11 @@ export const ProductCard = ({ product }) => {
           </div>
 
           {/* Add Button / Counter Stepper */}
-          {cartQty > 0 ? (
+          {isOutOfStock ? (
+            <span className="px-2.5 py-1 bg-slate-100 text-slate-400 font-bold text-[10px] rounded-lg border border-slate-200 uppercase tracking-wider select-none">
+              Sold Out
+            </span>
+          ) : cartQty > 0 ? (
             <div className="flex items-center bg-[#00a699] text-white rounded border border-[#00a699] overflow-hidden h-7 sm:h-8 shadow-2xs">
               <button
                 type="button"
@@ -215,7 +240,6 @@ export const ProductCard = ({ product }) => {
             <button
               type="button"
               onClick={handleAddToCart}
-              disabled={product.stock <= 0}
               title="Add to Cart"
               aria-label="Add to Cart"
               className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-white hover:bg-slate-50 text-slate-700 hover:text-[#00a699] border border-slate-300 font-bold flex items-center justify-center transition-colors shadow-2xs active:scale-95 cursor-pointer"

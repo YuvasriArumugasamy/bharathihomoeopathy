@@ -20,6 +20,7 @@ import { assets } from '../assets';
 import { SectionHeader } from '../components/common/SectionHeader';
 import { ScrollReveal } from '../components/common/ScrollReveal';
 import { useToast } from '../context/ToastContext';
+import { enquiryService } from '../services/enquiryService';
 
 export const Contact = () => {
   const { showToast } = useToast();
@@ -32,14 +33,19 @@ export const Contact = () => {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.phone || !formData.message) {
       showToast('Please fill in required fields', 'warning');
       return;
     }
-    setSubmitted(true);
-    showToast('Your message has been sent to Dr. Bharathi’s clinic desk!', 'success');
+    try {
+      await enquiryService.submitEnquiry(formData);
+      setSubmitted(true);
+      showToast('Your message has been sent to Dr. Bharathi’s clinic desk!', 'success');
+    } catch (err) {
+      showToast('Failed to submit message: ' + err.message, 'error');
+    }
   };
 
   return (

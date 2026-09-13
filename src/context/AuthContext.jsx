@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authStorage } from '../utils/authStorage';
 import { api } from '../utils/api';
+import { customerService } from '../services/customerService';
 
 const AuthContext = createContext(null);
 
@@ -83,6 +84,11 @@ export const AuthProvider = ({ children }) => {
           authStorage.setToken(res.data.token);
           authStorage.setUser(res.data.user);
           setUser(res.data.user);
+          try {
+            customerService.syncCustomer(userData);
+          } catch (e) {
+            console.warn("Could not sync customer on register:", e);
+          }
           setLoading(false);
           return { success: true, user: res.data.user };
         }
@@ -101,6 +107,11 @@ export const AuthProvider = ({ children }) => {
       authStorage.setToken('demo_jwt_token_dr_bharathi_' + Date.now());
       authStorage.setUser(demoUser);
       setUser(demoUser);
+      try {
+        customerService.syncCustomer(userData);
+      } catch (e) {
+        console.warn("Could not sync customer on register:", e);
+      }
       setLoading(false);
       return { success: true, user: demoUser };
     } catch (err) {

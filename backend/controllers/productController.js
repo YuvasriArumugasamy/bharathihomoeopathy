@@ -1,14 +1,49 @@
+import mongoose from 'mongoose';
 import Product from '../models/Product.js';
 import Category from '../models/Category.js';
 import { validateProductInput } from '../validators/productValidator.js';
 import { getEffectivePrice, getStockStatus } from '../utils/productUtils.js';
 
+const normalizeProductPayload = async (body) => {
+  const payload = { ...body };
+  if (payload.regularPrice != null && payload.price == null) {
+    payload.price = Number(payload.regularPrice);
+  }
+  if (payload.offerPrice != null && payload.salePrice == null) {
+    payload.salePrice = Number(payload.offerPrice);
+  }
+  if (payload.image && (!payload.images || payload.images.length === 0)) {
+    payload.images = [payload.image];
+  }
+
+  // If category is a name string instead of ObjectId
+  if (payload.category && typeof payload.category === 'string') {
+    if (!mongoose.Types.ObjectId.isValid(payload.category)) {
+      let cat = await Category.findOne({
+        $or: [
+          { name: { $regex: new RegExp(`^${payload.category.trim()}$`, 'i') } },
+          { slug: payload.category.toLowerCase().replace(/[\s\W-]+/g, '-') }
+        ]
+      });
+      if (!cat) {
+        cat = await Category.create({
+          name: payload.category.trim(),
+          slug: payload.category.toLowerCase().replace(/[\s\W-]+/g, '-')
+        });
+      }
+      payload.category = cat._id;
+    }
+  }
+  return payload;
+};
+
 export const createProduct = async (req, res, next) => {
   try {
-    const { isValid, errors } = validateProductInput(req.body);
+    const normalized = await normalizeProductPayload(req.body);
+    const { isValid, errors } = validateProductInput(normalized);
     if (!isValid) return res.status(400).json({ success: false, message: errors.join(', ') });
 
-    const { sku, name, slug } = req.body;
+    const { sku, name, slug } = normalized;
     const productSlug = slug ? slug.toLowerCase().trim() : name.toLowerCase().replace(/[\s\W-]+/g, '-');
 
     const skuExists = await Product.findOne({ sku: sku.trim() });
@@ -22,7 +57,7 @@ export const createProduct = async (req, res, next) => {
     }
 
     const product = await Product.create({
-      ...req.body,
+      ...normalized,
       slug: productSlug,
       sku: sku.trim()
     });
@@ -190,9 +225,20 @@ export const getAdminProducts = async (req, res, next) => {
       .skip(skip)
       .limit(limit);
 
+    const enriched = products.map(p => {
+      const obj = p.toObject();
+      obj.id = obj._id;
+      obj.regularPrice = obj.price;
+      obj.offerPrice = obj.salePrice != null ? obj.salePrice : obj.price;
+      obj.image = (obj.images && obj.images.length > 0) ? obj.images[0] : '';
+      obj.category = (obj.category && obj.category.name) ? obj.category.name : (obj.category || 'General');
+      obj.status = obj.isActive ? 'Active' : 'Inactive';
+      return obj;
+    });
+
     res.status(200).json({
       success: true,
-      data: products,
+      data: enriched,
       pagination: {
         page,
         limit,
@@ -212,21 +258,23 @@ export const updateProduct = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    if (req.body.sku && req.body.sku !== product.sku) {
-      const skuExists = await Product.findOne({ sku: req.body.sku.trim() });
+    const normalized = await normalizeProductPayload(req.body);
+
+    if (normalized.sku && normalized.sku !== product.sku) {
+      const skuExists = await Product.findOne({ sku: normalized.sku.trim() });
       if (skuExists) {
         return res.status(400).json({ success: false, message: 'SKU already exists' });
       }
     }
 
-    if (req.body.slug && req.body.slug !== product.slug) {
-      const slugExists = await Product.findOne({ slug: req.body.slug.toLowerCase().trim() });
+    if (normalized.slug && normalized.slug !== product.slug) {
+      const slugExists = await Product.findOne({ slug: normalized.slug.toLowerCase().trim() });
       if (slugExists) {
         return res.status(400).json({ success: false, message: 'Product slug already exists' });
       }
     }
 
-    const updated = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const updated = await Product.findByIdAndUpdate(req.params.id, normalized, { new: true, runValidators: true });
 
     res.status(200).json({
       success: true,

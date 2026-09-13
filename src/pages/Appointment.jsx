@@ -15,12 +15,17 @@ import {
   ChevronDown,
   ChevronRight,
   Video,
-  Building2
+  Building2,
+  Paperclip,
+  Upload,
+  FileText,
+  X
 } from 'lucide-react';
 import { SectionHeader } from '../components/common/SectionHeader';
 import { ScrollReveal } from '../components/common/ScrollReveal';
 import { useToast } from '../context/ToastContext';
 import { assets } from '../assets';
+import { appointmentService } from '../services/appointmentService';
 
 export const Appointment = () => {
   const { showToast } = useToast();
@@ -35,10 +40,41 @@ export const Appointment = () => {
     doctor: 'Dr. Bharathi (Homeopathic Doctor)',
     concern: 'General Consultation',
     description: '',
+    attachment: '',
+    attachmentName: '',
     agreed: true
   });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('File size must be under 5MB', 'warning');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setFormData(prev => ({
+        ...prev,
+        attachment: event.target.result,
+        attachmentName: file.name
+      }));
+      showToast(`Attachment "${file.name}" added`, 'success');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeAttachment = () => {
+    setFormData(prev => ({
+      ...prev,
+      attachment: '',
+      attachmentName: ''
+    }));
+  };
 
   const departments = [
     'General Consultation',
@@ -55,7 +91,7 @@ export const Appointment = () => {
     '05:00 PM', '06:00 PM', '07:00 PM'
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.fullName || !formData.phone || !formData.date || !formData.time) {
       showToast('Please fill in required appointment fields', 'warning');
@@ -66,8 +102,13 @@ export const Appointment = () => {
       return;
     }
 
-    setIsSubmitted(true);
-    showToast('Appointment booked successfully! We will confirm on WhatsApp.', 'success');
+    try {
+      await appointmentService.bookAppointment(formData);
+      setIsSubmitted(true);
+      showToast('Appointment booked successfully! We will confirm on WhatsApp.', 'success');
+    } catch (err) {
+      showToast('Failed to book appointment: ' + err.message, 'error');
+    }
   };
 
   return (
@@ -341,6 +382,59 @@ export const Appointment = () => {
                       className="w-full p-4 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-brandOrange-500 focus:ring-4 focus:ring-brandOrange-500/10 transition-all duration-300 text-xs sm:text-[13px] text-slate-900 font-bold placeholder-slate-400 shadow-2xs hover:border-slate-300"
                     />
                   </div>
+                </div>
+
+                {/* Medical Reports / Photo Attachment */}
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/60 p-4 transition-colors hover:border-brandOrange-400">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-[11px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <Paperclip className="w-3.5 h-3.5 text-brandOrange-600" />
+                      Attach Medical Report or Photo (Optional)
+                    </label>
+                    <span className="text-[10px] text-slate-400 font-semibold">PNG, JPG, PDF up to 5MB</span>
+                  </div>
+
+                  {!formData.attachment ? (
+                    <label className="flex flex-col items-center justify-center p-4 border border-dashed border-slate-200 rounded-xl bg-white hover:bg-orange-50/40 cursor-pointer transition-all group">
+                      <Upload className="w-6 h-6 text-slate-400 group-hover:text-brandOrange-600 transition-colors mb-1.5" />
+                      <span className="text-xs font-bold text-slate-700 group-hover:text-brandOrange-600 text-center">Click to upload skin allergy photo, previous prescription, or lab report</span>
+                      <span className="text-[10px] text-slate-400 mt-0.5">Helps Dr. Bharathi review your case in advance</span>
+                      <input 
+                        type="file" 
+                        accept="image/*,.pdf" 
+                        onChange={handleFileChange} 
+                        className="hidden" 
+                      />
+                    </label>
+                  ) : (
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {formData.attachment.startsWith('data:image') ? (
+                          <img 
+                            src={formData.attachment} 
+                            alt="Attachment preview" 
+                            className="w-12 h-12 object-cover rounded-lg border border-slate-200 shrink-0" 
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-orange-50 text-brandOrange-600 flex items-center justify-center border border-orange-200 shrink-0">
+                            <FileText className="w-6 h-6" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-800 truncate">{formData.attachmentName}</p>
+                          <p className="text-[10px] text-emerald-600 font-semibold">File attached successfully</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeAttachment}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0"
+                        title="Remove attachment"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Terms Checkbox */}
