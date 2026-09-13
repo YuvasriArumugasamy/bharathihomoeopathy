@@ -1,5 +1,26 @@
 import React from 'react';
 import { MapPin, Phone, Mail, User } from 'lucide-react';
+import CustomPhoneInput from '../common/CustomPhoneInput';
+import SearchableSelect from '../common/SearchableSelect';
+import { Country, State } from 'country-state-city';
+
+const popularIsoCodes = ['IN', 'AE', 'US', 'GB', 'SG', 'MY', 'AU', 'CA', 'SA', 'LK'];
+const allCountriesList = Country.getAllCountries();
+const popularCountriesList = popularIsoCodes
+  .map((code) => Country.getCountryByCode(code))
+  .filter(Boolean);
+const countrySelectOptions = [
+  ...popularCountriesList.map((c) => ({
+    label: c.name,
+    value: c.name
+  })),
+  ...allCountriesList
+    .filter((c) => !popularIsoCodes.includes(c.isoCode))
+    .map((c) => ({
+      label: c.name,
+      value: c.name
+    }))
+];
 
 export const ShippingAddressForm = ({
   formData,
@@ -10,6 +31,22 @@ export const ShippingAddressForm = ({
   orderNotes,
   onOrderNotesChange
 }) => {
+  const currentCountryObj = allCountriesList.find(
+    (c) => c.name.toLowerCase() === (formData.country || 'India').toLowerCase() || c.isoCode === formData.country
+  ) || Country.getCountryByCode('IN');
+
+  const availableStates = currentCountryObj
+    ? State.getStatesOfCountry(currentCountryObj.isoCode)
+    : [];
+
+  const handleCountrySelect = (countryName) => {
+    const foundC = allCountriesList.find((c) => c.name === countryName) || Country.getCountryByCode('IN');
+    const states = foundC ? State.getStatesOfCountry(foundC.isoCode) : [];
+    onChange({ target: { name: 'country', value: countryName } });
+    onChange({ target: { name: 'state', value: states.length > 0 ? states[0].name : '' } });
+    localStorage.setItem('user_country', countryName);
+    window.dispatchEvent(new Event('country_changed'));
+  };
   return (
     <div className="space-y-6">
       
@@ -48,24 +85,15 @@ export const ShippingAddressForm = ({
 
           {/* Phone */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Phone Number <span className="text-rose-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                type="tel"
-                name="phone"
-                autoComplete="tel"
-                value={formData.phone || ''}
-                onChange={onChange}
-                placeholder="+91 98765 43210"
-                className={`w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:bg-white ${
-                  errors.phone ? 'border-rose-400 bg-rose-50/40' : 'border-slate-200 focus:border-brandOrange-500'
-                }`}
-              />
-              <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-            </div>
-            {errors.phone && <p className="text-[10px] text-rose-500 mt-1">{errors.phone}</p>}
+            <CustomPhoneInput
+              label="Phone Number"
+              required={true}
+              country="in"
+              value={formData.phone || ''}
+              onChange={(phone) => onChange({ target: { name: 'phone', value: phone } })}
+              placeholder="Enter phone number"
+              error={errors.phone}
+            />
           </div>
 
           {/* Email */}
@@ -142,18 +170,30 @@ export const ShippingAddressForm = ({
           {/* State */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              State <span className="text-rose-500">*</span>
+              State / Province <span className="text-rose-500">*</span>
             </label>
-            <input
-              type="text"
-              name="state"
-              value={formData.state || ''}
-              onChange={onChange}
-              placeholder="e.g. Tamil Nadu"
-              className={`w-full px-3 py-2 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:bg-white ${
-                errors.state ? 'border-rose-400 bg-rose-50/40' : 'border-slate-200 focus:border-brandOrange-500'
-              }`}
-            />
+            {availableStates.length > 0 ? (
+              <SearchableSelect
+                value={formData.state || ''}
+                onChange={(val) => onChange({ target: { name: 'state', value: val } })}
+                options={availableStates.map((s) => ({ label: s.name, value: s.name }))}
+                placeholder="Select State / Province"
+                searchPlaceholder={`Search state in ${currentCountryObj?.name || 'country'}...`}
+                direction="up"
+                error={errors.state}
+              />
+            ) : (
+              <input
+                type="text"
+                name="state"
+                value={formData.state || ''}
+                onChange={onChange}
+                placeholder="e.g. State / Province / Region"
+                className={`w-full px-3 py-2 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:bg-white ${
+                  errors.state ? 'border-rose-400 bg-rose-50/40' : 'border-slate-200 focus:border-brandOrange-500'
+                }`}
+              />
+            )}
             {errors.state && <p className="text-[10px] text-rose-500 mt-1">{errors.state}</p>}
           </div>
 
@@ -168,8 +208,7 @@ export const ShippingAddressForm = ({
               autoComplete="postal-code"
               value={formData.postalCode || ''}
               onChange={onChange}
-              placeholder="600001"
-              maxLength={6}
+              placeholder={formData.country === 'India' ? '600001' : 'Postal Code'}
               className={`w-full px-3 py-2 text-xs bg-slate-50 border rounded-xl focus:outline-none focus:bg-white ${
                 errors.postalCode ? 'border-rose-400 bg-rose-50/40' : 'border-slate-200 focus:border-brandOrange-500'
               }`}
@@ -182,12 +221,13 @@ export const ShippingAddressForm = ({
             <label className="block text-xs font-semibold text-slate-700 mb-1">
               Country
             </label>
-            <input
-              type="text"
-              name="country"
-              disabled
-              value={formData.country || 'India'}
-              className="w-full px-3 py-2 text-xs bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed font-medium"
+            <SearchableSelect
+              value={currentCountryObj?.name || formData.country || 'India'}
+              onChange={handleCountrySelect}
+              options={countrySelectOptions}
+              placeholder="Select Country"
+              searchPlaceholder="Type to search country..."
+              direction="up"
             />
           </div>
 

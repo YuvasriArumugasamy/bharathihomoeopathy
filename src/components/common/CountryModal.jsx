@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Globe2, ChevronDown, Check, ArrowRight, ShieldCheck, Sparkles, MapPin } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Globe2, ChevronDown, Check, ArrowRight, ShieldCheck, Sparkles, MapPin, Search } from 'lucide-react';
 import modalBg from '../../assets/images/country-modal-bg.jpg';
 import { countries } from '../../data/countries';
 
@@ -7,6 +7,39 @@ export const CountryModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('India');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const dropdownRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  // Filter countries based on search query
+  const filteredCountries = countries.filter((countryName) =>
+    countryName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  useEffect(() => {
+    if (isDropdownOpen) {
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 50);
+    } else {
+      setSearchTerm('');
+    }
+  }, [isDropdownOpen]);
+
+  // Click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   useEffect(() => {
     // Check if country is already selected
@@ -92,7 +125,7 @@ export const CountryModal = () => {
                 <span className="text-[10px] text-slate-400 font-semibold normal-case">80+ Countries</span>
               </label>
 
-              <div className="relative">
+              <div ref={dropdownRef} className="relative">
                 <button
                   type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -108,27 +141,59 @@ export const CountryModal = () => {
                 </button>
                 
                 {isDropdownOpen && (
-                  <div className="absolute z-50 w-full bottom-full mb-2 bg-white border border-slate-200 rounded-2xl shadow-2xl max-h-56 overflow-y-auto border-slate-200/90 py-1.5 animate-in fade-in zoom-in-95 duration-150">
-                    <ul className="divide-y divide-slate-50">
-                      {countries.map((countryName) => (
-                        <li key={countryName}>
+                  <div className="absolute z-50 w-full bottom-full mb-2 bg-white border border-slate-200/90 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-72">
+                    {/* Search Input Box */}
+                    <div className="p-2.5 border-b border-slate-100 bg-slate-50/90">
+                      <div className="relative">
+                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                          ref={searchInputRef}
+                          type="text"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          placeholder="Type to search country..."
+                          className="w-full pl-8 pr-7 py-2 bg-white border border-slate-200/90 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-brandOrange-500 focus:ring-2 focus:ring-orange-500/15 transition-all"
+                        />
+                        {searchTerm && (
                           <button
                             type="button"
-                            onClick={() => {
-                              setSelectedCountry(countryName);
-                              setIsDropdownOpen(false);
-                            }}
-                            className={`w-full text-left px-4 py-3 flex items-center justify-between hover:bg-orange-50/70 transition-colors text-xs font-bold ${
-                              selectedCountry === countryName ? 'bg-orange-50 text-brandOrange-600 font-black' : 'text-slate-700'
-                            }`}
+                            onClick={() => setSearchTerm('')}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
                           >
-                            <span>{countryName}</span>
-                            {selectedCountry === countryName && (
-                              <Check className="w-4 h-4 text-brandOrange-500 shrink-0" />
-                            )}
+                            <X className="w-3 h-3" />
                           </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Filtered Country List */}
+                    <ul className="divide-y divide-slate-50 overflow-y-auto max-h-52 custom-scroll py-1">
+                      {filteredCountries.length > 0 ? (
+                        filteredCountries.map((countryName) => (
+                          <li key={countryName}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedCountry(countryName);
+                                setIsDropdownOpen(false);
+                                setSearchTerm('');
+                              }}
+                              className={`w-full text-left px-4 py-2.5 flex items-center justify-between hover:bg-orange-50/70 transition-colors text-xs font-bold cursor-pointer ${
+                                selectedCountry === countryName ? 'bg-orange-50 text-brandOrange-600 font-black' : 'text-slate-700'
+                              }`}
+                            >
+                              <span>{countryName}</span>
+                              {selectedCountry === countryName && (
+                                <Check className="w-4 h-4 text-brandOrange-500 shrink-0" />
+                              )}
+                            </button>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="py-6 text-center text-xs text-slate-400 font-semibold">
+                          No matching country found
                         </li>
-                      ))}
+                      )}
                     </ul>
                   </div>
                 )}

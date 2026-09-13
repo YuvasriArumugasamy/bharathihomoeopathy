@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { SectionHeader } from '../components/common/SectionHeader';
 import { ScrollReveal } from '../components/common/ScrollReveal';
+import CustomPhoneInput from '../components/common/CustomPhoneInput';
 import { useToast } from '../context/ToastContext';
 import { assets } from '../assets';
 import { appointmentService } from '../services/appointmentService';
@@ -163,9 +164,9 @@ export const Appointment = () => {
           
           {/* Left: Appointment Booking Form */}
           <ScrollReveal direction="left" className="lg:col-span-8">
-            <div className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 p-6 sm:p-10 shadow-[0_15px_45px_rgba(15,23,42,0.08)] relative overflow-hidden">
+            <div className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 p-6 sm:p-10 shadow-[0_15px_45px_rgba(15,23,42,0.08)] relative">
             {/* Top Accent Gradient Line */}
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#ff4e50] via-[#f97316] via-amber-400 to-[#0b344d]" />
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#ff4e50] via-[#f97316] via-amber-400 to-[#0b344d] rounded-t-3xl" />
 
             <div className="relative z-10">
               {/* Header Title */}
@@ -270,19 +271,13 @@ export const Appointment = () => {
                     <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider mb-2.5">
                       Mobile Number <span className="text-rose-500">*</span>
                     </label>
-                    <div className="relative group/input">
-                      <div className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl bg-sky-50 border border-sky-200/60 text-sky-600 flex items-center justify-center pointer-events-none group-focus-within/input:bg-sky-500 group-focus-within/input:text-white group-focus-within/input:border-sky-500 transition-all duration-200 shadow-2xs">
-                        <Phone className="w-4 h-4" />
-                      </div>
-                      <input
-                        type="tel"
-                        required
-                        placeholder="Enter your mobile number"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-brandOrange-500 focus:ring-4 focus:ring-brandOrange-500/10 transition-all duration-300 text-xs sm:text-[13px] text-slate-900 font-bold placeholder-slate-400 shadow-2xs hover:border-slate-300"
-                      />
-                    </div>
+                    <CustomPhoneInput
+                      country="in"
+                      value={formData.phone}
+                      onChange={(phone) => setFormData({ ...formData, phone })}
+                      placeholder="Enter your mobile number"
+                      required
+                    />
                   </div>
                 </div>
 

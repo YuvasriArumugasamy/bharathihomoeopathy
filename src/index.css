@@ -353,3 +353,160 @@ body {
     transform: translate3d(0, 0, 0);
   }
 }
+
+/* Custom Phone Input Styling for react-phone-input-2 */
+.custom-phone-wrapper .react-tel-input {
+  font-family: inherit;
+  width: 100%;
+}
+
+.custom-phone-wrapper .react-tel-input .form-control {
+  font-family: inherit;
+  letter-spacing: 0.02em;
+}
+
+.custom-phone-wrapper .react-tel-input .flag-dropdown {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 48px !important;
+  display: block !important;
+  border-radius: 1rem 0 0 1rem !important;
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  transition: all 0.2s ease;
+}
+
+.custom-phone-wrapper .react-tel-input .flag-dropdown:hover,
+.custom-phone-wrapper .react-tel-input .flag-dropdown.open {
+  background-color: #f1f5f9 !important;
+}
+
+.custom-phone-wrapper .react-tel-input .selected-flag {
+  border-radius: 1rem 0 0 1rem !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 8px 0 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.custom-phone-wrapper .react-tel-input .selected-flag .arrow {
+  left: auto !important;
+  right: 6px !important;
+  margin-top: -2px !important;
+  border-top-color: #64748b !important;
+}
+
+.custom-phone-wrapper .react-tel-input .selected-flag .arrow.up {
+  border-bottom-color: #64748b !important;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list {
+  position: absolute !important;
+  left: 0 !important;
+  right: auto !important;
+  top: 100% !important;
+  margin: 6px 0 0 0 !important;
+  width: 320px !important;
+  max-width: min(340px, calc(100vw - 32px)) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.2), 0 0 0 1px rgba(15, 23, 42, 0.08) !important;
+  border: 1px solid #e2e8f0 !important;
+  font-family: inherit;
+  background: #ffffff !important;
+  padding: 6px !important;
+  z-index: 9999 !important;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list .search {
+  padding: 6px 8px 8px 8px !important;
+  background: #ffffff !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 20 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list .search-emoji {
+  display: none !important;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list .search-box {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 8px 12px 8px 32px !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 0.75rem !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+  background-color: #f8fafc !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: 10px center !important;
+  background-size: 14px 14px !important;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list .search-box:focus {
+  border-color: #f97316 !important;
+  background-color: #ffffff !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15) !important;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list .country {
+  padding: 8px 12px !important;
+  border-radius: 0.75rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  transition: all 0.15s ease;
+  margin-bottom: 2px;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list .country .flag {
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list .country .country-name {
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  color: #1e293b !important;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list .country:hover,
+.custom-phone-wrapper .react-tel-input .country-list .country.highlight {
+  background-color: #fff7ed !important;
+  color: #c2410c !important;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list .country:hover .country-name,
+.custom-phone-wrapper .react-tel-input .country-list .country.highlight .country-name {
+  color: #c2410c !important;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list .country .dial-code {
+  flex-shrink: 0 !important;
+  color: #ea580c !important;
+  font-weight: 700 !important;
+  margin-left: auto !important;
+  padding-left: 8px !important;
+}
+
+.custom-phone-wrapper .react-tel-input .country-list .country.highlight .dial-code {
+  color: #c2410c !important;
+}

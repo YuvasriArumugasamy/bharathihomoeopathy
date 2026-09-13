@@ -143,7 +143,7 @@ export const AdminLogin = () => {
                     setUsername(e.target.value);
                     if (formError) setFormError('');
                   }}
-                  placeholder="admin@drbharathi.com"
+                  placeholder="Enter the username"
                   className={`w-full pl-10 pr-4 py-3 bg-[#0c1425] border rounded-xl text-xs sm:text-sm placeholder:text-slate-500 focus:outline-none transition-all shadow-md ${
                     formError ? 'border-rose-500 text-rose-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500' : 'border-slate-800 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500'
                   }`}

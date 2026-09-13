@@ -1,4 +1,6 @@
+import { QRCodeSVG } from 'qrcode.react';
 import React, { useState, useEffect } from 'react';
+import phonepeQRImage from '../assets/WhatsApp Image 2026-09-10 at 10.05.20.jpeg';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -6,6 +8,27 @@ import { useToast } from '../context/ToastContext';
 import { orderService } from '../services/orderService';
 import { OrderSuccess } from '../components/checkout/OrderSuccess';
 import { EmptyState } from '../components/common/EmptyState';
+import CustomPhoneInput from '../components/common/CustomPhoneInput';
+import SearchableSelect from '../components/common/SearchableSelect';
+import { Country, State } from 'country-state-city';
+
+const popularIsoCodes = ['IN', 'AE', 'US', 'GB', 'SG', 'MY', 'AU', 'CA', 'SA', 'LK'];
+const allCountriesList = Country.getAllCountries();
+const popularCountriesList = popularIsoCodes
+  .map((code) => Country.getCountryByCode(code))
+  .filter(Boolean);
+const countrySelectOptions = [
+  ...popularCountriesList.map((c) => ({
+    label: c.name,
+    value: c.name
+  })),
+  ...allCountriesList
+    .filter((c) => !popularIsoCodes.includes(c.isoCode))
+    .map((c) => ({
+      label: c.name,
+      value: c.name
+    }))
+];
 import { 
   ShieldCheck, 
   MapPin, 
@@ -23,7 +46,8 @@ import {
   ArrowRight,
   Package,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  ExternalLink
 } from 'lucide-react';
 
 export const Checkout = () => {
@@ -45,16 +69,52 @@ export const Checkout = () => {
     city: 'Tenkasi',
     state: 'Tamil Nadu',
     postalCode: '627811',
-    country: 'India',
-    gstNumber: '',
+    country: localStorage.getItem('user_country') || 'India',
     saveAddress: true
   });
+
+  // Dynamically resolve states according to current selected country
+  const currentCountryObj = allCountriesList.find(
+    (c) => c.name.toLowerCase() === (formData.country || 'India').toLowerCase() || c.isoCode === formData.country
+  ) || Country.getCountryByCode('IN');
+
+  const availableStates = currentCountryObj
+    ? State.getStatesOfCountry(currentCountryObj.isoCode)
+    : [];
+
+  const handleCountryChange = (countryName) => {
+    const foundC = allCountriesList.find((c) => c.name === countryName) || Country.getCountryByCode('IN');
+    const states = foundC ? State.getStatesOfCountry(foundC.isoCode) : [];
+    const firstState = states.length > 0 ? states[0].name : '';
+    setFormData((prev) => ({
+      ...prev,
+      country: countryName,
+      state: firstState
+    }));
+    localStorage.setItem('user_country', countryName);
+    window.dispatchEvent(new Event('country_changed'));
+  };
 
   const [selectedCourier, setSelectedCourier] = useState('ST COURIER');
   const [isLocating, setIsLocating] = useState(false);
   const [errors, setErrors] = useState({});
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [placedOrder, setPlacedOrder] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+  const [upiTransactionId, setUpiTransactionId] = useState('');
+  const [isVerifyingUpi, setIsVerifyingUpi] = useState(false);
+
+  // Validate if all mandatory address fields are filled
+  const isAddressComplete = Boolean(
+    formData.firstName?.trim() &&
+    formData.lastName?.trim() &&
+    formData.phone?.trim() &&
+    formData.address?.trim() &&
+    formData.city?.trim() &&
+    formData.state?.trim() &&
+    /^\d{6}$/.test(formData.postalCode?.trim() || '')
+  );
 
   // Auto-scroll to top when step changes
   useEffect(() => {
@@ -108,8 +168,11 @@ export const Checkout = () => {
     if (!formData.address.trim()) errs.address = 'Complete address is required';
     if (!formData.city.trim()) errs.city = 'City is required';
     if (!formData.state.trim()) errs.state = 'State is required';
-    if (!formData.postalCode.trim()) errs.postalCode = 'Postal Code is required';
-    else if (!/^\d{6}$/.test(formData.postalCode.trim())) errs.postalCode = 'Enter a valid 6-digit PIN code';
+    if (!formData.postalCode.trim()) {
+      errs.postalCode = 'Postal Code is required';
+    } else if (formData.country === 'India' && !/^\d{6}$/.test(formData.postalCode.trim())) {
+      errs.postalCode = 'Enter a valid 6-digit PIN code';
+    }
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -165,12 +228,16 @@ export const Checkout = () => {
     }
   };
 
+  // Dynamic UPI Payment URL with exact order amount embedded
+  const payableAmount = (subtotal + (subtotal * 0.05)).toFixed(2);
+  const upiPaymentUrl = `upi://pay?pa=q826461256@ybl&pn=BARATHI%20HOMEOPATHY%20CLINIC&am=${payableAmount}&cu=INR&tn=Order%20Payment`;
+
   // Courier Partners List with Logos / Badges
   const courierOptions = [
-    { id: 'ST COURIER', name: 'ST COURIER', tag: 'Fast Local Delivery', color: 'border-[#f97316] text-[#f97316] bg-orange-50/60' },
-    { id: 'DTDC', name: 'DTDC Express', tag: 'Pan-India Express', color: 'border-blue-500 text-blue-600 bg-blue-50/60' },
-    { id: 'INDIA POST', name: 'INDIA POST', tag: 'Government Postal', color: 'border-rose-500 text-rose-600 bg-rose-50/60' },
-    { id: 'EMS SPEED POST', name: 'EMS SPEED POST', tag: 'Priority Speed Delivery', color: 'border-purple-500 text-purple-600 bg-purple-50/60' }
+    { id: 'ST COURIER', name: 'ST COURIER', tag: 'Fast Local Delivery', badge: 'LOCAL', color: 'border-[#f97316] text-[#f97316] bg-orange-50/60' },
+    { id: 'DTDC', name: 'DTDC Express', tag: 'Pan-India Express', badge: 'EXPRESS', color: 'border-blue-500 text-blue-600 bg-blue-50/60' },
+    { id: 'INDIA POST', name: 'INDIA POST', tag: 'Government Postal', badge: 'POSTAL', color: 'border-rose-500 text-rose-600 bg-rose-50/60' },
+    { id: 'EMS SPEED POST', name: 'EMS SPEED POST', tag: 'Priority Speed Delivery', badge: 'SPEED', color: 'border-purple-500 text-purple-600 bg-purple-50/60' }
   ];
 
   // Estimated delivery range
@@ -183,7 +250,7 @@ export const Checkout = () => {
   const formattedDelivery = `${deliveryStart.getDate().toString().padStart(2, '0')} SEP - ${deliveryEnd.getDate().toString().padStart(2, '0')} SEP`;
 
   return (
-    <div className="bg-slate-50/60 min-h-screen py-8 sm:py-12 w-full overflow-x-hidden">
+    <div className="bg-slate-50/60 min-h-screen py-8 sm:py-12 w-full relative z-20 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 w-full">
         
         {!placedOrder ? (
@@ -206,20 +273,35 @@ export const Checkout = () => {
 
                 <div className="w-12 sm:w-20 h-0.5 border-t-2 border-dashed border-slate-300" />
 
-                {/* Step 2 Pill */}
-                <button
-                  onClick={() => {
-                    if (validateAddressStep()) setStep('checkout');
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black transition-all duration-200 cursor-pointer ${
-                    step === 'checkout'
-                      ? 'bg-[#0b344d] text-white shadow-md ring-4 ring-[#0b344d]/10'
-                      : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
-                  }`}
-                >
-                  <span className={`w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-extrabold ${step === 'checkout' ? 'bg-[#f97316] text-white' : 'bg-slate-200 text-slate-600'}`}>2</span>
-                  <span>CHECKOUT</span>
-                </button>
+                {/* Step 2 Pill - disabled until address is fully filled */}
+                {(() => {
+                  const isActive = step === 'checkout';
+                  return (
+                    <button
+                      disabled={!isAddressComplete && step !== 'checkout'}
+                      onClick={() => {
+                        if (validateAddressStep()) setStep('checkout');
+                      }}
+                      title={!isAddressComplete && step !== 'checkout' ? 'Please fill all address fields first' : ''}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black transition-all duration-200 ${
+                        isActive
+                          ? 'bg-[#0b344d] text-white shadow-md ring-4 ring-[#0b344d]/10 cursor-pointer'
+                          : isAddressComplete
+                          ? 'bg-white text-slate-500 border border-slate-200 hover:border-[#0b344d] hover:text-[#0b344d] cursor-pointer'
+                          : 'bg-slate-100 text-slate-300 border border-slate-200 cursor-not-allowed opacity-60'
+                      }`}
+                    >
+                      <span className={`w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-extrabold ${
+                        isActive
+                          ? 'bg-[#f97316] text-white'
+                          : isAddressComplete
+                          ? 'bg-slate-300 text-slate-600'
+                          : 'bg-slate-200 text-slate-400'
+                      }`}>2</span>
+                      <span>CHECKOUT</span>
+                    </button>
+                  );
+                })()}
               </div>
             </div>
 
@@ -228,11 +310,11 @@ export const Checkout = () => {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 
                 {/* Left: Shipping Address Input Card */}
-                <div className="lg:col-span-8 bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.06)] space-y-6 relative overflow-hidden">
+                <div className="lg:col-span-8 bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.06)] space-y-6 relative">
                   {/* Top Accent Gradient Line */}
-                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d]" />
+                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d] rounded-t-3xl" />
 
-                  {/* "Use My Location" Switch Header */}
+                  {/* "Use My Location" Header */}
                   <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                     <button
                       type="button"
@@ -243,7 +325,6 @@ export const Checkout = () => {
                       <Navigation className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} />
                       <span>{isLocating ? 'Locating...' : 'Use My Location'}</span>
                     </button>
-                    <span className="text-xs text-slate-400 font-medium">Auto-fill via GPS</span>
                   </div>
 
                   {/* Form Inputs Grid */}
@@ -296,22 +377,15 @@ export const Checkout = () => {
 
                     {/* Phone Number with Country Code */}
                     <div>
-                      <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider mb-2">
-                        Phone Number (10 digits) <span className="text-rose-500">*</span>
-                      </label>
-                      <div className="flex gap-2">
-                        <select className="px-3 py-3 bg-slate-50 border border-slate-200/90 rounded-2xl text-xs font-bold text-slate-700 cursor-pointer">
-                          <option>+91</option>
-                        </select>
-                        <input
-                          type="tel"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          placeholder="9345865212"
-                          className="flex-1 px-4 py-3 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-[#f97316] focus:ring-4 focus:ring-orange-500/10 text-xs font-bold text-slate-900 placeholder-slate-400 shadow-2xs"
-                        />
-                      </div>
-                      {errors.phone && <p className="text-[10px] text-rose-500 mt-1 font-bold">{errors.phone}</p>}
+                      <CustomPhoneInput
+                        label="Phone Number"
+                        required={true}
+                        country="in"
+                        value={formData.phone}
+                        onChange={(phone) => setFormData({ ...formData, phone })}
+                        placeholder="Enter phone number"
+                        error={errors.phone}
+                      />
                     </div>
 
                     {/* Complete Address */}
@@ -361,52 +435,49 @@ export const Checkout = () => {
                       </div>
                     </div>
 
-                    {/* State & Country Dropdowns */}
+                    {/* State & Country Dropdowns with Search */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* State / Province Field: Type-to-search dropdown for selected country */}
                       <div>
                         <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider mb-2">
-                          State <span className="text-rose-500">*</span>
+                          State / Province <span className="text-rose-500">*</span>
                         </label>
-                        <select
-                          value={formData.state}
-                          onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                          className="w-full px-4 py-3 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-[#f97316] text-xs font-bold text-slate-900 shadow-2xs cursor-pointer"
-                        >
-                          <option value="Tamil Nadu">Tamil Nadu</option>
-                          <option value="Kerala">Kerala</option>
-                          <option value="Karnataka">Karnataka</option>
-                          <option value="Andhra Pradesh">Andhra Pradesh</option>
-                          <option value="Maharashtra">Maharashtra</option>
-                          <option value="Delhi">Delhi</option>
-                        </select>
+                        {availableStates.length > 0 ? (
+                          <SearchableSelect
+                            value={formData.state}
+                            onChange={(val) => setFormData((prev) => ({ ...prev, state: val }))}
+                            options={availableStates.map((s) => ({ label: s.name, value: s.name }))}
+                            placeholder="Select State / Province"
+                            searchPlaceholder={`Search state in ${currentCountryObj?.name || 'country'}...`}
+                            direction="up"
+                            error={errors.state}
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            value={formData.state}
+                            onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                            placeholder="Enter state or province"
+                            className="w-full px-4 py-3 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-[#f97316] focus:ring-4 focus:ring-orange-500/10 text-xs font-bold text-slate-900 shadow-2xs hover:border-slate-300 transition-all placeholder-slate-400"
+                          />
+                        )}
+                        {errors.state && <p className="text-[10px] text-rose-500 mt-1 font-bold">{errors.state}</p>}
                       </div>
 
+                      {/* Country Field: Type-to-search dropdown */}
                       <div>
                         <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider mb-2">
-                          Country
+                          Country <span className="text-rose-500">*</span>
                         </label>
-                        <select
-                          disabled
-                          value="India"
-                          className="w-full px-4 py-3 bg-slate-100 border border-slate-200/90 rounded-2xl text-xs font-bold text-slate-500 cursor-not-allowed"
-                        >
-                          <option value="India">India</option>
-                        </select>
+                        <SearchableSelect
+                          value={currentCountryObj?.name || formData.country || 'India'}
+                          onChange={(val) => handleCountryChange(val)}
+                          options={countrySelectOptions}
+                          placeholder="Select Country"
+                          searchPlaceholder="Type to search country..."
+                          direction="up"
+                        />
                       </div>
-                    </div>
-
-                    {/* GST Number */}
-                    <div>
-                      <label className="block text-[11px] font-black text-slate-900 uppercase tracking-wider mb-2">
-                        GST Number (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.gstNumber}
-                        onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
-                        placeholder="Enter 15-digit GSTIN if applicable"
-                        className="w-full px-4 py-3 bg-white border border-slate-200/90 rounded-2xl focus:outline-none focus:border-[#f97316] focus:ring-4 focus:ring-orange-500/10 text-xs font-bold text-slate-900 placeholder-slate-400 shadow-2xs"
-                      />
                     </div>
 
                     {/* Save Address Checkbox */}
@@ -445,12 +516,7 @@ export const Checkout = () => {
                     <div className="flex justify-between items-center">
                       <span>GST (inclusive of all taxes)</span>
                       <span className="font-extrabold text-slate-900">₹{(subtotal * 0.05).toFixed(2)}</span>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <span>Net Weight of Product</span>
-                      <span className="font-extrabold text-slate-900">0.100 kg</span>
-                    </div>
+                    </div>
 
                     <div className="flex justify-between items-center text-amber-600 font-bold">
                       <span>Shipping Fee</span>
@@ -463,15 +529,28 @@ export const Checkout = () => {
                     </div>
                   </div>
 
-                  {/* Continue Button to Step 2 */}
-                  <button
-                    type="button"
-                    onClick={handleProceedToCheckoutStep}
-                    className="w-full py-4 px-6 text-xs sm:text-sm font-black text-white bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] hover:scale-[1.02] active:scale-95 rounded-2xl shadow-lg shadow-orange-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <span>CONTINUE</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+                  {/* Continue Button to Step 2 - Active only when address is complete */}
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      disabled={!isAddressComplete}
+                      onClick={handleProceedToCheckoutStep}
+                      className={`w-full py-4 px-6 text-xs sm:text-sm font-black rounded-2xl transition-all flex items-center justify-center gap-2 ${
+                        isAddressComplete
+                          ? 'text-white bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] hover:scale-[1.02] active:scale-95 shadow-lg shadow-orange-500/25 cursor-pointer'
+                          : 'text-slate-400 bg-slate-200 border border-slate-300/80 cursor-not-allowed opacity-60 shadow-none'
+                      }`}
+                    >
+                      <span>CONTINUE</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+
+                    {!isAddressComplete && (
+                      <p className="text-[10px] text-slate-400 font-bold text-center">
+                        Please fill all required address fields (*) to continue
+                      </p>
+                    )}
+                  </div>
                 </div>
 
               </div>
@@ -498,7 +577,7 @@ export const Checkout = () => {
                         </p>
                         <p className="flex items-center gap-1.5 text-slate-500">
                           <Phone className="w-3.5 h-3.5 text-slate-400" />
-                          <span>+91 {formData.phone}</span>
+                          <span>+91 {formData.phone ? formData.phone.toString().replace(/^\+?91\s*/, '') : ''}</span>
                         </p>
                         <p className="flex items-start gap-1.5 text-slate-700 font-bold pt-1">
                           <MapPin className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -593,7 +672,7 @@ export const Checkout = () => {
                           </div>
                           
                           <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase border ${courier.color}`}>
-                            EXPRESS
+                            {courier.badge || 'EXPRESS'}
                           </span>
                         </label>
                       ))}
@@ -619,12 +698,7 @@ export const Checkout = () => {
                       <div className="flex justify-between items-center">
                         <span>GST (inclusive of all taxes)</span>
                         <span className="font-extrabold text-slate-900">₹{(subtotal * 0.05).toFixed(2)}</span>
-                      </div>
-
-                      <div className="flex justify-between items-center">
-                        <span>Net Weight of Product</span>
-                        <span className="font-extrabold text-slate-900">0.100 kg</span>
-                      </div>
+                      </div>
 
                       <div className="flex justify-between items-center">
                         <span>Shipping Fee</span>
@@ -641,7 +715,13 @@ export const Checkout = () => {
                     <button
                       type="button"
                       disabled={isPlacingOrder}
-                      onClick={handlePlaceOrder}
+                      onClick={() => {
+                        if (!selectedCourier) {
+                          showToast('Please select a shipping partner to continue', 'warning');
+                          return;
+                        }
+                        setShowPaymentModal(true);
+                      }}
                       className="w-full py-4 px-6 text-xs sm:text-sm font-black text-white bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] hover:scale-[1.02] active:scale-95 rounded-2xl shadow-lg shadow-orange-500/25 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {isPlacingOrder ? (
@@ -681,7 +761,211 @@ export const Checkout = () => {
         )}
 
       </div>
+
+
+      {/* PhonePe / UPI Payment Modal */}
+      {showPaymentModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          onClick={() => { setShowPaymentModal(false); setSelectedPaymentMethod(null); }}
+        >
+          <div
+            className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 space-y-6"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => { setShowPaymentModal(false); setSelectedPaymentMethod(null); }}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-all font-black text-sm"
+            >
+              X
+            </button>
+
+            {/* Header */}
+            <div className="text-center space-y-1 pt-1">
+              <h2 className="text-base font-black text-slate-900 uppercase tracking-wider">Choose Payment Method</h2>
+              <p className="text-[11px] text-slate-500 font-medium">Select how you would like to pay</p>
+            </div>
+
+            {/* Method Selector - shown when no method selected */}
+            {!selectedPaymentMethod && (
+              <div className="grid grid-cols-2 gap-4">
+                {/* PhonePe / UPI Option */}
+                <button
+                  onClick={() => setSelectedPaymentMethod('UPI')}
+                  className="flex flex-col items-center gap-3 p-5 rounded-2xl border-2 border-purple-200 bg-purple-50/60 hover:border-purple-500 hover:bg-purple-100/70 hover:scale-[1.03] transition-all duration-200 cursor-pointer"
+                >
+                  <div className="w-12 h-12 rounded-full bg-[#5f259f] flex items-center justify-center shadow-lg shadow-purple-300">
+                    <span className="text-white text-xl font-black">Pe</span>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs font-black text-slate-900">PhonePe / UPI</p>
+                    <p className="text-[10px] text-purple-600 font-bold mt-0.5">Scan QR &amp; Pay Instantly</p>
+                  </div>
+                </button>
+
+                {/* Cash on Delivery Option */}
+                <button
+                  onClick={async () => {
+                    setShowPaymentModal(false);
+                    setSelectedPaymentMethod(null);
+                    await handlePlaceOrder();
+                  }}
+                  className="flex flex-col items-center gap-3 p-5 rounded-2xl border-2 border-emerald-200 bg-emerald-50/60 hover:border-emerald-500 hover:bg-emerald-100/70 hover:scale-[1.03] transition-all duration-200 cursor-pointer"
+                >
+                  <div className="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-300">
+                    <span className="text-white text-xl font-black">COD</span>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs font-black text-slate-900">Cash on Delivery</p>
+                    <p className="text-[10px] text-emerald-600 font-bold mt-0.5">Pay at your doorstep</p>
+                  </div>
+                </button>
+              </div>
+            )}
+
+            {/* UPI / QR Section with Strict UTR Verification */}
+            {selectedPaymentMethod === 'UPI' && (
+              <div className="space-y-5">
+                <div className="flex flex-col items-center gap-4">
+                  {/* Dynamic Amount-Embedded UPI QR Code */}
+                  <div className="bg-white rounded-3xl p-5 shadow-xl border border-purple-200 ring-4 ring-purple-100 flex flex-col items-center">
+                    {/* PhonePe / BHIM Brand Header */}
+                    <div className="flex items-center gap-2 pb-3 text-[#5f259f] font-black text-xs">
+                      <div className="w-6 h-6 rounded-full bg-[#5f259f] text-white flex items-center justify-center text-xs font-black shadow-sm">
+                        Pe
+                      </div>
+                      <span>BARATHI HOMEOPATHY CLINIC</span>
+                    </div>
+
+                    {/* Dynamic Razor-Sharp QR Code (NPCI UPI Standard with exact amount) */}
+                    <div className="p-3 bg-white rounded-2xl border border-slate-100 shadow-inner flex items-center justify-center">
+                      <QRCodeSVG
+                        value={upiPaymentUrl}
+                        size={210}
+                        level="M"
+                        includeMargin={false}
+                      />
+                    </div>
+
+                    <div className="pt-3 text-center">
+                      <p className="text-[11px] font-mono font-bold text-slate-500">
+                        UPI ID: <strong className="text-purple-700">q826461256@ybl</strong>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Direct Mobile UPI App Button (for mobile phones) */}
+                  <a
+                    href={upiPaymentUrl}
+                    className="w-full py-3 px-4 text-xs font-black text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-sm sm:hidden"
+                  >
+                    <span>Tap to Pay with Google Pay / PhonePe / Paytm</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+
+                  <div className="text-center space-y-1.5">
+                    <p className="text-xs font-black text-purple-700">Scan with any UPI App</p>
+                    <p className="text-[10px] text-slate-400 font-bold">PhonePe | Google Pay | Paytm | BHIM</p>
+                    <div className="mt-2 px-5 py-2.5 bg-purple-50 rounded-2xl border border-purple-200">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Amount to Pay</p>
+                      <p className="text-2xl font-black text-purple-700">
+                        <span className="text-lg mr-0.5">&#8377;</span>
+                        {(subtotal + (subtotal * 0.05)).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* MANDATORY 12-DIGIT UPI REFERENCE / UTR NUMBER VERIFICATION FIELD */}
+                <div className="space-y-2 text-left pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+                      <span>12-Digit UPI Ref / UTR No <span className="text-rose-500">*</span></span>
+                    </label>
+                    <span className="text-[10px] font-bold text-purple-600">Required</span>
+                  </div>
+
+                  <div className="relative">
+                    <input
+                      type="text"
+                      maxLength={16}
+                      value={upiTransactionId}
+                      onChange={(e) => setUpiTransactionId(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
+                      placeholder="Enter 12-digit UTR (e.g. 425612849012)"
+                      className="w-full px-4 py-3.5 bg-slate-50 focus:bg-white border-2 border-purple-200 focus:border-purple-500 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 text-xs font-mono font-bold text-slate-900 placeholder:text-slate-400 transition-all shadow-inner tracking-widest"
+                    />
+                    {upiTransactionId.trim().length >= 12 && (
+                      <div className="absolute right-3.5 top-3.5 flex items-center gap-1 text-[11px] font-black text-emerald-600">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span>Valid</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                    Google Pay / PhonePe-ல் பணம் செலுத்திய பிறகு காட்டும் <strong>12-digit UPI Ref / UTR No</strong>-ஐ இங்கு பதிவிடவும். இந்த எண் இல்லாமல் ஆர்டர் கன்ஃபார்ம் ஆகாது.
+                  </p>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <button
+                    disabled={isPlacingOrder || isVerifyingUpi || upiTransactionId.trim().length < 12}
+                    onClick={async () => {
+                      if (upiTransactionId.trim().length < 12) {
+                        showToast('Please enter the 12-digit UPI Reference / UTR Number from your payment app', 'warning');
+                        return;
+                      }
+                      setIsVerifyingUpi(true);
+                      setTimeout(async () => {
+                        setIsVerifyingUpi(false);
+                        setShowPaymentModal(false);
+                        setSelectedPaymentMethod(null);
+                        await handlePlaceOrder('UPI', upiTransactionId.trim());
+                      }, 1200);
+                    }}
+                    className={`w-full py-3.5 px-6 text-sm font-black text-white rounded-2xl transition-all flex items-center justify-center gap-2 ${
+                      upiTransactionId.trim().length >= 12 && !isPlacingOrder && !isVerifyingUpi
+                        ? 'bg-gradient-to-r from-[#5f259f] to-[#8b2fc9] hover:scale-[1.02] active:scale-95 shadow-lg shadow-purple-500/30 cursor-pointer'
+                        : 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed opacity-60 shadow-none'
+                    }`}
+                  >
+                    {isVerifyingUpi ? (
+                      <span>Verifying Transaction Reference...</span>
+                    ) : isPlacingOrder ? (
+                      <span>Confirming Order...</span>
+                    ) : upiTransactionId.trim().length < 12 ? (
+                      <span>Enter 12-Digit UTR to Confirm</span>
+                    ) : (
+                      <span>Verify & Confirm Order</span>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isPlacingOrder || isVerifyingUpi}
+                    onClick={() => {
+                      setSelectedPaymentMethod(null);
+                      setUpiTransactionId('');
+                    }}
+                    className="w-full py-2.5 text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                  >
+                    &larr; Back to payment options
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Security Footer */}
+            <p className="text-[10px] text-slate-400 font-bold text-center flex items-center justify-center gap-1.5">
+              <Lock className="w-3 h-3 text-emerald-500" />
+              <span>100% Secure Payment &mdash; Powered by BHIM UPI</span>
+            </p>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
-

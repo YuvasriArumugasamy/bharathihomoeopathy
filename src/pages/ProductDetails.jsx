@@ -1,3 +1,4 @@
+import { getStoredProducts } from '../utils/productStorage';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate } from 'react-router-dom';
@@ -164,7 +165,7 @@ export const ProductDetails = () => {
     showToast('Thank you! Your verified review has been posted.', 'success');
   };
 
-  const relatedProducts = demoProducts.filter(p => p.id !== product.id && p.category === product.category).slice(0, 4);
+  const relatedProducts = getStoredProducts().filter(p => p.id !== product.id && p.category === product.category).slice(0, 4);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-10 w-full overflow-x-hidden">

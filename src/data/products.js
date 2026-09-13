@@ -2,6 +2,29 @@ import { assets } from '../assets';
 
 export const demoProducts = [
   {
+    id: "HOM-102",
+    name: "rtfgtrf",
+    slug: "rtfgtrf",
+    sku: "HOM-102",
+    category: "Homeopathy Medicines",
+    form: "Drops",
+    brand: "Dr. Bharathi's Standard",
+    size: "30 ml",
+    price: 349,
+    salePrice: 349,
+    originalPrice: 399,
+    discount: 13,
+    stock: 25,
+    rating: 4.8,
+    reviewsCount: 18,
+    isBestSeller: true,
+    isFeatured: true,
+    image: assets.p1,
+    shortDescription: "Certified Homeopathic formulation prepared by clinic dispensary.",
+    description: "Certified clinical homeopathic remedy indicated for holistic wellness and symptom relief.",
+    ingredients: ["Active Homeopathic Dilution", "Dispensing Base Alcohol Base"]
+  },
+  {
     id: "prod-1",
     name: "SBL Urtica Urens 1X (Q) (30ml)",
     slug: "sbl-urtica-urens-1x-q-30ml",
