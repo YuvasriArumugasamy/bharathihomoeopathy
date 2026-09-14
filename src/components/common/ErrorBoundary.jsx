@@ -38,20 +38,41 @@ export class ErrorBoundary extends React.Component {
               <p className="text-xs text-slate-500 leading-relaxed">
                 We encountered an unexpected technical issue. Don't worry — your appointment and order data remain safe.
               </p>
+              {this.state.error && (
+                <div className="p-3 bg-rose-50/80 border border-rose-200/80 rounded-xl text-[11px] text-rose-800 font-mono text-left overflow-x-auto max-h-28">
+                  {this.state.error.message || String(this.state.error)}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={this.handleReload}
-                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brandOrange-500 to-[#f97316] text-white text-xs font-black shadow-md shadow-orange-500/20 active:scale-95 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brandOrange-500 to-[#f97316] text-white text-xs font-black shadow-md shadow-orange-500/20 active:scale-95 transition-all cursor-pointer"
               >
                 <RotateCcw className="w-4 h-4" />
                 <span>Try Refreshing</span>
               </button>
 
               <button
+                onClick={() => {
+                  try {
+                    localStorage.removeItem('admin_customers_store');
+                    localStorage.removeItem('admin_orders_store');
+                    localStorage.removeItem('admin_appointments_store');
+                    localStorage.removeItem('admin_inventory_store');
+                  } catch {}
+                  window.location.reload();
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold active:scale-95 transition-all cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Reset Admin Cache</span>
+              </button>
+
+              <button
                 onClick={this.handleGoHome}
-                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold active:scale-95 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold active:scale-95 transition-all cursor-pointer"
               >
                 <Home className="w-4 h-4" />
                 <span>Return to Home</span>

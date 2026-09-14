@@ -11,26 +11,37 @@ import { exportToCsv } from '../../utils/exportUtils';
 
 export const AdminCustomers = () => {
   const { showToast } = useToast();
-  const [customers, setCustomers] = useState(() => customerService.getStoredCustomers());
+  const [customers, setCustomers] = useState(() => {
+    try {
+      const data = customerService.getStoredCustomers();
+      return Array.isArray(data) ? data.filter(Boolean) : [];
+    } catch {
+      return [];
+    }
+  });
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   useEffect(() => {
     const fetchCustomers = async () => {
-      const data = await customerService.getAdminCustomers();
-      if (data && Array.isArray(data) && data.length > 0) {
-        setCustomers(data);
+      try {
+        const data = await customerService.getAdminCustomers();
+        if (Array.isArray(data)) {
+          setCustomers(data.filter(Boolean));
+        }
+      } catch (err) {
+        console.warn("Failed to fetch customers:", err.message);
       }
     };
     fetchCustomers();
   }, []);
 
   // Computed metrics
-  const totalPatients = customers.length;
-  const activePatients = customers.filter(c => c.status === 'Active').length;
-  const blockedPatients = customers.filter(c => c.status === 'Blocked').length;
-  const totalLifetimeRevenue = customers.reduce((sum, c) => sum + (c.totalSpent || 0), 0);
+  const totalPatients = Array.isArray(customers) ? customers.filter(Boolean).length : 0;
+  const activePatients = Array.isArray(customers) ? customers.filter(c => c && c.status === 'Active').length : 0;
+  const blockedPatients = Array.isArray(customers) ? customers.filter(c => c && c.status === 'Blocked').length : 0;
+  const totalLifetimeRevenue = Array.isArray(customers) ? customers.reduce((sum, c) => sum + (Number(c?.totalSpent) || 0), 0) : 0;
 
   const filtered = customers.filter(c => {
     if (!c) return false;

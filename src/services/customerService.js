@@ -10,14 +10,15 @@ export const getStoredCustomers = () => {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        // Strip out legacy mock/demo customers
+        // Strip out legacy mock/demo customers and nulls
         const cleaned = parsed.filter(cust => 
-          cust?.id !== 'cust-101' && 
-          cust?.id !== 'cust-102' && 
-          cust?.id !== 'cust-103' &&
-          cust?.customerId !== 'PAT-1001' &&
-          cust?.customerId !== 'PAT-1002' &&
-          cust?.customerId !== 'PAT-1003'
+          cust && typeof cust === 'object' &&
+          cust.id !== 'cust-101' && 
+          cust.id !== 'cust-102' && 
+          cust.id !== 'cust-103' &&
+          cust.customerId !== 'PAT-1001' &&
+          cust.customerId !== 'PAT-1002' &&
+          cust.customerId !== 'PAT-1003'
         );
         if (cleaned.length !== parsed.length) {
           localStorage.setItem(CUSTOMERS_STORAGE_KEY, JSON.stringify(cleaned));

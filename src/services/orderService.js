@@ -12,8 +12,9 @@ export const getStoredOrders = () => {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        // Filter out any leftover demo mock orders
+        // Filter out any leftover demo mock orders and nulls
         const cleaned = parsed.filter(o => 
+          o && typeof o === 'object' &&
           !['ord-1001', 'ord-1002', 'ord-1003'].includes(o.id) && 
           !['894123', '894256', '894389'].includes(o.orderId) && 
           !['894123', '894256', '894389'].includes(o.orderNumber)

@@ -13,6 +13,7 @@ export const getStoredAppointments = () => {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
         const cleaned = parsed.filter(a => 
+          a && typeof a === 'object' &&
           !['apt-001', 'apt-002'].includes(a.id) &&
           !['APT-2026-801', 'APT-2026-802'].includes(a.appointmentId)
         );
