@@ -5,7 +5,7 @@ import {
   ExternalLink, Sparkles, UserX, UserCheck, Download
 } from 'lucide-react';
 import { initialAdminCustomers } from '../../data/adminCustomersData';
-import { customerService } from '../../services/customerService';
+import { customerService, getStoredCustomers } from '../../services/customerService';
 import { useToast } from '../../context/ToastContext';
 import { exportToCsv } from '../../utils/exportUtils';
 
@@ -13,7 +13,7 @@ export const AdminCustomers = () => {
   const { showToast } = useToast();
   const [customers, setCustomers] = useState(() => {
     try {
-      const data = customerService.getStoredCustomers();
+      const data = typeof getStoredCustomers === 'function' ? getStoredCustomers() : [];
       return Array.isArray(data) ? data.filter(Boolean) : [];
     } catch {
       return [];

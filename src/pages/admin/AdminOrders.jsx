@@ -24,7 +24,7 @@ import {
   MessageSquare,
   RotateCcw
 } from 'lucide-react';
-import { orderService } from '../../services/orderService';
+import { orderService, getStoredOrders } from '../../services/orderService';
 import { cloudSyncService } from '../../services/cloudSyncService';
 import { useToast } from '../../context/ToastContext';
 import { exportToCsv } from '../../utils/exportUtils';
@@ -33,7 +33,7 @@ import { OrderInvoiceModal } from '../../components/admin/OrderInvoiceModal';
 
 export const AdminOrders = () => {
   const { showToast } = useToast();
-  const [orders, setOrders] = useState(() => orderService.getStoredOrders());
+  const [orders, setOrders] = useState(() => (typeof getStoredOrders === 'function' ? getStoredOrders() : []));
   const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [search, setSearch] = useState('');
@@ -43,7 +43,7 @@ export const AdminOrders = () => {
 
   const loadOrders = async (showFeedback = false) => {
     if (showFeedback) setIsRefreshing(true);
-    const local = orderService.getStoredOrders();
+    const local = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
     if (Array.isArray(local) && local.length > 0) {
       setOrders(local);
     }
@@ -80,7 +80,7 @@ export const AdminOrders = () => {
     // Real-time Cross-tab and Local Storage synchronizer
     const handleStorageOrFocus = (e) => {
       if (!e || !e.key || e.key === 'admin_orders_store') {
-        const fresh = orderService.getStoredOrders();
+        const fresh = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
         if (Array.isArray(fresh)) {
           setOrders(fresh);
         }

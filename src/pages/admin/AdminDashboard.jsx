@@ -28,10 +28,10 @@ import {
   Palette
 } from 'lucide-react';
 import { adminDashboardData } from '../../data/adminDashboardData';
-import { orderService } from '../../services/orderService';
+import { orderService, getStoredOrders } from '../../services/orderService';
 import { productService } from '../../services/productService';
-import { appointmentService } from '../../services/appointmentService';
-import { customerService } from '../../services/customerService';
+import { appointmentService, getStoredAppointments } from '../../services/appointmentService';
+import { customerService, getStoredCustomers } from '../../services/customerService';
 
 export const AdminDashboard = () => {
   const getGreeting = () => {
@@ -44,16 +44,16 @@ export const AdminDashboard = () => {
   const [timeFilter, setTimeFilter] = useState('7 Days');
   const [metricView, setMetricView] = useState('revenue'); // 'revenue' | 'orders'
   const [chartTheme, setChartTheme] = useState('teal'); // 'teal' | 'indigo' | 'purple' | 'amber'
-  const [orders, setOrders] = useState(() => orderService.getStoredOrders());
+  const [orders, setOrders] = useState(() => (typeof getStoredOrders === 'function' ? getStoredOrders() : []));
   const [products, setProducts] = useState([]);
-  const [appointments, setAppointments] = useState(() => appointmentService.getStoredAppointments());
-  const [customers, setCustomers] = useState(() => customerService.getStoredCustomers());
+  const [appointments, setAppointments] = useState(() => (typeof getStoredAppointments === 'function' ? getStoredAppointments() : []));
+  const [customers, setCustomers] = useState(() => (typeof getStoredCustomers === 'function' ? getStoredCustomers() : []));
 
   const loadDashboardData = async () => {
     try {
-      setOrders(orderService.getStoredOrders());
-      setAppointments(appointmentService.getStoredAppointments());
-      setCustomers(customerService.getStoredCustomers());
+      if (typeof getStoredOrders === 'function') setOrders(getStoredOrders());
+      if (typeof getStoredAppointments === 'function') setAppointments(getStoredAppointments());
+      if (typeof getStoredCustomers === 'function') setCustomers(getStoredCustomers());
 
       const [liveOrders, liveProducts, liveApts] = await Promise.all([
         orderService.getAdminOrders(),

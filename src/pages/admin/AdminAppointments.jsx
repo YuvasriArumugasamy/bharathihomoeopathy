@@ -5,7 +5,7 @@ import {
   CalendarCheck, CalendarClock, UserCheck, Stethoscope, Sparkles,
   Download, MessageSquare, Paperclip, Eye, ExternalLink, RotateCcw
 } from 'lucide-react';
-import { appointmentService } from '../../services/appointmentService';
+import { appointmentService, getStoredAppointments } from '../../services/appointmentService';
 import { cloudSyncService } from '../../services/cloudSyncService';
 import { useToast } from '../../context/ToastContext';
 import { exportToCsv } from '../../utils/exportUtils';
@@ -14,7 +14,7 @@ import { PrescriptionComposerModal } from '../../components/admin/PrescriptionCo
 
 export const AdminAppointments = () => {
   const { showToast } = useToast();
-  const [appointments, setAppointments] = useState(() => appointmentService.getStoredAppointments());
+  const [appointments, setAppointments] = useState(() => (typeof getStoredAppointments === 'function' ? getStoredAppointments() : []));
   const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('All');
@@ -29,7 +29,7 @@ export const AdminAppointments = () => {
   const loadAppointments = async (showFeedback = false) => {
     if (showFeedback) setIsRefreshing(true);
     // Instant local read
-    const local = appointmentService.getStoredAppointments();
+    const local = typeof getStoredAppointments === 'function' ? getStoredAppointments() : [];
     if (Array.isArray(local) && local.length > 0) {
       setAppointments(local);
     }
@@ -66,7 +66,7 @@ export const AdminAppointments = () => {
     // Real-time Cross-tab and Local Storage synchronizer
     const handleStorageOrFocus = (e) => {
       if (!e || !e.key || e.key === 'admin_appointments_store') {
-        const fresh = appointmentService.getStoredAppointments();
+        const fresh = typeof getStoredAppointments === 'function' ? getStoredAppointments() : [];
         if (Array.isArray(fresh)) {
           setAppointments(fresh);
         }
