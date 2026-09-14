@@ -4,63 +4,28 @@ import { cloudSyncService } from './cloudSyncService';
 
 const APPOINTMENTS_STORAGE_KEY = 'admin_appointments_store';
 
-const initialDemoAppointments = [
-  {
-    id: 'apt-001',
-    appointmentId: 'APT-2026-801',
-    patient: {
-      name: 'P. Anandhan',
-      phone: '+91 98421 77654',
-      email: 'anandhan.p@gmail.com',
-      age: 42,
-      gender: 'Male'
-    },
-    concern: 'Joint, Muscle & Chronic Pain',
-    doctor: 'Dr. Bharathi (Homeopathic Doctor)',
-    consultationMode: 'In-Clinic',
-    date: new Date().toISOString().slice(0, 10),
-    time: '10:00 AM',
-    status: 'Confirmed',
-    notes: 'Severe knee pain and stiffness during morning hours.',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'apt-002',
-    appointmentId: 'APT-2026-802',
-    patient: {
-      name: 'R. Soundarya',
-      phone: '+91 97899 44321',
-      email: 'soundarya.r@outlook.com',
-      age: 29,
-      gender: 'Female'
-    },
-    concern: 'Skin & Allergy Care',
-    doctor: 'Dr. Bharathi (Homeopathic Doctor)',
-    consultationMode: 'Online',
-    date: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
-    time: '05:00 PM',
-    status: 'Pending',
-    notes: 'Seasonal eczema on hands, prefers video consultation.',
-    createdAt: new Date().toISOString()
-  }
-];
+const initialDemoAppointments = [];
 
 export const getStoredAppointments = () => {
   try {
     const raw = localStorage.getItem(APPOINTMENTS_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed.filter(a => 
+          !['apt-001', 'apt-002'].includes(a.id) &&
+          !['APT-2026-801', 'APT-2026-802'].includes(a.appointmentId)
+        );
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem(APPOINTMENTS_STORAGE_KEY, JSON.stringify(cleaned));
+        }
+        return cleaned;
+      }
     }
   } catch (err) {
     console.warn("Could not read appointments from storage:", err.message);
   }
-  try {
-    localStorage.setItem(APPOINTMENTS_STORAGE_KEY, JSON.stringify(initialDemoAppointments));
-  } catch {
-    // Ignore quota error
-  }
-  return initialDemoAppointments;
+  return [];
 };
 
 export const saveStoredAppointments = (appointments) => {

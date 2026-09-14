@@ -2,48 +2,29 @@ import { api } from '../utils/api';
 
 const PRESCRIPTIONS_STORAGE_KEY = 'admin_prescriptions_store';
 
-const initialPrescriptions = [
-  {
-    id: 'rx-101',
-    prescriptionId: 'RX-2026-8801',
-    appointmentId: 'APT-2026-801',
-    date: new Date().toISOString().slice(0, 10),
-    doctor: 'Dr. Bharathi (B.H.M.S, M.D.)',
-    doctorRegNo: 'HOM-TN-2016-8941',
-    patient: {
-      name: 'P. Anandhan',
-      phone: '+91 98421 77654',
-      email: 'anandhan.p@gmail.com',
-      age: 42,
-      gender: 'Male'
-    },
-    diagnosis: 'Joint & Muscle Stiffness (Osteo-Arthralgia)',
-    remedies: [
-      { name: 'Rhus Toxicodendron 200CH', dosage: '4 pills twice daily after meals', duration: '15 Days' },
-      { name: 'Arnica Montana 30C Liquid Drops', dosage: '3 drops in lukewarm water before bedtime', duration: '15 Days' },
-      { name: 'Calcarea Phosphorica 6X', dosage: '4 tablets chewed morning & night', duration: '30 Days' }
-    ],
-    dietRestrictions: 'Avoid raw garlic, raw onions, and high-caffeine drinks 30 minutes before or after doses. Drink warm water.',
-    followUpDate: new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10),
-    notes: 'Mild exercise and morning sunshine recommended. Review after 15 days.',
-    createdAt: new Date().toISOString()
-  }
-];
+const initialPrescriptions = [];
 
 export const getStoredPrescriptions = () => {
   try {
     const raw = localStorage.getItem(PRESCRIPTIONS_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) {
+        // Strip out legacy mock/demo prescriptions
+        const cleaned = parsed.filter(rx => 
+          rx?.id !== 'rx-101' && 
+          rx?.prescriptionId !== 'RX-2026-8801'
+        );
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem(PRESCRIPTIONS_STORAGE_KEY, JSON.stringify(cleaned));
+        }
+        return cleaned;
+      }
     }
   } catch (err) {
     console.warn("Could not read prescriptions from storage:", err.message);
   }
-  try {
-    localStorage.setItem(PRESCRIPTIONS_STORAGE_KEY, JSON.stringify(initialPrescriptions));
-  } catch {}
-  return initialPrescriptions;
+  return [];
 };
 
 export const saveStoredPrescriptions = (prescriptions) => {

@@ -121,7 +121,7 @@ export const TrackOrderModal = ({ isOpen, onClose }) => {
               <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input 
                 type="text"
-                placeholder="Enter Order ID or Phone Number (e.g. 894123 or 9345865212)"
+                placeholder="Enter your Order ID, Phone Number, or Email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 text-sm font-medium focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all"
