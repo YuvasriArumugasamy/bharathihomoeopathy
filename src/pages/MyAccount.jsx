@@ -453,11 +453,11 @@ export const MyAccount = () => {
                             </div>
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
+                          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 self-stretch sm:self-center w-full sm:w-auto mt-3 sm:mt-0">
                             <button
                               type="button"
                               onClick={() => handleReorder(order)}
-                              className="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 border border-emerald-200/70 shadow-2xs active:scale-95"
+                              className="w-full sm:w-auto px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center sm:justify-start gap-1.5 border border-emerald-200/70 shadow-2xs active:scale-95"
                               title="Add remedies from this order back into your cart"
                             >
                               <RotateCcw className="w-3.5 h-3.5 text-emerald-600" />
@@ -466,7 +466,7 @@ export const MyAccount = () => {
                             <button
                               type="button"
                               onClick={() => setInvoiceModalOrder(order)}
-                              className="px-3.5 py-1.5 bg-orange-50 hover:bg-orange-100 text-brandOrange-700 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 border border-orange-200/60 shadow-2xs"
+                              className="w-full sm:w-auto px-3.5 py-1.5 bg-orange-50 hover:bg-orange-100 text-brandOrange-700 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center sm:justify-start gap-1.5 border border-orange-200/60 shadow-2xs"
                               title="Print / Save Medical Bill Invoice"
                             >
                               <Printer className="w-3.5 h-3.5 text-brandOrange-500" />
@@ -475,7 +475,7 @@ export const MyAccount = () => {
                             <button
                               type="button"
                               onClick={() => setSelectedPrescription(order)}
-                              className="px-3.5 py-1.5 bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-brandOrange-700 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+                              className="w-full sm:w-auto px-3.5 py-1.5 bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-brandOrange-700 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center sm:justify-start gap-1.5"
                             >
                               <Eye className="w-3.5 h-3.5" />
                               <span>View Medicines</span>
@@ -485,14 +485,22 @@ export const MyAccount = () => {
 
                         {/* Interactive Step Progress Stepper */}
                         <div className="pt-2 space-y-2">
-                          <div className="flex justify-between text-[11px] font-black text-slate-500">
-                            <span className="text-emerald-700">1. Order Placed ✓</span>
-                            <span className="text-emerald-700">2. Remedy Formulated ✓</span>
-                            <span className={isProcessing ? 'text-amber-600 font-black animate-pulse' : 'text-emerald-700'}>
-                              {isProcessing ? '3. Out for Dispatch 🚚' : '3. Dispatched ✓'}
+                          <div className="flex justify-between text-[9px] sm:text-[11px] font-black text-slate-500">
+                            <span className="text-emerald-700 text-center">
+                              <span className="hidden sm:inline">1. Order Placed ✓</span>
+                              <span className="sm:hidden">Placed</span>
                             </span>
-                            <span className={isProcessing ? 'text-slate-400' : 'text-emerald-700 font-black'}>
-                              {isProcessing ? '4. Delivery Expected' : '4. Delivered 🏡'}
+                            <span className="text-emerald-700 text-center">
+                              <span className="hidden sm:inline">2. Remedy Formulated ✓</span>
+                              <span className="sm:hidden">Packed</span>
+                            </span>
+                            <span className={`text-center ${isProcessing ? 'text-amber-600 font-black animate-pulse' : 'text-emerald-700'}`}>
+                              <span className="hidden sm:inline">{isProcessing ? '3. Out for Dispatch 🚚' : '3. Dispatched ✓'}</span>
+                              <span className="sm:hidden">{isProcessing ? 'Shipping' : 'Shipped'}</span>
+                            </span>
+                            <span className={`text-center ${isProcessing ? 'text-slate-400' : 'text-emerald-700 font-black'}`}>
+                              <span className="hidden sm:inline">{isProcessing ? '4. Delivery Expected' : '4. Delivered 🏡'}</span>
+                              <span className="sm:hidden">{isProcessing ? 'Waiting' : 'Delivered'}</span>
                             </span>
                           </div>
 
