@@ -444,41 +444,48 @@ export const AdminDashboard = () => {
               <div className="border-b border-dashed border-slate-300 w-full" />
             </div>
 
-            {chartPoints.map((pt, i) => {
-              const currentVal = metricView === 'revenue' ? pt.revenue : pt.orders;
-              const maxVal = Math.max(...chartPoints.map(p => metricView === 'revenue' ? p.revenue : p.orders));
-              const heightPercent = Math.max(12, Math.round((currentVal / maxVal) * 100));
-              const isPeak = currentVal === maxVal;
+            {chartPoints && chartPoints.length > 0 ? (
+              chartPoints.map((pt, i) => {
+                const currentVal = metricView === 'revenue' ? (pt.revenue || 0) : (pt.orders || 0);
+                const maxVal = Math.max(1, ...chartPoints.map(p => metricView === 'revenue' ? (p.revenue || 0) : (p.orders || 0)));
+                const heightPercent = Math.max(12, Math.round((currentVal / maxVal) * 100));
+                const isPeak = currentVal === maxVal && maxVal > 0;
 
-              return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1.5 sm:gap-2 h-full justify-end group relative z-10">
-                  {/* Interactive Floating Tooltip */}
-                  <div className="absolute -top-10 bg-slate-900 text-white text-[10px] sm:text-[11px] px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none shadow-xl z-30 whitespace-nowrap flex items-center gap-1.5 border border-slate-700">
-                    <span className={`w-1.5 h-1.5 rounded-full ${activeChartTheme.dot}`} />
-                    <span className="font-bold">{pt.label}:</span>
-                    <span className="font-black text-amber-300">
-                      {metricView === 'revenue' ? `₹${pt.revenue.toLocaleString()}` : `${pt.orders} orders`}
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1.5 sm:gap-2 h-full justify-end group relative z-10">
+                    {/* Interactive Floating Tooltip */}
+                    <div className="absolute -top-10 bg-slate-900 text-white text-[10px] sm:text-[11px] px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none shadow-xl z-30 whitespace-nowrap flex items-center gap-1.5 border border-slate-700">
+                      <span className={`w-1.5 h-1.5 rounded-full ${activeChartTheme.dot}`} />
+                      <span className="font-bold">{pt.label}:</span>
+                      <span className="font-black text-amber-300">
+                        {metricView === 'revenue' ? `₹${(pt.revenue || 0).toLocaleString()}` : `${pt.orders || 0} orders`}
+                      </span>
+                    </div>
+
+                    {/* Slot Background & Pillar */}
+                    <div className="w-full h-full flex items-end justify-center bg-slate-100/50 hover:bg-slate-100/80 rounded-t-lg sm:rounded-t-xl transition-colors p-0.5 sm:p-1">
+                      {/* Gradient Pillar Bar */}
+                      <div
+                        className={`w-full bg-gradient-to-t ${isPeak ? activeChartTheme.peak : activeChartTheme.bar} rounded-t-md sm:rounded-t-lg transition-all duration-500 group-hover:brightness-110 group-hover:scale-x-105 shadow-sm ${isPeak ? activeChartTheme.glow : ''} relative overflow-hidden`}
+                        style={{ height: `${heightPercent}%` }}
+                      >
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-white/40" />
+                      </div>
+                    </div>
+                    
+                    {/* Label */}
+                    <span className={`text-[10px] sm:text-[11px] font-bold mt-1 truncate ${isPeak ? 'text-slate-900 font-black' : 'text-slate-500'}`}>
+                      {pt.label}
                     </span>
                   </div>
-
-                  {/* Slot Background & Pillar */}
-                  <div className="w-full h-full flex items-end justify-center bg-slate-100/50 hover:bg-slate-100/80 rounded-t-lg sm:rounded-t-xl transition-colors p-0.5 sm:p-1">
-                    {/* Gradient Pillar Bar */}
-                    <div
-                      className={`w-full bg-gradient-to-t ${isPeak ? activeChartTheme.peak : activeChartTheme.bar} rounded-t-md sm:rounded-t-lg transition-all duration-500 group-hover:brightness-110 group-hover:scale-x-105 shadow-sm ${isPeak ? activeChartTheme.glow : ''} relative overflow-hidden`}
-                      style={{ height: `${heightPercent}%` }}
-                    >
-                      <div className="absolute top-0 left-0 right-0 h-1 bg-white/40" />
-                    </div>
-                  </div>
-                  
-                  {/* Label */}
-                  <span className={`text-[10px] sm:text-[11px] font-bold mt-1 truncate ${isPeak ? 'text-slate-900 font-black' : 'text-slate-500'}`}>
-                    {pt.label}
-                  </span>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 text-xs font-medium z-10 py-12">
+                <TrendingUp className="w-8 h-8 stroke-1 text-slate-300 mb-2" />
+                <span>No analytics recorded yet for this period</span>
+              </div>
+            )}
           </div>
 
           {/* Chart Footer Stats */}
@@ -490,10 +497,10 @@ export const AdminDashboard = () => {
 
             <div className="flex items-center">
               <div className={`w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] sm:text-xs font-bold ${activeChartTheme.pill}`}>
-                {chartPoints.length > 0 ? (
+                {chartPoints && chartPoints.length > 0 ? (
                   <>
                     <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                    <span>Peak: {chartPoints.reduce((max, pt) => (metricView === 'revenue' ? pt.revenue : pt.orders) > (metricView === 'revenue' ? max.revenue : max.orders) ? pt : max, chartPoints[0])?.label || 'N/A'}</span>
+                    <span>Peak: {chartPoints.reduce((max, pt) => ((metricView === 'revenue' ? (pt?.revenue || 0) : (pt?.orders || 0)) > (metricView === 'revenue' ? (max?.revenue || 0) : (max?.orders || 0)) ? pt : max), chartPoints[0])?.label || 'N/A'}</span>
                   </>
                 ) : (
                   <span>No activity recorded yet</span>
