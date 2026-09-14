@@ -273,6 +273,14 @@ export const Checkout = () => {
     try {
       const fullAddressString = `${formData.address}, ${formData.city}, ${formData.state}, ${formData.country} - ${formData.postalCode}`;
       const payload = {
+        userId: user?._id || null,
+        userEmail: user?.email || formData.email,
+        customer: {
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
+          phone: formData.phone,
+          email: formData.email,
+          city: `${formData.city}, ${formData.state}`.trim()
+        },
         shippingAddress: {
           fullName: `${formData.firstName} ${formData.lastName}`,
           phone: formData.phone,
@@ -283,6 +291,14 @@ export const Checkout = () => {
           postalCode: formData.postalCode,
           country: formData.country
         },
+        items: items.map(item => ({
+          id: item.id || item.productId,
+          name: item.name || item.title || 'Classical Homeopathic Remedy',
+          quantity: item.quantity || 1,
+          price: item.price || 0,
+          image: item.image || '/logo.png',
+          category: item.category || 'Remedy'
+        })),
         courier: selectedCourier,
         paymentMethod: method,
         paymentStatus: method === 'UPI' ? 'Paid' : 'Pending',
@@ -295,6 +311,23 @@ export const Checkout = () => {
       const res = await orderService.createOrder(payload);
 
       if (res && res.success) {
+        // Save user's real shipping address for future visits & MyAccount
+        try {
+          const userKey = user?.email || formData.email || 'guest';
+          const savedAddr = {
+            fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+            phone: formData.phone,
+            addressLine1: formData.address,
+            addressLine2: '',
+            city: formData.city,
+            state: formData.state,
+            pincode: formData.postalCode,
+            country: formData.country
+          };
+          localStorage.setItem(`bh_address_${userKey}`, JSON.stringify(savedAddr));
+          localStorage.setItem('last_checkout_email', formData.email);
+        } catch {}
+
         setPlacedOrder(res.data);
         clearCart();
         showToast('Order confirmed successfully!', 'success');

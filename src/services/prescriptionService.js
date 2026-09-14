@@ -47,9 +47,39 @@ export const getStoredPrescriptions = () => {
 export const saveStoredPrescriptions = (prescriptions) => {
   try {
     localStorage.setItem(PRESCRIPTIONS_STORAGE_KEY, JSON.stringify(prescriptions));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('prescriptions_updated'));
+    }
   } catch (err) {
     console.warn("Could not save prescriptions to storage:", err.message);
   }
+};
+
+/**
+ * Filter prescriptions strictly for the current patient
+ */
+export const getUserPrescriptions = (user) => {
+  const all = getStoredPrescriptions();
+  if (!user) {
+    const lastEmail = typeof localStorage !== 'undefined' ? localStorage.getItem('last_checkout_email') : null;
+    if (lastEmail) {
+      return all.filter(r => (r.userEmail || r.patient?.email || '').trim().toLowerCase() === lastEmail.trim().toLowerCase());
+    }
+    return [];
+  }
+
+  const userEmail = (user.email || '').trim().toLowerCase();
+  const userPhone = (user.phone || '').replace(/\D/g, '');
+  const userId = user._id || user.id || '';
+
+  return all.filter(rx => {
+    if (userId && rx.userId && String(rx.userId) === String(userId)) return true;
+    const rEmail = (rx.userEmail || rx.patient?.email || '').trim().toLowerCase();
+    if (userEmail && rEmail && rEmail === userEmail) return true;
+    const rPhone = (rx.patient?.phone || '').replace(/\D/g, '');
+    if (userPhone && rPhone && (rPhone.endsWith(userPhone) || userPhone.endsWith(rPhone))) return true;
+    return false;
+  });
 };
 
 export const prescriptionService = {

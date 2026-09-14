@@ -25,16 +25,18 @@ import { SectionHeader } from '../components/common/SectionHeader';
 import { ScrollReveal } from '../components/common/ScrollReveal';
 import CustomPhoneInput from '../components/common/CustomPhoneInput';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import { assets } from '../assets';
 import { appointmentService } from '../services/appointmentService';
 
 export const Appointment = () => {
   const { showToast } = useToast();
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState({
-    fullName: '',
-    phone: '',
-    email: '',
+    fullName: user?.name || '',
+    phone: user?.phone || '',
+    email: user?.email || '',
     consultationType: 'In-Clinic Visit',
     date: new Date().toISOString().slice(0, 10),
     time: '10:00 AM',
@@ -104,7 +106,14 @@ export const Appointment = () => {
     }
 
     try {
-      await appointmentService.bookAppointment(formData);
+      await appointmentService.bookAppointment({
+        ...formData,
+        userId: user?._id || null,
+        userEmail: user?.email || formData.email
+      });
+      try {
+        localStorage.setItem('last_checkout_email', formData.email);
+      } catch {}
       setIsSubmitted(true);
       showToast('Appointment booked successfully! We will confirm on WhatsApp.', 'success');
     } catch (err) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   User, 
   ShoppingBag, 
@@ -33,16 +33,16 @@ import {
   Printer,
   RotateCcw
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { mockAccountData } from '../data/accountData';
 import { useToast } from '../context/ToastContext';
 import { OrderInvoiceModal } from '../components/admin/OrderInvoiceModal';
 import { PrescriptionSlipModal } from '../components/account/PrescriptionSlipModal';
-import { getStoredOrders } from '../services/orderService';
-import { getStoredAppointments } from '../services/appointmentService';
-import { getStoredPrescriptions } from '../services/prescriptionService';
+import { getStoredOrders, getUserOrders } from '../services/orderService';
+import { getStoredAppointments, getUserAppointments } from '../services/appointmentService';
+import { getStoredPrescriptions, getUserPrescriptions } from '../services/prescriptionService';
+import { cloudSyncService } from '../services/cloudSyncService';
 
 export const MyAccount = () => {
   const { user, logout, openAuthModal } = useAuth();
@@ -57,29 +57,96 @@ export const MyAccount = () => {
   const [invoiceModalOrder, setInvoiceModalOrder] = useState(null);
   const [orderFilter, setOrderFilter] = useState('all'); // 'all' | 'Processing' | 'Delivered'
 
-  // Editable Profile & Address States
-  const [address, setAddress] = useState(() => mockAccountData?.savedAddress || {
-    fullName: user?.name || 'Bharathi Patient',
-    phone: user?.phone || '+91 90258 54711',
-    addressLine1: '123 Healthcare Avenue, 2nd Cross',
-    addressLine2: 'Near City Botanical Garden',
-    city: 'Chennai',
-    state: 'Tamil Nadu',
-    pincode: '600001',
-    country: 'India'
+  // User-Isolated Real-time state
+  const [rawOrders, setRawOrders] = useState(() => getUserOrders(user));
+  const [userAppointments, setUserAppointments] = useState(() => getUserAppointments(user));
+  const [userPrescriptions, setUserPrescriptions] = useState(() => getUserPrescriptions(user));
+
+  // Listen to live updates from local checkout/booking and Firebase Firestore cloud
+  useEffect(() => {
+    const refreshLiveUserData = () => {
+      setRawOrders(getUserOrders(user));
+      setUserAppointments(getUserAppointments(user));
+      setUserPrescriptions(getUserPrescriptions(user));
+    };
+
+    refreshLiveUserData();
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('orders_updated', refreshLiveUserData);
+      window.addEventListener('appointments_updated', refreshLiveUserData);
+      window.addEventListener('prescriptions_updated', refreshLiveUserData);
+      window.addEventListener('storage', refreshLiveUserData);
+    }
+
+    // Real-time Cloud Sync Listener across devices
+    const unsubscribeCloud = cloudSyncService.listenToCloudOrders(() => {
+      refreshLiveUserData();
+    });
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('orders_updated', refreshLiveUserData);
+        window.removeEventListener('appointments_updated', refreshLiveUserData);
+        window.removeEventListener('prescriptions_updated', refreshLiveUserData);
+        window.removeEventListener('storage', refreshLiveUserData);
+      }
+      if (typeof unsubscribeCloud === 'function') unsubscribeCloud();
+    };
+  }, [user]);
+
+  // Dynamic user storage key
+  const userKey = (user?.email || user?._id || 'guest').toLowerCase();
+
+  // Editable Profile & Address States loaded from user's persistent store
+  const [address, setAddress] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`bh_address_${userKey}`);
+      if (saved) return JSON.parse(saved);
+      const defaultSaved = localStorage.getItem('bh_address_guest');
+      if (defaultSaved) return JSON.parse(defaultSaved);
+    } catch {}
+    return {
+      fullName: user?.name || 'Yuvasri Arumugasamy',
+      phone: user?.phone || '9345865212',
+      addressLine1: '201-1 S.M Kovil street Vallam',
+      addressLine2: '',
+      city: 'Tenkasi',
+      state: 'Tamil Nadu',
+      pincode: '627811',
+      country: localStorage.getItem('user_country') || 'India'
+    };
   });
   const [isEditingAddress, setIsEditingAddress] = useState(false);
 
-  const [profileData, setProfileData] = useState({
-    name: user?.name || 'Demo Customer',
-    email: user?.email || 'patient.google@example.com',
-    phone: user?.phone || '+91 90258 54711',
-    bloodGroup: 'O+',
-    allergies: 'None Reported',
-    constitutionalType: 'Calcarea Carb (Constitutional)',
-    joinedDate: 'June 2026'
+  const [profileData, setProfileData] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`bh_profile_${userKey}`);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {
+      name: user?.name || 'Yuvasri Arumugasamy',
+      email: user?.email || 'yuvasrikutty2005@gmail.com',
+      phone: user?.phone || '9345865212',
+      bloodGroup: 'B+',
+      allergies: 'None Reported',
+      constitutionalType: 'Calcarea Carb (Constitutional)',
+      joinedDate: 'September 2026'
+    };
   });
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+
+  // Real deterministic unique patient ID per patient
+  const patientId = useMemo(() => {
+    const seed = (user?.email || profileData.email || 'PATIENT').toLowerCase();
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+      hash |= 0;
+    }
+    const code = Math.abs(hash % 90000) + 10000;
+    return `#BH-PAT-${code}`;
+  }, [user, profileData.email]);
 
   // Settings preferences state
   const [notifications, setNotifications] = useState({
@@ -89,41 +156,40 @@ export const MyAccount = () => {
     refillReminders: true
   });
 
-  // Live persistent orders from storage merged with mock fallback
-  const storedOrders = getStoredOrders();
-  const rawOrdersList = storedOrders && storedOrders.length > 0 ? storedOrders : (mockAccountData?.recentOrders || []);
-  
-  const allOrders = rawOrdersList.map(raw => {
-    const orderId = raw.orderId || raw.id || 'ORD-000';
-    const dateStr = raw.createdAt 
-      ? new Date(raw.createdAt).toISOString().slice(0, 10) 
-      : (raw.date || new Date().toISOString().slice(0, 10));
-    
-    let itemsSummary = 'Dr. Bharathi Homeopathic Formulation';
-    let itemsCount = 1;
-    if (Array.isArray(raw.items) && raw.items.length > 0) {
-      itemsSummary = raw.items.map(i => i.name).join(', ');
-      itemsCount = raw.items.reduce((acc, curr) => acc + (curr.quantity || 1), 0);
-    } else if (typeof raw.items === 'string') {
-      itemsSummary = raw.items;
-      itemsCount = raw.itemsCount || 1;
-    }
+  // Map raw user orders into UI-friendly structure
+  const allOrders = useMemo(() => {
+    return rawOrders.map(raw => {
+      const orderId = raw.orderId || raw.orderNumber || raw.id || 'ORD-000';
+      const dateStr = raw.createdAt 
+        ? new Date(raw.createdAt).toISOString().slice(0, 10) 
+        : (raw.date || new Date().toISOString().slice(0, 10));
+      
+      let itemsSummary = 'Dr. Bharathi Classical Remedy';
+      let itemsCount = 1;
+      if (Array.isArray(raw.items) && raw.items.length > 0) {
+        itemsSummary = raw.items.map(i => `${i.name}${i.quantity > 1 ? ` (x${i.quantity})` : ''}`).join(', ');
+        itemsCount = raw.items.reduce((acc, curr) => acc + (curr.quantity || 1), 0);
+      } else if (typeof raw.items === 'string') {
+        itemsSummary = raw.items;
+        itemsCount = raw.itemsCount || 1;
+      }
 
-    const amount = Number(raw.total || raw.amount || 0);
-    const status = raw.orderStatus || raw.status || 'Processing';
+      const amount = Number(raw.total || raw.totalAmount || raw.amount || 0);
+      const status = raw.orderStatus || raw.status || 'Pending';
 
-    return {
-      ...raw,
-      id: orderId,
-      orderId,
-      date: dateStr,
-      items: itemsSummary,
-      itemsList: Array.isArray(raw.items) ? raw.items : null,
-      itemsCount,
-      amount,
-      status
-    };
-  });
+      return {
+        ...raw,
+        id: orderId,
+        orderId,
+        date: dateStr,
+        items: itemsSummary,
+        itemsList: Array.isArray(raw.items) ? raw.items : null,
+        itemsCount,
+        amount,
+        status
+      };
+    });
+  }, [rawOrders]);
 
   const handleReorder = (order) => {
     let reorderedCount = 0;
@@ -153,23 +219,25 @@ export const MyAccount = () => {
     navigate('/cart');
   };
 
-  const storedAppointments = getStoredAppointments();
-  const activeAppointment = (storedAppointments && storedAppointments.length > 0)
-    ? storedAppointments[0]
-    : mockAccountData?.upcomingAppointment;
+  const activeAppointment = userAppointments.length > 0 ? userAppointments[0] : null;
 
-  const storedPrescriptions = getStoredPrescriptions();
+  // Real-time dynamic counts
+  const processingOrdersCount = allOrders.filter(o => o.status.toLowerCase() === 'processing' || o.status.toLowerCase() === 'pending').length;
+  const deliveredOrdersCount = allOrders.filter(o => o.status.toLowerCase() === 'delivered').length;
 
   const navTabs = [
     { id: 'orders', label: 'Order History & Shipments', icon: ShoppingBag, count: allOrders.length },
-    { id: 'appointments', label: 'Doctor Consultations', icon: Stethoscope, count: storedAppointments?.length || 1 },
+    { id: 'appointments', label: 'Doctor Consultations', icon: Stethoscope, count: userAppointments.length },
     { id: 'address', label: 'Delivery Address Book', icon: MapPin },
-    { id: 'medical', label: 'Prescription Vault', icon: FileText, count: storedPrescriptions.length },
+    { id: 'medical', label: 'Prescription Vault', icon: FileText, count: userPrescriptions.length },
     { id: 'settings', label: 'Account & Privacy', icon: Settings },
   ];
 
   const filteredOrders = allOrders.filter(order => {
     if (orderFilter === 'all') return true;
+    if (orderFilter.toLowerCase() === 'processing') {
+      return order.status.toLowerCase() === 'processing' || order.status.toLowerCase() === 'pending';
+    }
     return order.status.toLowerCase() === orderFilter.toLowerCase();
   });
 
@@ -197,7 +265,7 @@ export const MyAccount = () => {
                   {user?.picture ? (
                     <img src={user.picture} alt={user?.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span>{user?.name ? user.name.charAt(0).toUpperCase() : 'D'}</span>
+                    <span>{(user?.name || profileData.name || 'Y').charAt(0).toUpperCase()}</span>
                   )}
                 </div>
                 {/* Active Live Pulse Badge */}
@@ -224,7 +292,7 @@ export const MyAccount = () => {
                 
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 pt-2 sm:pt-1 text-[11px] sm:text-xs text-slate-200">
                   <span className="bg-white/10 px-2.5 py-1 sm:px-3 sm:py-1 rounded-xl border border-white/15 font-mono text-cyan-200 backdrop-blur-sm shadow-sm whitespace-nowrap">
-                    ID: <strong className="text-white font-bold">#BH-PATIENT-88902</strong>
+                    ID: <strong className="text-white font-bold">{patientId}</strong>
                   </span>
                   <span className="bg-white/10 px-2.5 py-1 sm:px-3 sm:py-1 rounded-xl border border-white/15 text-amber-300 font-semibold backdrop-blur-sm shadow-sm whitespace-nowrap">
                     Constitutional Homeopathy
@@ -242,8 +310,10 @@ export const MyAccount = () => {
                   <span>Total Orders</span>
                   <ShoppingBag className="w-4 h-4 text-brandOrange-400 group-hover:scale-110 transition-transform" />
                 </div>
-                <div className="text-xl font-black text-white">3 Orders</div>
-                <span className="text-[10px] font-bold text-amber-300 block">1 Processing</span>
+                <div className="text-xl font-black text-white">{allOrders.length} {allOrders.length === 1 ? 'Order' : 'Orders'}</div>
+                <span className="text-[10px] font-bold text-amber-300 block">
+                  {processingOrdersCount > 0 ? `${processingOrdersCount} In Progress` : (allOrders.length > 0 ? 'All Completed' : '0 Orders')}
+                </span>
               </div>
               
               <div className="bg-white/10 backdrop-blur-xl p-4 rounded-2xl border border-white/15 text-center sm:text-left space-y-1 hover:border-amber-400/40 hover:bg-white/15 transition-all shadow-lg group">
@@ -251,8 +321,12 @@ export const MyAccount = () => {
                   <span>Consultations</span>
                   <Calendar className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
                 </div>
-                <div className="text-xl font-black text-amber-300">1 Upcoming</div>
-                <span className="text-[10px] font-bold text-emerald-300 block">Dr. Bharathi</span>
+                <div className="text-xl font-black text-amber-300">
+                  {userAppointments.length} {userAppointments.length === 1 ? 'Booking' : 'Bookings'}
+                </div>
+                <span className="text-[10px] font-bold text-emerald-300 block">
+                  {activeAppointment ? 'Dr. Bharathi (Active)' : '0 Scheduled'}
+                </span>
               </div>
 
               <div className="col-span-2 sm:col-span-1 bg-white/10 backdrop-blur-xl p-4 rounded-2xl border border-white/15 flex flex-col justify-between hover:border-rose-400/40 hover:bg-white/15 transition-all shadow-lg">
@@ -384,7 +458,7 @@ export const MyAccount = () => {
                         orderFilter === 'Processing' ? 'bg-amber-400 text-amber-950 shadow-xs font-black' : 'hover:text-navy-950'
                       }`}
                     >
-                      Processing (1)
+                      Processing ({processingOrdersCount})
                     </button>
                     <button
                       onClick={() => setOrderFilter('Delivered')}
@@ -392,132 +466,153 @@ export const MyAccount = () => {
                         orderFilter === 'Delivered' ? 'bg-emerald-500 text-white shadow-xs font-black' : 'hover:text-navy-950'
                       }`}
                     >
-                      Delivered (2)
+                      Delivered ({deliveredOrdersCount})
                     </button>
                   </div>
                 </div>
 
                 {/* Orders List */}
                 <div className="space-y-6">
-                  {filteredOrders.map((order) => {
-                    const isProcessing = order.status === 'Processing';
-                    return (
-                      <div 
-                        key={order.id} 
-                        className="rounded-3xl bg-slate-50/80 border border-slate-200/90 p-6 space-y-5 hover:border-brandOrange-400/80 hover:shadow-lg transition-all duration-200"
-                      >
-                        {/* Order Header */}
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                          <div className="space-y-1">
-                            <div className="flex flex-wrap items-center gap-3">
-                              <span className="font-mono font-black text-base text-navy-950 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-2xs whitespace-nowrap">
-                                #{order.id}
-                              </span>
-                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap ${
-                                isProcessing 
-                                  ? 'bg-amber-100 text-amber-900 border border-amber-300/80 animate-pulse' 
-                                  : 'bg-emerald-100 text-emerald-900 border border-emerald-300/80'
-                              }`}>
-                                <span className={`w-2 h-2 rounded-full ${isProcessing ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                                {order.status}
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-400 font-medium pl-0.5">Placed on {order.date}</p>
-                          </div>
-
-                          <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
-                            <div className="text-right">
-                              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total Paid</span>
-                              <span className="font-black text-xl text-brandOrange-600">₹{order.amount}</span>
-                            </div>
-                            
-                            <button
-                              onClick={() => setSelectedOrderForTracking(order)}
-                              className="px-4 py-2.5 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white text-xs font-black rounded-2xl shadow-md transition-all cursor-pointer flex items-center gap-2 group"
-                            >
-                              <Truck className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
-                              <span>Track Live Order</span>
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Prescribed Items Banner */}
-                        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-bold text-slate-800 shadow-2xs">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                              <Package className="w-5 h-5 text-brandOrange-500" />
-                            </div>
-                            <div>
-                              <h4 className="text-navy-950 font-extrabold text-sm">{order.items}</h4>
-                              <p className="text-[11px] text-slate-400 font-medium">{order.itemsCount} Constitutional Remedies Enclosed</p>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 self-stretch sm:self-center w-full sm:w-auto mt-3 sm:mt-0">
-                            <button
-                              type="button"
-                              onClick={() => handleReorder(order)}
-                              className="w-full sm:w-auto px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center sm:justify-start gap-1.5 border border-emerald-200/70 shadow-2xs active:scale-95"
-                              title="Add remedies from this order back into your cart"
-                            >
-                              <RotateCcw className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>Re-order</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setInvoiceModalOrder(order)}
-                              className="w-full sm:w-auto px-3.5 py-1.5 bg-orange-50 hover:bg-orange-100 text-brandOrange-700 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center sm:justify-start gap-1.5 border border-orange-200/60 shadow-2xs"
-                              title="Print / Save Medical Bill Invoice"
-                            >
-                              <Printer className="w-3.5 h-3.5 text-brandOrange-500" />
-                              <span>Medical Bill</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setSelectedPrescription(order)}
-                              className="w-full sm:w-auto px-3.5 py-1.5 bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-brandOrange-700 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center sm:justify-start gap-1.5"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                              <span>View Medicines</span>
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Interactive Step Progress Stepper */}
-                        <div className="pt-2 space-y-2">
-                          <div className="flex justify-between text-[9px] sm:text-[11px] font-black text-slate-500">
-                            <span className="text-emerald-700 text-center">
-                              <span className="hidden sm:inline">1. Order Placed ✓</span>
-                              <span className="sm:hidden">Placed</span>
-                            </span>
-                            <span className="text-emerald-700 text-center">
-                              <span className="hidden sm:inline">2. Remedy Formulated ✓</span>
-                              <span className="sm:hidden">Packed</span>
-                            </span>
-                            <span className={`text-center ${isProcessing ? 'text-amber-600 font-black animate-pulse' : 'text-emerald-700'}`}>
-                              <span className="hidden sm:inline">{isProcessing ? '3. Out for Dispatch 🚚' : '3. Dispatched ✓'}</span>
-                              <span className="sm:hidden">{isProcessing ? 'Shipping' : 'Shipped'}</span>
-                            </span>
-                            <span className={`text-center ${isProcessing ? 'text-slate-400' : 'text-emerald-700 font-black'}`}>
-                              <span className="hidden sm:inline">{isProcessing ? '4. Delivery Expected' : '4. Delivered 🏡'}</span>
-                              <span className="sm:hidden">{isProcessing ? 'Waiting' : 'Delivered'}</span>
-                            </span>
-                          </div>
-
-                          <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden p-0.5">
-                            <div 
-                              className={`h-full rounded-full transition-all duration-500 ${
-                                isProcessing 
-                                  ? 'bg-gradient-to-r from-emerald-500 via-amber-400 to-amber-500 w-3/4 animate-pulse' 
-                                  : 'bg-emerald-500 w-full'
-                              }`}
-                            />
-                          </div>
-                        </div>
-
+                  {filteredOrders.length === 0 ? (
+                    <div className="text-center py-14 px-6 rounded-3xl bg-slate-50 border border-dashed border-slate-200 space-y-4">
+                      <div className="w-16 h-16 mx-auto rounded-2xl bg-orange-50 text-brandOrange-500 flex items-center justify-center shadow-inner">
+                        <ShoppingBag className="w-8 h-8" />
                       </div>
-                    );
-                  })}
+                      <div className="space-y-1">
+                        <h3 className="font-black text-lg text-navy-950">No Live Orders Found</h3>
+                        <p className="text-xs text-slate-500 font-medium max-w-md mx-auto">
+                          You don't have any medicine shipments under this account yet. When you place an order, live formulation progress and tracking details will appear here automatically.
+                        </p>
+                      </div>
+                      <Link
+                        to="/shop"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white text-xs font-black rounded-xl shadow-md hover:shadow-orange-500/25 transition-all"
+                      >
+                        <ShoppingBag className="w-4 h-4" />
+                        <span>Explore Remedies & Shop</span>
+                      </Link>
+                    </div>
+                  ) : (
+                    filteredOrders.map((order) => {
+                      const isProcessing = order.status === 'Processing' || order.status === 'Pending';
+                      return (
+                        <div 
+                          key={order.id} 
+                          className="rounded-3xl bg-slate-50/80 border border-slate-200/90 p-6 space-y-5 hover:border-brandOrange-400/80 hover:shadow-lg transition-all duration-200"
+                        >
+                          {/* Order Header */}
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div className="space-y-1">
+                              <div className="flex flex-wrap items-center gap-3">
+                                <span className="font-mono font-black text-base text-navy-950 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-2xs whitespace-nowrap">
+                                  #{order.id}
+                                </span>
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap ${
+                                  isProcessing 
+                                    ? 'bg-amber-100 text-amber-900 border border-amber-300/80 animate-pulse' 
+                                    : 'bg-emerald-100 text-emerald-900 border border-emerald-300/80'
+                                }`}>
+                                  <span className={`w-2 h-2 rounded-full ${isProcessing ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                                  {order.status}
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-400 font-medium pl-0.5">Placed on {order.date}</p>
+                            </div>
+
+                            <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
+                              <div className="text-right">
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total Paid</span>
+                                <span className="font-black text-xl text-brandOrange-600">₹{order.amount}</span>
+                              </div>
+                              
+                              <button
+                                onClick={() => setSelectedOrderForTracking(order)}
+                                className="px-4 py-2.5 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white text-xs font-black rounded-2xl shadow-md transition-all cursor-pointer flex items-center gap-2 group"
+                              >
+                                <Truck className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
+                                <span>Track Live Order</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Prescribed Items Banner */}
+                          <div className="p-4 rounded-2xl bg-white border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-bold text-slate-800 shadow-2xs">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                                <Package className="w-5 h-5 text-brandOrange-500" />
+                              </div>
+                              <div>
+                                <h4 className="text-navy-950 font-extrabold text-sm">{order.items}</h4>
+                                <p className="text-[11px] text-slate-400 font-medium">{order.itemsCount} Constitutional Remedies Enclosed</p>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 self-stretch sm:self-center w-full sm:w-auto mt-3 sm:mt-0">
+                              <button
+                                type="button"
+                                onClick={() => handleReorder(order)}
+                                className="w-full sm:w-auto px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center sm:justify-start gap-1.5 border border-emerald-200/70 shadow-2xs active:scale-95"
+                                title="Add remedies from this order back into your cart"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>Re-order</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setInvoiceModalOrder(order)}
+                                className="w-full sm:w-auto px-3.5 py-1.5 bg-orange-50 hover:bg-orange-100 text-brandOrange-700 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center sm:justify-start gap-1.5 border border-orange-200/60 shadow-2xs"
+                                title="Print / Save Medical Bill Invoice"
+                              >
+                                <Printer className="w-3.5 h-3.5 text-brandOrange-500" />
+                                <span>Medical Bill</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setSelectedPrescription(order)}
+                                className="w-full sm:w-auto px-3.5 py-1.5 bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-brandOrange-700 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center sm:justify-start gap-1.5"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>View Medicines</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Interactive Step Progress Stepper */}
+                          <div className="pt-2 space-y-2">
+                            <div className="flex justify-between text-[9px] sm:text-[11px] font-black text-slate-500">
+                              <span className="text-emerald-700 text-center">
+                                <span className="hidden sm:inline">1. Order Placed ✓</span>
+                                <span className="sm:hidden">Placed</span>
+                              </span>
+                              <span className="text-emerald-700 text-center">
+                                <span className="hidden sm:inline">2. Remedy Formulated ✓</span>
+                                <span className="sm:hidden">Packed</span>
+                              </span>
+                              <span className={`text-center ${isProcessing ? 'text-amber-600 font-black animate-pulse' : 'text-emerald-700'}`}>
+                                <span className="hidden sm:inline">{isProcessing ? '3. Out for Dispatch 🚚' : '3. Dispatched ✓'}</span>
+                                <span className="sm:hidden">{isProcessing ? 'Shipping' : 'Shipped'}</span>
+                              </span>
+                              <span className={`text-center ${isProcessing ? 'text-slate-400' : 'text-emerald-700 font-black'}`}>
+                                <span className="hidden sm:inline">{isProcessing ? '4. Delivery Expected' : '4. Delivered 🏡'}</span>
+                                <span className="sm:hidden">{isProcessing ? 'Waiting' : 'Delivered'}</span>
+                              </span>
+                            </div>
+
+                            <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden p-0.5">
+                              <div 
+                                className={`h-full rounded-full transition-all duration-500 ${
+                                  isProcessing 
+                                    ? 'bg-gradient-to-r from-emerald-500 via-amber-400 to-amber-500 w-3/4 animate-pulse' 
+                                    : 'bg-emerald-500 w-full'
+                                }`}
+                              />
+                            </div>
+                          </div>
+
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
 
               </div>
@@ -538,92 +633,111 @@ export const MyAccount = () => {
                     <p className="text-xs text-slate-500 font-medium">Your appointments & medical records with Dr. Bharathi</p>
                   </div>
 
-                  <button
-                    onClick={() => showToast('Navigating to consultation booking system...', 'info')}
+                  <Link
+                    to="/appointment"
                     className="px-5 py-2.5 bg-gradient-to-r from-brandOrange-500 to-amber-500 text-white font-black text-xs rounded-2xl shadow-lg hover:shadow-orange-500/30 transition-all cursor-pointer flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Book New Consultation</span>
-                  </button>
+                  </Link>
                 </div>
 
-                {/* Main Upcoming Appointment Spotlight Card */}
-                {activeAppointment && (
-                  <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#0b344d] via-[#124d70] to-[#0b344d] text-white space-y-6 shadow-2xl border border-white/10 relative overflow-hidden">
-                    
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
+                {/* Consultations Content */}
+                {userAppointments.length === 0 ? (
+                  <div className="text-center py-14 px-6 rounded-3xl bg-slate-50 border border-dashed border-slate-200 space-y-4">
+                    <div className="w-16 h-16 mx-auto rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center shadow-inner">
+                      <Stethoscope className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="font-black text-lg text-navy-950">No Consultations Scheduled</h3>
+                      <p className="text-xs text-slate-500 font-medium max-w-md mx-auto">
+                        You have not scheduled any doctor consultations yet. Connect with Dr. Bharathi (B.H.M.S, M.D.) via video or clinic visit for personalized constitutional treatment.
+                      </p>
+                    </div>
+                    <Link
+                      to="/appointment"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white text-xs font-black rounded-xl shadow-md hover:shadow-orange-500/25 transition-all"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Book Doctor Consultation</span>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Main Upcoming Appointment Spotlight Card */}
+                    {activeAppointment && (
+                      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#0b344d] via-[#124d70] to-[#0b344d] text-white space-y-6 shadow-2xl border border-white/10 relative overflow-hidden">
+                        
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
 
-                    <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/15 pb-5">
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white flex items-center justify-center font-black text-2xl shadow-xl ring-2 ring-white/20">
-                          👩‍⚕️
+                        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/15 pb-5">
+                          <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white flex items-center justify-center font-black text-2xl shadow-xl ring-2 ring-white/20">
+                              👩‍⚕️
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-black text-amber-300 uppercase tracking-widest block">CHIEF HOMEOPATH CONSULTATION</span>
+                              <h3 className="font-black text-xl text-white">{activeAppointment.doctor || 'Dr. Bharathi (Homeopathic Doctor)'}</h3>
+                              <p className="text-xs text-slate-300 font-medium">B.H.M.S, M.D. (Homeopathy) • 15+ Yrs Exp</p>
+                            </div>
+                          </div>
+
+                          <span className="px-3.5 py-1.5 bg-amber-400/20 border border-amber-300/40 rounded-full text-xs font-black text-amber-300 uppercase tracking-wider backdrop-blur-md">
+                            {activeAppointment.status || 'Confirmed'}
+                          </span>
                         </div>
-                        <div>
-                          <span className="text-[10px] font-black text-amber-300 uppercase tracking-widest block">CHIEF HOMEOPATH CONSULTATION</span>
-                          <h3 className="font-black text-xl text-white">{activeAppointment.doctor || 'Dr. Bharathi (Homeopathic Doctor)'}</h3>
-                          <p className="text-xs text-slate-300 font-medium">B.H.M.S, M.D. (Homeopathy) • 15+ Yrs Exp</p>
+
+                        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 space-y-0.5">
+                            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">📅 Date</span>
+                            <p className="font-extrabold text-base text-white">{activeAppointment.date}</p>
+                          </div>
+
+                          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 space-y-0.5">
+                            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">⏰ Scheduled Time</span>
+                            <p className="font-extrabold text-base text-amber-300">{activeAppointment.time}</p>
+                          </div>
+
+                          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 space-y-0.5">
+                            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">🏥 Consultation Mode</span>
+                            <p className="font-extrabold text-base text-white">{activeAppointment.consultationMode || activeAppointment.type || 'In-Clinic'}</p>
+                          </div>
                         </div>
+
+                        <div className="relative z-10 p-4 rounded-2xl bg-white/5 border border-white/10 text-xs text-slate-200 font-medium leading-relaxed">
+                          <strong className="text-amber-300">Consultation Focus:</strong> {activeAppointment.concern || activeAppointment.notes || 'Homeopathic Constitutional Care'}
+                        </div>
+
+                        <div className="relative z-10 flex flex-wrap items-center gap-3 pt-1">
+                          <button
+                            onClick={() => showToast('Clinic Helpline: +91 90258 54711', 'info')}
+                            className="px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2"
+                          >
+                            <PhoneCall className="w-4 h-4 text-amber-300" />
+                            <span>Contact Clinic Reception</span>
+                          </button>
+                        </div>
+
                       </div>
+                    )}
 
-                      <span className="px-3.5 py-1.5 bg-amber-400/20 border border-amber-300/40 rounded-full text-xs font-black text-amber-300 uppercase tracking-wider backdrop-blur-md">
-                        {activeAppointment.status || 'Confirmed'}
-                      </span>
-                    </div>
-
-                    <div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 space-y-0.5">
-                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">📅 Date</span>
-                        <p className="font-extrabold text-base text-white">{activeAppointment.date}</p>
+                    {/* Additional Consultations List */}
+                    {userAppointments.length > 1 && (
+                      <div className="space-y-3 pt-2">
+                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">Previous & Additional Appointments</h4>
+                        {userAppointments.slice(1).map((apt) => (
+                          <div key={apt.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                            <div>
+                              <p className="font-bold text-navy-950 text-xs">{apt.concern || 'Homeopathy Consultation'}</p>
+                              <p className="text-[11px] text-slate-500">{apt.date} at {apt.time} • {apt.consultationMode || 'In-Clinic'}</p>
+                            </div>
+                            <span className="px-2.5 py-1 bg-slate-200 text-slate-700 text-[10px] font-bold rounded-full">
+                              {apt.status || 'Scheduled'}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-
-                      <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 space-y-0.5">
-                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">⏰ Scheduled Time</span>
-                        <p className="font-extrabold text-base text-amber-300">{activeAppointment.time}</p>
-                      </div>
-
-                      <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 space-y-0.5">
-                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">🏥 Consultation Mode</span>
-                        <p className="font-extrabold text-base text-white">{activeAppointment.consultationMode || activeAppointment.type || 'Clinic Visit'}</p>
-                      </div>
-                    </div>
-
-                    <div className="relative z-10 p-4 rounded-2xl bg-white/5 border border-white/10 text-xs text-slate-200 font-medium leading-relaxed">
-                      <strong className="text-amber-300">Consultation Focus:</strong> {activeAppointment.concern || activeAppointment.notes || 'Homeopathic Constitutional Care'}
-                    </div>
-
-                    <div className="relative z-10 flex flex-wrap items-center gap-3 pt-1">
-                      <button
-                        onClick={() => {
-                          const rx = (storedPrescriptions && storedPrescriptions.length > 0)
-                            ? storedPrescriptions[0]
-                            : {
-                                prescriptionId: 'RX-2026-8801',
-                                patient: { name: user?.name || 'Valued Patient', phone: user?.phone || '+91 90258 54711' },
-                                diagnosis: activeAppointment.concern || 'Homeopathic Constitutional Care',
-                                remedies: [
-                                  { name: 'Rhus Toxicodendron 200CH', dosage: '4 pills twice daily after meals', duration: '15 Days' },
-                                  { name: 'Arnica Montana 30C Liquid Drops', dosage: '3 drops in lukewarm water at bedtime', duration: '15 Days' }
-                                ],
-                                dietRestrictions: 'Avoid raw onions, garlic, and caffeine 30 mins before taking remedies.',
-                                followUpDate: activeAppointment.date || 'After 15 Days'
-                              };
-                          setSelectedPrescription(rx);
-                        }}
-                        className="px-5 py-2.5 bg-white hover:bg-slate-100 text-navy-950 text-xs font-black rounded-xl shadow-lg transition-all cursor-pointer flex items-center gap-2"
-                      >
-                        <Download className="w-4 h-4 text-brandOrange-500" />
-                        <span>View / Print Prescription PDF</span>
-                      </button>
-                      
-                      <button
-                        onClick={() => showToast('Clinic Helpline: +91 90258 54711', 'info')}
-                        className="px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2"
-                      >
-                        <PhoneCall className="w-4 h-4 text-amber-300" />
-                        <span>Contact Clinic Reception</span>
-                      </button>
-                    </div>
-
+                    )}
                   </div>
                 )}
 
@@ -675,6 +789,9 @@ export const MyAccount = () => {
                 ) : (
                   <form onSubmit={(e) => {
                     e.preventDefault();
+                    try {
+                      localStorage.setItem(`bh_address_${userKey}`, JSON.stringify(address));
+                    } catch {}
                     setIsEditingAddress(false);
                     showToast('Delivery address updated successfully', 'success');
                   }} className="space-y-4 max-w-xl bg-slate-50 p-6 rounded-3xl border border-slate-200">
@@ -785,12 +902,27 @@ export const MyAccount = () => {
                 <div className="space-y-4 pt-2">
                   <h3 className="text-sm font-black text-navy-950 uppercase tracking-wider">Active Digital Prescriptions</h3>
 
-                  {storedPrescriptions.length === 0 ? (
-                    <div className="p-8 text-center bg-slate-50 rounded-2xl border border-slate-200/80">
-                      <p className="text-xs text-slate-500 font-semibold">No digital prescriptions issued yet.</p>
+                  {userPrescriptions.length === 0 ? (
+                    <div className="text-center py-14 px-6 rounded-3xl bg-slate-50 border border-dashed border-slate-200 space-y-4">
+                      <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 text-brandOrange-500 flex items-center justify-center shadow-inner">
+                        <FileText className="w-8 h-8" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="font-black text-lg text-navy-950">Prescription Vault is Empty</h3>
+                        <p className="text-xs text-slate-500 font-medium max-w-md mx-auto">
+                          No digital prescriptions have been issued to this patient account yet. Dr. Bharathi will generate your official homeopathic prescription slip with dosage instructions following your consultation.
+                        </p>
+                      </div>
+                      <Link
+                        to="/appointment"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-navy-950 hover:bg-brandOrange-500 text-white text-xs font-black rounded-xl shadow-md transition-all"
+                      >
+                        <Stethoscope className="w-4 h-4" />
+                        <span>Schedule Consultation for Rx</span>
+                      </Link>
                     </div>
                   ) : (
-                    storedPrescriptions.map((rx) => (
+                    userPrescriptions.map((rx) => (
                       <div key={rx.id} className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
@@ -931,7 +1063,7 @@ export const MyAccount = () => {
               </div>
               <div>
                 <h3 className="font-black text-lg text-navy-950">Order Tracking #{selectedOrderForTracking.id}</h3>
-                <p className="text-xs text-slate-500 font-medium">BlueDart Express Waybill: <strong className="font-mono text-navy-950">BD-998234-IN</strong></p>
+                <p className="text-xs text-slate-500 font-medium">{selectedOrderForTracking.courierPartner || selectedOrderForTracking.courier || 'ST COURIER'} Waybill: <strong className="font-mono text-navy-950">{selectedOrderForTracking.trackingNumber || `ST-${selectedOrderForTracking.id}`}</strong></p>
               </div>
             </div>
 
@@ -944,7 +1076,7 @@ export const MyAccount = () => {
                 </div>
                 <div>
                   <h4 className="font-bold text-xs text-navy-950">Order Received & Payment Verified</h4>
-                  <p className="text-[11px] text-slate-400">August 20, 2026 • 10:30 AM</p>
+                  <p className="text-[11px] text-slate-400">{selectedOrderForTracking.date || 'Today'} • Confirmed</p>
                 </div>
               </div>
 
@@ -953,28 +1085,34 @@ export const MyAccount = () => {
                   ✓
                 </div>
                 <div>
-                  <h4 className="font-bold text-xs text-navy-950">Formulated by Dr. Bharathi Clinic</h4>
-                  <p className="text-[11px] text-slate-400">August 21, 2026 • 02:15 PM</p>
+                  <h4 className="font-bold text-xs text-navy-950">Formulated by Dr. Bharathi Clinic Dispensary</h4>
+                  <p className="text-[11px] text-slate-400">Classical Homeopathy Laboratory</p>
                 </div>
               </div>
 
               <div className="relative flex items-start gap-4">
-                <div className="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-black z-10 shrink-0 ring-4 ring-white shadow-md animate-pulse">
+                <div className={`w-7 h-7 rounded-full text-white flex items-center justify-center text-xs font-black z-10 shrink-0 ring-4 ring-white ${selectedOrderForTracking.status?.toLowerCase() === 'delivered' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}>
                   🚚
                 </div>
                 <div>
-                  <h4 className="font-bold text-xs text-amber-700">In Transit - Shipped via Courier</h4>
-                  <p className="text-[11px] text-slate-400">Hub: Chennai Main Sorting Facility</p>
+                  <h4 className={`font-bold text-xs ${selectedOrderForTracking.status?.toLowerCase() === 'delivered' ? 'text-emerald-700' : 'text-amber-700'}`}>
+                    {selectedOrderForTracking.status?.toLowerCase() === 'delivered' ? 'Dispatched & Transit Completed' : 'In Transit - Out with Courier'}
+                  </h4>
+                  <p className="text-[11px] text-slate-400">Partner: {selectedOrderForTracking.courierPartner || selectedOrderForTracking.courier || 'ST COURIER'}</p>
                 </div>
               </div>
 
-              <div className="relative flex items-start gap-4 opacity-50">
-                <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-black z-10 shrink-0 ring-4 ring-white">
+              <div className={`relative flex items-start gap-4 ${selectedOrderForTracking.status?.toLowerCase() === 'delivered' ? '' : 'opacity-60'}`}>
+                <div className={`w-7 h-7 rounded-full text-white flex items-center justify-center text-xs font-black z-10 shrink-0 ring-4 ring-white ${selectedOrderForTracking.status?.toLowerCase() === 'delivered' ? 'bg-emerald-500' : 'bg-slate-200 text-slate-500'}`}>
                   🏡
                 </div>
                 <div>
-                  <h4 className="font-bold text-xs text-slate-700">Estimated Home Delivery</h4>
-                  <p className="text-[11px] text-slate-400">Expected by August 24, 2026</p>
+                  <h4 className="font-bold text-xs text-slate-700">
+                    {selectedOrderForTracking.status?.toLowerCase() === 'delivered' ? 'Delivered to Patient ✓' : 'Estimated Patient Delivery'}
+                  </h4>
+                  <p className="text-[11px] text-slate-400">
+                    {selectedOrderForTracking.shippingAddress?.city ? `Destination: ${selectedOrderForTracking.shippingAddress.city}` : 'To Registered Address'}
+                  </p>
                 </div>
               </div>
 

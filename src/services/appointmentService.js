@@ -66,9 +66,43 @@ export const getStoredAppointments = () => {
 export const saveStoredAppointments = (appointments) => {
   try {
     localStorage.setItem(APPOINTMENTS_STORAGE_KEY, JSON.stringify(appointments));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('appointments_updated'));
+    }
   } catch (err) {
     console.warn("Could not save appointments to storage:", err.message);
   }
+};
+
+/**
+ * Filter appointments strictly for the logged-in patient
+ * Isolates real-time patient appointments
+ */
+export const getUserAppointments = (user) => {
+  const all = getStoredAppointments();
+  if (!user) {
+    const lastEmail = typeof localStorage !== 'undefined' ? localStorage.getItem('last_checkout_email') : null;
+    if (lastEmail) {
+      return all.filter(a => {
+        const aEmail = (a.userEmail || a.patient?.email || '').trim().toLowerCase();
+        return aEmail === lastEmail.trim().toLowerCase();
+      });
+    }
+    return [];
+  }
+
+  const userEmail = (user.email || '').trim().toLowerCase();
+  const userPhone = (user.phone || '').replace(/\D/g, '');
+  const userId = user._id || user.id || '';
+
+  return all.filter(apt => {
+    if (userId && apt.userId && String(apt.userId) === String(userId)) return true;
+    const aEmail = (apt.userEmail || apt.patient?.email || '').trim().toLowerCase();
+    if (userEmail && aEmail && aEmail === userEmail) return true;
+    const aPhone = (apt.patient?.phone || '').replace(/\D/g, '');
+    if (userPhone && aPhone && (aPhone.endsWith(userPhone) || userPhone.endsWith(aPhone))) return true;
+    return false;
+  });
 };
 
 export const appointmentService = {
@@ -80,6 +114,8 @@ export const appointmentService = {
     const newAppointment = {
       id: 'apt-' + Date.now(),
       appointmentId,
+      userId: formData.userId || null,
+      userEmail: formData.email || formData.userEmail || '',
       patient: {
         name: formData.fullName || 'Patient',
         phone: formData.phone || '',

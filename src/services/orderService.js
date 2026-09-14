@@ -109,9 +109,49 @@ export const getStoredOrders = () => {
 export const saveStoredOrders = (orders) => {
   try {
     localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('orders_updated'));
+    }
   } catch (err) {
     console.warn("Could not save orders to storage:", err.message);
   }
+};
+
+/**
+ * Filter orders strictly for the current patient / user
+ * Ensures real-time data isolation so patients never see other people's orders
+ */
+export const getUserOrders = (user) => {
+  const allOrders = getStoredOrders();
+  if (!user) {
+    const lastEmail = typeof localStorage !== 'undefined' ? localStorage.getItem('last_checkout_email') : null;
+    if (lastEmail) {
+      return allOrders.filter(o => {
+        const oEmail = (o.userEmail || o.customer?.email || o.shippingAddress?.email || '').trim().toLowerCase();
+        return oEmail === lastEmail.trim().toLowerCase();
+      });
+    }
+    return [];
+  }
+
+  const userEmail = (user.email || '').trim().toLowerCase();
+  const userPhone = (user.phone || '').replace(/\D/g, '');
+  const userId = user._id || user.id || '';
+
+  return allOrders.filter(order => {
+    // 1. Matched by User ID
+    if (userId && order.userId && String(order.userId) === String(userId)) return true;
+
+    // 2. Matched by Email address
+    const oEmail = (order.userEmail || order.customer?.email || order.shippingAddress?.email || '').trim().toLowerCase();
+    if (userEmail && oEmail && oEmail === userEmail) return true;
+
+    // 3. Matched by Phone number (last 10 digits comparison)
+    const oPhone = (order.customer?.phone || order.shippingAddress?.phone || '').replace(/\D/g, '');
+    if (userPhone && oPhone && (oPhone.endsWith(userPhone) || userPhone.endsWith(oPhone))) return true;
+
+    return false;
+  });
 };
 
 export const orderService = {
@@ -123,6 +163,8 @@ export const orderService = {
       id: 'ord-' + Date.now(),
       orderId: newOrderNumber,
       orderNumber: newOrderNumber,
+      userId: payload.userId || null,
+      userEmail: payload.userEmail || payload.shippingAddress?.email || '',
       createdAt: new Date().toISOString(),
       customer: {
         name: payload.shippingAddress?.fullName || 'Online Patient',
@@ -138,7 +180,7 @@ export const orderService = {
       shippingAddress: payload.shippingAddress || {}
     };
 
-    // Save directly to admin store so it immediately appears in Admin Orders
+    // Save directly to store & trigger real-time update
     const currentOrders = getStoredOrders();
     saveStoredOrders([newOrder, ...currentOrders]);
 
