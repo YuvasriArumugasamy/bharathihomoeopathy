@@ -175,7 +175,7 @@ export const MyAccount = () => {
 
   return (
     <div className="min-h-screen bg-slate-50/60 pb-16 pt-6 font-sans">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 w-full overflow-x-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 w-full">
         
         {/* ========================================================================= */}
         {/* 1. HERO BANNER - LUXURY DARK MEDICAL TEAL GRADIENT WITH GLASS BADGES */}
