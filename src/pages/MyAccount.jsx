@@ -409,11 +409,11 @@ export const MyAccount = () => {
                         {/* Order Header */}
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                           <div className="space-y-1">
-                            <div className="flex items-center gap-3">
-                              <span className="font-mono font-black text-base text-navy-950 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-2xs">
+                            <div className="flex flex-wrap items-center gap-3">
+                              <span className="font-mono font-black text-base text-navy-950 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-2xs whitespace-nowrap">
                                 #{order.id}
                               </span>
-                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
+                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap ${
                                 isProcessing 
                                   ? 'bg-amber-100 text-amber-900 border border-amber-300/80 animate-pulse' 
                                   : 'bg-emerald-100 text-emerald-900 border border-emerald-300/80'
