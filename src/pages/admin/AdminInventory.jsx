@@ -42,12 +42,18 @@ export const AdminInventory = () => {
       const saved = localStorage.getItem('admin_inventory_history_store');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(h => !h.id?.startsWith('inv-hist-'));
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem('admin_inventory_history_store', JSON.stringify(cleaned));
+          }
+          return cleaned;
+        }
       }
     } catch {
       // fallback
     }
-    return initialInventoryHistory;
+    return [];
   });
 
   const [search, setSearch] = useState('');

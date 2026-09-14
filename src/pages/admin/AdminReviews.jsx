@@ -15,12 +15,18 @@ export const AdminReviews = () => {
       const saved = localStorage.getItem('admin_reviews_store');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(r => !r.id?.includes('demo'));
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem('admin_reviews_store', JSON.stringify(cleaned));
+          }
+          return cleaned;
+        }
       }
     } catch {
       // fallback
     }
-    return initialAdminReviews;
+    return [];
   });
   const [filterStatus, setFilterStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');

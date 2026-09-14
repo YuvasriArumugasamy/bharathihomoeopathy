@@ -15,12 +15,18 @@ export const AdminOffers = () => {
       const saved = localStorage.getItem('admin_coupons_store');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(c => !c.id?.includes('demo'));
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem('admin_coupons_store', JSON.stringify(cleaned));
+          }
+          return cleaned;
+        }
       }
     } catch {
       // fallback
     }
-    return initialAdminCoupons;
+    return [];
   });
 
   const [offers, setOffers] = useState(() => {
@@ -28,12 +34,18 @@ export const AdminOffers = () => {
       const saved = localStorage.getItem('admin_offers_store');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(o => !o.id?.includes('demo'));
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem('admin_offers_store', JSON.stringify(cleaned));
+          }
+          return cleaned;
+        }
       }
     } catch {
       // fallback
     }
-    return initialAdminOffers;
+    return [];
   });
 
   const [couponModalOpen, setCouponModalOpen] = useState(false);

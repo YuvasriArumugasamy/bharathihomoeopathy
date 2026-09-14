@@ -10,10 +10,10 @@ export const initialAdminSettings = {
   },
   clinic: {
     clinicName: "Dr. Bharathi’s Homeo Care & Wellness Clinic",
-    registrationNumber: "REG-TN-HOMEO-2018-849",
+    registrationNumber: "HOM-TN-2016-8941",
     leadDoctor: "Dr. Bharathi",
-    qualifications: "[Qualifications / Degrees]",
-    experienceYears: "[Experience in Years]",
+    qualifications: "B.H.M.S, M.D. (Homoeopathy)",
+    experienceYears: "10+ Years",
     primarySpecialty: "Classical Homeopathy & Constitutional Care"
   },
   contact: {
@@ -58,9 +58,9 @@ export const initialAdminSettings = {
   payments: {
     enableCOD: true,
     enableRazorpay: true,
-    razorpayKeyId: "rzp_test_demoKey123",
-    razorpayKeySecret: "••••••••••••••••",
-    testMode: true
+    razorpayKeyId: "",
+    razorpayKeySecret: "",
+    testMode: false
   },
   shipping: {
     standardShippingFee: 50,
@@ -71,7 +71,7 @@ export const initialAdminSettings = {
   tax: {
     enableTax: false,
     taxRatePercentage: 0,
-    gstinNumber: "33AAAAA0000A1Z5"
+    gstinNumber: ""
   },
   notifications: {
     emailOrderConfirmation: true,

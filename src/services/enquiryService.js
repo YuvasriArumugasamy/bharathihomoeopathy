@@ -8,17 +8,18 @@ export const getStoredEnquiries = () => {
     const raw = localStorage.getItem(ENQUIRIES_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed.filter(e => !e.enquiryId?.startsWith('ENQ-DEMO'));
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem(ENQUIRIES_STORAGE_KEY, JSON.stringify(cleaned));
+        }
+        return cleaned;
+      }
     }
   } catch (err) {
     console.warn("Could not read enquiries from storage:", err.message);
   }
-  try {
-    localStorage.setItem(ENQUIRIES_STORAGE_KEY, JSON.stringify(initialAdminEnquiries));
-  } catch {
-    // Ignore
-  }
-  return initialAdminEnquiries;
+  return [];
 };
 
 export const saveStoredEnquiries = (enquiries) => {

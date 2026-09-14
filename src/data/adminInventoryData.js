@@ -19,41 +19,4 @@ export const initialAdminInventory = demoProducts.map((p, index) => {
   };
 });
 
-export const initialInventoryHistory = [
-  {
-    id: "inv-hist-1",
-    productId: "prod-1",
-    productName: "Arnica Montana 30C",
-    sku: "HOM-ARN-30C",
-    adjustmentType: "Add Stock",
-    quantity: 15,
-    previousStock: 13,
-    newStock: 28,
-    reason: "New stock received from certified dispensary",
-    createdAt: "2026-08-25 10:15 AM"
-  },
-  {
-    id: "inv-hist-2",
-    productId: "prod-11",
-    productName: "Natural Arnica Herbal Hair Oil",
-    sku: "PER-ARN-100ML",
-    adjustmentType: "Set Stock",
-    quantity: 0,
-    previousStock: 4,
-    newStock: 0,
-    reason: "Manual correction / batch exhausted",
-    createdAt: "2026-08-24 03:40 PM"
-  },
-  {
-    id: "inv-hist-3",
-    productId: "prod-7",
-    productName: "Complete Family Seasonal Wellness Combo",
-    sku: "CMB-FAM-001",
-    adjustmentType: "Remove Stock",
-    quantity: 2,
-    previousStock: 14,
-    newStock: 12,
-    reason: "Damaged item / seal check",
-    createdAt: "2026-08-23 11:20 AM"
-  }
-];
+export const initialInventoryHistory = [];

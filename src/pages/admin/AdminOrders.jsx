@@ -218,7 +218,7 @@ export const AdminOrders = () => {
         <div className="relative w-full md:max-w-md">
           <input
             type="text"
-            placeholder="Search by Order ID (DEMO-...) or Patient name..."
+            placeholder="Search by Order ID, Phone or Patient name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 border border-slate-200/80 rounded-xl focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner font-medium placeholder:text-slate-400"
