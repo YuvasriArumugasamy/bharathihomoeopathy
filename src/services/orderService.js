@@ -7,7 +7,7 @@ const ORDERS_STORAGE_KEY = 'admin_orders_store';
 const initialDemoOrders = [
   {
     id: 'ord-1001',
-    orderId: 'DHC-2026-8941',
+    orderId: '894123',
     createdAt: '2026-09-12T10:30:00Z',
     customer: {
       name: 'Kavitha Ramasamy',
@@ -33,7 +33,7 @@ const initialDemoOrders = [
   },
   {
     id: 'ord-1002',
-    orderId: 'DHC-2026-8942',
+    orderId: '894256',
     createdAt: '2026-09-11T14:15:00Z',
     customer: {
       name: 'Dr. S. Sundaram',
@@ -62,7 +62,7 @@ const initialDemoOrders = [
   },
   {
     id: 'ord-1003',
-    orderId: 'DHC-2026-8943',
+    orderId: '894389',
     createdAt: '2026-09-10T09:45:00Z',
     customer: {
       name: 'Meena Murugan',
@@ -116,9 +116,8 @@ export const saveStoredOrders = (orders) => {
 
 export const orderService = {
   createOrder: async (payload) => {
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const newOrderNumber = `DHC-${dateStr}-${randomNum}`;
+    const randomNum = Math.floor(100000 + Math.random() * 900000);
+    const newOrderNumber = randomNum.toString();
 
     const newOrder = {
       id: 'ord-' + Date.now(),

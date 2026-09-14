@@ -22,7 +22,7 @@ import {
 export const OrderSuccess = ({ order }) => {
   const [copied, setCopied] = useState(false);
 
-  const orderNumber = order?.orderNumber || 'DHC-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-7869';
+  const orderNumber = order?.orderNumber || Math.floor(100000 + Math.random() * 900000).toString();
   const totalAmount = order?.totalAmount || order?.total || 0;
   const paymentMode = order?.paymentMethod === 'ONLINE' || order?.paymentMethod === 'UPI' ? 'Online UPI' : 'Cash on Delivery (COD)';
   const courierPartner = order?.courier || 'ST COURIER';

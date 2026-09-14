@@ -42,7 +42,7 @@ export const initialAdminSettings = {
     priceDisplayIncludesTax: true
   },
   orders: {
-    orderPrefix: "DHC-",
+    orderPrefix: "",
     minOrderAmount: 0,
     allowGuestCheckout: false,
     autoConfirmPaidOrders: true,
