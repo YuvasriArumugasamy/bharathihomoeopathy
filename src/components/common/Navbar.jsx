@@ -33,6 +33,19 @@ export const Navbar = () => {
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [userCountry, setUserCountry] = useState(localStorage.getItem('user_country') || 'India');
+  const accountMenuRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target)) {
+        setAccountMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   React.useEffect(() => {
     const handleStorageChange = () => {
@@ -259,7 +272,7 @@ export const Navbar = () => {
           </button>
 
           {/* Account Button */}
-          <div className="relative">
+          <div className="relative" ref={accountMenuRef}>
             <button
               onClick={() => {
                 if (!isAuthenticated) {
