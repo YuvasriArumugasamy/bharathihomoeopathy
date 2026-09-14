@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
         name: isAdmin ? 'Clinic Administrator' : 'Demo Customer',
         email: email,
         role: isAdmin ? 'admin' : 'customer',
-        phone: '+91 98765 43210'
+        phone: '+91 90258 54711'
       };
 
       authStorage.setToken('demo_jwt_token_dr_bharathi_' + Date.now());

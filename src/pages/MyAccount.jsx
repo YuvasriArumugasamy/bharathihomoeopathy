@@ -60,7 +60,7 @@ export const MyAccount = () => {
   // Editable Profile & Address States
   const [address, setAddress] = useState(() => mockAccountData?.savedAddress || {
     fullName: user?.name || 'Bharathi Patient',
-    phone: user?.phone || '+91 98765 43210',
+    phone: user?.phone || '+91 90258 54711',
     addressLine1: '123 Healthcare Avenue, 2nd Cross',
     addressLine2: 'Near City Botanical Garden',
     city: 'Chennai',
@@ -73,7 +73,7 @@ export const MyAccount = () => {
   const [profileData, setProfileData] = useState({
     name: user?.name || 'Demo Customer',
     email: user?.email || 'patient.google@example.com',
-    phone: user?.phone || '+91 98765 43210',
+    phone: user?.phone || '+91 90258 54711',
     bloodGroup: 'O+',
     allergies: 'None Reported',
     constitutionalType: 'Calcarea Carb (Constitutional)',
@@ -339,10 +339,10 @@ export const MyAccount = () => {
                 </div>
                 <p className="text-[11px] text-slate-600 font-medium">Need prescription advice or dispatch assistance?</p>
                 <a 
-                  href="tel:+919876543210" 
+                  href="tel:+919025854711" 
                   className="inline-block text-xs font-black text-navy-950 hover:text-brandOrange-600 transition-colors"
                 >
-                  +91 98765 43210
+                  +91 90258 54711
                 </a>
               </div>
             </div>
@@ -598,7 +598,7 @@ export const MyAccount = () => {
                             ? storedPrescriptions[0]
                             : {
                                 prescriptionId: 'RX-2026-8801',
-                                patient: { name: user?.name || 'Valued Patient', phone: user?.phone || '+91 98765 43210' },
+                                patient: { name: user?.name || 'Valued Patient', phone: user?.phone || '+91 90258 54711' },
                                 diagnosis: activeAppointment.concern || 'Homeopathic Constitutional Care',
                                 remedies: [
                                   { name: 'Rhus Toxicodendron 200CH', dosage: '4 pills twice daily after meals', duration: '15 Days' },
@@ -616,7 +616,7 @@ export const MyAccount = () => {
                       </button>
                       
                       <button
-                        onClick={() => showToast('Clinic Helpline: +91 98765 43210', 'info')}
+                        onClick={() => showToast('Clinic Helpline: +91 90258 54711', 'info')}
                         className="px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2"
                       >
                         <PhoneCall className="w-4 h-4 text-amber-300" />

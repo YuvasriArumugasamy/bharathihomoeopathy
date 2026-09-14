@@ -50,7 +50,7 @@ export const OrderSuccess = ({ order }) => {
   };
 
   const cleanPhone = (phone) => {
-    if (!phone) return '+91 98765 43210';
+    if (!phone) return '+91 90258 54711';
     return '+91 ' + phone.toString().replace(/^\+?91\s*/, '');
   };
 

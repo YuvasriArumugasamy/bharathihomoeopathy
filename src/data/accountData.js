@@ -2,7 +2,7 @@ export const mockAccountData = {
   customer: {
     name: "[Customer Name]",
     email: "customer@example.com",
-    phone: "+91 98765 43210",
+    phone: "+91 90258 54711",
     dob: "1992-05-15",
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
     joinedDate: "2026-06-10"
@@ -49,7 +49,7 @@ export const mockAccountData = {
   },
   savedAddress: {
     fullName: "Customer Name",
-    phone: "+91 98765 43210",
+    phone: "+91 90258 54711",
     addressLine1: "123 Healthcare Avenue, 2nd Cross",
     addressLine2: "Near City Botanical Garden",
     city: "Chennai",

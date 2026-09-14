@@ -42,7 +42,7 @@ const files = [
   general: {
     clinicName: "Dr. Bharathi's Homeopathy",
     email: "contact@bharathihomeo.com",
-    phone: "+91 98765 43210",
+    phone: "+91 90258 54711",
     address: "123, Wellness Street, Health City",
     currency: "INR",
     timezone: "Asia/Kolkata"

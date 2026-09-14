@@ -592,7 +592,8 @@ export const Checkout = () => {
                     <div className="flex justify-between items-center">
                       <span>GST (inclusive of all taxes)</span>
                       <span className="font-extrabold text-slate-900">₹{(subtotal * 0.05).toFixed(2)}</span>
-                    </div>
+                    </div>
+
 
                     <div className="flex justify-between items-center text-amber-600 font-bold">
                       <span>Shipping Fee</span>

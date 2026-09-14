@@ -76,7 +76,7 @@ export const AuthModal = () => {
         name: 'Bharathi Homoeopathy',
         email: 'bharathihomoeopathy246@gmail.com',
         role: 'customer',
-        phone: '+91 98765 43210',
+        phone: '+91 90258 54711',
         authProvider: 'google'
       };
       authStorage.setToken('google_oauth_fallback_' + Date.now());

@@ -115,7 +115,7 @@ export const prescriptionService = {
       `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
       `👨‍⚕️ *Doctor:* Dr. Bharathi (B.H.M.S, M.D.)\n` +
       `🏥 Reg No: HOM-TN-2016-8941\n` +
-      `📞 Helpline: +91 98765 43210\n` +
+      `📞 Helpline: +91 90258 54711\n` +
       `_Take remedies as advised. Keep medicines away from strong sunlight & fragrances._`;
 
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
