@@ -80,6 +80,8 @@ export const getUserOrders = (user) => {
 };
 
 export const orderService = {
+  getStoredOrders,
+  saveStoredOrders,
   createOrder: async (payload) => {
     const randomNum = Math.floor(100000 + Math.random() * 900000);
     const newOrderNumber = randomNum.toString();

@@ -41,6 +41,8 @@ export const saveStoredCustomers = (customers) => {
 };
 
 export const customerService = {
+  getStoredCustomers,
+  saveStoredCustomers,
   getAdminCustomers: async () => {
     try {
       const res = await api.get('/customers');

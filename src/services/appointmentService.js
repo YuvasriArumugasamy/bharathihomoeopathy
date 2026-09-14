@@ -72,6 +72,8 @@ export const getUserAppointments = (user) => {
 };
 
 export const appointmentService = {
+  getStoredAppointments,
+  saveStoredAppointments,
   bookAppointment: async (formData) => {
     const randomNum = Math.floor(100 + Math.random() * 900);
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
