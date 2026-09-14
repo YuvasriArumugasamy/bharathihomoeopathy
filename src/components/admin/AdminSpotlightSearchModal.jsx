@@ -104,8 +104,16 @@ export const AdminSpotlightSearchModal = ({ isOpen, onClose }) => {
   const hasResults = matchedAppointments.length > 0 || matchedOrders.length > 0 || matchedCustomers.length > 0 || matchedInventory.length > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 p-4 bg-navy-950/70 backdrop-blur-md animate-in fade-in duration-150">
-      <div className="bg-white rounded-[2rem] w-full max-w-2xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[80vh]">
+    <div 
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 p-4 bg-navy-950/70 backdrop-blur-md animate-in fade-in duration-150 cursor-pointer"
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-[2rem] w-full max-w-2xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[80vh] cursor-default"
+      >
         
         {/* Search Input Field Bar */}
         <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center gap-3 bg-slate-50/70">
@@ -122,13 +130,20 @@ export const AdminSpotlightSearchModal = ({ isOpen, onClose }) => {
             <button
               onClick={() => setQuery('')}
               className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors shrink-0"
+              title="Clear input"
             >
               <X className="w-4 h-4" />
             </button>
           )}
-          <kbd className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-mono font-bold bg-white text-slate-400 rounded-lg border border-slate-200 shadow-2xs shrink-0">
-            ESC to close
-          </kbd>
+          <button
+            onClick={onClose}
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-slate-600 hover:text-navy-950 bg-white hover:bg-slate-100 rounded-xl border border-slate-200/90 shadow-2xs transition-all shrink-0 cursor-pointer"
+            title="Close Search Window (ESC)"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4 stroke-[2.5]" />
+            <span className="hidden sm:inline">Close</span>
+          </button>
         </div>
 
         {/* Results Container */}
@@ -310,6 +325,17 @@ export const AdminSpotlightSearchModal = ({ isOpen, onClose }) => {
             </>
           )}
 
+        </div>
+
+        {/* Footer info & close bar */}
+        <div className="p-3 px-5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 shrink-0">
+          <span>Click outside or press <kbd className="font-mono bg-white px-1.5 py-0.5 rounded border border-slate-200 text-slate-600 font-bold">ESC</kbd> to close</span>
+          <button
+            onClick={onClose}
+            className="text-xs font-black text-brandOrange-600 hover:text-brandOrange-700 hover:underline transition-all cursor-pointer"
+          >
+            ✕ Close Window
+          </button>
         </div>
 
       </div>
