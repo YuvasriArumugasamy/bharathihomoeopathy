@@ -433,9 +433,9 @@ export const MyAccount = () => {
                             
                             <button
                               onClick={() => setSelectedOrderForTracking(order)}
-                              className="px-4 py-2.5 bg-gradient-to-r from-navy-950 to-navy-900 hover:from-brandOrange-500 hover:to-amber-500 text-white text-xs font-black rounded-2xl shadow-md transition-all cursor-pointer flex items-center gap-2 group"
+                              className="px-4 py-2.5 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white text-xs font-black rounded-2xl shadow-md transition-all cursor-pointer flex items-center gap-2 group"
                             >
-                              <Truck className="w-4 h-4 text-amber-300 group-hover:text-white group-hover:scale-110 transition-transform" />
+                              <Truck className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
                               <span>Track Live Order</span>
                             </button>
                           </div>
