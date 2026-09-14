@@ -68,8 +68,11 @@ export const updateReviewStatus = async (req, res, next) => {
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
     if (rejectionReason !== undefined) updateData.rejectionReason = rejectionReason;
 
-    const review = await Review.findByIdAndUpdate(
-      req.params.id,
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { id: req.params.id };
+
+    const review = await Review.findOneAndUpdate(
+      query,
       updateData,
       { new: true }
     );
@@ -90,7 +93,9 @@ export const updateReviewStatus = async (req, res, next) => {
 
 export const deleteReview = async (req, res, next) => {
   try {
-    const review = await Review.findByIdAndDelete(req.params.id);
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { id: req.params.id };
+    const review = await Review.findOneAndDelete(query);
     if (!review) {
       return res.status(404).json({ success: false, message: 'Review not found' });
     }

@@ -97,8 +97,10 @@ export const createOrUpdateCustomer = async (req, res, next) => {
 export const updateCustomerStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
-    const customer = await Customer.findByIdAndUpdate(
-      req.params.id,
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { customerId: req.params.id };
+    const customer = await Customer.findOneAndUpdate(
+      query,
       { status },
       { new: true }
     );

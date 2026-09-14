@@ -99,12 +99,9 @@ export const getAllPrescriptions = async (req, res, next) => {
 
 export const getPrescriptionById = async (req, res, next) => {
   try {
-    const prescription = await Prescription.findOne({
-      $or: [
-        { _id: req.params.id.match(/^[0-9a-fA-F]{24}$/) ? req.params.id : null },
-        { prescriptionId: req.params.id }
-      ]
-    });
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { $or: [{ prescriptionId: req.params.id }, { id: req.params.id }] };
+    const prescription = await Prescription.findOne(query);
 
     if (!prescription) {
       return res.status(404).json({ success: false, message: 'Prescription record not found' });

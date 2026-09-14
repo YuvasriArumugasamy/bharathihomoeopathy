@@ -155,13 +155,14 @@ export const getMyOrders = async (req, res, next) => {
 
 export const getOrderById = async (req, res, next) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const order = await Order.findOne(isMongoId ? { _id: req.params.id } : { $or: [{ orderNumber: req.params.id }, { id: req.params.id }] });
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
     // Security check: only the owner or an admin can view the order
-    if (order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    if (order.user && req.user && order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
 
@@ -226,7 +227,8 @@ export const getAdminOrders = async (req, res, next) => {
 export const updateOrderStatus = async (req, res, next) => {
   try {
     const rawStatus = (req.body.orderStatus || req.body.status || '').toLowerCase();
-    const order = await Order.findById(req.params.id);
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const order = await Order.findOne(isMongoId ? { _id: req.params.id } : { $or: [{ orderNumber: req.params.id }, { id: req.params.id }] });
 
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
@@ -252,7 +254,8 @@ export const updateOrderStatus = async (req, res, next) => {
 export const updatePaymentStatus = async (req, res, next) => {
   try {
     const rawPayment = (req.body.paymentStatus || '').toLowerCase();
-    const order = await Order.findById(req.params.id);
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const order = await Order.findOne(isMongoId ? { _id: req.params.id } : { $or: [{ orderNumber: req.params.id }, { id: req.params.id }] });
 
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });

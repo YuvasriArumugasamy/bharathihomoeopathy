@@ -13,8 +13,9 @@ export const validateOrderInput = (data) => {
   if (!addr.state || !addr.state.trim()) errors.push('State is required');
   if (!addr.postalCode || !addr.postalCode.trim()) errors.push('Postal code is required');
 
-  if (data.paymentMethod && !['COD', 'ONLINE'].includes(data.paymentMethod)) {
-    errors.push('Payment method must be COD or ONLINE');
+  const validMethods = ['COD', 'ONLINE', 'UPI', 'CARD', 'NETBANKING', 'QR'];
+  if (data.paymentMethod && !validMethods.includes(data.paymentMethod.toUpperCase())) {
+    errors.push('Payment method must be one of ' + validMethods.join(', '));
   }
 
   return { isValid: errors.length === 0, errors };

@@ -108,8 +108,10 @@ export const getAllAppointments = async (req, res, next) => {
 export const updateAppointmentStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
-    const appointment = await Appointment.findByIdAndUpdate(
-      req.params.id,
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { appointmentId: req.params.id };
+    const appointment = await Appointment.findOneAndUpdate(
+      query,
       { status },
       { new: true }
     );

@@ -185,7 +185,9 @@ export const getProductBySlug = async (req, res, next) => {
 
 export const getProductById = async (req, res, next) => {
   try {
-    const product = await Product.findById(req.params.id).populate('category', 'name slug');
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { $or: [{ sku: req.params.id }, { slug: req.params.id }] };
+    const product = await Product.findOne(query).populate('category', 'name slug');
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
@@ -253,7 +255,9 @@ export const getAdminProducts = async (req, res, next) => {
 
 export const updateProduct = async (req, res, next) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { $or: [{ sku: req.params.id }, { slug: req.params.id }] };
+    const product = await Product.findOne(query);
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
@@ -274,7 +278,7 @@ export const updateProduct = async (req, res, next) => {
       }
     }
 
-    const updated = await Product.findByIdAndUpdate(req.params.id, normalized, { new: true, runValidators: true });
+    const updated = await Product.findOneAndUpdate(query, normalized, { new: true, runValidators: true });
 
     res.status(200).json({
       success: true,
@@ -288,7 +292,9 @@ export const updateProduct = async (req, res, next) => {
 
 export const deleteProduct = async (req, res, next) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { $or: [{ sku: req.params.id }, { slug: req.params.id }] };
+    const product = await Product.findOne(query);
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }

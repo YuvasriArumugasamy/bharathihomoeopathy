@@ -91,7 +91,9 @@ export const createBlog = async (req, res, next) => {
 
 export const updateBlog = async (req, res, next) => {
   try {
-    const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { $or: [{ slug: req.params.id }, { id: req.params.id }] };
+    const blog = await Blog.findOneAndUpdate(query, req.body, { new: true });
     if (!blog) {
       return res.status(404).json({ success: false, message: 'Article not found' });
     }
@@ -108,7 +110,9 @@ export const updateBlog = async (req, res, next) => {
 
 export const deleteBlog = async (req, res, next) => {
   try {
-    const blog = await Blog.findByIdAndDelete(req.params.id);
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { $or: [{ slug: req.params.id }, { id: req.params.id }] };
+    const blog = await Blog.findOneAndDelete(query);
     if (!blog) {
       return res.status(404).json({ success: false, message: 'Article not found' });
     }

@@ -89,7 +89,9 @@ export const getCategoryBySlug = async (req, res, next) => {
 
 export const getCategoryById = async (req, res, next) => {
   try {
-    const category = await Category.findById(req.params.id);
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { slug: req.params.id };
+    const category = await Category.findOne(query);
     if (!category) {
       return res.status(404).json({ success: false, message: 'Category not found' });
     }
@@ -101,7 +103,9 @@ export const getCategoryById = async (req, res, next) => {
 
 export const updateCategory = async (req, res, next) => {
   try {
-    const category = await Category.findById(req.params.id);
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { slug: req.params.id };
+    const category = await Category.findOne(query);
     if (!category) {
       return res.status(404).json({ success: false, message: 'Category not found' });
     }
@@ -113,7 +117,7 @@ export const updateCategory = async (req, res, next) => {
       }
     }
 
-    const updated = await Category.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const updated = await Category.findOneAndUpdate(query, req.body, { new: true, runValidators: true });
 
     res.status(200).json({
       success: true,
@@ -127,7 +131,9 @@ export const updateCategory = async (req, res, next) => {
 
 export const deleteCategory = async (req, res, next) => {
   try {
-    const category = await Category.findById(req.params.id);
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { slug: req.params.id };
+    const category = await Category.findOne(query);
     if (!category) {
       return res.status(404).json({ success: false, message: 'Category not found' });
     }
@@ -141,7 +147,7 @@ export const deleteCategory = async (req, res, next) => {
       });
     }
 
-    await Category.findByIdAndDelete(req.params.id);
+    await Category.findOneAndDelete(query);
 
     res.status(200).json({
       success: true,

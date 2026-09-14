@@ -72,8 +72,11 @@ export const updateEnquiryStatus = async (req, res, next) => {
     if (status !== undefined) updateData.status = status;
     if (isRead !== undefined) updateData.isRead = isRead;
 
-    const enquiry = await Enquiry.findByIdAndUpdate(
-      req.params.id,
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { enquiryId: req.params.id };
+
+    const enquiry = await Enquiry.findOneAndUpdate(
+      query,
       updateData,
       { new: true }
     );
@@ -98,7 +101,9 @@ export const replyToEnquiry = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Reply message cannot be empty' });
     }
 
-    const enquiry = await Enquiry.findById(req.params.id);
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { enquiryId: req.params.id };
+    const enquiry = await Enquiry.findOne(query);
     if (!enquiry) {
       return res.status(404).json({ success: false, message: 'Enquiry not found' });
     }
