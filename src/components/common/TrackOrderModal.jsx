@@ -44,7 +44,12 @@ export const TrackOrderModal = ({ isOpen, onClose }) => {
         const id = (o.orderId || o.orderNumber || o.id || '').toLowerCase();
         const oPhone = (o.customer?.phone || o.shippingAddress?.phone || '').replace(/\D/g, '');
         
-        if (id.includes(query) || (cleanPhone.length >= 6 && oPhone.includes(cleanPhone))) {
+        const aEmail = (o.customer?.email || o.shippingAddress?.email || o.userEmail || '').toLowerCase();
+        if (
+          id.includes(query) || 
+          (cleanPhone.length >= 6 && oPhone.includes(cleanPhone)) ||
+          (query.includes('@') && aEmail.includes(query))
+        ) {
           return true;
         }
         return false;
@@ -52,7 +57,7 @@ export const TrackOrderModal = ({ isOpen, onClose }) => {
 
       setMatchedOrder(found || null);
       if (!found) {
-        showToast('No active orders found matching your search', 'info');
+        showToast('No active orders found for this Order ID or Phone Number', 'info');
       }
     } catch (err) {
       showToast('Error tracking order: ' + err.message, 'error');
@@ -116,7 +121,7 @@ export const TrackOrderModal = ({ isOpen, onClose }) => {
               <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input 
                 type="text"
-                placeholder="Enter Patient ID"
+                placeholder="Enter Order ID or Phone Number (e.g. 894123 or 9345865212)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 text-sm font-medium focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all"
@@ -218,18 +223,18 @@ export const TrackOrderModal = ({ isOpen, onClose }) => {
                     <MapPin className="w-3.5 h-3.5 text-brandOrange-500" />
                     <span>Delivery Address</span>
                   </div>
-                  <p className="font-bold text-slate-800">{matchedOrder.customer?.name || matchedOrder.shippingAddress?.fullName}</p>
-                  <p className="text-slate-600">{matchedOrder.shippingAddress?.addressLine || matchedOrder.shippingAddress?.street}</p>
+                  <p className="font-bold text-slate-800">{matchedOrder.customer?.name || matchedOrder.shippingAddress?.fullName || 'Patient'}</p>
+                  <p className="text-slate-600">{matchedOrder.shippingAddress?.addressLine1 || matchedOrder.shippingAddress?.addressLine || matchedOrder.shippingAddress?.street || 'Clinic Dispatch'}</p>
                   <p className="text-slate-600">
-                    {matchedOrder.shippingAddress?.city || 'Tirunelveli'}, {matchedOrder.shippingAddress?.state || 'Tamil Nadu'} - {matchedOrder.shippingAddress?.postalCode || '627005'}
+                    {matchedOrder.shippingAddress?.city || 'Tamil Nadu'}, {matchedOrder.shippingAddress?.state || 'India'} {matchedOrder.shippingAddress?.postalCode ? `- ${matchedOrder.shippingAddress.postalCode}` : ''}
                   </p>
-                  <p className="text-slate-700 font-mono mt-1">📞 {matchedOrder.customer?.phone || matchedOrder.shippingAddress?.phone}</p>
+                  <p className="text-slate-700 font-mono mt-1">📞 {matchedOrder.customer?.phone || matchedOrder.shippingAddress?.phone || '-'}</p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-2">
                   <div className="flex items-center justify-between font-black text-slate-900 text-xs uppercase mb-1">
                     <span>Remedy Items</span>
-                    <span className="text-emerald-700">₹{matchedOrder.total} Total</span>
+                    <span className="text-emerald-700">₹{matchedOrder.totalAmount || matchedOrder.total || 0} Total</span>
                   </div>
                   <div className="space-y-1 max-h-28 overflow-y-auto pr-1">
                     {(matchedOrder.items || []).map((item, idx) => (
