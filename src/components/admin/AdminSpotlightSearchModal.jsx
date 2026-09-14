@@ -69,11 +69,12 @@ export const AdminSpotlightSearchModal = ({ isOpen, onClose }) => {
 
   // 3. Search Patients
   const customers = getStoredCustomers();
-  const matchedCustomers = q ? customers.filter(c => 
-    (c.name || '').toLowerCase().includes(q) ||
-    (c.phone || '').includes(q) ||
-    (c.email || '').toLowerCase().includes(q)
-  ).slice(0, 3) : [];
+  const matchedCustomers = q ? customers.filter(c => {
+    const name = c.name || `${c.firstName || ''} ${c.lastName || ''}`.trim();
+    return name.toLowerCase().includes(q) ||
+      (c.phone || '').includes(q) ||
+      (c.email || '').toLowerCase().includes(q);
+  }).slice(0, 3) : [];
 
   // 4. Search Medicines / Inventory
   let inventoryItems = initialAdminInventory;
@@ -255,14 +256,14 @@ export const AdminSpotlightSearchModal = ({ isOpen, onClose }) => {
                         >
                           <div>
                             <span className="font-black text-xs text-navy-950 group-hover:text-blue-700">
-                              {cust.name}
+                              {cust.name || `${cust.firstName || ''} ${cust.lastName || ''}`.trim() || 'Patient'}
                             </span>
                             <p className="text-[11px] text-slate-500 mt-0.5">
-                              {cust.phone} • {cust.email} • {cust.city || 'Tamil Nadu'}
+                              {cust.phone || 'No phone'} • {cust.email || 'No email'} • {cust.city || 'Tamil Nadu'}
                             </p>
                           </div>
                           <span className="text-[10px] font-bold text-slate-400">
-                            {cust.totalOrders || 1} Orders
+                            {cust.totalOrders || cust.ordersCount || 0} Orders
                           </span>
                         </div>
                       ))}

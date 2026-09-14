@@ -33,13 +33,20 @@ export const AdminCustomers = () => {
   const totalLifetimeRevenue = customers.reduce((sum, c) => sum + (c.totalSpent || 0), 0);
 
   const filtered = customers.filter(c => {
+    if (!c) return false;
     const matchesStatus = statusFilter === 'All' || c.status === statusFilter;
     const q = search.toLowerCase().trim();
+    const fullName = `${c.firstName || ''} ${c.lastName || ''}`.trim() || c.name || '';
+    const email = (c.email || '').toLowerCase();
+    const customerId = (c.customerId || c.id || c._id || '').toLowerCase();
+    const phone = c.phone || '';
+
     const matchesSearch = !q || 
-      `${c.firstName} ${c.lastName}`.toLowerCase().includes(q) || 
-      c.email.toLowerCase().includes(q) || 
-      c.customerId.toLowerCase().includes(q) ||
-      (c.phone && c.phone.includes(q));
+      fullName.toLowerCase().includes(q) || 
+      email.includes(q) || 
+      customerId.includes(q) ||
+      phone.includes(q);
+
     return matchesStatus && matchesSearch;
   });
 
@@ -215,23 +222,23 @@ export const AdminCustomers = () => {
                   </td>
                 </tr>
               ) : (
-                filtered.map((cust) => (
+                filtered.map((cust, idx) => (
                   <tr 
-                    key={cust.id} 
+                    key={cust.id || cust._id || cust.customerId || idx} 
                     className="hover:bg-slate-50/70 transition-colors group"
                   >
                     {/* Patient Profile */}
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3.5">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-brandOrange-100 to-amber-100 text-brandOrange-700 flex items-center justify-center font-black text-sm border border-brandOrange-200/60 shadow-2xs">
-                          {cust.firstName[0]}
+                          {(cust.firstName || cust.name || 'P')[0]?.toUpperCase() || 'P'}
                         </div>
                         <div>
                           <p className="font-heading font-black text-navy-950 text-sm group-hover:text-brandOrange-600 transition-colors">
-                            {cust.firstName} {cust.lastName}
+                            {cust.firstName || cust.name || 'Patient'} {cust.lastName || ''}
                           </p>
                           <span className="text-slate-400 text-[11px] font-medium block">
-                            {cust.email}
+                            {cust.email || 'No email registered'}
                           </span>
                         </div>
                       </div>
@@ -240,7 +247,7 @@ export const AdminCustomers = () => {
                     {/* Patient ID */}
                     <td className="py-4 px-5 font-mono font-bold text-slate-500">
                       <span className="bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200 text-[11px]">
-                        {cust.customerId}
+                        {cust.customerId || (cust._id ? `PAT-${String(cust._id).slice(-4).toUpperCase()}` : `PAT-${1000 + idx}`)}
                       </span>
                     </td>
 
@@ -315,23 +322,23 @@ export const AdminCustomers = () => {
               No patients found matching your search.
             </div>
           ) : (
-            filtered.map((cust) => (
+            filtered.map((cust, idx) => (
               <div 
-                key={cust.id}
+                key={cust.id || cust._id || cust.customerId || idx}
                 onClick={() => setSelectedCustomer(cust)}
                 className="p-4 space-y-3 hover:bg-slate-50/60 transition-all cursor-pointer"
               >
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-brandOrange-100 text-brandOrange-600 font-black flex items-center justify-center text-sm">
-                      {cust.firstName[0]}
+                      {(cust.firstName || cust.name || 'P')[0]?.toUpperCase() || 'P'}
                     </div>
                     <div>
                       <h4 className="font-heading font-black text-navy-950 text-sm">
-                        {cust.firstName} {cust.lastName}
+                        {cust.firstName || cust.name || 'Patient'} {cust.lastName || ''}
                       </h4>
                       <span className="font-mono text-[10px] text-slate-400">
-                        {cust.customerId}
+                        {cust.customerId || (cust._id ? `PAT-${String(cust._id).slice(-4).toUpperCase()}` : `PAT-${1000 + idx}`)}
                       </span>
                     </div>
                   </div>
@@ -409,10 +416,10 @@ export const AdminCustomers = () => {
               <div className="text-center space-y-3 p-5 bg-gradient-to-b from-slate-50 to-white rounded-[2rem] border border-slate-100">
                 <div>
                   <h4 className="font-heading font-black text-xl text-navy-950">
-                    {selectedCustomer.firstName} {selectedCustomer.lastName}
+                    {selectedCustomer.firstName || selectedCustomer.name || 'Patient'} {selectedCustomer.lastName || ''}
                   </h4>
                   <p className="text-xs text-slate-400 font-mono mt-0.5">
-                    {selectedCustomer.customerId} • Joined {selectedCustomer.joinedDate || '2026'}
+                    {selectedCustomer.customerId || 'PAT-RECORD'} • Joined {selectedCustomer.joinedDate || '2026'}
                   </p>
                 </div>
                 <div className="flex items-center justify-center gap-2 pt-1">

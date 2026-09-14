@@ -43,9 +43,32 @@ export const customerService = {
   getAdminCustomers: async () => {
     try {
       const res = await api.get('/customers');
-      if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-        saveStoredCustomers(res.data);
-        return res.data;
+      const list = res && Array.isArray(res.data) ? res.data : (Array.isArray(res) ? res : []);
+      if (list.length > 0) {
+        const normalized = list.map((c, idx) => {
+          const rawName = c.name || `${c.firstName || ''} ${c.lastName || ''}`.trim() || 'Patient';
+          const nameParts = rawName.split(' ');
+          const fName = c.firstName || nameParts[0] || 'Patient';
+          const lName = c.lastName !== undefined ? c.lastName : (nameParts.slice(1).join(' ') || '');
+          const cId = c.customerId || (c._id ? `PAT-${String(c._id).slice(-4).toUpperCase()}` : `PAT-${1000 + idx}`);
+          return {
+            id: c._id || c.id || `cust-${Date.now()}-${idx}`,
+            _id: c._id || c.id,
+            customerId: cId,
+            firstName: fName,
+            lastName: lName,
+            email: c.email || '',
+            phone: c.phone || '',
+            city: c.city || 'Tamil Nadu',
+            state: c.state || 'Tamil Nadu',
+            ordersCount: Number(c.ordersCount || 0),
+            totalSpent: Number(c.totalSpent || 0),
+            status: c.status || 'Active',
+            joinedDate: c.joinedDate || (c.createdAt ? String(c.createdAt).slice(0, 10) : new Date().toISOString().slice(0, 10))
+          };
+        });
+        saveStoredCustomers(normalized);
+        return normalized;
       }
     } catch {
       // Fallback
