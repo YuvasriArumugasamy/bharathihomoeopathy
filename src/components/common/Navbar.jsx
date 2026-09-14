@@ -297,15 +297,7 @@ export const Navbar = () => {
                 >
                   Patient Dashboard
                 </Link>
-                {user?.role === 'admin' && (
-                  <Link
-                    to="/admin"
-                    onClick={() => setAccountMenuOpen(false)}
-                    className="block px-3 py-2 rounded-xl text-xs font-bold text-brandOrange-600 bg-brandOrange-50/50 hover:bg-brandOrange-100"
-                  >
-                    Admin Control Panel
-                  </Link>
-                )}
+
                 <button
                   onClick={() => {
                     logout();
