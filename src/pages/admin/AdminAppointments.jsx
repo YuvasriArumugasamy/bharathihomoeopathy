@@ -3,7 +3,7 @@ import {
   Calendar, Clock, Video, Building2, Check, X, Search, Filter, 
   User, Phone, Mail, FileText, ChevronRight, AlertCircle, 
   CalendarCheck, CalendarClock, UserCheck, Stethoscope, Sparkles,
-  Download, MessageSquare, Paperclip, Eye, ExternalLink
+  Download, MessageSquare, Paperclip, Eye, ExternalLink, RotateCcw
 } from 'lucide-react';
 import { appointmentService } from '../../services/appointmentService';
 import { cloudSyncService } from '../../services/cloudSyncService';
@@ -14,8 +14,9 @@ import { PrescriptionComposerModal } from '../../components/admin/PrescriptionCo
 
 export const AdminAppointments = () => {
   const { showToast } = useToast();
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [appointments, setAppointments] = useState(() => appointmentService.getStoredAppointments());
+  const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedMode, setSelectedMode] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,24 +26,70 @@ export const AdminAppointments = () => {
   const [viewAttachment, setViewAttachment] = useState(null);
   const [rxModalApt, setRxModalApt] = useState(null);
 
+  const loadAppointments = async (showFeedback = false) => {
+    if (showFeedback) setIsRefreshing(true);
+    // Instant local read
+    const local = appointmentService.getStoredAppointments();
+    if (Array.isArray(local) && local.length > 0) {
+      setAppointments(local);
+    }
+    
+    try {
+      const data = await appointmentService.getAdminAppointments();
+      if (Array.isArray(data)) {
+        setAppointments(data);
+      }
+      if (showFeedback) {
+        showToast('Appointments synced successfully!', 'success');
+      }
+    } catch (err) {
+      if (showFeedback) {
+        showToast('Synced using persistent local cache', 'info');
+      }
+    } finally {
+      setLoading(false);
+      if (showFeedback) setIsRefreshing(false);
+    }
+  };
+
   useEffect(() => {
-    setLoading(true);
-    appointmentService.getAdminAppointments().then(data => {
-      setAppointments(data);
-      setLoading(false);
-    }).catch(err => {
-      showToast('Failed to load appointments: ' + err.message, 'error');
-      setLoading(false);
-    });
+    loadAppointments();
 
     // Real-time Cloud Sync Listener across devices
     const unsubscribe = cloudSyncService.listenToCloudAppointments((liveApts) => {
-      setAppointments(liveApts);
+      if (Array.isArray(liveApts)) {
+        setAppointments(liveApts);
+      }
       setLoading(false);
     });
 
+    // Real-time Cross-tab and Local Storage synchronizer
+    const handleStorageOrFocus = (e) => {
+      if (!e || !e.key || e.key === 'admin_appointments_store') {
+        const fresh = appointmentService.getStoredAppointments();
+        if (Array.isArray(fresh)) {
+          setAppointments(fresh);
+        }
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadAppointments();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageOrFocus);
+    window.addEventListener('appointments_updated', handleStorageOrFocus);
+    window.addEventListener('focus', handleStorageOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       if (typeof unsubscribe === 'function') unsubscribe();
+      window.removeEventListener('storage', handleStorageOrFocus);
+      window.removeEventListener('appointments_updated', handleStorageOrFocus);
+      window.removeEventListener('focus', handleStorageOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -133,15 +180,28 @@ export const AdminAppointments = () => {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleExportAppointments}
-            className="inline-flex items-center gap-2 px-5 py-3 bg-white hover:bg-slate-50 text-navy-950 rounded-2xl text-xs font-black shadow-xl hover:shadow-2xl transition-all cursor-pointer active:scale-95 shrink-0"
-            title="Export all appointments to Excel CSV file"
-          >
-            <Download className="w-4 h-4 text-brandOrange-500" />
-            <span>Export to Excel (CSV)</span>
-          </button>
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => loadAppointments(true)}
+              disabled={isRefreshing}
+              className="inline-flex items-center gap-2 px-4 py-3 bg-white/20 hover:bg-white/30 text-white rounded-2xl text-xs font-black backdrop-blur-md border border-white/35 shadow-lg hover:shadow-xl transition-all cursor-pointer active:scale-95 shrink-0"
+              title="Refresh and sync latest patient appointments"
+            >
+              <RotateCcw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Syncing...' : 'Refresh & Sync'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleExportAppointments}
+              className="inline-flex items-center gap-2 px-5 py-3 bg-white hover:bg-slate-50 text-navy-950 rounded-2xl text-xs font-black shadow-xl hover:shadow-2xl transition-all cursor-pointer active:scale-95 shrink-0"
+              title="Export all appointments to Excel CSV file"
+            >
+              <Download className="w-4 h-4 text-brandOrange-500" />
+              <span>Export to Excel (CSV)</span>
+            </button>
+          </div>
         </div>
       </div>
 

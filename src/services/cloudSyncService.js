@@ -23,9 +23,10 @@ export const cloudSyncService = {
   syncOrderToCloud: async (order) => {
     if (!order || !order.id) return null;
     try {
-      const orderRef = doc(db, ORDERS_COLLECTION, order.id);
+      const orderRef = doc(db, ORDERS_COLLECTION, String(order.id));
+      const sanitized = JSON.parse(JSON.stringify(order));
       const cleanPayload = {
-        ...order,
+        ...sanitized,
         syncedAt: new Date().toISOString(),
         cloudTimestamp: serverTimestamp()
       };
@@ -49,22 +50,26 @@ export const cloudSyncService = {
       const unsubscribe = onSnapshot(
         q, 
         (snapshot) => {
-          if (!snapshot.empty) {
-            const cloudOrders = [];
-            snapshot.forEach((d) => {
-              cloudOrders.push({ id: d.id, ...d.data() });
-            });
-
-            // Merge cloud orders with local demo/offline orders without duplicating IDs
-            const localOrders = getStoredOrders();
-            const cloudIds = new Set(cloudOrders.map(o => o.id || o.orderId));
-            const remainingLocal = localOrders.filter(l => !cloudIds.has(l.id) && !cloudIds.has(l.orderId));
-            
-            const merged = [...cloudOrders, ...remainingLocal];
-            saveStoredOrders(merged);
+          if (snapshot.empty) {
             if (typeof callback === 'function') {
-              callback(merged);
+              callback(getStoredOrders());
             }
+            return;
+          }
+          const cloudOrders = [];
+          snapshot.forEach((d) => {
+            cloudOrders.push({ id: d.id, ...d.data() });
+          });
+
+          // Merge cloud orders with local demo/offline orders without duplicating IDs
+          const localOrders = getStoredOrders();
+          const cloudIds = new Set(cloudOrders.map(o => o.id || o.orderId));
+          const remainingLocal = localOrders.filter(l => !cloudIds.has(l.id) && !cloudIds.has(l.orderId));
+          
+          const merged = [...remainingLocal, ...cloudOrders];
+          saveStoredOrders(merged);
+          if (typeof callback === 'function') {
+            callback(merged);
           }
         },
         (error) => {
@@ -112,9 +117,10 @@ export const cloudSyncService = {
   syncAppointmentToCloud: async (appointment) => {
     if (!appointment || !appointment.id) return null;
     try {
-      const aptRef = doc(db, APPOINTMENTS_COLLECTION, appointment.id);
+      const aptRef = doc(db, APPOINTMENTS_COLLECTION, String(appointment.id));
+      const sanitized = JSON.parse(JSON.stringify(appointment));
       const cleanPayload = {
-        ...appointment,
+        ...sanitized,
         syncedAt: new Date().toISOString(),
         cloudTimestamp: serverTimestamp()
       };
@@ -137,21 +143,25 @@ export const cloudSyncService = {
       const unsubscribe = onSnapshot(
         q,
         (snapshot) => {
-          if (!snapshot.empty) {
-            const cloudApts = [];
-            snapshot.forEach((d) => {
-              cloudApts.push({ id: d.id, ...d.data() });
-            });
-
-            const localApts = getStoredAppointments();
-            const cloudIds = new Set(cloudApts.map(a => a.id || a.appointmentId));
-            const remainingLocal = localApts.filter(l => !cloudIds.has(l.id) && !cloudIds.has(l.appointmentId));
-
-            const merged = [...cloudApts, ...remainingLocal];
-            saveStoredAppointments(merged);
+          if (snapshot.empty) {
             if (typeof callback === 'function') {
-              callback(merged);
+              callback(getStoredAppointments());
             }
+            return;
+          }
+          const cloudApts = [];
+          snapshot.forEach((d) => {
+            cloudApts.push({ id: d.id, ...d.data() });
+          });
+
+          const localApts = getStoredAppointments();
+          const cloudIds = new Set(cloudApts.map(a => a.id || a.appointmentId));
+          const remainingLocal = localApts.filter(l => !cloudIds.has(l.id) && !cloudIds.has(l.appointmentId));
+
+          const merged = [...remainingLocal, ...cloudApts];
+          saveStoredAppointments(merged);
+          if (typeof callback === 'function') {
+            callback(merged);
           }
         },
         (error) => {

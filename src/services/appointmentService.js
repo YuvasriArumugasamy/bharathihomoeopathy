@@ -132,16 +132,21 @@ export const appointmentService = {
   },
 
   getAdminAppointments: async () => {
+    const localApts = getStoredAppointments();
     try {
       const res = await api.get('/appointments');
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-        saveStoredAppointments(res.data);
-        return res.data;
+        const remoteApts = res.data.filter(Boolean);
+        const remoteIds = new Set(remoteApts.map(a => a.id || a.appointmentId || a._id));
+        const unSyncedLocal = localApts.filter(l => !remoteIds.has(l.id) && !remoteIds.has(l.appointmentId) && !remoteIds.has(l._id));
+        const merged = [...unSyncedLocal, ...remoteApts];
+        saveStoredAppointments(merged);
+        return merged;
       }
     } catch {
-      // Fallback
+      // Backend offline or unauthorized, use local
     }
-    return getStoredAppointments();
+    return localApts;
   },
 
   updateAppointmentStatus: async (id, newStatus) => {

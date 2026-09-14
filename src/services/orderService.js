@@ -196,16 +196,21 @@ export const orderService = {
   // ADMIN PORTAL ORDERS OPERATIONS
   // ----------------------------------------------------
   getAdminOrders: async () => {
+    const localOrders = getStoredOrders();
     try {
       const res = await api.get('/orders/admin/all');
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-        saveStoredOrders(res.data);
-        return res.data;
+        const remoteOrders = res.data.filter(Boolean);
+        const remoteIds = new Set(remoteOrders.map(o => o.id || o.orderId || o._id));
+        const unSyncedLocal = localOrders.filter(l => !remoteIds.has(l.id) && !remoteIds.has(l.orderId) && !remoteIds.has(l._id));
+        const merged = [...unSyncedLocal, ...remoteOrders];
+        saveStoredOrders(merged);
+        return merged;
       }
     } catch (err) {
-      console.warn("Backend admin orders unavailable, loading persistent store:", err.message);
+      console.warn("Could not fetch remote admin orders, using local storage", err.message);
     }
-    return getStoredOrders();
+    return localOrders;
   },
 
   updateAdminOrderStatus: async (id, newStatus) => {

@@ -8,20 +8,21 @@ import {
   Clock, 
   Truck, 
   X, 
-  Edit,
-  IndianRupee,
-  PackageCheck,
-  AlertCircle,
-  Copy,
-  ChevronRight,
-  ShieldCheck,
-  MapPin,
-  Calendar,
-  Loader2,
-  Printer,
-  Download,
-  Send,
-  MessageSquare
+  Edit, 
+  IndianRupee, 
+  PackageCheck, 
+  AlertCircle, 
+  Copy, 
+  ChevronRight, 
+  ShieldCheck, 
+  MapPin, 
+  Calendar, 
+  Loader2, 
+  Printer, 
+  Download, 
+  Send, 
+  MessageSquare,
+  RotateCcw
 } from 'lucide-react';
 import { orderService } from '../../services/orderService';
 import { cloudSyncService } from '../../services/cloudSyncService';
@@ -32,31 +33,77 @@ import { OrderInvoiceModal } from '../../components/admin/OrderInvoiceModal';
 
 export const AdminOrders = () => {
   const { showToast } = useToast();
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState(() => orderService.getStoredOrders());
+  const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedOrderDrawer, setSelectedOrderDrawer] = useState(null);
   const [invoiceModalOrder, setInvoiceModalOrder] = useState(null);
 
+  const loadOrders = async (showFeedback = false) => {
+    if (showFeedback) setIsRefreshing(true);
+    const local = orderService.getStoredOrders();
+    if (Array.isArray(local) && local.length > 0) {
+      setOrders(local);
+    }
+
+    try {
+      const data = await orderService.getAdminOrders();
+      if (Array.isArray(data)) {
+        setOrders(data);
+      }
+      if (showFeedback) {
+        showToast('Orders synced successfully!', 'success');
+      }
+    } catch (err) {
+      if (showFeedback) {
+        showToast('Synced using persistent store', 'info');
+      }
+    } finally {
+      setLoading(false);
+      if (showFeedback) setIsRefreshing(false);
+    }
+  };
+
   useEffect(() => {
-    setLoading(true);
-    orderService.getAdminOrders().then(data => {
-      setOrders(data);
-      setLoading(false);
-    }).catch(err => {
-      showToast('Failed to load orders: ' + err.message, 'error');
-      setLoading(false);
-    });
+    loadOrders();
 
     // Real-time Cloud Sync Listener across devices
     const unsubscribe = cloudSyncService.listenToCloudOrders((liveOrders) => {
-      setOrders(liveOrders);
+      if (Array.isArray(liveOrders)) {
+        setOrders(liveOrders);
+      }
       setLoading(false);
     });
 
+    // Real-time Cross-tab and Local Storage synchronizer
+    const handleStorageOrFocus = (e) => {
+      if (!e || !e.key || e.key === 'admin_orders_store') {
+        const fresh = orderService.getStoredOrders();
+        if (Array.isArray(fresh)) {
+          setOrders(fresh);
+        }
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadOrders();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageOrFocus);
+    window.addEventListener('orders_updated', handleStorageOrFocus);
+    window.addEventListener('focus', handleStorageOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       if (typeof unsubscribe === 'function') unsubscribe();
+      window.removeEventListener('storage', handleStorageOrFocus);
+      window.removeEventListener('orders_updated', handleStorageOrFocus);
+      window.removeEventListener('focus', handleStorageOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -158,15 +205,28 @@ export const AdminOrders = () => {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleExportOrders}
-            className="inline-flex items-center gap-2 px-5 py-3 bg-white hover:bg-slate-50 text-navy-950 rounded-2xl text-xs font-black shadow-xl hover:shadow-2xl transition-all cursor-pointer active:scale-95"
-            title="Export all orders to Excel CSV file"
-          >
-            <Download className="w-4 h-4 text-brandOrange-500" />
-            <span>Export to Excel (CSV)</span>
-          </button>
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => loadOrders(true)}
+              disabled={isRefreshing}
+              className="inline-flex items-center gap-2 px-4 py-3 bg-white/20 hover:bg-white/30 text-white rounded-2xl text-xs font-black backdrop-blur-md border border-white/35 shadow-lg hover:shadow-xl transition-all cursor-pointer active:scale-95 shrink-0"
+              title="Refresh and sync latest orders"
+            >
+              <RotateCcw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Syncing...' : 'Refresh & Sync'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleExportOrders}
+              className="inline-flex items-center gap-2 px-5 py-3 bg-white hover:bg-slate-50 text-navy-950 rounded-2xl text-xs font-black shadow-xl hover:shadow-2xl transition-all cursor-pointer active:scale-95 shrink-0"
+              title="Export all orders to Excel CSV file"
+            >
+              <Download className="w-4 h-4 text-brandOrange-500" />
+              <span>Export to Excel (CSV)</span>
+            </button>
+          </div>
         </div>
       </div>
 

@@ -41,6 +41,24 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
 
   if (!isOpen) return null;
 
+  const handleGoogleClick = () => {
+    if (onGoogleSuccess) {
+      onGoogleSuccess({ credential: 'mock-google-credential' });
+    }
+  };
+
+  const handleLoginSubmit = (e) => {
+    e.preventDefault();
+    console.log('Login submitted:', { loginEmail, loginPassword });
+    if (onClose) onClose();
+  };
+
+  const handleRegisterSubmit = (e) => {
+    e.preventDefault();
+    console.log('Register submitted:', registerData);
+    if (onClose) onClose();
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm">
       

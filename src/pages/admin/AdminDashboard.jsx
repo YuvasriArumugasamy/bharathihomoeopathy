@@ -30,6 +30,8 @@ import {
 import { adminDashboardData } from '../../data/adminDashboardData';
 import { orderService } from '../../services/orderService';
 import { productService } from '../../services/productService';
+import { appointmentService } from '../../services/appointmentService';
+import { customerService } from '../../services/customerService';
 
 export const AdminDashboard = () => {
   const getGreeting = () => {
@@ -42,23 +44,50 @@ export const AdminDashboard = () => {
   const [timeFilter, setTimeFilter] = useState('7 Days');
   const [metricView, setMetricView] = useState('revenue'); // 'revenue' | 'orders'
   const [chartTheme, setChartTheme] = useState('teal'); // 'teal' | 'indigo' | 'purple' | 'amber'
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState(() => orderService.getStoredOrders());
   const [products, setProducts] = useState([]);
+  const [appointments, setAppointments] = useState(() => appointmentService.getStoredAppointments());
+  const [customers, setCustomers] = useState(() => customerService.getStoredCustomers());
+
+  const loadDashboardData = async () => {
+    try {
+      setOrders(orderService.getStoredOrders());
+      setAppointments(appointmentService.getStoredAppointments());
+      setCustomers(customerService.getStoredCustomers());
+
+      const [liveOrders, liveProducts, liveApts] = await Promise.all([
+        orderService.getAdminOrders(),
+        productService.getAdminProducts(),
+        appointmentService.getAdminAppointments()
+      ]);
+      if (Array.isArray(liveOrders)) setOrders(liveOrders);
+      if (Array.isArray(liveProducts)) setProducts(liveProducts);
+      if (Array.isArray(liveApts)) setAppointments(liveApts);
+    } catch (err) {
+      console.warn("Failed to load dashboard dynamic data:", err.message);
+    }
+  };
 
   useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        const [liveOrders, liveProducts] = await Promise.all([
-          orderService.getAdminOrders(),
-          productService.getAdminProducts()
-        ]);
-        setOrders(liveOrders || []);
-        setProducts(liveProducts || []);
-      } catch (err) {
-        console.warn("Failed to load dashboard dynamic data:", err.message);
-      }
-    };
     loadDashboardData();
+
+    const handleSync = () => {
+      loadDashboardData();
+    };
+
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('appointments_updated', handleSync);
+    window.addEventListener('orders_updated', handleSync);
+    window.addEventListener('focus', handleSync);
+    document.addEventListener('visibilitychange', handleSync);
+
+    return () => {
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('appointments_updated', handleSync);
+      window.removeEventListener('orders_updated', handleSync);
+      window.removeEventListener('focus', handleSync);
+      document.removeEventListener('visibilitychange', handleSync);
+    };
   }, []);
 
   const chartPoints = adminDashboardData.salesData[timeFilter] || adminDashboardData.salesData['7 Days'];
@@ -74,6 +103,8 @@ export const AdminDashboard = () => {
     if (kpi.id === 'orders') return { ...kpi, value: totalOrdersCount.toString() };
     if (kpi.id === 'pending_ord') return { ...kpi, value: pendingOrders.toString() };
     if (kpi.id === 'low_stock') return { ...kpi, value: lowStockCount.toString() };
+    if (kpi.id === 'apt') return { ...kpi, value: appointments.length.toString() };
+    if (kpi.id === 'cust') return { ...kpi, value: customers.length.toString() };
     return kpi;
   });
 
