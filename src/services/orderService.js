@@ -231,6 +231,19 @@ export const orderService = {
     return { success: true, data: getStoredOrders() };
   },
 
+  getMyPatientOrders: async (user) => {
+    try {
+      const email = user?.email || (typeof localStorage !== 'undefined' ? localStorage.getItem('last_checkout_email') : '');
+      const res = await api.get(`/orders/my-orders${email ? `?email=${encodeURIComponent(email)}` : ''}`);
+      if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
+        return res.data;
+      }
+    } catch {
+      // Fallback
+    }
+    return getUserOrders(user);
+  },
+
   getMyOrderById: async (id) => {
     try {
       const res = await api.get(`/orders/my-orders/${id}`);

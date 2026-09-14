@@ -2,9 +2,8 @@ import mongoose from 'mongoose';
 
 const orderItemSchema = new mongoose.Schema({
   product: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
-    required: true
+    type: mongoose.Schema.Types.Mixed,
+    default: null
   },
   name: { type: String, required: true },
   sku: { type: String, default: '' },
@@ -30,8 +29,25 @@ const orderSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    default: null,
     index: true
+  },
+  guestId: {
+    type: String,
+    default: ''
+  },
+  guestEmail: {
+    type: String,
+    default: '',
+    index: true
+  },
+  guestName: {
+    type: String,
+    default: ''
+  },
+  guestPhone: {
+    type: String,
+    default: ''
   },
   orderNumber: {
     type: String,

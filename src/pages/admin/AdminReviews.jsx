@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Star, Check, X, Eye, ShieldCheck, Filter, Search, 
   Sparkles, ThumbsUp, MessageSquare, AlertCircle, Award, 
@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { initialAdminReviews } from '../../data/adminReviewsData';
 import { useToast } from '../../context/ToastContext';
+import { api } from '../../utils/api';
 
 export const AdminReviews = () => {
   const { showToast } = useToast();
@@ -24,6 +25,21 @@ export const AdminReviews = () => {
   const [filterStatus, setFilterStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [featuredOnly, setFeaturedOnly] = useState(false);
+
+  useEffect(() => {
+    const fetchMongoReviews = async () => {
+      try {
+        const res = await api.get('/reviews');
+        if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
+          setReviews(res.data);
+          localStorage.setItem('admin_reviews_store', JSON.stringify(res.data));
+        }
+      } catch {
+        // Fallback to local storage
+      }
+    };
+    fetchMongoReviews();
+  }, []);
 
   // Computed metrics
   const totalCount = reviews.length;
@@ -52,27 +68,40 @@ export const AdminReviews = () => {
     }
   };
 
-  const handleUpdateStatus = (id, newStatus) => {
-    const updated = reviews.map(r => r.id === id ? { ...r, status: newStatus } : r);
+  const handleUpdateStatus = async (id, newStatus) => {
+    const updated = reviews.map(r => (r.id === id || r._id === id) ? { ...r, status: newStatus } : r);
     setReviews(updated);
     saveReviews(updated);
     showToast(`Review marked as ${newStatus}`, 'success');
+
+    try {
+      await api.patch(`/reviews/${id}/status`, { status: newStatus });
+    } catch {
+      // Fallback
+    }
   };
 
-  const handleToggleFeatured = (id) => {
+  const handleToggleFeatured = async (id) => {
+    let nextFeaturedState = false;
     const updated = reviews.map(r => {
-      if (r.id === id) {
-        const nextFeatured = !r.isFeatured;
+      if (r.id === id || r._id === id) {
+        nextFeaturedState = !r.isFeatured;
         showToast(
-          nextFeatured ? 'Review pinned to Homepage Testimonials!' : 'Review unpinned from Homepage', 
+          nextFeaturedState ? 'Review pinned to Homepage Testimonials!' : 'Review unpinned from Homepage', 
           'info'
         );
-        return { ...r, isFeatured: nextFeatured };
+        return { ...r, isFeatured: nextFeaturedState };
       }
       return r;
     });
     setReviews(updated);
     saveReviews(updated);
+
+    try {
+      await api.patch(`/reviews/${id}/status`, { isFeatured: nextFeaturedState });
+    } catch {
+      // Fallback
+    }
   };
 
   const statusStyles = {

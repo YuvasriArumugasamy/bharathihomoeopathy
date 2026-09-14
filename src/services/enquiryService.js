@@ -76,29 +76,47 @@ export const enquiryService = {
   },
 
   updateEnquiryStatus: async (id, status) => {
-    const list = getStoredEnquiries().map(e => e.id === id ? { ...e, status } : e);
+    const list = getStoredEnquiries().map(e => (e.id === id || e._id === id || e.enquiryId === id) ? { ...e, status } : e);
     saveStoredEnquiries(list);
+
+    try {
+      await api.patch(`/enquiries/${id}/status`, { status });
+    } catch {
+      // Fallback
+    }
+
     return { success: true, status };
   },
 
   addReply: async (enquiryId, replyMessage) => {
     const list = getStoredEnquiries().map(enq => {
-      if (enq.id === enquiryId) {
+      if (enq.id === enquiryId || enq._id === enquiryId || enq.enquiryId === enquiryId) {
         const newReply = {
           id: 'rep-' + Date.now(),
           sender: 'Dr. Bharathi Support Team',
           message: replyMessage,
+          sentAt: new Date().toISOString(),
           createdAt: 'Just now'
         };
         return {
           ...enq,
-          status: 'Resolved',
+          status: 'In Progress',
           replies: [...(enq.replies || []), newReply]
         };
       }
       return enq;
     });
     saveStoredEnquiries(list);
+
+    try {
+      await api.post(`/enquiries/${enquiryId}/reply`, {
+        message: replyMessage,
+        sender: 'Dr. Bharathi Support Team'
+      });
+    } catch {
+      // Fallback
+    }
+
     return { success: true };
   }
 };

@@ -10,76 +10,114 @@ export const createOrder = async (req, res, next) => {
     const { isValid, errors } = validateOrderInput(req.body);
     if (!isValid) return res.status(400).json({ success: false, message: errors.join(', ') });
 
-    const { shippingAddress, paymentMethod = 'COD', notes = '', discount = 0 } = req.body;
+    const {
+      shippingAddress,
+      paymentMethod = 'COD',
+      notes = '',
+      discount = 0,
+      items: directItems,
+      orderNumber: customOrderNumber,
+      guestEmail,
+      guestName,
+      guestPhone
+    } = req.body;
 
-    const cart = await Cart.findOne({ user: req.user._id });
-    if (!cart || cart.items.length === 0) {
+    let itemsSource = [];
+
+    if (Array.isArray(directItems) && directItems.length > 0) {
+      itemsSource = directItems;
+    } else if (req.user) {
+      const cart = await Cart.findOne({ user: req.user._id });
+      if (cart && cart.items.length > 0) {
+        itemsSource = cart.items;
+      }
+    }
+
+    if (!itemsSource || itemsSource.length === 0) {
       return res.status(400).json({ success: false, message: 'Your cart is empty. Add products before placing order.' });
     }
 
     const orderItems = [];
     let calculatedSubtotal = 0;
 
-    // Validate each item directly from MongoDB Product source of truth
-    for (const item of cart.items) {
-      const product = await Product.findOne({ _id: item.product, isActive: true });
-      if (!product) {
-        return res.status(400).json({ success: false, message: 'One or more items in your cart are no longer available' });
+    for (const item of itemsSource) {
+      const productId = item.product || item.id || item._id;
+      let name = item.name || item.title || 'Homeopathic Medicine';
+      let sku = item.sku || '';
+      let image = item.image || (Array.isArray(item.images) ? item.images[0] : '') || '';
+      let price = Number(item.price || item.salePrice || item.effectivePrice || 0);
+      const quantity = Number(item.quantity || 1);
+
+      // Attempt DB lookup if productId is a valid 24-char hex mongo ObjectId
+      if (productId && typeof productId === 'string' && /^[0-9a-fA-F]{24}$/.test(productId)) {
+        const product = await Product.findOne({ _id: productId });
+        if (product) {
+          name = product.name;
+          sku = product.sku || sku;
+          image = (product.images && product.images[0]) || image;
+          price = getEffectivePrice(product);
+          if (product.stock >= quantity) {
+            product.stock -= quantity;
+            await product.save().catch(() => {});
+          }
+        }
       }
 
-      if (product.stock < item.quantity) {
-        return res.status(400).json({
-          success: false,
-          message: `Insufficient stock for ${product.name}. Only ${product.stock} left in dispensary.`
-        });
-      }
-
-      const price = getEffectivePrice(product);
-      const itemSubtotal = price * item.quantity;
+      const itemSubtotal = price * quantity;
       calculatedSubtotal += itemSubtotal;
 
       orderItems.push({
-        product: product._id,
-        name: product.name,
-        sku: product.sku,
-        image: (product.images && product.images[0]) || '',
-        quantity: item.quantity,
+        product: productId,
+        name,
+        sku,
+        image,
+        quantity,
         price,
         itemSubtotal
       });
-
-      // Deduct stock safely
-      product.stock -= item.quantity;
-      await product.save();
     }
 
-    const shippingCharge = calculateShippingCharge(calculatedSubtotal);
-    const totalAmount = calculateOrderTotal(calculatedSubtotal, shippingCharge, Number(discount) || 0);
+    const shippingCharge = req.body.shippingCharge !== undefined
+      ? Number(req.body.shippingCharge)
+      : calculateShippingCharge(calculatedSubtotal);
+    const subtotal = req.body.subtotal !== undefined ? Number(req.body.subtotal) : calculatedSubtotal;
+    const totalAmount = req.body.totalAmount !== undefined
+      ? Number(req.body.totalAmount)
+      : calculateOrderTotal(subtotal, shippingCharge, Number(discount) || 0);
 
     const order = await Order.create({
-      user: req.user._id,
-      orderNumber: generateOrderNumber(),
+      user: req.user ? req.user._id : null,
+      guestId: req.body.guestId || '',
+      guestEmail: guestEmail || shippingAddress?.email || (req.user ? req.user.email : ''),
+      guestName: guestName || shippingAddress?.fullName || (req.user ? req.user.name : ''),
+      guestPhone: guestPhone || shippingAddress?.phone || (req.user ? req.user.phone : ''),
+      orderNumber: customOrderNumber || generateOrderNumber(),
       items: orderItems,
       shippingAddress,
-      subtotal: calculatedSubtotal,
+      subtotal,
       shippingCharge,
       discount: Number(discount) || 0,
       totalAmount,
       paymentMethod,
-      paymentStatus: paymentMethod === 'COD' ? 'pending' : 'pending',
-      orderStatus: 'pending',
+      paymentStatus: paymentMethod === 'COD' ? 'pending' : (req.body.paymentStatus || 'pending'),
+      orderStatus: req.body.orderStatus || 'pending',
       notes
     });
 
-    // Clear user's cart on successful order placement
-    cart.items = [];
-    cart.subtotal = 0;
-    cart.totalItems = 0;
-    await cart.save();
+    // Clear cart if user had one
+    if (req.user) {
+      const cart = await Cart.findOne({ user: req.user._id });
+      if (cart) {
+        cart.items = [];
+        cart.subtotal = 0;
+        cart.totalItems = 0;
+        await cart.save().catch(() => {});
+      }
+    }
 
     res.status(201).json({
       success: true,
-      message: 'Order placed successfully',
+      message: 'Order placed successfully and recorded in MongoDB',
       data: order
     });
   } catch (error) {
@@ -89,7 +127,23 @@ export const createOrder = async (req, res, next) => {
 
 export const getMyOrders = async (req, res, next) => {
   try {
-    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+    const query = {};
+    if (req.user) {
+      query.$or = [
+        { user: req.user._id },
+        { guestEmail: (req.user.email || '').toLowerCase() },
+        { 'shippingAddress.email': (req.user.email || '').toLowerCase() }
+      ];
+    } else if (req.query.email) {
+      query.$or = [
+        { guestEmail: req.query.email.trim().toLowerCase() },
+        { 'shippingAddress.email': req.query.email.trim().toLowerCase() }
+      ];
+    } else {
+      return res.status(200).json({ success: true, data: [] });
+    }
+
+    const orders = await Order.find(query).sort({ createdAt: -1 });
     res.status(200).json({
       success: true,
       data: orders

@@ -76,7 +76,7 @@ export const saveStoredCustomers = (customers) => {
 export const customerService = {
   getAdminCustomers: async () => {
     try {
-      const res = await api.get('/auth/users');
+      const res = await api.get('/customers');
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
         saveStoredCustomers(res.data);
         return res.data;
@@ -87,7 +87,7 @@ export const customerService = {
     return getStoredCustomers();
   },
 
-  syncCustomer: (userData, orderAmount = 0) => {
+  syncCustomer: async (userData, orderAmount = 0) => {
     if (!userData || (!userData.email && !userData.phone)) return;
     const customers = getStoredCustomers();
     const email = (userData.email || '').toLowerCase().trim();
@@ -98,16 +98,19 @@ export const customerService = {
       (phone && c.phone === phone)
     );
 
+    let customerPayload;
+
     if (existingIdx >= 0) {
       const existing = customers[existingIdx];
-      customers[existingIdx] = {
+      customerPayload = {
         ...existing,
-        ordersCount: existing.ordersCount + (orderAmount > 0 ? 1 : 0),
-        totalSpent: existing.totalSpent + (Number(orderAmount) || 0)
+        ordersCount: (existing.ordersCount || 0) + (orderAmount > 0 ? 1 : 0),
+        totalSpent: (existing.totalSpent || 0) + (Number(orderAmount) || 0)
       };
+      customers[existingIdx] = customerPayload;
     } else {
       const names = (userData.name || userData.fullName || 'Patient').split(' ');
-      const newCust = {
+      customerPayload = {
         id: 'cust-' + Date.now(),
         customerId: 'PAT-' + Math.floor(1000 + Math.random() * 9000),
         firstName: names[0] || 'Patient',
@@ -121,20 +124,35 @@ export const customerService = {
         status: 'Active',
         joinedDate: new Date().toISOString().slice(0, 10)
       };
-      customers.unshift(newCust);
+      customers.unshift(customerPayload);
     }
 
     saveStoredCustomers(customers);
+
+    try {
+      await api.post('/customers', customerPayload);
+    } catch {
+      // Fallback
+    }
   },
 
-  toggleBlockCustomer: (id) => {
+  toggleBlockCustomer: async (id) => {
+    let newStatus = 'Active';
     const customers = getStoredCustomers().map(c => {
-      if (c.id === id || c._id === id) {
-        return { ...c, status: c.status === 'Active' ? 'Blocked' : 'Active' };
+      if (c.id === id || c._id === id || c.customerId === id) {
+        newStatus = c.status === 'Active' ? 'Inactive' : 'Active';
+        return { ...c, status: newStatus };
       }
       return c;
     });
     saveStoredCustomers(customers);
+
+    try {
+      await api.patch(`/customers/${id}/status`, { status: newStatus });
+    } catch {
+      // Fallback
+    }
+
     return { success: true };
   }
 };

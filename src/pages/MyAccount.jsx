@@ -39,9 +39,9 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { OrderInvoiceModal } from '../components/admin/OrderInvoiceModal';
 import { PrescriptionSlipModal } from '../components/account/PrescriptionSlipModal';
-import { getStoredOrders, getUserOrders } from '../services/orderService';
-import { getStoredAppointments, getUserAppointments } from '../services/appointmentService';
-import { getStoredPrescriptions, getUserPrescriptions } from '../services/prescriptionService';
+import { getStoredOrders, getUserOrders, orderService } from '../services/orderService';
+import { getStoredAppointments, getUserAppointments, appointmentService } from '../services/appointmentService';
+import { getStoredPrescriptions, getUserPrescriptions, prescriptionService } from '../services/prescriptionService';
 import { cloudSyncService } from '../services/cloudSyncService';
 
 export const MyAccount = () => {
@@ -62,7 +62,7 @@ export const MyAccount = () => {
   const [userAppointments, setUserAppointments] = useState(() => getUserAppointments(user));
   const [userPrescriptions, setUserPrescriptions] = useState(() => getUserPrescriptions(user));
 
-  // Listen to live updates from local checkout/booking and Firebase Firestore cloud
+  // Listen to live updates from MongoDB, local checkout/booking and Firebase Firestore cloud
   useEffect(() => {
     const refreshLiveUserData = () => {
       setRawOrders(getUserOrders(user));
@@ -71,6 +71,22 @@ export const MyAccount = () => {
     };
 
     refreshLiveUserData();
+
+    const loadMongoData = async () => {
+      try {
+        const [orders, appts, rxs] = await Promise.all([
+          orderService.getMyPatientOrders(user),
+          appointmentService.getMyPatientAppointments(user),
+          prescriptionService.getMyPatientPrescriptions(user)
+        ]);
+        if (orders && orders.length > 0) setRawOrders(orders);
+        if (appts && appts.length > 0) setUserAppointments(appts);
+        if (rxs && rxs.length > 0) setUserPrescriptions(rxs);
+      } catch (err) {
+        // Handled by local fallback
+      }
+    };
+    loadMongoData();
 
     if (typeof window !== 'undefined') {
       window.addEventListener('orders_updated', refreshLiveUserData);
@@ -82,6 +98,7 @@ export const MyAccount = () => {
     // Real-time Cloud Sync Listener across devices
     const unsubscribeCloud = cloudSyncService.listenToCloudOrders(() => {
       refreshLiveUserData();
+      loadMongoData();
     });
 
     return () => {

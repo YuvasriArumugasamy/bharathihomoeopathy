@@ -1,3 +1,5 @@
+import { api } from '../utils/api';
+
 const PRESCRIPTIONS_STORAGE_KEY = 'admin_prescriptions_store';
 
 const initialPrescriptions = [
@@ -83,11 +85,33 @@ export const getUserPrescriptions = (user) => {
 };
 
 export const prescriptionService = {
-  getPrescriptions: () => {
+  getPrescriptions: async () => {
+    try {
+      const res = await api.get('/prescriptions');
+      if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
+        saveStoredPrescriptions(res.data);
+        return res.data;
+      }
+    } catch {
+      // Fallback
+    }
     return getStoredPrescriptions();
   },
 
-  createPrescription: (data) => {
+  getMyPatientPrescriptions: async (user) => {
+    try {
+      const email = user?.email || (typeof localStorage !== 'undefined' ? localStorage.getItem('last_checkout_email') : '');
+      const res = await api.get(`/prescriptions/my${email ? `?email=${encodeURIComponent(email)}` : ''}`);
+      if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
+        return res.data;
+      }
+    } catch {
+      // Fallback
+    }
+    return getUserPrescriptions(user);
+  },
+
+  createPrescription: async (data) => {
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const prescriptionId = `RX-${dateStr.slice(0, 4)}-${randomNum}`;
@@ -119,6 +143,13 @@ export const prescriptionService = {
     const current = getStoredPrescriptions();
     const updated = [newRx, ...current];
     saveStoredPrescriptions(updated);
+
+    try {
+      await api.post('/prescriptions', newRx);
+    } catch {
+      // Persisted in local cache fallback
+    }
+
     return newRx;
   },
 

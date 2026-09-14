@@ -7,21 +7,19 @@ import {
   updateOrderStatus,
   updatePaymentStatus
 } from '../controllers/orderController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, optionalProtect } from '../middleware/authMiddleware.js';
 import { adminOnly } from '../middleware/adminMiddleware.js';
 
 const router = express.Router();
 
-router.use(protect);
-
-// Customer endpoints
-router.post('/', createOrder);
-router.get('/my-orders', getMyOrders);
-router.get('/:id', getOrderById);
+// Customer & Guest endpoints
+router.post('/', optionalProtect, createOrder);
+router.get('/my-orders', optionalProtect, getMyOrders);
+router.get('/:id', optionalProtect, getOrderById);
 
 // Admin endpoints
-router.get('/admin/all', adminOnly, getAdminOrders);
-router.patch('/:id/status', adminOnly, updateOrderStatus);
-router.patch('/:id/payment-status', adminOnly, updatePaymentStatus);
+router.get('/admin/all', protect, adminOnly, getAdminOrders);
+router.patch('/:id/status', protect, adminOnly, updateOrderStatus);
+router.patch('/:id/payment-status', protect, adminOnly, updatePaymentStatus);
 
 export default router;

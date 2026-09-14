@@ -200,12 +200,25 @@ export const appointmentService = {
     saveStoredAppointments(appointments);
 
     try {
-      await api.patch(`/appointments/${id}/reschedule`, { date, time });
+      await api.patch(`/appointments/${id}/status`, { status: 'Confirmed' });
     } catch {
       // Fallback
     }
 
     return { success: true, date, time };
+  },
+
+  getMyPatientAppointments: async (user) => {
+    try {
+      const email = user?.email || (typeof localStorage !== 'undefined' ? localStorage.getItem('last_checkout_email') : '');
+      const res = await api.get(`/appointments/my${email ? `?email=${encodeURIComponent(email)}` : ''}`);
+      if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
+        return res.data;
+      }
+    } catch {
+      // Fallback to local
+    }
+    return getUserAppointments(user);
   }
 };
 

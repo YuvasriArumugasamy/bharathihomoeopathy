@@ -12,6 +12,12 @@ import productRoutes from './routes/productRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import appointmentRoutes from './routes/appointmentRoutes.js';
+import prescriptionRoutes from './routes/prescriptionRoutes.js';
+import customerRoutes from './routes/customerRoutes.js';
+import enquiryRoutes from './routes/enquiryRoutes.js';
+import blogRoutes from './routes/blogRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 
 dotenv.config();
 
@@ -45,6 +51,12 @@ app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/prescriptions', prescriptionRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/enquiries', enquiryRoutes);
+app.use('/api/blogs', blogRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Error Handling Middlewares
 app.use(notFound);

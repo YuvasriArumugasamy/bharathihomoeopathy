@@ -42,3 +42,27 @@ export const protect = async (req, res, next) => {
     });
   }
 };
+
+export const optionalProtect = async (req, res, next) => {
+  let token;
+
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dr_bharathi_secure_jwt_secret_key_2026_homeo');
+    const user = await User.findById(decoded.id);
+    if (user && !user.isBlocked) {
+      req.user = user;
+    }
+  } catch (error) {
+    // Silently continue without user
+  }
+  next();
+};
+
