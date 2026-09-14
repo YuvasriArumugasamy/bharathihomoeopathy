@@ -190,10 +190,10 @@ export const MyAccount = () => {
           <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
             
             {/* Left: Patient Avatar & Details */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-6 w-full lg:w-auto">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-6 w-full lg:w-auto">
               
-              <div className="relative group">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-tr from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-black text-4xl sm:text-5xl flex items-center justify-center shadow-2xl ring-4 ring-white/20 shrink-0 overflow-hidden transform group-hover:scale-105 transition-all duration-300">
+              <div className="relative group mx-auto sm:mx-0">
+                <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-tr from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-black text-3xl sm:text-5xl flex items-center justify-center shadow-2xl ring-4 ring-white/20 shrink-0 overflow-hidden transform group-hover:scale-105 transition-all duration-300">
                   {user?.picture ? (
                     <img src={user.picture} alt={user?.name} className="w-full h-full object-cover" />
                   ) : (
@@ -201,32 +201,32 @@ export const MyAccount = () => {
                   )}
                 </div>
                 {/* Active Live Pulse Badge */}
-                <div className="absolute -bottom-1 -right-1 bg-emerald-500 rounded-full p-1.5 ring-4 ring-[#072538] flex items-center justify-center" title="Verified Active Patient">
-                  <span className="relative flex h-3 w-3">
+                <div className="absolute -bottom-1 -right-1 bg-emerald-500 rounded-full p-1.5 ring-4 ring-[#072538] flex items-center justify-center shadow-lg" title="Verified Active Patient">
+                  <span className="relative flex h-2.5 w-2.5 sm:h-3 sm:w-3">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-400"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 sm:h-3 sm:w-3 bg-emerald-400"></span>
                   </span>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white drop-shadow-md">
+              <div className="space-y-2.5 sm:space-y-2 mt-1 sm:mt-0 flex-1">
+                <div className="flex flex-col sm:flex-row items-center sm:items-end justify-center sm:justify-start gap-2 sm:gap-3">
+                  <h1 className="text-[22px] sm:text-3xl lg:text-4xl font-black tracking-tight text-white drop-shadow-md leading-tight">
                     {user?.name || profileData.name}
                   </h1>
-                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-amber-400/20 to-orange-400/20 border border-amber-300/40 rounded-full text-[11px] font-black text-amber-300 uppercase tracking-widest backdrop-blur-md shadow-inner">
-                    <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                    REGISTERED PATIENT
+                  <span className="inline-flex items-center justify-center gap-1 px-2.5 py-0.5 sm:px-3 sm:py-1 bg-gradient-to-r from-amber-400/20 to-orange-400/20 border border-amber-300/40 rounded-full text-[9px] sm:text-[11px] font-black text-amber-300 uppercase tracking-widest backdrop-blur-md shadow-inner whitespace-nowrap mb-1 sm:mb-2">
+                    <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400" />
+                    Registered Patient
                   </span>
                 </div>
                 
-                <p className="text-sm text-cyan-100 font-medium">{user?.email || profileData.email}</p>
+                <p className="text-xs sm:text-sm text-cyan-100 font-medium -mt-1 sm:mt-0">{user?.email || profileData.email}</p>
                 
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1 text-xs text-slate-200">
-                  <span className="bg-white/10 px-3 py-1 rounded-xl border border-white/15 font-mono text-cyan-200 backdrop-blur-sm">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 pt-2 sm:pt-1 text-[11px] sm:text-xs text-slate-200">
+                  <span className="bg-white/10 px-2.5 py-1 sm:px-3 sm:py-1 rounded-xl border border-white/15 font-mono text-cyan-200 backdrop-blur-sm shadow-sm whitespace-nowrap">
                     ID: <strong className="text-white font-bold">#BH-PATIENT-88902</strong>
                   </span>
-                  <span className="bg-white/10 px-3 py-1 rounded-xl border border-white/15 text-amber-300 font-semibold backdrop-blur-sm">
+                  <span className="bg-white/10 px-2.5 py-1 sm:px-3 sm:py-1 rounded-xl border border-white/15 text-amber-300 font-semibold backdrop-blur-sm shadow-sm whitespace-nowrap">
                     Constitutional Homeopathy
                   </span>
                 </div>
