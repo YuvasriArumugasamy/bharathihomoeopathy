@@ -33,12 +33,14 @@ export const AdminEnquiries = () => {
   }, []);
 
   // Metrics
-  const totalCount = enquiries.length;
-  const newCount = enquiries.filter(e => e.status === 'New').length;
-  const inProgressCount = enquiries.filter(e => e.status === 'In Progress').length;
-  const resolvedCount = enquiries.filter(e => e.status === 'Resolved').length;
+  const validEnquiries = Array.isArray(enquiries) ? enquiries.filter(Boolean) : [];
+  const totalCount = validEnquiries.length;
+  const newCount = validEnquiries.filter(e => e?.status === 'New').length;
+  const inProgressCount = validEnquiries.filter(e => e?.status === 'In Progress').length;
+  const resolvedCount = validEnquiries.filter(e => e?.status === 'Resolved').length;
 
-  const filtered = enquiries.filter(enq => {
+  const filtered = validEnquiries.filter(enq => {
+    if (!enq) return false;
     const matchesStatus = statusFilter === 'All' || enq.status === statusFilter;
     const matchesType = typeFilter === 'All' || enq.type === typeFilter;
     const q = searchQuery.toLowerCase().trim();

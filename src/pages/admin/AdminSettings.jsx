@@ -12,10 +12,27 @@ export const AdminSettings = () => {
   const [settings, setSettings] = useState(() => {
     try {
       const saved = localStorage.getItem('admin_clinic_settings');
-      return saved ? JSON.parse(saved) : initialAdminSettings;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...initialAdminSettings,
+          ...parsed,
+          general: { ...initialAdminSettings.general, ...(parsed.general || {}) },
+          clinic: { ...initialAdminSettings.clinic, ...(parsed.clinic || {}) },
+          contact: { ...initialAdminSettings.contact, ...(parsed.contact || {}) },
+          workingHours: { ...initialAdminSettings.workingHours, ...(parsed.workingHours || {}) },
+          store: { ...initialAdminSettings.store, ...(parsed.store || {}) },
+          orders: { ...initialAdminSettings.orders, ...(parsed.orders || {}) },
+          appointments: { ...initialAdminSettings.appointments, ...(parsed.appointments || {}) },
+          payments: { ...initialAdminSettings.payments, ...(parsed.payments || {}) },
+          shipping: { ...initialAdminSettings.shipping, ...(parsed.shipping || {}) },
+          tax: { ...initialAdminSettings.tax, ...(parsed.tax || {}) }
+        };
+      }
     } catch {
-      return initialAdminSettings;
+      // Fallback
     }
+    return initialAdminSettings;
   });
   const [activeSection, setActiveSection] = useState('general');
 

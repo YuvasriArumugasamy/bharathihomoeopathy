@@ -17,26 +17,27 @@ export const AdminPayments = () => {
   const [refundReason, setRefundReason] = useState('');
 
   // Financial Metrics
-  const totalCollected = payments
+  const validPayments = Array.isArray(payments) ? payments.filter(Boolean) : [];
+  const totalCollected = validPayments
     .filter(p => p.paymentStatus === 'Paid')
-    .reduce((a, b) => a + b.amount, 0);
+    .reduce((a, b) => a + (Number(b.amount) || 0), 0);
 
-  const totalRefunded = payments
+  const totalRefunded = validPayments
     .filter(p => p.paymentStatus === 'Refunded')
-    .reduce((a, b) => a + (b.refundAmount || b.amount), 0);
+    .reduce((a, b) => a + (Number(b.refundAmount) || Number(b.amount) || 0), 0);
 
-  const pendingSettlement = payments
+  const pendingSettlement = validPayments
     .filter(p => p.paymentStatus === 'Pending')
-    .reduce((a, b) => a + b.amount, 0);
+    .reduce((a, b) => a + (Number(b.amount) || 0), 0);
 
-  const filtered = payments.filter(p => {
+  const filtered = validPayments.filter(p => {
     const matchesStatus = statusFilter === 'All' || p.paymentStatus === statusFilter;
     const matchesMethod = methodFilter === 'All' || p.paymentMethod === methodFilter;
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch = !q || 
-      p.paymentId.toLowerCase().includes(q) ||
-      p.orderId.toLowerCase().includes(q) ||
-      p.customerName.toLowerCase().includes(q);
+      (p.paymentId || '').toLowerCase().includes(q) ||
+      (p.orderId || '').toLowerCase().includes(q) ||
+      (p.customerName || '').toLowerCase().includes(q);
     return matchesStatus && matchesMethod && matchesSearch;
   });
 

@@ -13,7 +13,9 @@ export const AdminSeo = () => {
   const [pageList, setPageList] = useState(initialPageSeoList);
   const [editingPage, setEditingPage] = useState(null);
 
-  const avgScore = Math.round(pageList.reduce((sum, p) => sum + p.score, 0) / pageList.length);
+  const avgScore = Array.isArray(pageList) && pageList.length > 0
+    ? Math.round(pageList.reduce((sum, p) => sum + (Number(p?.score) || 0), 0) / pageList.length)
+    : 100;
 
   const handleSaveGlobal = (e) => {
     e.preventDefault();

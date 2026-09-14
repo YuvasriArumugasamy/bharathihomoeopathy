@@ -69,12 +69,13 @@ export const AdminProducts = () => {
 
   const categoriesList = ['All', 'Homeopathic Medicines', 'Mother Tinctures', 'Biochemic Medicines', 'Wellness Products', 'Personal Care', 'Combo Products'];
 
-  const filteredProducts = products.filter((p) => {
+  const filteredProducts = (Array.isArray(products) ? products : []).filter((p) => {
+    if (!p) return false;
     if (selectedCategory !== 'All' && p.category !== selectedCategory) return false;
     if (selectedStatus !== 'All' && p.status !== selectedStatus) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
-      return p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q);
+      return (p.name || '').toLowerCase().includes(q) || (p.sku || '').toLowerCase().includes(q);
     }
     return true;
   });

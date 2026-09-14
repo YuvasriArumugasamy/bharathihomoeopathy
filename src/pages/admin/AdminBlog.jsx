@@ -41,17 +41,19 @@ export const AdminBlog = () => {
   });
 
   // Metrics
-  const totalArticles = blogs.length;
-  const totalViews = blogs.reduce((sum, b) => sum + (b.views || 0), 0);
-  const categoriesList = ['All', ...new Set(blogs.map(b => b.category))];
+  const validBlogs = Array.isArray(blogs) ? blogs.filter(Boolean) : [];
+  const totalArticles = validBlogs.length;
+  const totalViews = validBlogs.reduce((sum, b) => sum + (Number(b?.views) || 0), 0);
+  const categoriesList = ['All', ...new Set(validBlogs.map(b => b?.category).filter(Boolean))];
 
-  const filtered = blogs.filter(b => {
+  const filtered = validBlogs.filter(b => {
+    if (!b) return false;
     const matchesCat = selectedCategory === 'All' || b.category === selectedCategory;
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch = !q || 
-      b.title.toLowerCase().includes(q) || 
-      b.shortDescription.toLowerCase().includes(q) ||
-      b.category.toLowerCase().includes(q);
+      (b.title || '').toLowerCase().includes(q) || 
+      (b.shortDescription || '').toLowerCase().includes(q) ||
+      (b.category || '').toLowerCase().includes(q);
     return matchesCat && matchesSearch;
   });
 

@@ -41,8 +41,9 @@ export const AdminCategories = () => {
     isFeatured: false
   });
 
-  const totalRemedies = categories.reduce((sum, c) => sum + (c.productCount || 0), 0);
-  const filtered = categories.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+  const validCategories = Array.isArray(categories) ? categories.filter(Boolean) : [];
+  const totalRemedies = validCategories.reduce((sum, c) => sum + (Number(c?.productCount) || 0), 0);
+  const filtered = validCategories.filter(c => (c.name || '').toLowerCase().includes((search || '').toLowerCase()));
 
   const handleOpenAdd = () => {
     setEditingCategory(null);
