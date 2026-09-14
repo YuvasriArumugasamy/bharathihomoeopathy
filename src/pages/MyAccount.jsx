@@ -294,32 +294,26 @@ export const MyAccount = () => {
                 </div>
               </div>
 
-              <div className="space-y-2.5 sm:space-y-2 mt-1 sm:mt-0 flex-1">
+              <div className="space-y-2 mt-1 sm:mt-0 flex-1">
                 <div className="flex flex-col sm:flex-row items-center sm:items-end justify-center sm:justify-start gap-2 sm:gap-3">
                   <h1 className="text-[22px] sm:text-3xl lg:text-4xl font-black tracking-tight text-white drop-shadow-md leading-tight">
                     {user?.name || profileData.name}
                   </h1>
-                  <span className="inline-flex items-center justify-center gap-1 px-2.5 py-0.5 sm:px-3 sm:py-1 bg-gradient-to-r from-amber-400/20 to-orange-400/20 border border-amber-300/40 rounded-full text-[9px] sm:text-[11px] font-black text-amber-300 uppercase tracking-widest backdrop-blur-md shadow-inner whitespace-nowrap mb-1 sm:mb-2">
-                    <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400" />
-                    Registered Patient
+                  <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1 bg-emerald-500/20 border border-emerald-400/40 rounded-full text-[10px] sm:text-xs font-bold text-emerald-300 backdrop-blur-md shadow-xs whitespace-nowrap mb-1 sm:mb-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    Verified Patient
                   </span>
                 </div>
                 
-                <p className="text-xs sm:text-sm text-cyan-100 font-medium -mt-1 sm:mt-0">{user?.email || profileData.email}</p>
-                
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 pt-2 sm:pt-1 text-[11px] sm:text-xs text-slate-200">
-                  <span className="bg-white/10 px-2.5 py-1 sm:px-3 sm:py-1 rounded-xl border border-white/15 font-mono text-cyan-200 backdrop-blur-sm shadow-sm whitespace-nowrap">
-                    ID: <strong className="text-white font-bold">{patientId}</strong>
-                  </span>
-                  <span className="bg-white/10 px-2.5 py-1 sm:px-3 sm:py-1 rounded-xl border border-white/15 text-amber-300 font-semibold backdrop-blur-sm shadow-sm whitespace-nowrap">
-                    Constitutional Homeopathy
-                  </span>
-                </div>
+                <p className="text-xs sm:text-sm text-cyan-100 font-medium">{user?.email || profileData.email}</p>
+                {(user?.phone || profileData.phone) && (
+                  <p className="text-xs text-cyan-200/80 font-mono">{user?.phone || profileData.phone}</p>
+                )}
               </div>
 
             </div>
 
-            {/* Right: Interactive Stat Cards & Account Action */}
+            {/* Right: Clean Stat Cards & Account Action */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 w-full lg:w-auto shrink-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-white/10">
               
               <div className="bg-white/10 backdrop-blur-xl p-4 rounded-2xl border border-white/15 text-center sm:text-left space-y-1 hover:border-amber-400/40 hover:bg-white/15 transition-all shadow-lg group">
@@ -327,9 +321,9 @@ export const MyAccount = () => {
                   <span>Total Orders</span>
                   <ShoppingBag className="w-4 h-4 text-brandOrange-400 group-hover:scale-110 transition-transform" />
                 </div>
-                <div className="text-xl font-black text-white">{allOrders.length} {allOrders.length === 1 ? 'Order' : 'Orders'}</div>
-                <span className="text-[10px] font-bold text-amber-300 block">
-                  {processingOrdersCount > 0 ? `${processingOrdersCount} In Progress` : (allOrders.length > 0 ? 'All Completed' : '0 Orders')}
+                <div className="text-2xl font-black text-white">{allOrders.length}</div>
+                <span className="text-[11px] font-medium text-slate-300 block">
+                  {allOrders.length === 1 ? 'Order' : 'Orders'}
                 </span>
               </div>
               
@@ -338,11 +332,11 @@ export const MyAccount = () => {
                   <span>Consultations</span>
                   <Calendar className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
                 </div>
-                <div className="text-xl font-black text-amber-300">
-                  {userAppointments.length} {userAppointments.length === 1 ? 'Booking' : 'Bookings'}
+                <div className="text-2xl font-black text-amber-300">
+                  {userAppointments.length}
                 </div>
-                <span className="text-[10px] font-bold text-emerald-300 block">
-                  {activeAppointment ? 'Dr. Bharathi (Active)' : '0 Scheduled'}
+                <span className="text-[11px] font-medium text-amber-200 block">
+                  {userAppointments.length === 1 ? 'Booking' : 'Bookings'}
                 </span>
               </div>
 
@@ -886,37 +880,23 @@ export const MyAccount = () => {
             {activeTab === 'medical' && (
               <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xl space-y-6">
                 
-                <div className="pb-5 border-b border-slate-100">
-                  <h2 className="text-xl font-black text-navy-950 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-brandOrange-500" />
-                    Prescription Vault & Medical Profile
-                  </h2>
-                  <p className="text-xs text-slate-500 font-medium">Your health profile and Dr. Bharathi's digital prescription wallet</p>
-                </div>
-
-                {/* Health Metrics Card */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="p-5 rounded-2xl bg-emerald-50/80 border border-emerald-200/80 space-y-1">
-                    <span className="text-[10px] font-black text-emerald-800 uppercase tracking-wider block">BLOOD GROUP</span>
-                    <p className="text-xl font-black text-emerald-950">{profileData.bloodGroup}</p>
-                    <span className="text-[10px] text-emerald-700 font-medium block">Verified Medical File</span>
+                <div className="pb-5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-black text-navy-950 flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-brandOrange-500" />
+                      Digital Prescription Vault
+                    </h2>
+                    <p className="text-xs text-slate-500 font-medium">Your verified homeopathic prescriptions and doctor dosage instructions</p>
                   </div>
-
-                  <div className="p-5 rounded-2xl bg-amber-50/80 border border-amber-200/80 space-y-1">
-                    <span className="text-[10px] font-black text-amber-800 uppercase tracking-wider block">KNOWN ALLERGIES</span>
-                    <p className="text-base font-black text-amber-950">{profileData.allergies}</p>
-                    <span className="text-[10px] text-amber-700 font-medium block">Safe for Homeo Dilutions</span>
-                  </div>
-
-                  <div className="p-5 rounded-2xl bg-cyan-50/80 border border-cyan-200/80 space-y-1">
-                    <span className="text-[10px] font-black text-cyan-800 uppercase tracking-wider block">CONSTITUTIONAL TYPE</span>
-                    <p className="text-xs font-black text-cyan-950">{profileData.constitutionalType}</p>
-                    <span className="text-[10px] text-cyan-700 font-medium block">Assessed by Dr. Bharathi</span>
-                  </div>
+                  {userPrescriptions.length > 0 && (
+                    <span className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200">
+                      {userPrescriptions.length} Active {userPrescriptions.length === 1 ? 'Prescription' : 'Prescriptions'}
+                    </span>
+                  )}
                 </div>
 
                 {/* Prescriptions Wallet List */}
-                <div className="space-y-4 pt-2">
+                <div className="space-y-4 pt-1">
                   <h3 className="text-sm font-black text-navy-950 uppercase tracking-wider">Active Digital Prescriptions</h3>
 
                   {userPrescriptions.length === 0 ? (
