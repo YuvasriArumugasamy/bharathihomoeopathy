@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authStorage } from '../utils/authStorage';
 import { api } from '../utils/api';
 import { customerService } from '../services/customerService';
@@ -37,12 +37,15 @@ export const AuthProvider = ({ children }) => {
       // Check if backend API is reachable, otherwise gracefully support demo login
       try {
         const res = await api.post('/auth/login', { email, password });
-        if (res && res.data && res.data.user) {
-          authStorage.setToken(res.data.token);
-          authStorage.setUser(res.data.user);
-          setUser(res.data.user);
+        // Backend returns: { success: true, data: { token, user } }
+        const loginUser = res?.data?.data?.user || res?.data?.user;
+        const loginToken = res?.data?.data?.token || res?.data?.token;
+        if (loginUser && loginToken) {
+          authStorage.setToken(loginToken);
+          authStorage.setUser(loginUser);
+          setUser(loginUser);
           setLoading(false);
-          return { success: true, user: res.data.user };
+          return { success: true, user: loginUser };
         }
       } catch (backendErr) {
         console.warn("Backend login unavailable, proceeding with verified demo session:", backendErr.message);
@@ -80,17 +83,20 @@ export const AuthProvider = ({ children }) => {
     try {
       try {
         const res = await api.post('/auth/register', userData);
-        if (res && res.data && res.data.user) {
-          authStorage.setToken(res.data.token);
-          authStorage.setUser(res.data.user);
-          setUser(res.data.user);
+        // Backend returns: { success: true, data: { token, user } }
+        const regUser = res?.data?.data?.user || res?.data?.user;
+        const regToken = res?.data?.data?.token || res?.data?.token;
+        if (regUser && regToken) {
+          authStorage.setToken(regToken);
+          authStorage.setUser(regUser);
+          setUser(regUser);
           try {
             customerService.syncCustomer(userData);
           } catch (e) {
             console.warn("Could not sync customer on register:", e);
           }
           setLoading(false);
-          return { success: true, user: res.data.user };
+          return { success: true, user: regUser };
         }
       } catch (backendErr) {
         console.warn("Backend register unavailable, proceeding with demo registration:", backendErr.message);
@@ -224,4 +230,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
