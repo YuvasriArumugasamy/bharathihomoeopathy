@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+﻿import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authStorage } from '../utils/authStorage';
 import { api } from '../utils/api';
 import { customerService } from '../services/customerService';
@@ -224,3 +224,4 @@ export const useAuth = () => {
   }
   return context;
 };
+
