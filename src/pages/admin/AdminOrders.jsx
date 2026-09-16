@@ -497,7 +497,7 @@ export const AdminOrders = () => {
               </div>
 
               {/* Status Update Controls */}
-              <div className="p-4.5 bg-gradient-to-br from-slate-50 to-orange-50/30 rounded-2xl border border-slate-200/80 space-y-3.5 text-xs">
+              <div className="p-4 sm:p-5 bg-gradient-to-br from-slate-50 to-orange-50/30 rounded-2xl border border-slate-200/80 space-y-3.5 text-xs">
                 <h4 className="font-black text-slate-900 font-display flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   Update Fulfillment Pipeline

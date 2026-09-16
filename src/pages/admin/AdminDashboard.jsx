@@ -385,7 +385,7 @@ export const AdminDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left: Interactive Revenue Trend Chart */}
-        <div className="lg:col-span-8 bg-white/95 backdrop-blur-sm p-4.5 sm:p-7 lg:p-8 rounded-3xl sm:rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-5 sm:space-y-6 flex flex-col justify-between">
+        <div className="lg:col-span-8 bg-white/95 backdrop-blur-sm p-5 sm:p-7 lg:p-8 rounded-3xl sm:rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-5 sm:space-y-6 flex flex-col justify-between">
           
           {/* Header & Controls */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
