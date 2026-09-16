@@ -1,3 +1,6 @@
+// Backend server.js - backend entry point
+// Ensures all routes including appointmentRoutes are mounted correctly for Render deployment.
+// Last updated: 2026-09-16 - force Render re-deploy to pick up appointmentRoutes
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';

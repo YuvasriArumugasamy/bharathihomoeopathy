@@ -11,9 +11,13 @@ class ApiClient {
     const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     const token = authStorage.getToken();
 
+    // Demo tokens (demo_jwt_token_...) are local-only session tokens.
+    // Never send them to the real backend – they will always cause 401 errors.
+    const isDemoToken = token && (token.startsWith('demo_') || token.startsWith('demo_jwt_'));
+
     const headers = {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(token && !isDemoToken ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {})
     };
 
@@ -26,6 +30,11 @@ class ApiClient {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
+        // If backend rejects a real token as invalid/expired, auto-clear it
+        // so subsequent requests don't keep retrying with a bad token.
+        if (response.status === 401 && !isDemoToken) {
+          authStorage.clearAuth();
+        }
         const error = new Error(data.message || `Request failed with status ${response.status}`);
         error.status = response.status;
         error.data = data;
