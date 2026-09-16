@@ -206,56 +206,74 @@ export const AdminAppointments = () => {
       </div>
 
       {/* KPI Overview Bar */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Bookings</span>
-            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-navy-900">
-              <Calendar className="w-4 h-4" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        {/* Card 1 */}
+        <div className="bg-white/95 backdrop-blur-sm p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
+              Total Bookings
+            </span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-slate-100 flex items-center justify-center text-navy-900 shrink-0">
+              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-navy-950">{totalCount}</span>
-            <span className="text-xs text-slate-400 font-semibold">Patients</span>
+          <div className="mt-2.5 sm:mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="text-lg sm:text-2xl font-black text-navy-950 leading-none">{totalCount}</span>
+            <span className="text-[10px] sm:text-xs text-slate-400 font-semibold">Patients</span>
           </div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Confirmed</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-              <CalendarCheck className="w-4 h-4" />
+        {/* Card 2 */}
+        <div className="bg-white/95 backdrop-blur-sm p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
+              Confirmed
+            </span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+              <CalendarCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-600">{confirmedCount}</span>
-            <span className="text-xs text-emerald-700/80 font-semibold">Scheduled</span>
+          <div className="mt-2.5 sm:mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="text-lg sm:text-2xl font-black text-emerald-600 leading-none">{confirmedCount}</span>
+            <span className="text-[10px] sm:text-xs text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+              Scheduled
+            </span>
           </div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Awaiting Confirmation</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
-              <CalendarClock className="w-4 h-4" />
+        {/* Card 3 */}
+        <div className="bg-white/95 backdrop-blur-sm p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
+              Awaiting
+            </span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
+              <CalendarClock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-amber-600">{pendingCount}</span>
-            <span className="text-xs text-amber-700/80 font-semibold">Needs review</span>
+          <div className="mt-2.5 sm:mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="text-lg sm:text-2xl font-black text-amber-600 leading-none">{pendingCount}</span>
+            <span className="text-[10px] sm:text-xs text-amber-700 font-bold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+              Review
+            </span>
           </div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Online Video Calls</span>
-            <div className="w-9 h-9 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600">
-              <Video className="w-4 h-4" />
+        {/* Card 4 */}
+        <div className="bg-white/95 backdrop-blur-sm p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
+              Online Video
+            </span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-sky-50 flex items-center justify-center text-sky-600 shrink-0">
+              <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-sky-600">{onlineCount}</span>
-            <span className="text-xs text-sky-700/80 font-semibold">Tele-health</span>
+          <div className="mt-2.5 sm:mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="text-lg sm:text-2xl font-black text-sky-600 leading-none">{onlineCount}</span>
+            <span className="text-[10px] sm:text-xs text-sky-700 font-bold bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200">
+              Virtual
+            </span>
           </div>
         </div>
       </div>

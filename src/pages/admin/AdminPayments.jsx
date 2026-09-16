@@ -82,56 +82,84 @@ export const AdminPayments = () => {
       </div>
 
       {/* KPI Overview Bar */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Net Revenue Collected</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-              <IndianRupee className="w-4 h-4" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        {/* Card 1 */}
+        <div className="bg-white/95 backdrop-blur-sm p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
+              Net Revenue Collected
+            </span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+              <IndianRupee className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-600">₹{totalCollected.toLocaleString('en-IN')}</span>
-            <span className="text-xs text-emerald-700/80 font-semibold">Settled</span>
+          <div className="mt-2.5 sm:mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="text-lg sm:text-2xl font-black text-emerald-600 leading-none">
+              ₹{totalCollected.toLocaleString('en-IN')}
+            </span>
+            <span className="text-[10px] sm:text-xs text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+              Settled
+            </span>
           </div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Processed Refunds</span>
-            <div className="w-9 h-9 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600">
-              <RotateCcw className="w-4 h-4" />
+        {/* Card 2 */}
+        <div className="bg-white/95 backdrop-blur-sm p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
+              Total Processed Refunds
+            </span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-rose-50 flex items-center justify-center text-rose-600 shrink-0">
+              <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-rose-600">₹{totalRefunded.toLocaleString('en-IN')}</span>
-            <span className="text-xs text-rose-700/80 font-semibold">Reversed</span>
+          <div className="mt-2.5 sm:mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="text-lg sm:text-2xl font-black text-rose-600 leading-none">
+              ₹{totalRefunded.toLocaleString('en-IN')}
+            </span>
+            <span className="text-[10px] sm:text-xs text-rose-700 font-bold bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+              Reversed
+            </span>
           </div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending Settlement</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
-              <Clock className="w-4 h-4" />
+        {/* Card 3 */}
+        <div className="bg-white/95 backdrop-blur-sm p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
+              Pending Settlement
+            </span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-amber-600">₹{pendingSettlement.toLocaleString('en-IN')}</span>
-            <span className="text-xs text-amber-700/80 font-semibold">Awaiting</span>
+          <div className="mt-2.5 sm:mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="text-lg sm:text-2xl font-black text-amber-600 leading-none">
+              ₹{pendingSettlement.toLocaleString('en-IN')}
+            </span>
+            <span className="text-[10px] sm:text-xs text-amber-700 font-bold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+              Awaiting
+            </span>
           </div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Payment Gateways</span>
-            <div className="w-9 h-9 rounded-xl bg-navy-50 flex items-center justify-center text-navy-900">
-              <Banknote className="w-4 h-4" />
+        {/* Card 4 */}
+        <div className="bg-white/95 backdrop-blur-sm p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
+              Payment Gateways
+            </span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-navy-50 flex items-center justify-center text-navy-900 shrink-0">
+              <Banknote className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-navy-950">Razorpay</span>
-            <span className="text-xs text-slate-500 font-semibold">& COD</span>
+          <div className="mt-2.5 sm:mt-3 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+            <span className="text-base sm:text-2xl font-black text-navy-950 leading-none">
+              Razorpay
+            </span>
+            <span className="text-[10px] sm:text-xs text-slate-500 font-bold bg-slate-100 px-1.5 py-0.5 rounded">
+              & COD
+            </span>
           </div>
         </div>
       </div>
