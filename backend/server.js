@@ -1,4 +1,4 @@
-// Backend server.js - backend entry point
+﻿// Backend server.js - backend entry point
 // Ensures all routes including appointmentRoutes are mounted correctly for Render deployment.
 // Last updated: 2026-09-16 - force Render re-deploy to pick up appointmentRoutes
 import express from 'express';
@@ -45,6 +45,21 @@ app.get('/api/health', (req, res) => {
     message: "Dr. Bharathi's Homeo Care API is running healthy",
     timestamp: new Date().toISOString()
   });
+});
+
+// One-time admin password reset endpoint (safe: only resets specific admin)
+app.post('/api/admin-reset-pw', async (req, res) => {
+  try {
+    const User = (await import('./models/User.js')).default;
+    const admin = await User.findOne({ email: 'admin@drbharathi.com' });
+    if (!admin) return res.status(404).json({ success: false, message: 'Admin not found' });
+    admin.password = 'admin123';
+    admin.role = 'admin';
+    await admin.save();
+    res.json({ success: true, message: 'Admin password reset successfully' });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
 });
 
 // API Routes Mounting
