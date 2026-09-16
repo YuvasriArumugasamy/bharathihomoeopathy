@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import Category from '../models/Category.js';
 
@@ -12,21 +11,32 @@ export const seedInitialData = async () => {
     let admin = await User.findOne({ email: adminEmail });
 
     if (!admin) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash('admin123', salt);
-
+      // Let the User model's pre('save') hook handle password hashing
       admin = await User.create({
         name: 'Clinic Administrator',
         email: adminEmail,
-        password: hashedPassword,
+        password: 'admin123',
         role: 'admin',
-        phone: '+91 98765 43210'
+        phone: '+91 90258 54711'
       });
       console.log(`[Seed] Created default admin user: ${adminEmail}`);
-    } else if (admin.role !== 'admin') {
-      admin.role = 'admin';
-      await admin.save();
-      console.log(`[Seed] Updated ${adminEmail} to admin role`);
+    } else {
+      // Fix existing admin: if password is double-hashed or role is wrong, recreate
+      if (admin.role !== 'admin') {
+        admin.role = 'admin';
+        await admin.save();
+        console.log(`[Seed] Updated ${adminEmail} to admin role`);
+      }
+      // Verify password works; if not, reset it
+      const isMatch = await admin.matchPassword('admin123');
+      if (!isMatch) {
+        // Password is corrupted (double-hashed) - reset it via direct field update
+        // We must use save() so the pre-save hook re-hashes correctly
+        admin.password = 'admin123';
+        admin.role = 'admin';
+        await admin.save();
+        console.log(`[Seed] Reset admin password (was double-hashed)`);
+      }
     }
 
     // Default Categories
