@@ -47,20 +47,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// One-time admin password reset endpoint (safe: only resets specific admin)
-app.post('/api/admin-reset-pw', async (req, res) => {
-  try {
-    const User = (await import('./models/User.js')).default;
-    const admin = await User.findOne({ email: 'admin@drbharathi.com' });
-    if (!admin) return res.status(404).json({ success: false, message: 'Admin not found' });
-    admin.password = 'admin123';
-    admin.role = 'admin';
-    await admin.save();
-    res.json({ success: true, message: 'Admin password reset successfully' });
-  } catch (e) {
-    res.status(500).json({ success: false, message: e.message });
-  }
-});
 
 // API Routes Mounting
 app.use('/api/auth', authRoutes);
