@@ -219,11 +219,11 @@ export const AdminProducts = () => {
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto text-xs">
+        <div className="flex flex-row items-center gap-2 sm:gap-3 w-full md:w-auto text-xs">
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:outline-none focus:border-brandOrange-500 transition-all cursor-pointer shadow-2xs"
+            className="flex-1 sm:flex-initial p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:outline-none focus:border-brandOrange-500 transition-all cursor-pointer shadow-2xs text-xs truncate min-w-0"
           >
             {categoriesList.map(c => <option key={c} value={c}>{c === 'All' ? 'All Categories' : c}</option>)}
           </select>
@@ -231,7 +231,7 @@ export const AdminProducts = () => {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:outline-none focus:border-brandOrange-500 transition-all cursor-pointer shadow-2xs"
+            className="flex-1 sm:flex-initial p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:outline-none focus:border-brandOrange-500 transition-all cursor-pointer shadow-2xs text-xs truncate min-w-0"
           >
             <option value="All">All Statuses</option>
             <option value="Active">Active</option>
@@ -239,7 +239,7 @@ export const AdminProducts = () => {
             <option value="Out of Stock">Out of Stock</option>
           </select>
 
-          <span className="text-xs text-slate-500 font-bold hidden lg:inline">
+          <span className="text-xs text-slate-500 font-bold hidden lg:inline shrink-0">
             <span className="text-slate-900 font-black">{filteredProducts.length}</span> items
           </span>
         </div>
