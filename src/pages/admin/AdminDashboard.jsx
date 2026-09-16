@@ -302,28 +302,28 @@ export const AdminDashboard = () => {
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
         
-        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-5 text-center sm:text-left">
           
           {/* Left Greeting */}
-          <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+          <h1 className="font-heading text-xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
             {getGreeting()}, Dr. Bharathi
           </h1>
 
-          {/* Right: Quick Action Controls */}
-          <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 shrink-0">
+          {/* Right: Quick Action Controls - Always on a single line on mobile & desktop */}
+          <div className="relative z-10 flex flex-row items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto shrink-0">
             <Link
               to="/admin/products"
-              className="inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 font-black rounded-2xl text-xs sm:text-sm shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-white cursor-pointer"
+              className="flex-1 sm:flex-initial justify-center inline-flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-5 py-2.5 sm:py-3.5 bg-white hover:bg-orange-50 text-orange-600 font-black rounded-2xl text-xs sm:text-sm shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-white cursor-pointer whitespace-nowrap"
             >
-              <Plus className="w-4 h-4 stroke-[3]" />
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3] shrink-0" />
               <span>Add Product</span>
             </Link>
 
             <Link
               to="/admin/appointments"
-              className="inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-slate-900 hover:text-orange-600 font-black rounded-2xl text-xs sm:text-sm shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-white cursor-pointer"
+              className="flex-1 sm:flex-initial justify-center inline-flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-5 py-2.5 sm:py-3.5 bg-white hover:bg-orange-50 text-slate-900 hover:text-orange-600 font-black rounded-2xl text-xs sm:text-sm shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-white cursor-pointer whitespace-nowrap"
             >
-              <Calendar className="w-4 h-4 text-orange-600 stroke-[2.5]" />
+              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-600 stroke-[2.5] shrink-0" />
               <span>Appointments</span>
             </Link>
           </div>
