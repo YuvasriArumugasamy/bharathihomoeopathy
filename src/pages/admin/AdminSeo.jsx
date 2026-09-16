@@ -92,10 +92,10 @@ export const AdminSeo = () => {
           </div>
           <button
             onClick={handleOptimizeAllTo100}
-            className="px-5 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-2xl border border-white/40 text-white font-black text-xs flex items-center gap-2 shadow-lg transition-all active:scale-95"
-            title="Reset all pages to 100% SEO score"
+            className="w-full sm:w-auto justify-center relative z-10 inline-flex items-center gap-2.5 px-6 py-3.5 bg-white hover:bg-orange-50 text-brandOrange-600 hover:text-brandOrange-700 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border-2 border-white shrink-0"
+            title="Reset and apply 100% SEO score to all pages"
           >
-            <Wand2 className="w-4 h-4 text-amber-200" />
+            <Sparkles className="w-4 h-4 text-brandOrange-500 fill-brandOrange-500/20 stroke-[2.5]" />
             <span>Optimize All to 100%</span>
           </button>
         </div>
