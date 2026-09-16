@@ -62,6 +62,25 @@ app.use('/api/enquiries', enquiryRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/reviews', reviewRoutes);
 
+
+
+// Temp: update user to admin role (secret-protected)
+app.post('/api/make-admin', async (req, res) => {
+  try {
+    if (req.body.secret !== 'bharathi2026fix') return res.status(403).json({ success: false, message: 'Forbidden' });
+    const User = (await import('./models/User.js')).default;
+    const user = await User.findOneAndUpdate(
+      { email: req.body.email },
+      { role: 'admin' },
+      { new: true }
+    );
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, message: `${user.email} updated to admin`, role: user.role });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
 // Error Handling Middlewares
 app.use(notFound);
 app.use(errorHandler);
