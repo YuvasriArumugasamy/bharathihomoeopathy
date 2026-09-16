@@ -407,31 +407,33 @@ export const AdminSeo = () => {
       {/* Edit Page SEO Modal with Real-time 100% Optimizer */}
       {editingPage && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white rounded-[2.25rem] p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-start">
+          <div className="bg-white rounded-[2rem] sm:rounded-[2.25rem] p-4 sm:p-7 max-w-lg w-full space-y-4 sm:space-y-5 shadow-2xl border border-slate-100 max-h-[92vh] overflow-y-auto">
+            <div className="flex justify-between items-start gap-3">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-brandOrange-500">Route SEO Optimizer</span>
-                <h3 className="font-heading font-black text-navy-950 text-lg">
+                <h3 className="font-heading font-black text-navy-950 text-base sm:text-lg leading-snug">
                   Edit {editingPage.pageName} ({editingPage.route})
                 </h3>
               </div>
               <button 
                 onClick={() => setEditingPage(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-all"
+                className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-all shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Live Score Meter */}
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+            {/* Live Score Meter - Fully Responsive */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Live SEO Optimization</span>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className={`text-2xl font-black ${currentEditScore === 100 ? 'text-emerald-600' : 'text-orange-600'}`}>
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
+                  Live SEO Optimization
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-2xl font-black leading-none whitespace-nowrap ${currentEditScore === 100 ? 'text-emerald-600' : 'text-orange-600'}`}>
                     {currentEditScore} / 100
                   </span>
-                  <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
+                  <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border whitespace-nowrap ${
                     currentEditScore === 100
                       ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                       : 'bg-amber-100 text-amber-800 border-amber-300'
@@ -440,20 +442,21 @@ export const AdminSeo = () => {
                   </span>
                 </div>
               </div>
+
               <button
                 type="button"
                 onClick={handleAutoTuneEditingPage}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-bold text-xs shadow-md flex items-center gap-1.5 transition-all"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-bold text-xs shadow-md flex items-center justify-center gap-1.5 transition-all shrink-0 active:scale-95 cursor-pointer whitespace-nowrap"
                 title="Automatically fix title and description to achieve 100% score"
               >
-                <Sparkles className="w-3.5 h-3.5" />
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
                 <span>Auto-Tune 100%</span>
               </button>
             </div>
 
             <form onSubmit={handleSavePageSeo} className="space-y-4 text-xs">
               <div>
-                <div className="flex justify-between items-center mb-1.5">
+                <div className="flex flex-wrap justify-between items-center gap-1 mb-1.5">
                   <label className="font-bold text-slate-700">Meta Title</label>
                   <span className={`text-[10px] font-bold ${
                     editingPage.metaTitle.length >= 40 && editingPage.metaTitle.length <= 65 ? 'text-emerald-600' : 'text-amber-600'
@@ -471,7 +474,7 @@ export const AdminSeo = () => {
               </div>
 
               <div>
-                <div className="flex justify-between items-center mb-1.5">
+                <div className="flex flex-wrap justify-between items-center gap-1 mb-1.5">
                   <label className="font-bold text-slate-700">Meta Description</label>
                   <span className={`text-[10px] font-bold ${
                     editingPage.metaDescription.length >= 120 && editingPage.metaDescription.length <= 165 ? 'text-emerald-600' : 'text-amber-600'
@@ -501,26 +504,26 @@ export const AdminSeo = () => {
 
               {/* Real-time Checklist */}
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 space-y-1.5 text-[11px]">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className={`w-3.5 h-3.5 ${editingPage.metaTitle.length >= 40 && editingPage.metaTitle.length <= 65 ? 'text-emerald-600' : 'text-slate-300'}`} />
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${editingPage.metaTitle.length >= 40 && editingPage.metaTitle.length <= 65 ? 'text-emerald-600' : 'text-slate-300'}`} />
                   <span className={editingPage.metaTitle.length >= 40 && editingPage.metaTitle.length <= 65 ? 'text-slate-700 font-medium' : 'text-slate-400'}>
                     Title length between 40-65 characters
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className={`w-3.5 h-3.5 ${editingPage.metaDescription.length >= 120 && editingPage.metaDescription.length <= 165 ? 'text-emerald-600' : 'text-slate-300'}`} />
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${editingPage.metaDescription.length >= 120 && editingPage.metaDescription.length <= 165 ? 'text-emerald-600' : 'text-slate-300'}`} />
                   <span className={editingPage.metaDescription.length >= 120 && editingPage.metaDescription.length <= 165 ? 'text-slate-700 font-medium' : 'text-slate-400'}>
                     Description length between 120-165 characters
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className={`w-3.5 h-3.5 ${editingPage.focusKeyword && editingPage.metaTitle.toLowerCase().includes(editingPage.focusKeyword.toLowerCase()) ? 'text-emerald-600' : 'text-slate-300'}`} />
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${editingPage.focusKeyword && editingPage.metaTitle.toLowerCase().includes(editingPage.focusKeyword.toLowerCase()) ? 'text-emerald-600' : 'text-slate-300'}`} />
                   <span className={editingPage.focusKeyword && editingPage.metaTitle.toLowerCase().includes(editingPage.focusKeyword.toLowerCase()) ? 'text-slate-700 font-medium' : 'text-slate-400'}>
                     Focus keyword included in Title
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className={`w-3.5 h-3.5 ${editingPage.focusKeyword && editingPage.metaDescription.toLowerCase().includes(editingPage.focusKeyword.toLowerCase()) ? 'text-emerald-600' : 'text-slate-300'}`} />
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${editingPage.focusKeyword && editingPage.metaDescription.toLowerCase().includes(editingPage.focusKeyword.toLowerCase()) ? 'text-emerald-600' : 'text-slate-300'}`} />
                   <span className={editingPage.focusKeyword && editingPage.metaDescription.toLowerCase().includes(editingPage.focusKeyword.toLowerCase()) ? 'text-slate-700 font-medium' : 'text-slate-400'}>
                     Focus keyword included in Meta Description
                   </span>
