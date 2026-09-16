@@ -76,23 +76,23 @@ export const AdminSeo = () => {
     <div className="space-y-8 ">
       
       {/* Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-5 sm:p-8 lg:p-9 rounded-[2rem] sm:rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-6 sm:mb-8">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
         
-        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-5 text-left">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold mb-2 border border-white/30">
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[11px] sm:text-xs font-bold mb-2 border border-white/30">
               <Sparkles className="w-3.5 h-3.5 text-amber-200" />
               <span>100% Search Engine Optimization Suite</span>
             </div>
-            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+            <h1 className="font-heading text-xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
               SEO & Indexing Management
             </h1>
           </div>
           <button
             onClick={handleOptimizeAllTo100}
-            className="w-full sm:w-auto justify-center relative z-10 inline-flex items-center gap-2.5 px-6 py-3.5 bg-white hover:bg-orange-50 text-brandOrange-600 hover:text-brandOrange-700 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border-2 border-white shrink-0"
+            className="w-full sm:w-auto justify-center relative z-10 inline-flex items-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 bg-white hover:bg-orange-50 text-brandOrange-600 hover:text-brandOrange-700 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border-2 border-white shrink-0"
             title="Reset and apply 100% SEO score to all pages"
           >
             <Sparkles className="w-4 h-4 text-brandOrange-500 fill-brandOrange-500/20 stroke-[2.5]" />
@@ -101,59 +101,81 @@ export const AdminSeo = () => {
         </div>
       </div>
 
-      {/* KPI Overview Bar */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Indexed Routes</span>
-            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-navy-900">
-              <Layers className="w-4 h-4" />
+      {/* KPI Overview Bar - Fully Responsive for Mobile & Desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        {/* Card 1 */}
+        <div className="bg-white/95 backdrop-blur-sm p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
+              Indexed Routes
+            </span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-slate-100 flex items-center justify-center text-navy-900 shrink-0">
+              <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-navy-950">{pageList.length}</span>
-            <span className="text-xs text-slate-400 font-semibold">Active URLs</span>
+          <div className="mt-2.5 sm:mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="text-lg sm:text-2xl font-black text-navy-950 leading-none">
+              {pageList.length}
+            </span>
+            <span className="text-[10px] sm:text-xs text-slate-400 font-semibold">Active URLs</span>
           </div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avg Optimization</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-              <CheckCircle2 className="w-4 h-4" />
+        {/* Card 2 */}
+        <div className="bg-white/95 backdrop-blur-sm p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
+              Avg Optimization
+            </span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+              <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-600">{avgScore}/100</span>
-            <span className="text-xs text-emerald-700/80 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+          <div className="mt-2.5 sm:mt-3 flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <span className="text-lg sm:text-2xl font-black text-emerald-600 leading-none">
+              {avgScore}/100
+            </span>
+            <span className="text-[9px] sm:text-xs text-emerald-700 font-extrabold bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-200">
               {avgScore === 100 ? '100% Perfect' : 'Rank A+'}
             </span>
           </div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">XML Sitemap</span>
-            <div className="w-9 h-9 rounded-xl bg-brandOrange-50 flex items-center justify-center text-brandOrange-600">
-              <Code2 className="w-4 h-4" />
+        {/* Card 3 */}
+        <div className="bg-white/95 backdrop-blur-sm p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
+              XML Sitemap
+            </span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-brandOrange-50 flex items-center justify-center text-brandOrange-600 shrink-0">
+              <Code2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-brandOrange-600">Active</span>
-            <span className="text-xs text-brandOrange-700/80 font-semibold">Auto-updating</span>
+          <div className="mt-2.5 sm:mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="text-lg sm:text-2xl font-black text-brandOrange-600 leading-none">
+              Active
+            </span>
+            <span className="text-[10px] sm:text-xs text-brandOrange-700/80 font-semibold">Auto-updating</span>
           </div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Crawler Directives</span>
-            <div className="w-9 h-9 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600">
-              <RefreshCw className="w-4 h-4" />
+        {/* Card 4 */}
+        <div className="bg-white/95 backdrop-blur-sm p-3.5 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider leading-tight">
+              Crawler Directives
+            </span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-sky-50 flex items-center justify-center text-sky-600 shrink-0">
+              <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-sky-600">Index, Follow</span>
-            <span className="text-xs text-sky-700/80 font-semibold">Robots.txt</span>
+          <div className="mt-2.5 sm:mt-3 flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <span className="text-sm sm:text-xl md:text-2xl font-black text-sky-600 leading-none whitespace-nowrap">
+              Index, Follow
+            </span>
+            <span className="text-[9px] sm:text-xs text-sky-700/80 font-bold bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200">
+              Robots.txt
+            </span>
           </div>
         </div>
       </div>
