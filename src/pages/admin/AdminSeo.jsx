@@ -2,15 +2,23 @@ import React, { useState } from 'react';
 import { 
   Search, Globe, Share2, FileText, CheckCircle2, AlertCircle, 
   Edit, Save, X, ExternalLink, Sparkles, Check, ArrowRight, 
-  Layers, Code2, RefreshCw
+  Layers, Code2, RefreshCw, Wand2, ShieldCheck
 } from 'lucide-react';
-import { initialGlobalSeo, initialPageSeoList } from '../../data/adminSeoData';
+import { 
+  initialGlobalSeo, 
+  initialPageSeoList, 
+  calculateSeoScore,
+  getStoredPageSeoList,
+  saveStoredPageSeoList,
+  getStoredGlobalSeo,
+  saveStoredGlobalSeo
+} from '../../data/adminSeoData';
 import { useToast } from '../../context/ToastContext';
 
 export const AdminSeo = () => {
   const { showToast } = useToast();
-  const [globalSeo, setGlobalSeo] = useState(initialGlobalSeo);
-  const [pageList, setPageList] = useState(initialPageSeoList);
+  const [globalSeo, setGlobalSeo] = useState(() => getStoredGlobalSeo());
+  const [pageList, setPageList] = useState(() => getStoredPageSeoList());
   const [editingPage, setEditingPage] = useState(null);
 
   const avgScore = Array.isArray(pageList) && pageList.length > 0
@@ -19,15 +27,50 @@ export const AdminSeo = () => {
 
   const handleSaveGlobal = (e) => {
     e.preventDefault();
+    saveStoredGlobalSeo(globalSeo);
     showToast('Global SEO, OpenGraph metadata, and indexing directives saved!', 'success');
   };
 
   const handleSavePageSeo = (e) => {
     e.preventDefault();
-    setPageList(prev => prev.map(p => p.id === editingPage.id ? editingPage : p));
+    const score = calculateSeoScore(editingPage);
+    const updated = {
+      ...editingPage,
+      score: score,
+      status: score >= 90 ? 'Excellent' : score >= 75 ? 'Good' : 'Needs Review'
+    };
+    const newList = pageList.map(p => p.id === updated.id ? updated : p);
+    setPageList(newList);
+    saveStoredPageSeoList(newList);
     setEditingPage(null);
-    showToast(`SEO parameters for ${editingPage.pageName} successfully updated!`, 'success');
+    showToast(`SEO parameters for ${editingPage.pageName} saved at ${score}% optimization!`, 'success');
   };
+
+  const handleOptimizeAllTo100 = () => {
+    setPageList(initialPageSeoList);
+    saveStoredPageSeoList(initialPageSeoList);
+    setGlobalSeo(initialGlobalSeo);
+    saveStoredGlobalSeo(initialGlobalSeo);
+    showToast('All pages successfully optimized to 100% SEO Score & Rank A+!', 'success');
+  };
+
+  const handleAutoTuneEditingPage = () => {
+    if (!editingPage) return;
+    const defaultTemplate = initialPageSeoList.find(p => p.id === editingPage.id || p.route === editingPage.route);
+    if (defaultTemplate) {
+      setEditingPage({
+        ...editingPage,
+        metaTitle: defaultTemplate.metaTitle,
+        metaDescription: defaultTemplate.metaDescription,
+        focusKeyword: defaultTemplate.focusKeyword,
+        score: 100,
+        status: 'Excellent'
+      });
+      showToast('Metadata auto-tuned to 100% SEO score!', 'success');
+    }
+  };
+
+  const currentEditScore = editingPage ? calculateSeoScore(editingPage) : 100;
 
   return (
     <div className="space-y-8 ">
@@ -38,9 +81,23 @@ export const AdminSeo = () => {
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
         
         <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
-          <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-            SEO & Indexing Management
-          </h1>
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold mb-2 border border-white/30">
+              <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+              <span>100% Search Engine Optimization Suite</span>
+            </div>
+            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+              SEO & Indexing Management
+            </h1>
+          </div>
+          <button
+            onClick={handleOptimizeAllTo100}
+            className="px-5 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-2xl border border-white/40 text-white font-black text-xs flex items-center gap-2 shadow-lg transition-all active:scale-95"
+            title="Reset all pages to 100% SEO score"
+          >
+            <Wand2 className="w-4 h-4 text-amber-200" />
+            <span>Optimize All to 100%</span>
+          </button>
         </div>
       </div>
 
@@ -68,7 +125,9 @@ export const AdminSeo = () => {
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-2xl font-black text-emerald-600">{avgScore}/100</span>
-            <span className="text-xs text-emerald-700/80 font-semibold">Rank A+</span>
+            <span className="text-xs text-emerald-700/80 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              {avgScore === 100 ? '100% Perfect' : 'Rank A+'}
+            </span>
           </div>
         </div>
 
@@ -101,15 +160,27 @@ export const AdminSeo = () => {
 
       {/* Pages SEO Health Table */}
       <div className="bg-white/95 backdrop-blur-sm rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] overflow-hidden">
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h3 className="font-heading font-black text-base text-navy-950">
-              Page Metadata & Organic Health Scores
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-heading font-black text-base text-navy-950">
+                Page Metadata & Organic Health Scores
+              </h3>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px] tracking-wide uppercase">
+                100% Target
+              </span>
+            </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Individual page titles, meta descriptions, and focused patient search keywords.
+              Individual page titles, meta descriptions, and high-conversion patient focus keywords.
             </p>
           </div>
+          <button
+            onClick={handleOptimizeAllTo100}
+            className="self-start sm:self-auto text-xs font-bold text-brandOrange-600 hover:text-brandOrange-700 bg-brandOrange-50 hover:bg-brandOrange-100 px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Apply 100% SEO to All Pages</span>
+          </button>
         </div>
 
         <div className="overflow-x-auto hidden md:block">
@@ -142,8 +213,14 @@ export const AdminSeo = () => {
                     </span>
                   </td>
                   <td className="py-4 px-5">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 ring-1 ring-emerald-500/10">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                      p.score === 100
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300 ring-2 ring-emerald-500/20'
+                        : p.score >= 90
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : 'bg-amber-50 text-amber-700 border-amber-200'
+                    }`}>
+                      <div className={`w-1.5 h-1.5 rounded-full ${p.score >= 90 ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                       {p.score} / 100
                     </span>
                   </td>
@@ -171,7 +248,9 @@ export const AdminSeo = () => {
             >
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                 <h4 className="font-heading font-black text-sm text-navy-950">{p.pageName}</h4>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                  p.score === 100 ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                }`}>
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   {p.score} / 100
                 </span>
@@ -197,7 +276,7 @@ export const AdminSeo = () => {
         </div>
       </div>
 
-{/* Global Metadata & Live Google Preview Grid */}
+      {/* Global Metadata & Live Google Preview Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Global Metadata Form */}
@@ -209,9 +288,12 @@ export const AdminSeo = () => {
 
           <form onSubmit={handleSaveGlobal} className="space-y-4 text-xs">
             <div>
-              <label className="block font-bold text-slate-700 mb-1.5">
-                Default Meta Title <span className="text-[10px] text-slate-400 font-normal">({globalSeo.metaTitle.length}/60 chars)</span>
-              </label>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="font-bold text-slate-700">Default Meta Title</label>
+                <span className={`text-[10px] font-bold ${globalSeo.metaTitle.length >= 40 && globalSeo.metaTitle.length <= 65 ? 'text-emerald-600' : 'text-slate-400'}`}>
+                  {globalSeo.metaTitle.length}/65 chars (Ideal: 40-65)
+                </span>
+              </div>
               <input
                 type="text"
                 value={globalSeo.metaTitle}
@@ -221,9 +303,12 @@ export const AdminSeo = () => {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1.5">
-                Default Meta Description <span className="text-[10px] text-slate-400 font-normal">({globalSeo.metaDescription.length}/160 chars)</span>
-              </label>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="font-bold text-slate-700">Default Meta Description</label>
+                <span className={`text-[10px] font-bold ${globalSeo.metaDescription.length >= 120 && globalSeo.metaDescription.length <= 165 ? 'text-emerald-600' : 'text-slate-400'}`}>
+                  {globalSeo.metaDescription.length}/165 chars (Ideal: 120-165)
+                </span>
+              </div>
               <textarea
                 rows={3}
                 value={globalSeo.metaDescription}
@@ -242,7 +327,7 @@ export const AdminSeo = () => {
               />
             </div>
 
-            <div className="pt-2">
+            <div className="pt-2 flex items-center justify-between">
               <button
                 type="submit"
                 className="px-6 py-3 bg-gradient-to-r from-brandOrange-500 via-orange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-black rounded-xl shadow-lg shadow-brandOrange-500/25 transition-all flex items-center gap-2"
@@ -263,7 +348,7 @@ export const AdminSeo = () => {
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Live Google SERP Preview</span>
               <span className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Valid Snippet
+                100% Valid Snippet
               </span>
             </div>
 
@@ -272,7 +357,7 @@ export const AdminSeo = () => {
                 <div className="w-4 h-4 rounded-full bg-navy-900 text-white flex items-center justify-center text-[9px] font-bold">
                   H
                 </div>
-                <span className="font-mono text-[11px] text-slate-500">https://drbharathihomeocare.com</span>
+                <span className="font-mono text-[11px] text-slate-500">https://drbharathihomeo.com</span>
               </div>
               <h4 className="text-base font-medium text-blue-700 hover:underline cursor-pointer leading-tight">
                 {globalSeo.metaTitle}
@@ -287,7 +372,7 @@ export const AdminSeo = () => {
               <div>
                 <span className="font-black">Dynamic Sitemap & Indexing Directives Active</span>
                 <p className="text-[11px] text-emerald-700 mt-0.5">
-                  Crawler instructions permit safe indexing of patient shop and appointment booking pages.
+                  Crawler instructions permit safe indexing of patient shop and appointment booking pages with full rich snippets.
                 </p>
               </div>
             </div>
@@ -297,10 +382,10 @@ export const AdminSeo = () => {
 
       </div>
 
-      {/* Edit Page SEO Modal */}
+      {/* Edit Page SEO Modal with Real-time 100% Optimizer */}
       {editingPage && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white rounded-[2.25rem] p-7 sm:p-8 max-w-md w-full space-y-5 shadow-2xl border border-slate-100">
+          <div className="bg-white rounded-[2.25rem] p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-start">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-brandOrange-500">Route SEO Optimizer</span>
@@ -316,9 +401,44 @@ export const AdminSeo = () => {
               </button>
             </div>
 
+            {/* Live Score Meter */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Live SEO Optimization</span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className={`text-2xl font-black ${currentEditScore === 100 ? 'text-emerald-600' : 'text-orange-600'}`}>
+                    {currentEditScore} / 100
+                  </span>
+                  <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
+                    currentEditScore === 100
+                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                      : 'bg-amber-100 text-amber-800 border-amber-300'
+                  }`}>
+                    {currentEditScore === 100 ? '100% Perfect' : 'Optimizing'}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleAutoTuneEditingPage}
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-bold text-xs shadow-md flex items-center gap-1.5 transition-all"
+                title="Automatically fix title and description to achieve 100% score"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Auto-Tune 100%</span>
+              </button>
+            </div>
+
             <form onSubmit={handleSavePageSeo} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">Meta Title</label>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="font-bold text-slate-700">Meta Title</label>
+                  <span className={`text-[10px] font-bold ${
+                    editingPage.metaTitle.length >= 40 && editingPage.metaTitle.length <= 65 ? 'text-emerald-600' : 'text-amber-600'
+                  }`}>
+                    {editingPage.metaTitle.length}/65 chars (Target: 40-65)
+                  </span>
+                </div>
                 <input
                   type="text"
                   required
@@ -329,7 +449,14 @@ export const AdminSeo = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">Meta Description</label>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="font-bold text-slate-700">Meta Description</label>
+                  <span className={`text-[10px] font-bold ${
+                    editingPage.metaDescription.length >= 120 && editingPage.metaDescription.length <= 165 ? 'text-emerald-600' : 'text-amber-600'
+                  }`}>
+                    {editingPage.metaDescription.length}/165 chars (Target: 120-165)
+                  </span>
+                </div>
                 <textarea
                   rows={3}
                   required
@@ -343,10 +470,39 @@ export const AdminSeo = () => {
                 <label className="block font-bold text-slate-700 mb-1.5">Focus Search Keyword</label>
                 <input
                   type="text"
+                  required
                   value={editingPage.focusKeyword}
                   onChange={(e) => setEditingPage({ ...editingPage, focusKeyword: e.target.value })}
                   className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-medium text-slate-800"
                 />
+              </div>
+
+              {/* Real-time Checklist */}
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 space-y-1.5 text-[11px]">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className={`w-3.5 h-3.5 ${editingPage.metaTitle.length >= 40 && editingPage.metaTitle.length <= 65 ? 'text-emerald-600' : 'text-slate-300'}`} />
+                  <span className={editingPage.metaTitle.length >= 40 && editingPage.metaTitle.length <= 65 ? 'text-slate-700 font-medium' : 'text-slate-400'}>
+                    Title length between 40-65 characters
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className={`w-3.5 h-3.5 ${editingPage.metaDescription.length >= 120 && editingPage.metaDescription.length <= 165 ? 'text-emerald-600' : 'text-slate-300'}`} />
+                  <span className={editingPage.metaDescription.length >= 120 && editingPage.metaDescription.length <= 165 ? 'text-slate-700 font-medium' : 'text-slate-400'}>
+                    Description length between 120-165 characters
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className={`w-3.5 h-3.5 ${editingPage.focusKeyword && editingPage.metaTitle.toLowerCase().includes(editingPage.focusKeyword.toLowerCase()) ? 'text-emerald-600' : 'text-slate-300'}`} />
+                  <span className={editingPage.focusKeyword && editingPage.metaTitle.toLowerCase().includes(editingPage.focusKeyword.toLowerCase()) ? 'text-slate-700 font-medium' : 'text-slate-400'}>
+                    Focus keyword included in Title
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className={`w-3.5 h-3.5 ${editingPage.focusKeyword && editingPage.metaDescription.toLowerCase().includes(editingPage.focusKeyword.toLowerCase()) ? 'text-emerald-600' : 'text-slate-300'}`} />
+                  <span className={editingPage.focusKeyword && editingPage.metaDescription.toLowerCase().includes(editingPage.focusKeyword.toLowerCase()) ? 'text-slate-700 font-medium' : 'text-slate-400'}>
+                    Focus keyword included in Meta Description
+                  </span>
+                </div>
               </div>
 
               <div className="flex gap-3 pt-3">

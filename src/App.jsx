@@ -9,6 +9,7 @@ import { AdminLayout } from './layouts/AdminLayout';
 import { ProtectedRoute, AdminProtectedRoute } from './components/common/ProtectedRoute';
 import { ScrollToTop } from './components/common/ScrollToTop';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { SeoManager } from './components/common/SeoManager';
 
 // Customer Pages
 import { Home } from './pages/Home';
@@ -49,6 +50,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <ScrollToTop />
+      <SeoManager />
       <Routes>
       {/* Patient & Customer Routes */}
       <Route path="/" element={<MainLayout />}>
