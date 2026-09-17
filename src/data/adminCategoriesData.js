@@ -37,7 +37,7 @@ export const initialAdminCategories = [
     name: "Wellness Products",
     slug: "wellness-products",
     description: "Holistic formulations for daily family vitality and balance.",
-    image: "https://images.unsplash.com/photo-1608248597359-0091807cf7c9?auto=format&fit=crop&w=400&q=80",
+    image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=600&q=80",
     productCount: 1,
     status: "Active",
     isFeatured: true,

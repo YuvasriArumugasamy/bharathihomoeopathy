@@ -3,12 +3,24 @@ import { initialAdminCategories } from '../data/adminCategoriesData';
 
 const CATEGORIES_STORAGE_KEY = 'admin_categories_store';
 
+const sanitizeCategories = (cats) => {
+  if (!Array.isArray(cats)) return cats;
+  return cats.map(c => {
+    if (c.image && c.image.includes('1608248597359-0091807cf7c9')) {
+      return { ...c, image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=600&q=80' };
+    }
+    return c;
+  });
+};
+
 const getStoredCategories = () => {
   try {
     const raw = localStorage.getItem(CATEGORIES_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return sanitizeCategories(parsed);
+      }
     }
   } catch (err) {
     console.warn("Could not read categories from storage:", err.message);

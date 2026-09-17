@@ -4,9 +4,22 @@ import { initialAdminCategories } from '../../data/adminCategoriesData';
 import { categoryService } from '../../services/categoryService';
 import { useToast } from '../../context/ToastContext';
 import { slugify } from '../../utils/slugify';
+import { getStoredProducts, isMatchingCategory } from '../../utils/productStorage';
 
 export const AdminCategories = () => {
   const { showToast } = useToast();
+  const [allProducts, setAllProducts] = useState(() => getStoredProducts());
+
+  useEffect(() => {
+    const handleProdSync = () => setAllProducts(getStoredProducts());
+    window.addEventListener('drBharathiProductsUpdated', handleProdSync);
+    window.addEventListener('storage', handleProdSync);
+    return () => {
+      window.removeEventListener('drBharathiProductsUpdated', handleProdSync);
+      window.removeEventListener('storage', handleProdSync);
+    };
+  }, []);
+
   const [categories, setCategories] = useState(() => {
     try {
       const saved = localStorage.getItem('admin_categories_store');
@@ -113,13 +126,12 @@ export const AdminCategories = () => {
   };
 
   const handleDelete = async (cat) => {
-    if (cat.productCount > 0) {
-      showToast(`Cannot delete category because ${cat.productCount} active products are assigned to it.`, 'warning');
-      return;
-    }
+    const isConfirmed = window.confirm(`Are you sure you want to delete "${cat.name}" category?`);
+    if (!isConfirmed) return;
+
     setCategories(prev => prev.filter(c => c.id !== cat.id));
     await categoryService.deleteAdminCategory(cat.id || cat._id);
-    showToast('Category deleted successfully', 'info');
+    showToast(`Category "${cat.name}" deleted successfully`, 'info');
   };
 
   return (
@@ -169,38 +181,45 @@ export const AdminCategories = () => {
 
       {/* 3. Luxury Category Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filtered.map((cat) => (
-          <div 
-            key={cat.id} 
-            className="group relative bg-white rounded-[2rem] border border-slate-200/90 shadow-[0_4px_20px_-4px_rgba(15,36,56,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden"
-          >
-            {/* Image Preview with Floating Badges */}
-            <div className="relative aspect-[16/9] overflow-hidden bg-slate-100">
-              <img 
-                src={cat.image} 
-                alt={cat.name} 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-              
-              {/* Product Count Pill */}
-              <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-black text-slate-800 shadow-sm border border-white/40">
-                {cat.productCount} Remedies
-              </div>
+        {filtered.map((cat) => {
+          const remediesCount = allProducts.filter(p => isMatchingCategory(p.category, cat.name)).length;
+          const fallbackImg = 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=600&q=80';
+          return (
+            <div 
+              key={cat.id} 
+              className="group relative bg-white rounded-[2rem] border border-slate-200/90 shadow-[0_4px_20px_-4px_rgba(15,36,56,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+            >
+              {/* Image Preview with Floating Badges */}
+              <div className="relative aspect-[16/9] overflow-hidden bg-slate-100">
+                <img 
+                  src={cat.image || fallbackImg} 
+                  alt="" 
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = fallbackImg;
+                  }}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                
+                {/* Product Count Pill */}
+                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-black text-slate-800 shadow-sm border border-white/40">
+                  {remediesCount} Remedies
+                </div>
 
-              {/* Status Badge */}
-              <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-emerald-500/90 text-white px-2.5 py-0.5 rounded-full text-[10px] font-extrabold backdrop-blur-sm shadow-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                {cat.status || 'Active'}
-              </div>
+                {/* Status Badge */}
+                <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-emerald-500/90 text-white px-2.5 py-0.5 rounded-full text-[10px] font-extrabold backdrop-blur-sm shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  {cat.status || 'Active'}
+                </div>
 
-              {/* Category Title on image bottom */}
-              <div className="absolute bottom-3 left-4 right-4">
-                <h3 className="font-extrabold text-white text-base sm:text-lg drop-shadow-md">
-                  {cat.name}
-                </h3>
+                {/* Category Title on image bottom */}
+                <div className="absolute bottom-3 left-4 right-4">
+                  <h3 className="font-extrabold text-white text-base sm:text-lg drop-shadow-md">
+                    {cat.name}
+                  </h3>
+                </div>
               </div>
-            </div>
 
             {/* Body */}
             <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
@@ -234,7 +253,8 @@ export const AdminCategories = () => {
             </div>
 
           </div>
-        ))}
+        );
+      })}
       </div>
 
       {/* 4. Glassmorphic Modal */}
