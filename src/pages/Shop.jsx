@@ -68,21 +68,70 @@ export const Shop = () => {
     setSelectedCategory(cat);
   }, [searchParams]);
 
-  // Categories matching Image 1 exact styling with left-tinted icon box
-  const categories = [
-    { name: "ALL CATEGORIES", value: "All Categories", icon: "🟧", bg: "bg-orange-100/90", text: "text-orange-600" },
-    { name: "Homeopathy", value: "Homeopathy Medicines", icon: "🧪", bg: "bg-emerald-100/90", text: "text-emerald-700" },
-    { name: "Ayurveda", value: "Ayurveda", icon: "🌿", bg: "bg-lime-100/90", text: "text-lime-700" },
-    { name: "Unani", value: "Unani", icon: "🥣", bg: "bg-purple-100/90", text: "text-purple-700" },
-    { name: "Beauty & Personal Care", value: "Personal Care", icon: "💆‍♀️", bg: "bg-rose-100/90", text: "text-rose-600" },
-    { name: "Baby Care", value: "Baby Care", icon: "👶", bg: "bg-pink-100/90", text: "text-pink-600" },
-    { name: "Sexual Wellness", value: "Sexual Wellness", icon: "⚧", bg: "bg-red-100/90", text: "text-red-600" },
-    { name: "Health Aid & Fitness", value: "Health Aid & Fitness", icon: "💪", bg: "bg-sky-100/90", text: "text-sky-700" },
-    { name: "Nutrition & Supplements", value: "Mother Tinctures", icon: "🏋️", bg: "bg-indigo-100/90", text: "text-indigo-700" },
-    { name: "Festivities and Devotion", value: "Herbal Products", icon: "✨", bg: "bg-amber-100/90", text: "text-amber-700" },
-    { name: "Books", value: "Books", icon: "📚", bg: "bg-amber-100/90", text: "text-amber-700" },
-    { name: "Allopathy", value: "Allopathy", icon: "💉", bg: "bg-cyan-100/90", text: "text-cyan-700" }
-  ];
+  const [adminCategories, setAdminCategories] = useState(() => {
+    try {
+      const raw = localStorage.getItem('admin_categories_store');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
+  });
+
+  useEffect(() => {
+    const handleCatSync = () => {
+      try {
+        const raw = localStorage.getItem('admin_categories_store');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) setAdminCategories(parsed);
+        }
+      } catch {}
+    };
+    window.addEventListener('drBharathiCategoriesUpdated', handleCatSync);
+    window.addEventListener('storage', handleCatSync);
+    return () => {
+      window.removeEventListener('drBharathiCategoriesUpdated', handleCatSync);
+      window.removeEventListener('storage', handleCatSync);
+    };
+  }, []);
+
+  // Categories matching styling with dynamic custom categories support
+  const categories = useMemo(() => {
+    const baseList = [
+      { name: "ALL CATEGORIES", value: "All Categories", icon: "🟧", bg: "bg-orange-100/90", text: "text-orange-600" },
+      { name: "Homeopathy", value: "Homeopathy Medicines", icon: "🧪", bg: "bg-emerald-100/90", text: "text-emerald-700" },
+      { name: "Ayurveda", value: "Ayurveda", icon: "🌿", bg: "bg-lime-100/90", text: "text-lime-700" },
+      { name: "Unani", value: "Unani", icon: "🥣", bg: "bg-purple-100/90", text: "text-purple-700" },
+      { name: "Beauty & Personal Care", value: "Personal Care", icon: "💆‍♀️", bg: "bg-rose-100/90", text: "text-rose-600" },
+      { name: "Baby Care", value: "Baby Care", icon: "👶", bg: "bg-pink-100/90", text: "text-pink-600" },
+      { name: "Sexual Wellness", value: "Sexual Wellness", icon: "⚧", bg: "bg-red-100/90", text: "text-red-600" },
+      { name: "Health Aid & Fitness", value: "Health Aid & Fitness", icon: "💪", bg: "bg-sky-100/90", text: "text-sky-700" },
+      { name: "Nutrition & Supplements", value: "Mother Tinctures", icon: "🏋️", bg: "bg-indigo-100/90", text: "text-indigo-700" },
+      { name: "Festivities and Devotion", value: "Herbal Products", icon: "✨", bg: "bg-amber-100/90", text: "text-amber-700" },
+      { name: "Books", value: "Books", icon: "📚", bg: "bg-amber-100/90", text: "text-amber-700" },
+      { name: "Allopathy", value: "Allopathy", icon: "💉", bg: "bg-cyan-100/90", text: "text-cyan-700" }
+    ];
+
+    const knownNames = new Set(baseList.map(c => c.name.toLowerCase()));
+    const knownValues = new Set(baseList.map(c => c.value.toLowerCase()));
+
+    const customIcons = ["🏷️", "🌱", "💊", "🍃", "🧴", "✨", "🩺"];
+    const customCats = (adminCategories || [])
+      .filter(c => c && c.name && (c.status === 'Active' || !c.status))
+      .filter(c => !knownNames.has(c.name.toLowerCase()) && !knownValues.has(c.name.toLowerCase()))
+      .map((c, idx) => ({
+        name: c.name,
+        value: c.name,
+        icon: customIcons[idx % customIcons.length],
+        bg: "bg-emerald-100/90",
+        text: "text-emerald-700",
+        isCustom: true
+      }));
+
+    return [...baseList, ...customCats];
+  }, [adminCategories]);
 
   const forms = [
     { name: "Drops", count: allProducts.filter(p => p.form === "Drops").length },
@@ -320,7 +369,7 @@ export const Shop = () => {
                 <div className="pl-1 pt-1 space-y-1">
                   {categories.filter(c => c.value !== 'All Categories').map((cat, idx) => {
                     const isSelected = selectedCategory === cat.value;
-                    const catCount = allProducts.filter(p => p.category === cat.value || p.name.includes(cat.name)).length || (3 + (idx % 5));
+                    const catCount = allProducts.filter(p => isMatchingCategory(p.category, cat.value) || p.category === cat.value || (p.name && p.name.toLowerCase().includes(cat.name.toLowerCase()))).length;
                     return (
                       <button
                         key={cat.name}

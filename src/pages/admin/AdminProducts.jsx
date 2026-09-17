@@ -68,7 +68,29 @@ export const AdminProducts = () => {
     isFeatured: false
   });
 
-  const categoriesList = ['All', 'Homeopathic Medicines', 'Mother Tinctures', 'Biochemic Medicines', 'Wellness Products', 'Personal Care', 'Combo Products'];
+  const [categoriesList, setCategoriesList] = useState(['All', 'Homeopathic Medicines', 'Mother Tinctures', 'Biochemic Medicines', 'Wellness Products', 'Personal Care', 'Combo Products']);
+
+  useEffect(() => {
+    const loadCategories = () => {
+      try {
+        const raw = localStorage.getItem('admin_categories_store');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            const names = parsed.map(c => c.name).filter(Boolean);
+            setCategoriesList(['All', ...new Set([...names, 'Homeopathic Medicines', 'Mother Tinctures', 'Biochemic Medicines', 'Wellness Products', 'Personal Care', 'Combo Products'])]);
+          }
+        }
+      } catch {}
+    };
+    loadCategories();
+    window.addEventListener('drBharathiCategoriesUpdated', loadCategories);
+    window.addEventListener('storage', loadCategories);
+    return () => {
+      window.removeEventListener('drBharathiCategoriesUpdated', loadCategories);
+      window.removeEventListener('storage', loadCategories);
+    };
+  }, []);
 
   const filteredProducts = (Array.isArray(products) ? products : []).filter((p) => {
     if (!p) return false;

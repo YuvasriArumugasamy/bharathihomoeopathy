@@ -24,6 +24,8 @@ const getStoredCategories = () => {
 const saveStoredCategories = (categories) => {
   try {
     localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
+    window.dispatchEvent(new CustomEvent('drBharathiCategoriesUpdated', { detail: categories }));
+    window.dispatchEvent(new Event('storage'));
   } catch (err) {
     console.warn("Could not save categories to storage:", err.message);
   }
