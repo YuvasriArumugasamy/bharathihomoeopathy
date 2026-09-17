@@ -42,15 +42,25 @@ export const AdminOrders = () => {
   const [selectedOrderDrawer, setSelectedOrderDrawer] = useState(null);
   const [invoiceModalOrder, setInvoiceModalOrder] = useState(null);
 
-  // Lock background scroll when drawer is open
+  // Lock background scroll and add Escape key listener when drawer is open
   useEffect(() => {
     if (selectedOrderDrawer || invoiceModalOrder) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setSelectedOrderDrawer(null);
+        setInvoiceModalOrder(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
     return () => {
       document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [selectedOrderDrawer, invoiceModalOrder]);
 
@@ -497,16 +507,16 @@ export const AdminOrders = () => {
         </div>
       </div>
 
-      {/* 5. Luxury Order Details Drawer Portal */}
+      {/* 5. Luxury Order Details Drawer Portal (Keeps left sidebar visible & bright) */}
       {selectedOrderDrawer && typeof document !== 'undefined' && createPortal(
         <div 
           onClick={() => setSelectedOrderDrawer(null)}
-          className="fixed inset-0 z-[99999] flex items-stretch justify-end bg-navy-950/65 backdrop-blur-sm animate-in fade-in duration-200"
-          style={{ top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', margin: 0, padding: 0 }}
+          className="fixed inset-y-0 right-0 left-0 lg:left-64 z-[90] flex items-stretch justify-end bg-slate-950/45 backdrop-blur-[2px] animate-in fade-in duration-200"
+          style={{ top: 0, bottom: 0, right: 0 }}
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-lg h-full shadow-2xl animate-in slide-in-from-right duration-300 border-l border-slate-100 flex flex-col justify-between overflow-hidden"
+            className="bg-white w-full max-w-lg h-full shadow-2xl animate-in slide-in-from-right duration-300 border-l border-slate-200 flex flex-col justify-between overflow-hidden"
           >
             
             {/* Fixed Drawer Header (Never Scrolls Off) */}
