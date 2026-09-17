@@ -275,6 +275,9 @@ export const Checkout = () => {
       const payload = {
         userId: user?._id || null,
         userEmail: user?.email || formData.email,
+        guestEmail: formData.email,
+        guestName: `${formData.firstName} ${formData.lastName}`.trim(),
+        guestPhone: formData.phone,
         customer: {
           name: `${formData.firstName} ${formData.lastName}`.trim(),
           phone: formData.phone,
@@ -282,7 +285,7 @@ export const Checkout = () => {
           city: `${formData.city}, ${formData.state}`.trim()
         },
         shippingAddress: {
-          fullName: `${formData.firstName} ${formData.lastName}`,
+          fullName: `${formData.firstName} ${formData.lastName}`.trim(),
           phone: formData.phone,
           email: formData.email,
           addressLine1: formData.address,

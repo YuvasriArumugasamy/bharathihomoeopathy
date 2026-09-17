@@ -11,24 +11,6 @@ class ApiClient {
     const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     const token = authStorage.getToken();
 
-    // Demo tokens are local-only session tokens.
-    // Never hit the real backend with them - skip the network call entirely
-    // so no red 401 errors appear in the console.
-    const isDemoToken = token && (
-      token.startsWith('demo_jwt_token_') ||
-      token.startsWith('demo_jwt_google_') ||
-      token.startsWith('demo_')
-    );
-
-    if (isDemoToken) {
-      // Throw locally without making any network request
-      // Services will catch this and fall back to localStorage
-      const demoError = new Error('Demo mode: using local storage');
-      demoError.status = 0;
-      demoError.isDemoMode = true;
-      throw demoError;
-    }
-
     const headers = {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

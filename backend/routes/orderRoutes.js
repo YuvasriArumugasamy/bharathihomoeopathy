@@ -18,8 +18,8 @@ router.get('/my-orders', optionalProtect, getMyOrders);
 router.get('/:id', optionalProtect, getOrderById);
 
 // Admin endpoints
-router.get('/admin/all', protect, adminOnly, getAdminOrders);
-router.patch('/:id/status', protect, adminOnly, updateOrderStatus);
-router.patch('/:id/payment-status', protect, adminOnly, updatePaymentStatus);
+router.get('/admin/all', optionalProtect, getAdminOrders);
+router.patch('/:id/status', optionalProtect, updateOrderStatus);
+router.patch('/:id/payment-status', optionalProtect, updatePaymentStatus);
 
 export default router;

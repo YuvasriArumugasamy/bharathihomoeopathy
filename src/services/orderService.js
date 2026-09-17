@@ -136,9 +136,16 @@ export const orderService = {
       const res = await api.post('/orders', payload);
       if (res && res.data) {
         newOrder._id = res.data._id;
+        if (res.data.orderNumber) {
+          newOrder.orderNumber = res.data.orderNumber;
+          newOrder.orderId = res.data.orderNumber;
+        }
+        // Update stored orders with official remote order
+        const refreshed = getStoredOrders().map(o => o.id === newOrder.id ? { ...o, ...newOrder } : o);
+        saveStoredOrders(refreshed);
       }
     } catch (err) {
-      if (!err?.isDemoMode) console.warn("Order saved to local database (backend offline):", err.message);
+      console.warn("Order saved locally (backend offline):", err.message);
     }
 
     return {
@@ -160,14 +167,27 @@ export const orderService = {
   },
 
   getMyPatientOrders: async (user) => {
+    const email = user?.email || (typeof localStorage !== 'undefined' ? localStorage.getItem('last_checkout_email') : '');
     try {
-      const email = user?.email || (typeof localStorage !== 'undefined' ? localStorage.getItem('last_checkout_email') : '');
       const res = await api.get(`/orders/my-orders${email ? `?email=${encodeURIComponent(email)}` : ''}`);
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-        return res.data;
+        const remoteOrders = res.data.filter(Boolean).map(o => ({
+          ...o,
+          id: o.orderNumber || o.id || o._id,
+          orderId: o.orderNumber || o.orderId,
+          total: o.totalAmount || o.total,
+          status: o.orderStatus || o.status || 'Pending',
+          paymentStatus: o.paymentStatus || 'Pending',
+          customer: {
+            name: o.shippingAddress?.fullName || o.guestName || user?.name || 'Online Patient',
+            phone: o.shippingAddress?.phone || o.guestPhone || user?.phone || '',
+            email: o.shippingAddress?.email || o.guestEmail || user?.email || ''
+          }
+        }));
+        return remoteOrders;
       }
-    } catch {
-      // Fallback
+    } catch (err) {
+      console.warn("Could not fetch patient orders from backend:", err.message);
     }
     return getUserOrders(user);
   },
@@ -200,21 +220,30 @@ export const orderService = {
   // ----------------------------------------------------
   getAdminOrders: async () => {
     const localOrders = getStoredOrders();
-    if (authStorage.isDemoMode()) {
-      return localOrders;
-    }
     try {
       const res = await api.get('/orders/admin/all');
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-        const remoteOrders = res.data.filter(Boolean);
-        const remoteIds = new Set(remoteOrders.map(o => o.id || o.orderId || o._id));
-        const unSyncedLocal = localOrders.filter(l => !remoteIds.has(l.id) && !remoteIds.has(l.orderId) && !remoteIds.has(l._id));
-        const merged = [...unSyncedLocal, ...remoteOrders];
+        const remoteOrders = res.data.filter(Boolean).map(o => ({
+          ...o,
+          id: o.id || o._id,
+          orderId: o.orderId || o.orderNumber || o.id,
+          orderNumber: o.orderNumber || o.orderId || o.id,
+          total: o.total || o.totalAmount || 0,
+          customer: o.customer || {
+            name: o.shippingAddress?.fullName || o.guestName || 'Online Patient',
+            phone: o.shippingAddress?.phone || o.guestPhone || '',
+            email: o.shippingAddress?.email || o.guestEmail || '',
+            city: `${o.shippingAddress?.city || ''}, ${o.shippingAddress?.state || ''}`.trim()
+          }
+        }));
+        const remoteIds = new Set(remoteOrders.map(o => o.id || o.orderId || o.orderNumber || o._id));
+        const unSyncedLocal = localOrders.filter(l => !remoteIds.has(l.id) && !remoteIds.has(l.orderId) && !remoteIds.has(l.orderNumber) && !remoteIds.has(l._id));
+        const merged = [...remoteOrders, ...unSyncedLocal];
         saveStoredOrders(merged);
         return merged;
       }
     } catch (err) {
-      if (!err?.isDemoMode) console.warn("Could not fetch remote admin orders, using local storage", err.message);
+      console.warn("Could not fetch remote admin orders, using local storage", err.message);
     }
     return localOrders;
   },

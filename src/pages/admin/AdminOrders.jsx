@@ -69,6 +69,11 @@ export const AdminOrders = () => {
   useEffect(() => {
     loadOrders();
 
+    // Periodic live cloud polling every 8s to guarantee cross-device sync
+    const pollInterval = setInterval(() => {
+      loadOrders(false);
+    }, 8000);
+
     // Real-time Cloud Sync Listener across devices
     const unsubscribe = cloudSyncService.listenToCloudOrders((liveOrders) => {
       if (Array.isArray(liveOrders)) {
@@ -99,6 +104,7 @@ export const AdminOrders = () => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
+      clearInterval(pollInterval);
       if (typeof unsubscribe === 'function') unsubscribe();
       window.removeEventListener('storage', handleStorageOrFocus);
       window.removeEventListener('orders_updated', handleStorageOrFocus);
