@@ -486,26 +486,36 @@ export const AdminOrders = () => {
 
       {/* 5. Luxury Order Details Drawer */}
       {selectedOrderDrawer && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-end bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-lg h-full overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl animate-in slide-in-from-right duration-300 border-l border-slate-100 flex flex-col justify-between">
+        <div 
+          onClick={() => setSelectedOrderDrawer(null)}
+          className="fixed inset-0 z-[60] flex items-stretch justify-end bg-navy-950/60 backdrop-blur-sm animate-in fade-in duration-200"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-lg h-full shadow-2xl animate-in slide-in-from-right duration-300 border-l border-slate-100 flex flex-col justify-between overflow-hidden"
+          >
             
-            <div className="space-y-6">
-              {/* Drawer Header */}
-              <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                <div className="space-y-0.5">
-                  <span className="text-[10px] font-black text-brandOrange-600 uppercase tracking-widest block font-display">
-                    Prescription & Order Overview
-                  </span>
-                  <h3 className="font-mono font-black text-xl text-slate-900">{selectedOrderDrawer.orderId}</h3>
-                </div>
-                <button 
-                  onClick={() => setSelectedOrderDrawer(null)} 
-                  className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+            {/* Fixed Drawer Header (Never Scrolls Off) */}
+            <div className="p-5 sm:p-6 border-b border-slate-100 shrink-0 bg-white flex justify-between items-center z-10">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-black text-brandOrange-600 uppercase tracking-widest block font-display">
+                  Prescription & Order Overview
+                </span>
+                <h3 className="font-mono font-black text-xl text-slate-900">
+                  {selectedOrderDrawer.orderId || selectedOrderDrawer.orderNumber}
+                </h3>
               </div>
+              <button 
+                onClick={() => setSelectedOrderDrawer(null)} 
+                className="p-2 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                title="Close Drawer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
+            {/* Scrollable Drawer Body Content */}
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
               {/* Status Update Controls */}
               <div className="p-4 sm:p-5 bg-gradient-to-br from-slate-50 to-orange-50/30 rounded-2xl border border-slate-200/80 space-y-3.5 text-xs">
                 <h4 className="font-black text-slate-900 font-display flex items-center gap-1.5">
@@ -516,7 +526,7 @@ export const AdminOrders = () => {
                   <div>
                     <label className="block text-[11px] font-bold text-slate-600 mb-1">Order Status</label>
                     <select
-                      value={selectedOrderDrawer.orderStatus}
+                      value={selectedOrderDrawer.orderStatus || selectedOrderDrawer.status || 'Pending'}
                       onChange={(e) => handleUpdateStatus(selectedOrderDrawer.id, e.target.value)}
                       className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-brandOrange-500 shadow-2xs cursor-pointer"
                     >
@@ -531,7 +541,7 @@ export const AdminOrders = () => {
                   <div>
                     <label className="block text-[11px] font-bold text-slate-600 mb-1">Payment Status</label>
                     <select
-                      value={selectedOrderDrawer.paymentStatus}
+                      value={selectedOrderDrawer.paymentStatus || 'Pending'}
                       onChange={(e) => handleUpdatePaymentStatus(selectedOrderDrawer.id, e.target.value)}
                       className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-brandOrange-500 shadow-2xs cursor-pointer"
                     >
@@ -576,37 +586,58 @@ export const AdminOrders = () => {
                   Patient Shipping Address
                 </h4>
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1 text-slate-700">
-                  <p className="font-black text-slate-900 text-sm">{selectedOrderDrawer.customer.name}</p>
-                  <p className="text-slate-500">{selectedOrderDrawer.customer.phone}</p>
-                  <p className="font-medium pt-1">{selectedOrderDrawer.shippingAddress.addressLine1}</p>
-                  <p className="font-medium text-slate-500">{selectedOrderDrawer.shippingAddress.city}, {selectedOrderDrawer.shippingAddress.state} - {selectedOrderDrawer.shippingAddress.pincode}</p>
+                  <p className="font-black text-slate-900 text-sm">
+                    {selectedOrderDrawer.customer?.name || selectedOrderDrawer.shippingAddress?.fullName || selectedOrderDrawer.guestName || 'Online Patient'}
+                  </p>
+                  <p className="text-slate-500">
+                    {selectedOrderDrawer.customer?.phone || selectedOrderDrawer.shippingAddress?.phone || selectedOrderDrawer.guestPhone || ''}
+                  </p>
+                  <p className="font-medium pt-1">
+                    {selectedOrderDrawer.shippingAddress?.addressLine1 || selectedOrderDrawer.shippingAddress?.address || 'Direct Clinic Prescription Delivery'}
+                  </p>
+                  <p className="font-medium text-slate-500">
+                    {selectedOrderDrawer.shippingAddress?.city || ''}
+                    {selectedOrderDrawer.shippingAddress?.state ? `, ${selectedOrderDrawer.shippingAddress.state}` : ''}
+                    {(selectedOrderDrawer.shippingAddress?.postalCode || selectedOrderDrawer.shippingAddress?.pincode) 
+                      ? ` - ${selectedOrderDrawer.shippingAddress?.postalCode || selectedOrderDrawer.shippingAddress?.pincode}` 
+                      : ''}
+                  </p>
                 </div>
               </div>
 
               {/* Remedy Items */}
               <div className="space-y-2 text-xs">
                 <h4 className="font-black text-slate-900 uppercase tracking-wider text-[11px] font-display">
-                  Prescription Formulations ({selectedOrderDrawer.items.length})
+                  Prescription Formulations ({selectedOrderDrawer.items?.length || 0})
                 </h4>
                 <div className="divide-y divide-slate-100 border border-slate-200/80 rounded-2xl p-3 bg-white space-y-1">
-                  {selectedOrderDrawer.items.map((it, idx) => (
-                    <div key={idx} className="py-2.5 flex justify-between items-center">
-                      <div>
-                        <p className="font-extrabold text-slate-900">{it.name}</p>
-                        <p className="text-[10px] text-slate-400 font-mono">SKU: {it.sku} • Qty: {it.quantity}</p>
+                  {(selectedOrderDrawer.items || []).map((it, idx) => {
+                    const itemPrice = Number(it.subtotal ?? it.itemSubtotal ?? (Number(it.price || 0) * Number(it.quantity || 1)) ?? it.price ?? 0);
+                    return (
+                      <div key={idx} className="py-2.5 flex justify-between items-center">
+                        <div>
+                          <p className="font-extrabold text-slate-900">{it.name || it.title || 'Classical Homeopathic Remedy'}</p>
+                          <p className="text-[10px] text-slate-400 font-mono">
+                            {it.sku ? `SKU: ${it.sku} • ` : ''}Qty: {it.quantity || 1}
+                          </p>
+                        </div>
+                        <span className="font-black text-slate-900 text-sm font-display">
+                          ₹{itemPrice.toLocaleString('en-IN')}
+                        </span>
                       </div>
-                      <span className="font-black text-slate-900 text-sm font-display">₹{it.subtotal}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
 
-            {/* Total Footer & Quick Actions */}
-            <div className="pt-4 border-t border-slate-100 space-y-3">
+            {/* Total Footer & Quick Actions (Fixed at Bottom) */}
+            <div className="p-5 sm:p-6 border-t border-slate-100 bg-slate-50/80 shrink-0 space-y-3 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
               <div className="flex justify-between items-center text-sm font-extrabold text-slate-900">
                 <span className="font-display">Total Amount Payable</span>
-                <span className="text-brandOrange-600 text-xl font-black font-display">₹{Number(selectedOrderDrawer.total || 0).toLocaleString('en-IN')}</span>
+                <span className="text-brandOrange-600 text-xl font-black font-display">
+                  ₹{Number(selectedOrderDrawer.total ?? selectedOrderDrawer.totalAmount ?? 0).toLocaleString('en-IN')}
+                </span>
               </div>
 
               <div className="grid grid-cols-2 gap-2 pt-2">
