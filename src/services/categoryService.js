@@ -72,7 +72,7 @@ export const categoryService = {
     try {
       await api.post('/categories', categoryData);
     } catch (err) {
-      console.warn("Category saved locally (backend offline):", err.message);
+      if (!err?.isDemoMode) console.warn("Category saved locally (backend offline):", err.message);
     }
 
     return { success: true, data: newCategory };

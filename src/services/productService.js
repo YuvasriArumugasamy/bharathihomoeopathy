@@ -1,5 +1,6 @@
 import { api } from '../utils/api';
 import { initialAdminProducts } from '../data/adminProductsData';
+import { authStorage } from '../utils/authStorage';
 
 const PRODUCTS_STORAGE_KEY = 'admin_products_store';
 
@@ -192,6 +193,9 @@ export const productService = {
   // ADMIN PORTAL CRUD OPERATIONS
   // ----------------------------------------------------
   getAdminProducts: async () => {
+    if (authStorage.isDemoMode()) {
+      return getStoredProducts();
+    }
     try {
       const res = await api.get('/products/admin/all');
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
@@ -199,7 +203,7 @@ export const productService = {
         return res.data;
       }
     } catch (err) {
-      console.warn("Backend admin products unavailable, loading persistent store:", err.message);
+      if (!err?.isDemoMode) console.warn("Backend admin products unavailable, loading persistent store:", err.message);
     }
     return getStoredProducts();
   },
@@ -224,7 +228,7 @@ export const productService = {
         saveStoredProducts([newProduct, ...current]);
       }
     } catch (err) {
-      console.warn("Product synced to persistent local store (backend offline):", err.message);
+      if (!err?.isDemoMode) console.warn("Product synced to persistent local store (backend offline):", err.message);
     }
 
     return { success: true, data: newProduct };

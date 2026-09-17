@@ -40,5 +40,13 @@ export const authStorage = {
     } catch (e) {
       console.error(e);
     }
+  },
+  isDemoMode: () => {
+    try {
+      const token = localStorage.getItem(TOKEN_KEY);
+      return !token || token.startsWith('demo_jwt_token_') || token.startsWith('demo_jwt_google_') || token.startsWith('demo_');
+    } catch {
+      return true;
+    }
   }
 };

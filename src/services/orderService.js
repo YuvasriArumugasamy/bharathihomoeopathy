@@ -1,6 +1,7 @@
 import { api } from '../utils/api';
 import { customerService } from './customerService';
 import { cloudSyncService } from './cloudSyncService';
+import { authStorage } from '../utils/authStorage';
 
 const ORDERS_STORAGE_KEY = 'admin_orders_store';
 
@@ -137,7 +138,7 @@ export const orderService = {
         newOrder._id = res.data._id;
       }
     } catch (err) {
-      console.warn("Order saved to local database (backend offline):", err.message);
+      if (!err?.isDemoMode) console.warn("Order saved to local database (backend offline):", err.message);
     }
 
     return {
@@ -199,6 +200,9 @@ export const orderService = {
   // ----------------------------------------------------
   getAdminOrders: async () => {
     const localOrders = getStoredOrders();
+    if (authStorage.isDemoMode()) {
+      return localOrders;
+    }
     try {
       const res = await api.get('/orders/admin/all');
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
@@ -210,7 +214,7 @@ export const orderService = {
         return merged;
       }
     } catch (err) {
-      console.warn("Could not fetch remote admin orders, using local storage", err.message);
+      if (!err?.isDemoMode) console.warn("Could not fetch remote admin orders, using local storage", err.message);
     }
     return localOrders;
   },
