@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { assets } from '../assets';
 import { demoProducts } from '../data/products';
+import { getStoredProducts } from '../utils/productStorage';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { ProductCard } from '../components/shop/ProductCard';
@@ -70,7 +71,7 @@ export const Home = () => {
     }
   ];
 
-  const bestSellerProducts = demoProducts.slice(0, 5);
+  const bestSellerProducts = (getStoredProducts().filter(p => p.isBestSeller) || []).slice(0, 5);
 
   const testimonials = [
     {

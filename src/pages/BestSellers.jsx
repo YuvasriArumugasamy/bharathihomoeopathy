@@ -12,7 +12,7 @@ import {
   Sparkles,
   ChevronDown
 } from 'lucide-react';
-import { demoProducts } from '../data/products';
+import { getStoredProducts } from '../utils/productStorage';
 import { ProductCard } from '../components/shop/ProductCard';
 import { SectionHeader } from '../components/common/SectionHeader';
 import { ScrollReveal } from '../components/common/ScrollReveal';
@@ -20,7 +20,7 @@ import { assets } from '../assets';
 
 export const BestSellers = () => {
   const [sortBy, setSortBy] = useState('Best Selling');
-  const bestSellers = demoProducts;
+  const bestSellers = getStoredProducts().filter(p => p.isBestSeller);
 
   return (
     <div className="space-y-12 pb-12 w-full max-w-full overflow-x-hidden">

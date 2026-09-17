@@ -17,6 +17,7 @@ import { useWishlist } from '../../context/WishlistContext';
 import { GoogleTranslate } from './GoogleTranslate';
 import { assets } from '../../assets';
 import { demoProducts } from '../../data/products';
+import { getStoredProducts } from '../../utils/productStorage';
 
 export const Navbar = () => {
   const navigate = useNavigate();
@@ -89,7 +90,7 @@ export const Navbar = () => {
   const searchSuggestions = React.useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return [];
-    return demoProducts.filter((p) => {
+    return getStoredProducts().filter((p) => {
       const matchCat = selectedCategory === 'All Categories' || p.category === selectedCategory;
       const matchText = p.name.toLowerCase().includes(q) || 
                         (p.category && p.category.toLowerCase().includes(q)) ||

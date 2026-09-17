@@ -34,6 +34,10 @@ const getStoredProducts = () => {
 const saveStoredProducts = (products) => {
   try {
     localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
+    localStorage.setItem('drBharathiProductsCatalog', JSON.stringify(products));
+    window.dispatchEvent(new CustomEvent('drBharathiProductsUpdated', { detail: products }));
+    window.dispatchEvent(new CustomEvent('products_updated', { detail: products }));
+    window.dispatchEvent(new Event('storage'));
   } catch (err) {
     console.warn("Failed to persist products to storage:", err.message);
   }

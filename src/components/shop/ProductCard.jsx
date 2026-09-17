@@ -22,10 +22,10 @@ export const ProductCard = ({ product }) => {
   const cartItem = items?.find((i) => (i.id === productId || i._id === productId));
   const cartQty = cartItem ? cartItem.quantity : 0;
 
-  const displayPrice = Number(product.salePrice || product.price || 0);
-  const originalPrice = Number(product.originalPrice || product.price || 0);
+  const displayPrice = Number(product.offerPrice ?? product.salePrice ?? product.price ?? 0);
+  const originalPrice = Number(product.regularPrice ?? product.originalPrice ?? product.price ?? 0);
   const hasDiscount = originalPrice > displayPrice;
-  const discountPercent = product.discount || (hasDiscount ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100) : 0);
+  const discountPercent = product.discount || (hasDiscount && originalPrice > 0 ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100) : 0);
   const priceDisplay = formatPrice(displayPrice);
 
   const isOutOfStock = product.stock !== undefined && Number(product.stock) <= 0;
