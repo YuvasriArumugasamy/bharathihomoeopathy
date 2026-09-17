@@ -61,7 +61,10 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
   const unreadCount = pendingCounts.orders + pendingCounts.appointments + pendingCounts.enquiries;
 
   return (
-    <header className="h-20 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 flex items-center justify-between fixed top-0 right-0 left-0 lg:left-64 z-30 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] transition-all font-serif">
+    <header 
+      style={{ top: 0 }}
+      className="h-20 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 flex items-center justify-between fixed top-0 right-0 left-0 lg:left-64 z-30 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] transition-all font-serif"
+    >
       
       {/* Left: Mobile Hamburger & Clinic Brand Breadcrumb */}
       <div className="flex items-center gap-3 sm:gap-4">

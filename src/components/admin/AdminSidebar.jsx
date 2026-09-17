@@ -75,18 +75,19 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
       )}
 
       <aside
+        style={{ top: 0, left: 0 }}
         className={`fixed top-0 left-0 z-50 h-screen w-full lg:w-64 bg-gradient-to-b from-[#1F5975] via-[#246582] to-[#1A4B63] text-white font-serif flex flex-col border-r border-[#194459] shadow-2xl transition-transform duration-300 ease-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Brand Header */}
-        <div className="h-[86px] flex items-center justify-between px-5 sm:px-6 border-b border-white/15 shrink-0 bg-[#1A4B63]/80 backdrop-blur-md">
+        <div className="h-20 flex items-center justify-between px-5 sm:px-6 border-b border-white/15 shrink-0 bg-[#1A4B63]/80 backdrop-blur-md">
           <Link to="/admin" className="flex items-center gap-3.5 group min-w-0" onClick={() => onClose && onClose()}>
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-white border-2 border-brandOrange-400 shadow-lg ring-2 ring-brandOrange-400/40 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-white border-2 border-brandOrange-400 shadow-lg ring-2 ring-brandOrange-400/40 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
               <img 
                 src={assets.logo} 
                 alt="Dr. Bharathi Logo" 
-                className="w-full h-full object-cover scale-[1.08] rounded-full"
+                className="w-full h-full object-cover rounded-full"
                 style={{ imageRendering: '-webkit-optimize-contrast' }}
               />
             </div>

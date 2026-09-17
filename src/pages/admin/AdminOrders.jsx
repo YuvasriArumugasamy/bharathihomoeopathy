@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   ShoppingBag, 
   Search, 
@@ -40,6 +41,18 @@ export const AdminOrders = () => {
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedOrderDrawer, setSelectedOrderDrawer] = useState(null);
   const [invoiceModalOrder, setInvoiceModalOrder] = useState(null);
+
+  // Lock background scroll when drawer is open
+  useEffect(() => {
+    if (selectedOrderDrawer || invoiceModalOrder) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedOrderDrawer, invoiceModalOrder]);
 
   const loadOrders = async (showFeedback = false) => {
     if (showFeedback) setIsRefreshing(true);
@@ -484,11 +497,12 @@ export const AdminOrders = () => {
         </div>
       </div>
 
-      {/* 5. Luxury Order Details Drawer */}
-      {selectedOrderDrawer && (
+      {/* 5. Luxury Order Details Drawer Portal */}
+      {selectedOrderDrawer && typeof document !== 'undefined' && createPortal(
         <div 
           onClick={() => setSelectedOrderDrawer(null)}
-          className="fixed inset-0 z-[60] flex items-stretch justify-end bg-navy-950/60 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-[99999] flex items-stretch justify-end bg-navy-950/65 backdrop-blur-sm animate-in fade-in duration-200"
+          style={{ top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', margin: 0, padding: 0 }}
         >
           <div 
             onClick={(e) => e.stopPropagation()}
@@ -660,7 +674,8 @@ export const AdminOrders = () => {
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Printable Invoice Modal */}

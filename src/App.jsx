@@ -47,6 +47,28 @@ import { AdminSettings } from './pages/admin/AdminSettings';
 import { AdminNotifications } from './pages/admin/AdminNotifications';
 
 export default function App() {
+  React.useEffect(() => {
+    // Neutralize any body displacement or top margin injected by Google Translate or browser plugins
+    const resetBodyShift = () => {
+      if (document.body.style.top && document.body.style.top !== '0px') {
+        document.body.style.setProperty('top', '0px', 'important');
+      }
+      if (document.body.style.position === 'relative') {
+        document.body.style.setProperty('position', 'static', 'important');
+      }
+      if (document.documentElement.style.top && document.documentElement.style.top !== '0px') {
+        document.documentElement.style.setProperty('top', '0px', 'important');
+      }
+    };
+
+    resetBodyShift();
+    const observer = new MutationObserver(resetBodyShift);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'class'] });
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <ErrorBoundary>
       <ScrollToTop />

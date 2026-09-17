@@ -64,15 +64,38 @@
   scrollbar-width: none;
 }
 
-/* Google Translate Overrides */
+/* Google Translate Complete Overrides */
+html, 
+html.translated-ltr, 
+html.translated-rtl {
+    top: 0px !important;
+    margin-top: 0px !important;
+    padding-top: 0px !important;
+}
+
+body,
+body[style*="top"] {
+    top: 0px !important;
+    position: static !important;
+    margin-top: 0px !important;
+    padding-top: 0px !important;
+}
+
 .goog-te-banner-frame.skiptranslate,
 .goog-te-banner-frame,
 iframe.goog-te-banner-frame,
 .skiptranslate > iframe,
+iframe.skiptranslate,
+.skiptranslate,
 .VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
 .VIpgJd-ZVi9od-aZ2wEe-wOHMyf-ti6hGc {
     display: none !important;
     visibility: hidden !important;
+    height: 0px !important;
+    width: 0px !important;
+    margin: 0px !important;
+    padding: 0px !important;
+    border: none !important;
 }
 
 body {
