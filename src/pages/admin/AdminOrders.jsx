@@ -353,16 +353,20 @@ export const AdminOrders = () => {
                   </td>
                   <td className="py-3.5 px-4">
                     <div>
-                      <p className="font-extrabold text-slate-900 leading-tight">{ord.customer.name}</p>
-                      <p className="text-[10px] text-slate-400 font-medium">{ord.customer.phone}</p>
+                      <p className="font-extrabold text-slate-900 leading-tight">
+                        {ord.customer?.name || ord.shippingAddress?.fullName || ord.guestName || 'Online Patient'}
+                      </p>
+                      <p className="text-[10px] text-slate-400 font-medium">
+                        {ord.customer?.phone || ord.shippingAddress?.phone || ord.guestPhone || ''}
+                      </p>
                     </div>
                   </td>
-                  <td className="py-3.5 px-4 text-slate-500 font-medium whitespace-nowrap">
-                    {ord.createdAt}
+                  <td className="py-3.5 px-4 text-slate-500 font-medium whitespace-nowrap text-xs">
+                    {ord.createdAt ? new Date(ord.createdAt).toLocaleDateString() : 'Today'}
                   </td>
                   <td className="py-3.5 px-4">
                     <span className="font-black text-slate-900 text-sm font-display">
-                      ₹{ord.total.toLocaleString()}
+                      ₹{Number(ord.total ?? ord.totalAmount ?? 0).toLocaleString()}
                     </span>
                   </td>
                   <td className="py-3.5 px-4">

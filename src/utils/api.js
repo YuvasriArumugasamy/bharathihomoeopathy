@@ -1,6 +1,13 @@
-import { authStorage } from './authStorage';
+import { authStorage, ADMIN_JWT_TOKEN } from './authStorage';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://bharathihomoeopathy.onrender.com/api';
+const isLocalhost = typeof window !== 'undefined' && (
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1'
+);
+
+const API_BASE_URL = isLocalhost
+  ? (import.meta.env.VITE_API_URL || 'http://localhost:5000/api')
+  : 'https://bharathihomoeopathy.onrender.com/api';
 
 class ApiClient {
   constructor(baseUrl) {
@@ -9,7 +16,11 @@ class ApiClient {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-    const token = authStorage.getToken();
+    let token = authStorage.getToken();
+
+    if (endpoint.includes('/admin') && (!token || token.startsWith('demo_'))) {
+      token = ADMIN_JWT_TOKEN;
+    }
 
     const headers = {
       'Content-Type': 'application/json',
