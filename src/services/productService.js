@@ -9,7 +9,15 @@ const getStoredProducts = () => {
     const raw = localStorage.getItem(PRODUCTS_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Auto-heal if all products were accidentally overwritten with the same name
+        const uniqueNames = new Set(parsed.map(p => p.name));
+        if (parsed.length > 3 && uniqueNames.size === 1) {
+          localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(initialAdminProducts));
+          return initialAdminProducts;
+        }
+        return parsed;
+      }
     }
   } catch (err) {
     console.warn("Failed to load products from storage:", err.message);
@@ -235,33 +243,50 @@ export const productService = {
   },
 
   updateAdminProduct: async (id, productData) => {
+    if (!id) return { success: false, error: 'Product ID required' };
     const current = getStoredProducts();
-    const updated = current.map(p => (p.id === id || p._id === id) ? { ...p, ...productData } : p);
+    const updated = current.map(p => {
+      const isMatch = (p.id && p.id === id) || (p._id && p._id === id);
+      return isMatch ? { ...p, ...productData } : p;
+    });
     saveStoredProducts(updated);
 
     // Attempt backend sync
     try {
       await api.put(`/products/${id}`, productData);
     } catch (err) {
-      console.warn("Product updated in persistent local store (backend offline):", err.message);
+      if (!err?.isDemoMode) console.warn("Product updated in persistent local store (backend offline):", err.message);
     }
 
     return { success: true, data: productData };
   },
 
   deleteAdminProduct: async (id) => {
+    if (!id) return { success: false };
     const current = getStoredProducts();
-    const updated = current.filter(p => p.id !== id && p._id !== id);
+    const updated = current.filter(p => {
+      const isMatch = (p.id && p.id === id) || (p._id && p._id === id);
+      return !isMatch;
+    });
     saveStoredProducts(updated);
 
     // Attempt backend sync
     try {
       await api.delete(`/products/${id}`);
     } catch (err) {
-      console.warn("Product deleted in persistent local store (backend offline):", err.message);
+      if (!err?.isDemoMode) console.warn("Product deleted in persistent local store (backend offline):", err.message);
     }
 
     return { success: true };
+  },
+
+  resetProducts: () => {
+    try {
+      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(initialAdminProducts));
+    } catch {
+      // ignore
+    }
+    return initialAdminProducts;
   }
 };
 

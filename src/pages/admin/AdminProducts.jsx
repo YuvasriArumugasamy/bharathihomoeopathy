@@ -18,7 +18,8 @@ import {
   CheckCircle2, 
   ExternalLink, 
   Upload,
-  Loader2
+  Loader2,
+  RotateCcw
 } from 'lucide-react';
 import { productService } from '../../services/productService';
 import { useToast } from '../../context/ToastContext';
@@ -138,9 +139,13 @@ export const AdminProducts = () => {
     }
 
     if (editingProduct) {
+      const targetId = editingProduct.id || editingProduct._id;
       const updatedData = { ...formData, slug: slugify(formData.name) };
-      await productService.updateAdminProduct(editingProduct.id || editingProduct._id, updatedData);
-      setProducts(prev => prev.map(p => (p.id === editingProduct.id || p._id === editingProduct._id) ? { ...p, ...updatedData } : p));
+      await productService.updateAdminProduct(targetId, updatedData);
+      setProducts(prev => prev.map(p => {
+        const isMatch = targetId && ((p.id && p.id === targetId) || (p._id && p._id === targetId));
+        return isMatch ? { ...p, ...updatedData } : p;
+      }));
       showToast('Product updated successfully and saved!', 'success');
     } else {
       const newProd = {
@@ -171,10 +176,22 @@ export const AdminProducts = () => {
   };
 
   const handleDelete = async (id) => {
+    if (!id) return;
     await productService.deleteAdminProduct(id);
-    setProducts(prev => prev.filter(p => p.id !== id && p._id !== id));
+    setProducts(prev => prev.filter(p => {
+      const isMatch = (p.id && p.id === id) || (p._id && p._id === id);
+      return !isMatch;
+    }));
     setDeleteConfirmId(null);
     showToast('Product removed from active catalogue and saved', 'info');
+  };
+
+  const handleResetCatalog = () => {
+    if (window.confirm("Are you sure you want to restore the default catalog remedies? Any changes will be reset to the original remedies.")) {
+      const restored = productService.resetProducts();
+      setProducts(restored);
+      showToast('Catalog remedies restored to default successfully!', 'success');
+    }
   };
 
   const lowStockCount = products.filter(p => p.stock <= 10).length;
@@ -191,13 +208,23 @@ export const AdminProducts = () => {
           <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
             Products & Remedies Catalog
           </h1>
-          <button
-            onClick={handleOpenAdd}
-            className="w-full sm:w-auto justify-center relative z-10 inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white shrink-0"
-          >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>Add New Product</span>
-          </button>
+          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+            <button
+              onClick={handleResetCatalog}
+              title="Restore Default Catalog Remedies"
+              className="w-full sm:w-auto justify-center relative z-10 inline-flex items-center gap-2 px-4 py-3.5 bg-white/20 hover:bg-white/30 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-lg backdrop-blur-sm transition-all cursor-pointer border border-white/30 shrink-0"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>Restore Catalog</span>
+            </button>
+            <button
+              onClick={handleOpenAdd}
+              className="w-full sm:w-auto justify-center relative z-10 inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white shrink-0"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>Add New Product</span>
+            </button>
+          </div>
         </div>
       </div>
 
