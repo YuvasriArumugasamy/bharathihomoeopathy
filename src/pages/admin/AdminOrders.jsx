@@ -140,15 +140,18 @@ export const AdminOrders = () => {
     if (selectedStatus !== 'All' && o.orderStatus !== selectedStatus) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
-      return (o.orderId || o.orderNumber || '').toLowerCase().includes(q) || (o.customer?.name || '').toLowerCase().includes(q);
+      return (o.orderId || o.orderNumber || '').toLowerCase().includes(q) || 
+             (o.originalOrderId || '').toLowerCase().includes(q) ||
+             (o.customer?.name || o.shippingAddress?.fullName || '').toLowerCase().includes(q) ||
+             (o.customer?.phone || o.shippingAddress?.phone || '').toLowerCase().includes(q);
     }
     return true;
   });
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     await orderService.updateAdminOrderStatus(orderId, newStatus);
-    setOrders(prev => prev.map(o => (o.id === orderId || o.orderId === orderId || o._id === orderId) ? { ...o, orderStatus: newStatus } : o));
-    if (selectedOrderDrawer && (selectedOrderDrawer.id === orderId || selectedOrderDrawer.orderId === orderId)) {
+    setOrders(prev => prev.map(o => (o.id === orderId || o.orderId === orderId || o.originalOrderId === orderId || o._id === orderId) ? { ...o, orderStatus: newStatus } : o));
+    if (selectedOrderDrawer && (selectedOrderDrawer.id === orderId || selectedOrderDrawer.orderId === orderId || selectedOrderDrawer.originalOrderId === orderId)) {
       setSelectedOrderDrawer(prev => ({ ...prev, orderStatus: newStatus }));
     }
     showToast(`Order status updated to ${newStatus} and saved!`, 'success');

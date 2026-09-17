@@ -7,22 +7,64 @@ const ORDERS_STORAGE_KEY = 'admin_orders_store';
 
 const initialDemoOrders = [];
 
+/**
+ * Normalizes any order ID to a clean, reliable 6-digit number like "842005"
+ */
+export const formatOrderNumber = (raw) => {
+  if (!raw) return String(Math.floor(100000 + Math.random() * 900000));
+  const str = String(raw).trim();
+
+  // Already a 6-digit number (e.g. 842005)
+  if (/^\d{6}$/.test(str)) {
+    return str;
+  }
+
+  // DHC-YYYYMMDD-XXXX (e.g. DHC-20260917-4911 -> "844911")
+  const dhcMatch = str.match(/DHC-\d{8}-(\d{4})/i);
+  if (dhcMatch && dhcMatch[1]) {
+    return `84${dhcMatch[1]}`;
+  }
+
+  // Extract trailing digits or pad to 6 digits
+  const allDigits = str.replace(/\D/g, '');
+  if (allDigits.length >= 6) {
+    return allDigits.slice(-6);
+  }
+  if (allDigits.length > 0) {
+    return allDigits.padStart(6, '8');
+  }
+
+  // Deterministic fallback
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return String(100000 + (Math.abs(hash) % 900000));
+};
+
 export const getStoredOrders = () => {
   try {
     const raw = localStorage.getItem(ORDERS_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        // Filter out any leftover demo mock orders and nulls
+        // Filter out any leftover demo mock orders and nulls, normalize ID to 6-digit number
         const cleaned = parsed.filter(o => 
           o && typeof o === 'object' &&
           !['ord-1001', 'ord-1002', 'ord-1003'].includes(o.id) && 
           !['894123', '894256', '894389'].includes(o.orderId) && 
           !['894123', '894256', '894389'].includes(o.orderNumber)
-        );
-        if (cleaned.length !== parsed.length) {
-          localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(cleaned));
-        }
+        ).map(o => {
+          const num = formatOrderNumber(o.orderNumber || o.orderId || o.id);
+          return {
+            ...o,
+            originalOrderId: o.originalOrderId || o.orderId || o.orderNumber,
+            orderId: num,
+            orderNumber: num
+          };
+        });
+        localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(cleaned));
         return cleaned;
       }
     }
@@ -223,21 +265,25 @@ export const orderService = {
     try {
       const res = await api.get('/orders/admin/all');
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-        const remoteOrders = res.data.filter(Boolean).map(o => ({
-          ...o,
-          id: o.id || o._id,
-          orderId: o.orderId || o.orderNumber || o.id,
-          orderNumber: o.orderNumber || o.orderId || o.id,
-          total: o.total || o.totalAmount || 0,
-          customer: o.customer || {
-            name: o.shippingAddress?.fullName || o.guestName || 'Online Patient',
-            phone: o.shippingAddress?.phone || o.guestPhone || '',
-            email: o.shippingAddress?.email || o.guestEmail || '',
-            city: `${o.shippingAddress?.city || ''}, ${o.shippingAddress?.state || ''}`.trim()
-          }
-        }));
-        const remoteIds = new Set(remoteOrders.map(o => o.id || o.orderId || o.orderNumber || o._id));
-        const unSyncedLocal = localOrders.filter(l => !remoteIds.has(l.id) && !remoteIds.has(l.orderId) && !remoteIds.has(l.orderNumber) && !remoteIds.has(l._id));
+        const remoteOrders = res.data.filter(Boolean).map(o => {
+          const num = formatOrderNumber(o.orderNumber || o.orderId || o.id);
+          return {
+            ...o,
+            id: o.id || o._id,
+            originalOrderId: o.orderId || o.orderNumber || o.id,
+            orderId: num,
+            orderNumber: num,
+            total: o.total || o.totalAmount || 0,
+            customer: o.customer || {
+              name: o.shippingAddress?.fullName || o.guestName || 'Online Patient',
+              phone: o.shippingAddress?.phone || o.guestPhone || '',
+              email: o.shippingAddress?.email || o.guestEmail || '',
+              city: `${o.shippingAddress?.city || ''}, ${o.shippingAddress?.state || ''}`.trim()
+            }
+          };
+        });
+        const remoteIds = new Set(remoteOrders.map(o => o.id || o.originalOrderId || o.orderId || o.orderNumber || o._id));
+        const unSyncedLocal = localOrders.filter(l => !remoteIds.has(l.id) && !remoteIds.has(l.originalOrderId) && !remoteIds.has(l.orderId) && !remoteIds.has(l.orderNumber) && !remoteIds.has(l._id));
         const merged = [...remoteOrders, ...unSyncedLocal];
         saveStoredOrders(merged);
         return merged;
