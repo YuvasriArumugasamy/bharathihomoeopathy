@@ -204,22 +204,22 @@ export const AdminProducts = () => {
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
         
-        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
-          <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 sm:gap-5 text-center sm:text-left">
+          <h1 className="font-heading text-xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
             Products & Remedies Catalog
           </h1>
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
             <button
               onClick={handleResetCatalog}
               title="Restore Default Catalog Remedies"
-              className="w-full sm:w-auto justify-center relative z-10 inline-flex items-center gap-2 px-4 py-3.5 bg-white/20 hover:bg-white/30 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-lg backdrop-blur-sm transition-all cursor-pointer border border-white/30 shrink-0"
+              className="justify-center relative z-10 inline-flex items-center gap-2 px-4 py-3 bg-white/20 hover:bg-white/30 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-md backdrop-blur-sm transition-all cursor-pointer border border-white/30"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Restore Catalog</span>
             </button>
             <button
               onClick={handleOpenAdd}
-              className="w-full sm:w-auto justify-center relative z-10 inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white shrink-0"
+              className="justify-center relative z-10 inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               <span>Add New Product</span>
