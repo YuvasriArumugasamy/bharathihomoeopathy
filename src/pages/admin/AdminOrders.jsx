@@ -507,19 +507,19 @@ export const AdminOrders = () => {
         </div>
       </div>
 
-      {/* 5. Luxury Order Details Drawer Portal (Keeps left sidebar visible & bright) */}
+      {/* 5. Luxury Order Details Centered Modal Portal */}
       {selectedOrderDrawer && typeof document !== 'undefined' && createPortal(
         <div 
           onClick={() => setSelectedOrderDrawer(null)}
-          className="fixed inset-y-0 right-0 left-0 lg:left-64 z-[90] flex items-stretch justify-end bg-slate-950/45 backdrop-blur-[2px] animate-in fade-in duration-200"
+          className="fixed inset-0 lg:left-64 z-[120] flex items-center justify-center p-3 sm:p-6 bg-slate-950/50 backdrop-blur-sm animate-in fade-in duration-200"
           style={{ top: 0, bottom: 0, right: 0 }}
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-lg h-full shadow-2xl animate-in slide-in-from-right duration-300 border-l border-slate-200 flex flex-col justify-between overflow-hidden"
+            className="bg-white w-full max-w-2xl max-h-[90vh] rounded-[2rem] shadow-2xl shadow-slate-950/30 animate-in zoom-in-95 duration-200 border border-slate-200/90 flex flex-col justify-between overflow-hidden"
           >
             
-            {/* Fixed Drawer Header (Never Scrolls Off) */}
+            {/* Modal Header */}
             <div className="p-5 sm:p-6 border-b border-slate-100 shrink-0 bg-white flex justify-between items-center z-10">
               <div className="space-y-0.5">
                 <span className="text-[10px] font-black text-brandOrange-600 uppercase tracking-widest block font-display">
@@ -532,7 +532,7 @@ export const AdminOrders = () => {
               <button 
                 onClick={() => setSelectedOrderDrawer(null)} 
                 className="p-2 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
-                title="Close Drawer"
+                title="Close Modal"
               >
                 <X className="w-5 h-5" />
               </button>
