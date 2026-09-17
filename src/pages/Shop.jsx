@@ -23,6 +23,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { ProductCard } from '../components/shop/ProductCard';
 import { ScrollReveal } from '../components/common/ScrollReveal';
+import { initialAdminCategories } from '../data/adminCategoriesData';
 import { demoProducts } from '../data/products';
 import { getStoredProducts, isMatchingCategory } from '../utils/productStorage';
 
@@ -73,10 +74,10 @@ export const Shop = () => {
       const raw = localStorage.getItem('admin_categories_store');
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch {}
-    return [];
+    return initialAdminCategories;
   });
 
   useEffect(() => {
@@ -85,9 +86,13 @@ export const Shop = () => {
         const raw = localStorage.getItem('admin_categories_store');
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) setAdminCategories(parsed);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setAdminCategories(parsed);
+            return;
+          }
         }
       } catch {}
+      setAdminCategories(initialAdminCategories);
     };
     window.addEventListener('drBharathiCategoriesUpdated', handleCatSync);
     window.addEventListener('storage', handleCatSync);
@@ -97,40 +102,55 @@ export const Shop = () => {
     };
   }, []);
 
-  // Categories matching styling with dynamic custom categories support
+  // ONLY categories from the Admin page (active ones)
   const categories = useMemo(() => {
-    const baseList = [
-      { name: "ALL CATEGORIES", value: "All Categories", icon: "🟧", bg: "bg-orange-100/90", text: "text-orange-600" },
-      { name: "Homeopathy", value: "Homeopathy Medicines", icon: "🧪", bg: "bg-emerald-100/90", text: "text-emerald-700" },
-      { name: "Ayurveda", value: "Ayurveda", icon: "🌿", bg: "bg-lime-100/90", text: "text-lime-700" },
-      { name: "Unani", value: "Unani", icon: "🥣", bg: "bg-purple-100/90", text: "text-purple-700" },
-      { name: "Beauty & Personal Care", value: "Personal Care", icon: "💆‍♀️", bg: "bg-rose-100/90", text: "text-rose-600" },
-      { name: "Baby Care", value: "Baby Care", icon: "👶", bg: "bg-pink-100/90", text: "text-pink-600" },
-      { name: "Sexual Wellness", value: "Sexual Wellness", icon: "⚧", bg: "bg-red-100/90", text: "text-red-600" },
-      { name: "Health Aid & Fitness", value: "Health Aid & Fitness", icon: "💪", bg: "bg-sky-100/90", text: "text-sky-700" },
-      { name: "Nutrition & Supplements", value: "Mother Tinctures", icon: "🏋️", bg: "bg-indigo-100/90", text: "text-indigo-700" },
-      { name: "Festivities and Devotion", value: "Herbal Products", icon: "✨", bg: "bg-amber-100/90", text: "text-amber-700" },
-      { name: "Books", value: "Books", icon: "📚", bg: "bg-amber-100/90", text: "text-amber-700" },
-      { name: "Allopathy", value: "Allopathy", icon: "💉", bg: "bg-cyan-100/90", text: "text-cyan-700" }
+    const iconMap = {
+      'homeopathic medicines': { icon: '🧪', bg: 'bg-emerald-100/90', text: 'text-emerald-700' },
+      'homeopathy medicines': { icon: '🧪', bg: 'bg-emerald-100/90', text: 'text-emerald-700' },
+      'homeopathy': { icon: '🧪', bg: 'bg-emerald-100/90', text: 'text-emerald-700' },
+      'mother tinctures': { icon: '🌿', bg: 'bg-teal-100/90', text: 'text-teal-700' },
+      'biochemic medicines': { icon: '🧂', bg: 'bg-cyan-100/90', text: 'text-cyan-700' },
+      'wellness products': { icon: '💊', bg: 'bg-rose-100/90', text: 'text-rose-600' },
+      'personal care': { icon: '💆‍♀️', bg: 'bg-purple-100/90', text: 'text-purple-700' },
+      'combo products': { icon: '🛍️', bg: 'bg-amber-100/90', text: 'text-amber-700' },
+    };
+
+    const fallbackPalette = [
+      { icon: '🏷️', bg: 'bg-blue-100/90', text: 'text-blue-700' },
+      { icon: '🌱', bg: 'bg-lime-100/90', text: 'text-lime-700' },
+      { icon: '✨', bg: 'bg-amber-100/90', text: 'text-amber-700' },
+      { icon: '🩺', bg: 'bg-sky-100/90', text: 'text-sky-700' },
+      { icon: '🍃', bg: 'bg-emerald-100/90', text: 'text-emerald-700' },
+      { icon: '🧴', bg: 'bg-pink-100/90', text: 'text-pink-600' },
+      { icon: '📦', bg: 'bg-indigo-100/90', text: 'text-indigo-700' },
     ];
 
-    const knownNames = new Set(baseList.map(c => c.name.toLowerCase()));
-    const knownValues = new Set(baseList.map(c => c.value.toLowerCase()));
+    const allCatsItem = {
+      name: "ALL CATEGORIES",
+      value: "All Categories",
+      icon: "🟧",
+      bg: "bg-orange-100/90",
+      text: "text-orange-600"
+    };
 
-    const customIcons = ["🏷️", "🌱", "💊", "🍃", "🧴", "✨", "🩺"];
-    const customCats = (adminCategories || [])
+    // Filter to strictly active categories created and managed in the Admin panel
+    const activeAdminList = (adminCategories || [])
       .filter(c => c && c.name && (c.status === 'Active' || !c.status))
-      .filter(c => !knownNames.has(c.name.toLowerCase()) && !knownValues.has(c.name.toLowerCase()))
-      .map((c, idx) => ({
-        name: c.name,
-        value: c.name,
-        icon: customIcons[idx % customIcons.length],
-        bg: "bg-emerald-100/90",
-        text: "text-emerald-700",
-        isCustom: true
-      }));
+      .map((c, idx) => {
+        const key = c.name.toLowerCase().trim();
+        const style = iconMap[key] || fallbackPalette[idx % fallbackPalette.length];
+        return {
+          id: c.id,
+          name: c.name,
+          value: c.name,
+          icon: style.icon,
+          bg: style.bg,
+          text: style.text,
+          slug: c.slug
+        };
+      });
 
-    return [...baseList, ...customCats];
+    return [allCatsItem, ...activeAdminList];
   }, [adminCategories]);
 
   const forms = [

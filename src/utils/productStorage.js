@@ -6,14 +6,25 @@ const ADMIN_STORAGE_KEY = 'admin_products_store';
 
 export const isMatchingCategory = (prodCategory, selected) => {
   if (!selected || selected === 'All Categories' || selected === 'All') return true;
-  const pCat = (prodCategory || '').toLowerCase();
-  const sCat = selected.toLowerCase();
+  const pCat = (prodCategory || '').toLowerCase().trim();
+  const sCat = (selected || '').toLowerCase().trim();
+  if (!pCat || !sCat) return false;
   if (pCat === sCat) return true;
+
+  const cleanP = pCat.replace(/[^a-z0-9]/g, '');
+  const cleanS = sCat.replace(/[^a-z0-9]/g, '');
+  if (cleanP === cleanS) return true;
+
   if (sCat.includes('homeo') && pCat.includes('homeo')) return true;
   if (sCat.includes('ayurved') && pCat.includes('ayurved')) return true;
   if (sCat.includes('unani') && pCat.includes('unani')) return true;
   if (sCat.includes('personal') && pCat.includes('personal')) return true;
   if (sCat.includes('wellness') && pCat.includes('wellness')) return true;
+  if (sCat.includes('tincture') && pCat.includes('tincture')) return true;
+  if (sCat.includes('biochemic') && pCat.includes('biochemic')) return true;
+  if (sCat.includes('combo') && pCat.includes('combo')) return true;
+
+  if (cleanP.includes(cleanS) || cleanS.includes(cleanP)) return true;
   return false;
 };
 
