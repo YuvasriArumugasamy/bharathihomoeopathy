@@ -33,6 +33,7 @@ export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [userCountry, setUserCountry] = useState(localStorage.getItem('user_country') || 'India');
   const accountMenuRef = React.useRef(null);
 
@@ -314,8 +315,8 @@ export const Navbar = () => {
 
                 <button
                   onClick={() => {
-                    logout();
                     setAccountMenuOpen(false);
+                    setShowLogoutModal(true);
                   }}
                   className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 cursor-pointer"
                 >
@@ -584,6 +585,52 @@ export const Navbar = () => {
             </div>
           </div>
 
+        </div>
+      )}
+
+      {/* Sign Out Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-slate-200 text-center relative">
+            <button
+              onClick={() => setShowLogoutModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 mx-auto flex items-center justify-center">
+              <LogOut className="w-6 h-6" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="font-bold text-base text-slate-900">Sign Out Confirmation</h3>
+              <p className="text-xs text-slate-500">
+                Are you sure you want to sign out of your account?
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(false)}
+                className="w-full py-2.5 px-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs transition-colors cursor-pointer"
+              >
+                No, Stay
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLogoutModal(false);
+                  logout();
+                  navigate('/');
+                }}
+                className="w-full py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition-colors cursor-pointer"
+              >
+                Yes, Sign Out
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

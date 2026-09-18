@@ -13,7 +13,7 @@ export const CheckoutSummary = ({ isPlacingOrder, onPlaceOrder }) => {
 
       {/* Item Previews List */}
       <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-        {items.map((item) => (
+        {(Array.isArray(items) ? items : []).map((item) => (
           <div key={item.id} className="flex items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5 truncate">
               <img

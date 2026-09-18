@@ -55,7 +55,7 @@ export const Cart = () => {
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider hidden sm:block">Quantity & Price</span>
             </div>
 
-            {items.map((item) => (
+            {(Array.isArray(items) ? items : []).map((item) => (
               <CartItem
                 key={item.id}
                 item={item}

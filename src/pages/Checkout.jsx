@@ -47,7 +47,8 @@ import {
   Package,
   Calendar,
   AlertCircle,
-  ExternalLink
+  ExternalLink,
+  ShoppingBag
 } from 'lucide-react';
 
 export const Checkout = () => {
@@ -294,7 +295,7 @@ export const Checkout = () => {
           postalCode: formData.postalCode,
           country: formData.country
         },
-        items: items.map(item => ({
+        items: (Array.isArray(items) ? items : []).map(item => ({
           id: item.id || item.productId,
           name: item.name || item.title || 'Classical Homeopathic Remedy',
           quantity: item.quantity || 1,
@@ -713,12 +714,12 @@ export const Checkout = () => {
                     <div className="pb-3 border-b border-slate-100 flex items-center justify-between">
                       <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
                         <Package className="w-4 h-4 text-[#f97316]" />
-                        <span>Order Items ({items.length} {items.length === 1 ? 'item' : 'items'})</span>
+                        <span>Order Items ({Array.isArray(items) ? items.length : 0} {items?.length === 1 ? 'item' : 'items'})</span>
                       </h3>
                     </div>
 
                     <div className="space-y-4">
-                      {items.map((item) => (
+                      {(Array.isArray(items) ? items : []).map((item) => (
                         <div key={item.id} className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50/70 border border-slate-100">
                           <div className="flex items-center gap-4">
                             <img

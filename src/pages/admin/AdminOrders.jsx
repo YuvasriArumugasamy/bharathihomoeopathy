@@ -217,7 +217,7 @@ export const AdminOrders = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12 font-serif">
+    <div className={`space-y-6 pb-12 font-serif ${invoiceModalOrder ? 'print:hidden' : ''}`}>
       
       {/* 1. Hero Header Banner */}
       <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
@@ -500,7 +500,7 @@ export const AdminOrders = () => {
               </div>
 
               <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-brandOrange-600 font-bold">
-                <span className="text-slate-400 text-[11px]">{ord.items?.length || 1} item(s)</span>
+                <span className="text-slate-400 text-[11px]">{Array.isArray(ord.items) ? ord.items.length : 1} item(s)</span>
                 <span className="inline-flex items-center gap-1">
                   View Full Details <Eye className="w-3.5 h-3.5" />
                 </span>
@@ -635,10 +635,15 @@ export const AdminOrders = () => {
               {/* Remedy Items */}
               <div className="space-y-2 text-xs">
                 <h4 className="font-black text-slate-900 uppercase tracking-wider text-[11px] font-display">
-                  Prescription Formulations ({selectedOrderDrawer.items?.length || 0})
+                  Prescription Formulations ({Array.isArray(selectedOrderDrawer.items) ? selectedOrderDrawer.items.length : (selectedOrderDrawer.items ? 1 : 0)})
                 </h4>
                 <div className="divide-y divide-slate-100 border border-slate-200/80 rounded-2xl p-3 bg-white space-y-1">
-                  {(selectedOrderDrawer.items || []).map((it, idx) => {
+                  {(Array.isArray(selectedOrderDrawer.items)
+                    ? selectedOrderDrawer.items
+                    : typeof selectedOrderDrawer.items === 'string' && selectedOrderDrawer.items.trim()
+                    ? [{ name: selectedOrderDrawer.items, quantity: 1, price: Number(selectedOrderDrawer.total || 0) }]
+                    : [{ name: 'Classical Homeopathic Remedy', quantity: 1, price: Number(selectedOrderDrawer.total || 0) }]
+                  ).map((it, idx) => {
                     const itemPrice = Number(it.subtotal ?? it.itemSubtotal ?? (Number(it.price || 0) * Number(it.quantity || 1)) ?? it.price ?? 0);
                     return (
                       <div key={idx} className="py-2.5 flex justify-between items-center">

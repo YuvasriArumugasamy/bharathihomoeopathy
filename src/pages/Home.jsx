@@ -77,37 +77,85 @@ export const Home = () => {
     {
       name: "Lakshmi R.",
       city: "Tirunelveli",
+      concern: "Chronic Skin Allergy",
       comment: "Dr. Bharathi is an excellent doctor. Her treatment is very effective and without any side effects. I feel much better now.",
       rating: 5
     },
     {
       name: "Siva Kumar",
       city: "Palayamkottai",
+      concern: "Gastric & Digestive Care",
       comment: "Very good experience. She listens patiently and gives proper guidance. Best homeopathy clinic in Tirunelveli.",
       rating: 5
     },
     {
       name: "Priya M.",
       city: "Melapalayam",
+      concern: "PCOD & Hormonal Care",
       comment: "Natural treatment with great results. Highly recommended for all age groups.",
       rating: 5
     },
     {
       name: "Rajesh K.",
       city: "Tirunelveli",
+      concern: "Chronic Sinusitis",
       comment: "Remarkable relief for chronic sinusitis within weeks of starting constitutional homeopathy. Very caring doctor.",
       rating: 5
     },
     {
       name: "Ananya S.",
       city: "Tenkasi",
+      concern: "Child Recurrent Cold",
       comment: "Safe medicines for kids with wonderful results for immunity and recurring cold. Grateful to Dr. Bharathi!",
       rating: 5
     },
     {
       name: "Mohammed Farooq",
       city: "Melapalayam",
+      concern: "Kidney Wellness",
       comment: "Holistic treatment that really addresses the root cause of the issue. Truly professional and genuine clinic.",
+      rating: 5
+    },
+    {
+      name: "Kavitha Murugan",
+      city: "Sankarankovil",
+      concern: "Joint Pain & Arthritis",
+      comment: "Suffered severe knee joint stiffness for over two years. Dr. Bharathi's constitutional remedy gave me pain-free movement without painkillers.",
+      rating: 5
+    },
+    {
+      name: "Karthik Narayanan",
+      city: "Tirunelveli Town",
+      concern: "Hair Fall & Dandruff",
+      comment: "Excellent scalp care treatment. Hair fall reduced significantly within 45 days. Genuine homeopathic clinic with individualized care.",
+      rating: 5
+    },
+    {
+      name: "Dr. Meenakshi S.",
+      city: "Madurai",
+      concern: "Migraine & Stress",
+      comment: "Being a healthcare professional, I appreciate Dr. Bharathi's clinical precision. My recurring migraines have reduced drastically.",
+      rating: 5
+    },
+    {
+      name: "Subramanian V.",
+      city: "Tuticorin",
+      concern: "Bronchial Wheezing",
+      comment: "Great improvement in breathing allergy during winter seasons. Clean consultation, gentle medicines, and excellent follow-up support.",
+      rating: 5
+    },
+    {
+      name: "Divya Bharathi",
+      city: "Tenkasi",
+      concern: "Thyroid Care & Energy",
+      comment: "Energy levels improved tremendously after regular treatment. Very compassionate doctor who explains the healing process clearly.",
+      rating: 5
+    },
+    {
+      name: "Arunachalam P.",
+      city: "Vallam",
+      concern: "Sciatica & Back Pain",
+      comment: "Tried various treatments for lower back pain. Homeopathy at Dr. Bharathi Care gave permanent relief. Highly trustworthy doctor.",
       rating: 5
     }
   ];
@@ -513,12 +561,37 @@ export const Home = () => {
       {/* 7. Patient Testimonials Carousel with Prev / Next Arrows */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 relative">
         
-        <SectionHeader title="What Our Patients Say" />
+        {/* Section Title Centered */}
+        <div className="w-full flex justify-center">
+          <SectionHeader title="What Our Patients Say" />
+        </div>
 
-        {/* Testimonials Cards: Exactly 1 on Mobile, 3 on Desktop */}
-        <div className="relative">
+        {/* Testimonials Container with Side Floating Arrows */}
+        <div className="relative group/carousel px-1 sm:px-2">
           
-          {/* Mobile View: ONLY 1 Card displayed with full focus */}
+          {/* Side Floating Left Arrow */}
+          <button
+            type="button"
+            onClick={() => setTestimonialIndex((prev) => (prev <= 0 ? testimonials.length - 1 : prev - 1))}
+            className="absolute -left-2 sm:-left-4 lg:-left-5 top-1/2 -translate-y-1/2 z-20 w-10 sm:w-11 h-10 sm:h-11 rounded-full bg-white/95 hover:bg-orange-50 text-slate-700 hover:text-brandOrange-600 border border-slate-200/90 hover:border-brandOrange-400 shadow-md hover:shadow-xl flex items-center justify-center transition-all cursor-pointer active:scale-90"
+            aria-label="Previous Review"
+            title="Previous Review"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+
+          {/* Side Floating Right Arrow */}
+          <button
+            type="button"
+            onClick={() => setTestimonialIndex((prev) => (prev >= testimonials.length - 1 ? 0 : prev + 1))}
+            className="absolute -right-2 sm:-right-4 lg:-right-5 top-1/2 -translate-y-1/2 z-20 w-10 sm:w-11 h-10 sm:h-11 rounded-full bg-white/95 hover:bg-orange-50 text-slate-700 hover:text-brandOrange-600 border border-slate-200/90 hover:border-brandOrange-400 shadow-md hover:shadow-xl flex items-center justify-center transition-all cursor-pointer active:scale-90"
+            aria-label="Next Review"
+            title="Next Review"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+
+          {/* Mobile View: 1 Focused Card */}
           <div className="block md:hidden">
             {(() => {
               const t = testimonials[testimonialIndex % testimonials.length];
@@ -527,40 +600,48 @@ export const Home = () => {
               return (
                 <div 
                   key={`mobile-${testimonialIndex}`} 
-                  className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 p-6 shadow-[0_10px_35px_rgba(15,23,42,0.06)] hover:shadow-xl hover:shadow-orange-500/10 hover:border-brandOrange-400/60 transition-all duration-300 group relative overflow-hidden flex flex-col justify-between"
+                  className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-[0_10px_35px_rgba(15,23,42,0.06)] hover:border-brandOrange-400/60 transition-all duration-300 relative overflow-hidden flex flex-col justify-between"
                 >
-                  {/* Top Accent Gradient Line on Hover */}
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d]" />
 
-                  {/* Header Row: Quote Pod + Verified Badge */}
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white flex items-center justify-center shadow-md shadow-orange-500/25 ring-4 ring-orange-500/10 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-300">
-                      <span className="text-xl font-serif leading-none font-bold">“</span>
+                  <div>
+                    {/* Header Row */}
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white flex items-center justify-center shadow-sm">
+                          <span className="text-lg font-serif leading-none font-bold">“</span>
+                        </div>
+                        {t.concern && (
+                          <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200/70 text-[10px] font-bold">
+                            {t.concern}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200/60 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                        <span>Verified</span>
+                      </span>
                     </div>
-                    
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200/60 flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                      <span>Verified Patient</span>
-                    </span>
+
+                    {/* Comment */}
+                    <p className="text-xs sm:text-[13px] text-slate-700 font-medium leading-relaxed italic min-h-[64px] my-2">
+                      "{t.comment}"
+                    </p>
                   </div>
 
-                  {/* Comment Text */}
-                  <p className="text-xs sm:text-[13px] text-slate-700 font-medium leading-relaxed italic min-h-[58px] my-1">
-                    "{t.comment}"
-                  </p>
-
-                  {/* Footer Profile Row */}
-                  <div className="pt-3.5 border-t border-slate-100 flex items-center justify-between gap-3 mt-2">
+                  {/* Footer */}
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3 mt-2">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0b344d] to-[#18587c] text-white font-extrabold text-[11px] flex items-center justify-center shadow-xs shrink-0">
                         {initials}
                       </div>
                       <div>
-                        <h4 className="text-xs sm:text-[13px] font-extrabold text-slate-900 group-hover:text-brandOrange-600 transition-colors leading-tight">
+                        <h4 className="text-xs sm:text-[13px] font-extrabold text-slate-900 leading-tight">
                           {t.name}
                         </h4>
                         {t.city && (
-                          <span className="text-[10.5px] font-semibold text-slate-400 block leading-tight">
+                          <span className="text-[10px] font-semibold text-slate-400 block leading-tight">
                             {t.city}
                           </span>
                         )}
@@ -579,24 +660,32 @@ export const Home = () => {
             })()}
           </div>
 
-          {/* Desktop & Tablet View: 3 Cards Grid */}
-          <div className="hidden md:grid md:grid-cols-3 gap-6 transition-all duration-300">
-            {testimonials.slice(Math.floor(testimonialIndex / 3) * 3, Math.floor(testimonialIndex / 3) * 3 + 3).map((t, i) => {
+          {/* Desktop & Tablet View: 3 Sliding Cards */}
+          <div className="hidden md:grid md:grid-cols-3 gap-5 lg:gap-6 transition-all duration-300">
+            {[0, 1, 2].map((offset) => {
+              const itemIdx = (testimonialIndex + offset) % testimonials.length;
+              const t = testimonials[itemIdx];
               const initials = t.name ? t.name.split(' ').map(n => n[0]).join('') : 'P';
 
               return (
                 <div 
-                  key={`desktop-${testimonialIndex}-${i}`} 
-                  className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 p-6 shadow-[0_10px_35px_rgba(15,23,42,0.06)] hover:shadow-2xl hover:shadow-orange-500/10 hover:-translate-y-1.5 hover:border-brandOrange-400/60 transition-all duration-300 group relative overflow-hidden flex flex-col justify-between"
+                  key={`desktop-card-${itemIdx}`} 
+                  className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 p-6 shadow-[0_10px_35px_rgba(15,23,42,0.06)] hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1 hover:border-brandOrange-400/60 transition-all duration-300 group relative overflow-hidden flex flex-col justify-between"
                 >
-                  {/* Top Accent Gradient Line on Hover */}
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                   <div>
-                    {/* Header Row: Quote Pod + Verified Badge */}
+                    {/* Header Row */}
                     <div className="flex items-center justify-between gap-2 mb-3">
-                      <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white flex items-center justify-center shadow-md shadow-orange-500/25 ring-4 ring-orange-500/10 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-300">
-                        <span className="text-xl font-serif leading-none font-bold">“</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white flex items-center justify-center shadow-md shadow-orange-500/25 ring-4 ring-orange-500/10 group-hover:scale-110 transition-all duration-300">
+                          <span className="text-xl font-serif leading-none font-bold">“</span>
+                        </div>
+                        {t.concern && (
+                          <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200/70 text-[10px] font-bold">
+                            {t.concern}
+                          </span>
+                        )}
                       </div>
 
                       <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200/60 flex items-center gap-1">
@@ -605,13 +694,13 @@ export const Home = () => {
                       </span>
                     </div>
 
-                    {/* Comment Text */}
-                    <p className="text-xs sm:text-[13px] text-slate-700 font-medium leading-relaxed italic min-h-[58px] my-1">
+                    {/* Comment */}
+                    <p className="text-xs sm:text-[13px] text-slate-700 font-medium leading-relaxed italic min-h-[64px] my-2">
                       "{t.comment}"
                     </p>
                   </div>
 
-                  {/* Footer Profile Row */}
+                  {/* Footer */}
                   <div className="pt-3.5 border-t border-slate-100 flex items-center justify-between gap-3 mt-4">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0b344d] to-[#18587c] text-white font-extrabold text-[11px] flex items-center justify-center shadow-xs shrink-0">
@@ -641,63 +730,6 @@ export const Home = () => {
             })}
           </div>
 
-        </div>
-
-        {/* Bottom Interactive Navigation: Mobile Arrows + Clickable Dot Indicators */}
-        <div className="flex justify-center items-center gap-4 pt-2">
-          {/* Mobile Prev Arrow */}
-          <button
-            type="button"
-            onClick={() => setTestimonialIndex((prev) => (prev <= 0 ? testimonials.length - 1 : prev - 1))}
-            className="md:hidden w-9 h-9 rounded-full bg-white border border-slate-200 hover:border-[#e05a1e] text-slate-700 hover:text-[#e05a1e] flex items-center justify-center shadow-sm cursor-pointer active:scale-90"
-            aria-label="Previous Review"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-
-          {/* Mobile Dots */}
-          <div className="flex md:hidden items-center gap-1.5">
-            {testimonials.map((_, idx) => (
-              <button
-                key={`mob-dot-${idx}`}
-                type="button"
-                onClick={() => setTestimonialIndex(idx)}
-                className={`transition-all duration-300 rounded-full cursor-pointer ${
-                  testimonialIndex === idx
-                    ? 'w-5 h-2 bg-[#e05a1e]'
-                    : 'w-2 h-2 bg-slate-300 hover:bg-slate-400'
-                }`}
-                aria-label={`Review ${idx + 1}`}
-              />
-            ))}
-          </div>
-
-          {/* Desktop Dots */}
-          <div className="hidden md:flex items-center gap-2">
-            {Array.from({ length: Math.ceil(testimonials.length / 3) }).map((_, idx) => (
-              <button
-                key={`desk-dot-${idx}`}
-                type="button"
-                onClick={() => setTestimonialIndex(idx * 3)}
-                className={`transition-all duration-300 rounded-full cursor-pointer ${
-                  Math.floor(testimonialIndex / 3) === idx
-                    ? 'w-6 h-2.5 bg-[#e05a1e]'
-                    : 'w-2.5 h-2.5 bg-slate-300 hover:bg-slate-400'
-                }`}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
-            ))}
-          </div>
-
-          {/* Mobile Next Arrow */}
-          <button
-            type="button"
-            onClick={() => setTestimonialIndex((prev) => (prev >= testimonials.length - 1 ? 0 : prev + 1))}
-            className="md:hidden w-9 h-9 rounded-full bg-white border border-slate-200 hover:border-[#e05a1e] text-slate-700 hover:text-[#e05a1e] flex items-center justify-center shadow-sm cursor-pointer active:scale-90"
-            aria-label="Next Review"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
         </div>
 
       </section>

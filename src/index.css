@@ -533,3 +533,72 @@ body {
 .custom-phone-wrapper .react-tel-input .country-list .country.highlight .dial-code {
   color: #c2410c !important;
 }
+
+/* ========================================================================= */
+/* PRINT STYLES - Clean Receipt, Invoice, and Prescription Slip Printing     */
+/* ========================================================================= */
+@media print {
+  /* 1. Universal hide for navigation, headers, footers, and interactive chrome */
+  header,
+  footer,
+  nav,
+  aside,
+  .print\:hidden,
+  [data-print-hide],
+  .no-print {
+    display: none !important;
+  }
+
+  /* 2. Global floating actions, bottom bar, and popups */
+  .floating-actions,
+  .mobile-bottom-bar,
+  .top-contact-bar,
+  #country-modal,
+  #auth-modal,
+  #symptom-guide-modal,
+  #track-order-modal,
+  #pwa-install-prompt {
+    display: none !important;
+  }
+
+  /* 3. Clean white canvas without website background images */
+  html, body, #root {
+    background: #ffffff !important;
+    background-image: none !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* 4. Strip shadows and extra padding */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  /* 5. Prevent page breaking inside receipt containers */
+  table, tr,
+  .print-avoid-break,
+  .receipt-print-container,
+  .invoice-print-container {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* 6. Standard A4 margins optimized for single page fit */
+  @page {
+    margin: 6mm 8mm;
+    size: A4 portrait;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

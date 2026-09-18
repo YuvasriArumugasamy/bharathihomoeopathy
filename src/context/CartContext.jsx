@@ -14,7 +14,8 @@ export const CartProvider = ({ children }) => {
   const [items, setItems] = useState(() => {
     try {
       const saved = localStorage.getItem(CART_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
     }
@@ -22,23 +23,25 @@ export const CartProvider = ({ children }) => {
 
   const [appliedCoupon, setAppliedCoupon] = useState(null);
 
+  const safeItems = useMemo(() => (Array.isArray(items) ? items : []), [items]);
+
   // Sync to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(safeItems));
     } catch (e) {
       console.error(e);
     }
-  }, [items]);
+  }, [safeItems]);
 
   // Derived calculations
   const subtotal = useMemo(() => {
-    return items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  }, [items]);
+    return safeItems.reduce((acc, item) => acc + (Number(item?.price || 0) * Number(item?.quantity || 1)), 0);
+  }, [safeItems]);
 
   const totalItems = useMemo(() => {
-    return items.reduce((acc, item) => acc + item.quantity, 0);
-  }, [items]);
+    return safeItems.reduce((acc, item) => acc + Number(item?.quantity || 1), 0);
+  }, [safeItems]);
 
   const discount = useMemo(() => {
     if (!appliedCoupon) return 0;
@@ -158,7 +161,7 @@ export const CartProvider = ({ children }) => {
   return (
     <CartContext.Provider
       value={{
-        items,
+        items: safeItems,
         totalItems,
         subtotal,
         discount,

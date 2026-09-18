@@ -6,32 +6,15 @@ import {
   MapPin, 
   Settings, 
   LogOut, 
-  Clock, 
-  CheckCircle2, 
-  Package, 
-  ShieldCheck,
-  ChevronRight,
-  Plus,
-  FileText,
-  Truck,
-  Download,
-  PhoneCall,
-  Activity,
-  Award,
-  Sparkles,
-  Edit3,
-  ExternalLink,
+  Edit3, 
+  Plus, 
+  FileText, 
+  Truck, 
+  Eye, 
+  Printer, 
+  RotateCcw,
   X,
-  Search,
-  Filter,
-  Check,
-  Stethoscope,
-  Eye,
-  AlertCircle,
-  QrCode,
-  Share2,
-  Printer,
-  RotateCcw
+  Phone
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -39,9 +22,9 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { OrderInvoiceModal } from '../components/admin/OrderInvoiceModal';
 import { PrescriptionSlipModal } from '../components/account/PrescriptionSlipModal';
-import { getStoredOrders, getUserOrders, orderService } from '../services/orderService';
-import { getStoredAppointments, getUserAppointments, appointmentService } from '../services/appointmentService';
-import { getStoredPrescriptions, getUserPrescriptions, prescriptionService } from '../services/prescriptionService';
+import { getUserOrders, orderService } from '../services/orderService';
+import { getUserAppointments, appointmentService } from '../services/appointmentService';
+import { getUserPrescriptions, prescriptionService } from '../services/prescriptionService';
 import { cloudSyncService } from '../services/cloudSyncService';
 
 export const MyAccount = () => {
@@ -55,7 +38,7 @@ export const MyAccount = () => {
   const [selectedOrderForTracking, setSelectedOrderForTracking] = useState(null);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
   const [invoiceModalOrder, setInvoiceModalOrder] = useState(null);
-  const [orderFilter, setOrderFilter] = useState('all'); // 'all' | 'Processing' | 'Delivered'
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // User-Isolated Real-time state
   const [rawOrders, setRawOrders] = useState(() => getUserOrders(user));
@@ -95,7 +78,6 @@ export const MyAccount = () => {
       window.addEventListener('storage', refreshLiveUserData);
     }
 
-    // Real-time Cloud Sync Listener across devices
     const unsubscribeCloud = cloudSyncService.listenToCloudOrders(() => {
       refreshLiveUserData();
       loadMongoData();
@@ -112,10 +94,9 @@ export const MyAccount = () => {
     };
   }, [user]);
 
-  // Dynamic user storage key
   const userKey = (user?.email || user?._id || 'guest').toLowerCase();
 
-  // Editable Profile & Address States loaded from user's persistent store
+  // Saved Address
   const [address, setAddress] = useState(() => {
     try {
       const saved = localStorage.getItem(`bh_address_${userKey}`);
@@ -136,41 +117,10 @@ export const MyAccount = () => {
   });
   const [isEditingAddress, setIsEditingAddress] = useState(false);
 
-  const [profileData, setProfileData] = useState(() => {
-    try {
-      const saved = localStorage.getItem(`bh_profile_${userKey}`);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return {
-      name: user?.name || 'Yuvasri Arumugasamy',
-      email: user?.email || 'yuvasrikutty2005@gmail.com',
-      phone: user?.phone || '9345865212',
-      bloodGroup: 'B+',
-      allergies: 'None Reported',
-      constitutionalType: 'Calcarea Carb (Constitutional)',
-      joinedDate: 'September 2026'
-    };
-  });
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-
-  // Real deterministic unique patient ID per patient
-  const patientId = useMemo(() => {
-    const seed = (user?.email || profileData.email || 'PATIENT').toLowerCase();
-    let hash = 0;
-    for (let i = 0; i < seed.length; i++) {
-      hash = ((hash << 5) - hash) + seed.charCodeAt(i);
-      hash |= 0;
-    }
-    const code = Math.abs(hash % 90000) + 10000;
-    return `#BH-PAT-${code}`;
-  }, [user, profileData.email]);
-
-  // Settings preferences state
+  // Settings preferences
   const [notifications, setNotifications] = useState({
     sms: true,
-    whatsapp: true,
-    newsletter: false,
-    refillReminders: true
+    whatsapp: true
   });
 
   // Map raw user orders into UI-friendly structure
@@ -209,7 +159,6 @@ export const MyAccount = () => {
   }, [rawOrders]);
 
   const handleReorder = (order) => {
-    let reorderedCount = 0;
     if (Array.isArray(order.itemsList) && order.itemsList.length > 0) {
       order.itemsList.forEach(item => {
         addToCart({
@@ -219,7 +168,6 @@ export const MyAccount = () => {
           image: item.image || '/logo.png',
           category: item.category || 'Remedy'
         }, item.quantity || 1);
-        reorderedCount++;
       });
     } else {
       addToCart({
@@ -229,922 +177,600 @@ export const MyAccount = () => {
         image: '/logo.png',
         category: 'Prescription Refill'
       }, 1);
-      reorderedCount = 1;
     }
-
-    showToast(`Added ${reorderedCount} remedy item(s) to your cart!`, 'success');
+    showToast('Items added to cart', 'success');
     navigate('/cart');
   };
 
-  const activeAppointment = userAppointments.length > 0 ? userAppointments[0] : null;
-
-  // Real-time dynamic counts
-  const processingOrdersCount = allOrders.filter(o => o.status.toLowerCase() === 'processing' || o.status.toLowerCase() === 'pending').length;
-  const deliveredOrdersCount = allOrders.filter(o => o.status.toLowerCase() === 'delivered').length;
-
-  const navTabs = [
-    { id: 'orders', label: 'Order History & Shipments', icon: ShoppingBag, count: allOrders.length },
-    { id: 'appointments', label: 'Doctor Consultations', icon: Stethoscope, count: userAppointments.length },
-    { id: 'address', label: 'Delivery Address Book', icon: MapPin },
-    { id: 'medical', label: 'Prescription Vault', icon: FileText, count: userPrescriptions.length },
-    { id: 'settings', label: 'Account & Privacy', icon: Settings },
+  const tabs = [
+    { id: 'orders', label: 'Orders', mobileLabel: 'Orders', icon: ShoppingBag, count: allOrders.length },
+    { id: 'appointments', label: 'Consultations', mobileLabel: 'Consults', icon: Calendar, count: userAppointments.length },
+    { id: 'prescriptions', label: 'Prescriptions', mobileLabel: 'Rx Slips', icon: FileText, count: userPrescriptions.length },
+    { id: 'address', label: 'Delivery Address', mobileLabel: 'Address', icon: MapPin },
+    { id: 'settings', label: 'Settings', mobileLabel: 'Settings', icon: Settings },
   ];
 
-  const filteredOrders = allOrders.filter(order => {
-    if (orderFilter === 'all') return true;
-    if (orderFilter.toLowerCase() === 'processing') {
-      return order.status.toLowerCase() === 'processing' || order.status.toLowerCase() === 'pending';
-    }
-    return order.status.toLowerCase() === orderFilter.toLowerCase();
-  });
-
   return (
-    <div className="min-h-screen bg-slate-50/60 pb-16 pt-6 font-sans">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 w-full">
-        
-        {/* ========================================================================= */}
-        {/* 1. HERO BANNER - LUXURY DARK MEDICAL TEAL GRADIENT WITH GLASS BADGES */}
-        {/* ========================================================================= */}
-        <section className="relative rounded-3xl overflow-hidden bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#072538] via-[#0d4567] to-[#061826] text-white shadow-2xl border border-white/15 p-6 sm:p-10">
-          
-          {/* Ambient Lighting & Glow FX */}
-          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-brandOrange-500/20 blur-3xl pointer-events-none" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px] opacity-5 pointer-events-none" />
+    <div className="min-h-screen bg-slate-50 py-4 sm:py-8 px-3 sm:px-6 lg:px-8 print:p-0 print:m-0 print:bg-white print:min-h-0">
+      <div className={`max-w-4xl mx-auto space-y-4 sm:space-y-6 ${invoiceModalOrder || prescriptionModalRx ? 'print:hidden' : ''}`}>
 
-          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-            
-            {/* Left: Patient Avatar & Details */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-6 w-full lg:w-auto">
-              
-              <div className="relative group mx-auto sm:mx-0">
-                <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-tr from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-black text-3xl sm:text-5xl flex items-center justify-center shadow-2xl ring-4 ring-white/20 shrink-0 overflow-hidden transform group-hover:scale-105 transition-all duration-300">
-                  {user?.picture ? (
-                    <img src={user.picture} alt={user?.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <span>{(user?.name || profileData.name || 'Y').charAt(0).toUpperCase()}</span>
-                  )}
-                </div>
-                {/* Active Live Pulse Badge */}
-                <div className="absolute -bottom-1 -right-1 bg-emerald-500 rounded-full p-1.5 ring-4 ring-[#072538] flex items-center justify-center shadow-lg" title="Verified Active Patient">
-                  <span className="relative flex h-2.5 w-2.5 sm:h-3 sm:w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 sm:h-3 sm:w-3 bg-emerald-400"></span>
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-2 mt-1 sm:mt-0 flex-1">
-                <div className="flex flex-col sm:flex-row items-center sm:items-end justify-center sm:justify-start gap-2 sm:gap-3">
-                  <h1 className="text-[22px] sm:text-3xl lg:text-4xl font-black tracking-tight text-white drop-shadow-md leading-tight">
-                    {user?.name || profileData.name}
-                  </h1>
-                  <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1 bg-emerald-500/20 border border-emerald-400/40 rounded-full text-[10px] sm:text-xs font-bold text-emerald-300 backdrop-blur-md shadow-xs whitespace-nowrap mb-1 sm:mb-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                    Verified Patient
-                  </span>
-                </div>
-                
-                <p className="text-xs sm:text-sm text-cyan-100 font-medium">{user?.email || profileData.email}</p>
-                {(user?.phone || profileData.phone) && (
-                  <p className="text-xs text-cyan-200/80 font-mono">{user?.phone || profileData.phone}</p>
-                )}
-              </div>
-
+        {/* User Profile Card (Clean & Responsive) */}
+        <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-amber-500 text-white font-bold text-base sm:text-xl flex items-center justify-center shrink-0 shadow-sm">
+              {user?.picture ? (
+                <img src={user.picture} alt={user?.name} className="w-full h-full object-cover rounded-xl sm:rounded-2xl" />
+              ) : (
+                <span>{(user?.name || 'U').charAt(0).toUpperCase()}</span>
+              )}
             </div>
-
-            {/* Right: Clean Stat Cards & Account Action */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 w-full lg:w-auto shrink-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-white/10">
-              
-              <div className="bg-white/10 backdrop-blur-xl p-4 rounded-2xl border border-white/15 text-center sm:text-left space-y-1 hover:border-amber-400/40 hover:bg-white/15 transition-all shadow-lg group">
-                <div className="flex items-center justify-between text-slate-300 text-[10px] font-bold uppercase tracking-wider">
-                  <span>Total Orders</span>
-                  <ShoppingBag className="w-4 h-4 text-brandOrange-400 group-hover:scale-110 transition-transform" />
-                </div>
-                <div className="text-2xl font-black text-white">{allOrders.length}</div>
-                <span className="text-[11px] font-medium text-slate-300 block">
-                  {allOrders.length === 1 ? 'Order' : 'Orders'}
-                </span>
-              </div>
-              
-              <div className="bg-white/10 backdrop-blur-xl p-4 rounded-2xl border border-white/15 text-center sm:text-left space-y-1 hover:border-amber-400/40 hover:bg-white/15 transition-all shadow-lg group">
-                <div className="flex items-center justify-between text-slate-300 text-[10px] font-bold uppercase tracking-wider">
-                  <span>Consultations</span>
-                  <Calendar className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
-                </div>
-                <div className="text-2xl font-black text-amber-300">
-                  {userAppointments.length}
-                </div>
-                <span className="text-[11px] font-medium text-amber-200 block">
-                  {userAppointments.length === 1 ? 'Booking' : 'Bookings'}
-                </span>
-              </div>
-
-              <div className="col-span-2 sm:col-span-1 bg-white/10 backdrop-blur-xl p-4 rounded-2xl border border-white/15 flex flex-col justify-between hover:border-rose-400/40 hover:bg-white/15 transition-all shadow-lg">
-                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">Account Session</span>
-                {user ? (
-                  <button
-                    onClick={logout}
-                    className="w-full mt-2 py-2 px-3 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/40 text-rose-200 hover:text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>Sign Out</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => openAuthModal && openAuthModal('login')}
-                    className="w-full mt-2 py-2 px-3 bg-gradient-to-r from-brandOrange-500 to-amber-500 text-white rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-md hover:scale-105"
-                  >
-                    <User className="w-3.5 h-3.5" />
-                    <span>Sign In</span>
-                  </button>
-                )}
-              </div>
-
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-lg font-bold text-slate-900 truncate">
+                {user?.name || 'Patient Account'}
+              </h1>
+              <p className="text-xs text-slate-500 truncate">{user?.email || 'Registered Patient'}</p>
+              {user?.phone && (
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 truncate">{user.phone}</p>
+              )}
             </div>
-
           </div>
 
-        </section>
+          <div className="shrink-0">
+            {user ? (
+              <button
+                onClick={() => setShowLogoutModal(true)}
+                className="px-3 sm:px-4 py-2 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => openAuthModal && openAuthModal('login')}
+                className="px-3 sm:px-4 py-2 text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>Sign In</span>
+              </button>
+            )}
+          </div>
+        </div>
 
-        {/* ========================================================================= */}
-        {/* 2. MAIN DASHBOARD CONTENT GRID (SIDEBAR + CONTENT PANELS) */}
-        {/* ========================================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* LEFT SIDEBAR NAVIGATION */}
-          <aside className="lg:col-span-3 bg-white rounded-3xl p-4 border border-slate-200/90 shadow-xl space-y-2 lg:sticky lg:top-24 z-10">
-            <div className="px-3 py-2 flex items-center justify-between border-b border-slate-100 mb-1">
-              <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">PATIENT PORTAL MENU</span>
-              <Sparkles className="w-3.5 h-3.5 text-brandOrange-500" />
-            </div>
-            
-            <div className="space-y-1.5">
-              {navTabs.map((tab) => {
-                const IconComponent = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full text-left px-4 py-3.5 rounded-2xl text-xs font-extrabold flex items-center justify-between transition-all duration-200 cursor-pointer ${
-                      isActive
-                        ? 'bg-gradient-to-r from-brandOrange-500 via-amber-500 to-brandOrange-600 text-white shadow-lg shadow-orange-500/25 scale-[1.02]'
-                        : 'text-slate-700 hover:bg-slate-50 hover:text-navy-950 hover:pl-5'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-xl ${isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                        <IconComponent className="w-4 h-4" />
-                      </div>
-                      <span>{tab.label}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      {tab.count !== undefined && (
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                          isActive ? 'bg-white text-brandOrange-600 shadow-xs' : 'bg-slate-100 text-slate-600'
-                        }`}>
-                          {tab.count}
-                        </span>
-                      )}
-                      <ChevronRight className={`w-4 h-4 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-300'}`} />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Helpline Footer Box in Sidebar */}
-            <div className="pt-4 border-t border-slate-100 mt-4">
-              <div className="bg-gradient-to-br from-amber-50 to-brandOrange-50/50 p-4 rounded-2xl border border-amber-200/80 space-y-2">
-                <div className="flex items-center gap-2 text-brandOrange-700 font-extrabold text-xs">
-                  <PhoneCall className="w-4 h-4 text-brandOrange-500 animate-bounce" />
-                  <span>24/7 Homeo Helpline</span>
-                </div>
-                <p className="text-[11px] text-slate-600 font-medium">Need prescription advice or dispatch assistance?</p>
-                <a 
-                  href="tel:+919025854711" 
-                  className="inline-block text-xs font-black text-navy-950 hover:text-brandOrange-600 transition-colors"
-                >
-                  +91 90258 54711
-                </a>
-              </div>
-            </div>
-
-          </aside>
-
-          {/* RIGHT CONTENT PANEL */}
-          <main className="lg:col-span-9 space-y-6">
-            
-            {/* --------------------------------------------------------------------- */}
-            {/* TAB 1: RECENT ORDERS & MEDICINE SHIPMENTS */}
-            {/* --------------------------------------------------------------------- */}
-            {activeTab === 'orders' && (
-              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xl space-y-6">
-                
-                {/* Header Strip & Filters */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-5 border-b border-slate-100 gap-4">
-                  <div>
-                    <h2 className="text-xl font-black text-navy-950 flex items-center gap-2">
-                      <ShoppingBag className="w-5 h-5 text-brandOrange-500" />
-                      Recent Orders & Medicine Shipments
-                    </h2>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">Track your constitutional remedies and order dispatches</p>
-                  </div>
-
-                  {/* Filter Pills */}
-                  <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl text-xs font-bold text-slate-600 w-full sm:w-auto">
-                    <button
-                      onClick={() => setOrderFilter('all')}
-                      className={`flex-1 sm:flex-none px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                        orderFilter === 'all' ? 'bg-white text-navy-950 shadow-xs font-black' : 'hover:text-navy-950'
-                      }`}
-                    >
-                      All ({allOrders.length})
-                    </button>
-                    <button
-                      onClick={() => setOrderFilter('Processing')}
-                      className={`flex-1 sm:flex-none px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                        orderFilter === 'Processing' ? 'bg-amber-400 text-amber-950 shadow-xs font-black' : 'hover:text-navy-950'
-                      }`}
-                    >
-                      Processing ({processingOrdersCount})
-                    </button>
-                    <button
-                      onClick={() => setOrderFilter('Delivered')}
-                      className={`flex-1 sm:flex-none px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                        orderFilter === 'Delivered' ? 'bg-emerald-500 text-white shadow-xs font-black' : 'hover:text-navy-950'
-                      }`}
-                    >
-                      Delivered ({deliveredOrdersCount})
-                    </button>
-                  </div>
-                </div>
-
-                {/* Orders List */}
-                <div className="space-y-6">
-                  {filteredOrders.length === 0 ? (
-                    <div className="text-center py-14 px-6 rounded-3xl bg-slate-50 border border-dashed border-slate-200 space-y-4">
-                      <div className="w-16 h-16 mx-auto rounded-2xl bg-orange-50 text-brandOrange-500 flex items-center justify-center shadow-inner">
-                        <ShoppingBag className="w-8 h-8" />
-                      </div>
-                      <div className="space-y-1">
-                        <h3 className="font-black text-lg text-navy-950">No Live Orders Found</h3>
-                        <p className="text-xs text-slate-500 font-medium max-w-md mx-auto">
-                          You don't have any medicine shipments under this account yet. When you place an order, live formulation progress and tracking details will appear here automatically.
-                        </p>
-                      </div>
-                      <Link
-                        to="/shop"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white text-xs font-black rounded-xl shadow-md hover:shadow-orange-500/25 transition-all"
-                      >
-                        <ShoppingBag className="w-4 h-4" />
-                        <span>Explore Remedies & Shop</span>
-                      </Link>
-                    </div>
-                  ) : (
-                    filteredOrders.map((order) => {
-                      const isProcessing = order.status === 'Processing' || order.status === 'Pending';
-                      return (
-                        <div 
-                          key={order.id} 
-                          className="rounded-3xl bg-slate-50/80 border border-slate-200/90 p-6 space-y-5 hover:border-brandOrange-400/80 hover:shadow-lg transition-all duration-200"
-                        >
-                          {/* Order Header */}
-                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            <div className="space-y-1">
-                              <div className="flex flex-wrap items-center gap-3">
-                                <span className="font-mono font-black text-base text-navy-950 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-2xs whitespace-nowrap">
-                                  #{order.id}
-                                </span>
-                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap ${
-                                  isProcessing 
-                                    ? 'bg-amber-100 text-amber-900 border border-amber-300/80 animate-pulse' 
-                                    : 'bg-emerald-100 text-emerald-900 border border-emerald-300/80'
-                                }`}>
-                                  <span className={`w-2 h-2 rounded-full ${isProcessing ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                                  {order.status}
-                                </span>
-                              </div>
-                              <p className="text-xs text-slate-400 font-medium pl-0.5">Placed on {order.date}</p>
-                            </div>
-
-                            <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
-                              <div className="text-right">
-                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total Paid</span>
-                                <span className="font-black text-xl text-brandOrange-600">₹{order.amount}</span>
-                              </div>
-                              
-                              <button
-                                onClick={() => setSelectedOrderForTracking(order)}
-                                className="px-4 py-2.5 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white text-xs font-black rounded-2xl shadow-md transition-all cursor-pointer flex items-center gap-2 group"
-                              >
-                                <Truck className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
-                                <span>Track Live Order</span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Prescribed Items Banner */}
-                          <div className="p-4 rounded-2xl bg-white border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-bold text-slate-800 shadow-2xs">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                                <Package className="w-5 h-5 text-brandOrange-500" />
-                              </div>
-                              <div>
-                                <h4 className="text-navy-950 font-extrabold text-sm">{order.items}</h4>
-                                <p className="text-[11px] text-slate-400 font-medium">{order.itemsCount} Constitutional Remedies Enclosed</p>
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 self-stretch sm:self-center w-full sm:w-auto mt-3 sm:mt-0">
-                              <button
-                                type="button"
-                                onClick={() => handleReorder(order)}
-                                className="w-full sm:w-auto px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center sm:justify-start gap-1.5 border border-emerald-200/70 shadow-2xs active:scale-95"
-                                title="Add remedies from this order back into your cart"
-                              >
-                                <RotateCcw className="w-3.5 h-3.5 text-emerald-600" />
-                                <span>Re-order</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setInvoiceModalOrder(order)}
-                                className="w-full sm:w-auto px-3.5 py-1.5 bg-orange-50 hover:bg-orange-100 text-brandOrange-700 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center sm:justify-start gap-1.5 border border-orange-200/60 shadow-2xs"
-                                title="Print / Save Medical Bill Invoice"
-                              >
-                                <Printer className="w-3.5 h-3.5 text-brandOrange-500" />
-                                <span>Medical Bill</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setSelectedPrescription(order)}
-                                className="w-full sm:w-auto px-3.5 py-1.5 bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-brandOrange-700 font-extrabold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center sm:justify-start gap-1.5"
-                              >
-                                <Eye className="w-3.5 h-3.5" />
-                                <span>View Medicines</span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Interactive Step Progress Stepper */}
-                          <div className="pt-2 space-y-2">
-                            <div className="flex justify-between text-[9px] sm:text-[11px] font-black text-slate-500">
-                              <span className="text-emerald-700 text-center">
-                                <span className="hidden sm:inline">1. Order Placed ✓</span>
-                                <span className="sm:hidden">Placed</span>
-                              </span>
-                              <span className="text-emerald-700 text-center">
-                                <span className="hidden sm:inline">2. Remedy Formulated ✓</span>
-                                <span className="sm:hidden">Packed</span>
-                              </span>
-                              <span className={`text-center ${isProcessing ? 'text-amber-600 font-black animate-pulse' : 'text-emerald-700'}`}>
-                                <span className="hidden sm:inline">{isProcessing ? '3. Out for Dispatch 🚚' : '3. Dispatched ✓'}</span>
-                                <span className="sm:hidden">{isProcessing ? 'Shipping' : 'Shipped'}</span>
-                              </span>
-                              <span className={`text-center ${isProcessing ? 'text-slate-400' : 'text-emerald-700 font-black'}`}>
-                                <span className="hidden sm:inline">{isProcessing ? '4. Delivery Expected' : '4. Delivered 🏡'}</span>
-                                <span className="sm:hidden">{isProcessing ? 'Waiting' : 'Delivered'}</span>
-                              </span>
-                            </div>
-
-                            <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden p-0.5">
-                              <div 
-                                className={`h-full rounded-full transition-all duration-500 ${
-                                  isProcessing 
-                                    ? 'bg-gradient-to-r from-emerald-500 via-amber-400 to-amber-500 w-3/4 animate-pulse' 
-                                    : 'bg-emerald-500 w-full'
-                                }`}
-                              />
-                            </div>
-                          </div>
-
-                        </div>
-                      );
-                    })
+        {/* Tab Navigation - Mobile 5-grid (No scrollbars, 100% fit) */}
+        <div className="grid grid-cols-5 gap-1 bg-slate-200/60 p-1 rounded-2xl sm:hidden">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-2 px-1 rounded-xl text-center flex flex-col items-center justify-center transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-slate-900 text-white shadow-xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <div className="relative">
+                  <Icon className="w-4 h-4 mb-0.5" />
+                  {tab.count !== undefined && tab.count > 0 && (
+                    <span className={`absolute -top-1.5 -right-2 px-1 min-w-[14px] text-center rounded-full text-[9px] font-bold leading-tight ${
+                      isActive ? 'bg-amber-400 text-slate-950' : 'bg-slate-300 text-slate-800'
+                    }`}>
+                      {tab.count}
+                    </span>
                   )}
                 </div>
+                <span className="text-[10px] leading-tight block truncate max-w-full">
+                  {tab.mobileLabel}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
-              </div>
-            )}
+        {/* Tab Navigation - Desktop Pill Bar */}
+        <div className="hidden sm:flex items-center gap-1.5 border-b border-slate-200 pb-2">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-2 transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+                {tab.count !== undefined && tab.count > 0 && (
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                    isActive ? 'bg-white text-slate-900' : 'bg-slate-200 text-slate-700'
+                  }`}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
 
-            {/* --------------------------------------------------------------------- */}
-            {/* TAB 2: MY CONSULTATIONS & DOCTOR NOTES */}
-            {/* --------------------------------------------------------------------- */}
-            {activeTab === 'appointments' && (
-              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xl space-y-6">
-                
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-5 border-b border-slate-100 gap-4">
-                  <div>
-                    <h2 className="text-xl font-black text-navy-950 flex items-center gap-2">
-                      <Stethoscope className="w-5 h-5 text-brandOrange-500" />
-                      Doctor Consultations & Rx Notes
-                    </h2>
-                    <p className="text-xs text-slate-500 font-medium">Your appointments & medical records with Dr. Bharathi</p>
-                  </div>
+        {/* Content Container */}
+        <div className="bg-white rounded-2xl p-4 sm:p-7 border border-slate-200 shadow-sm">
 
-                  <Link
-                    to="/appointment"
-                    className="px-5 py-2.5 bg-gradient-to-r from-brandOrange-500 to-amber-500 text-white font-black text-xs rounded-2xl shadow-lg hover:shadow-orange-500/30 transition-all cursor-pointer flex items-center gap-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Book New Consultation</span>
+          {/* TAB 1: ORDERS */}
+          {activeTab === 'orders' && (
+            <div className="space-y-4 sm:space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900">Orders ({allOrders.length})</h2>
+                {allOrders.length > 0 && (
+                  <Link to="/shop" className="text-xs font-semibold text-amber-600 hover:underline">
+                    + Shop More
                   </Link>
-                </div>
+                )}
+              </div>
 
-                {/* Consultations Content */}
-                {userAppointments.length === 0 ? (
-                  <div className="text-center py-14 px-6 rounded-3xl bg-slate-50 border border-dashed border-slate-200 space-y-4">
-                    <div className="w-16 h-16 mx-auto rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center shadow-inner">
-                      <Stethoscope className="w-8 h-8" />
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="font-black text-lg text-navy-950">No Consultations Scheduled</h3>
-                      <p className="text-xs text-slate-500 font-medium max-w-md mx-auto">
-                        You have not scheduled any doctor consultations yet. Connect with Dr. Bharathi (B.H.M.S, M.D.) via video or clinic visit for personalized constitutional treatment.
-                      </p>
-                    </div>
+              {allOrders.length === 0 ? (
+                <div className="text-center py-10 sm:py-12 space-y-3">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
+                    <ShoppingBag className="w-6 h-6" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-700">No orders yet</p>
+                  <p className="text-xs text-slate-400">Your remedy orders and shipments will show up here.</p>
+                  <div className="pt-2">
                     <Link
-                      to="/appointment"
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white text-xs font-black rounded-xl shadow-md hover:shadow-orange-500/25 transition-all"
+                      to="/shop"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all shadow-xs"
                     >
-                      <Plus className="w-4 h-4" />
-                      <span>Book Doctor Consultation</span>
+                      <ShoppingBag className="w-4 h-4" />
+                      <span>Browse Medicines</span>
                     </Link>
                   </div>
-                ) : (
-                  <div className="space-y-6">
-                    {/* Main Upcoming Appointment Spotlight Card */}
-                    {activeAppointment && (
-                      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#0b344d] via-[#124d70] to-[#0b344d] text-white space-y-6 shadow-2xl border border-white/10 relative overflow-hidden">
-                        
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
-
-                        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/15 pb-5">
-                          <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white flex items-center justify-center font-black text-2xl shadow-xl ring-2 ring-white/20">
-                              👩‍⚕️
-                            </div>
-                            <div>
-                              <span className="text-[10px] font-black text-amber-300 uppercase tracking-widest block">CHIEF HOMEOPATH CONSULTATION</span>
-                              <h3 className="font-black text-xl text-white">{activeAppointment.doctor || 'Dr. Bharathi (Homeopathic Doctor)'}</h3>
-                              <p className="text-xs text-slate-300 font-medium">B.H.M.S, M.D. (Homeopathy) • 15+ Yrs Exp</p>
-                            </div>
-                          </div>
-
-                          <span className="px-3.5 py-1.5 bg-amber-400/20 border border-amber-300/40 rounded-full text-xs font-black text-amber-300 uppercase tracking-wider backdrop-blur-md">
-                            {activeAppointment.status || 'Confirmed'}
-                          </span>
-                        </div>
-
-                        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 space-y-0.5">
-                            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">📅 Date</span>
-                            <p className="font-extrabold text-base text-white">{activeAppointment.date}</p>
-                          </div>
-
-                          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 space-y-0.5">
-                            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">⏰ Scheduled Time</span>
-                            <p className="font-extrabold text-base text-amber-300">{activeAppointment.time}</p>
-                          </div>
-
-                          <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 space-y-0.5">
-                            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">🏥 Consultation Mode</span>
-                            <p className="font-extrabold text-base text-white">{activeAppointment.consultationMode || activeAppointment.type || 'In-Clinic'}</p>
-                          </div>
-                        </div>
-
-                        <div className="relative z-10 p-4 rounded-2xl bg-white/5 border border-white/10 text-xs text-slate-200 font-medium leading-relaxed">
-                          <strong className="text-amber-300">Consultation Focus:</strong> {activeAppointment.concern || activeAppointment.notes || 'Homeopathic Constitutional Care'}
-                        </div>
-
-                        <div className="relative z-10 flex flex-wrap items-center gap-3 pt-1">
-                          <button
-                            onClick={() => showToast('Clinic Helpline: +91 90258 54711', 'info')}
-                            className="px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2"
-                          >
-                            <PhoneCall className="w-4 h-4 text-amber-300" />
-                            <span>Contact Clinic Reception</span>
-                          </button>
-                        </div>
-
-                      </div>
-                    )}
-
-                    {/* Additional Consultations List */}
-                    {userAppointments.length > 1 && (
-                      <div className="space-y-3 pt-2">
-                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">Previous & Additional Appointments</h4>
-                        {userAppointments.slice(1).map((apt) => (
-                          <div key={apt.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                            <div>
-                              <p className="font-bold text-navy-950 text-xs">{apt.concern || 'Homeopathy Consultation'}</p>
-                              <p className="text-[11px] text-slate-500">{apt.date} at {apt.time} • {apt.consultationMode || 'In-Clinic'}</p>
-                            </div>
-                            <span className="px-2.5 py-1 bg-slate-200 text-slate-700 text-[10px] font-bold rounded-full">
-                              {apt.status || 'Scheduled'}
+                </div>
+              ) : (
+                <div className="space-y-3 sm:space-y-4">
+                  {allOrders.map((order) => {
+                    const isProcessing = order.status === 'Processing' || order.status === 'Pending';
+                    return (
+                      <div 
+                        key={order.id} 
+                        className="rounded-xl border border-slate-200 p-3.5 sm:p-4 space-y-3 hover:border-slate-300 transition-colors"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono font-bold text-xs text-slate-900">
+                              #{order.id}
+                            </span>
+                            <span className="text-xs text-slate-400 hidden xs:inline">•</span>
+                            <span className="text-xs text-slate-500">{order.date}</span>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                              isProcessing ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                            }`}>
+                              {order.status}
                             </span>
                           </div>
-                        ))}
+                          <div className="font-bold text-sm text-slate-900">
+                            ₹{order.amount}
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-slate-700 line-clamp-1 font-medium">
+                          {order.items}
+                        </p>
+
+                        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 sm:flex sm:flex-wrap">
+                          <button
+                            onClick={() => setSelectedOrderForTracking(order)}
+                            className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <Truck className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">Track</span>
+                          </button>
+                          <button
+                            onClick={() => setInvoiceModalOrder(order)}
+                            className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <Printer className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">Invoice</span>
+                          </button>
+                          <button
+                            onClick={() => handleReorder(order)}
+                            className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                            <span className="truncate">Re-order</span>
+                          </button>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                )}
-
-              </div>
-            )}
-
-            {/* --------------------------------------------------------------------- */}
-            {/* TAB 3: DELIVERY ADDRESS BOOK */}
-            {/* --------------------------------------------------------------------- */}
-            {activeTab === 'address' && (
-              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xl space-y-6">
-                
-                <div className="flex justify-between items-center pb-5 border-b border-slate-100">
-                  <div>
-                    <h2 className="text-xl font-black text-navy-950 flex items-center gap-2">
-                      <MapPin className="w-5 h-5 text-brandOrange-500" />
-                      Delivery Address Book
-                    </h2>
-                    <p className="text-xs text-slate-500 font-medium">Manage default shipping destination for medicine dispatches</p>
-                  </div>
-
-                  <button
-                    onClick={() => setIsEditingAddress(!isEditingAddress)}
-                    className="px-4 py-2.5 rounded-2xl bg-brandOrange-50 hover:bg-brandOrange-100 text-brandOrange-700 font-extrabold text-xs transition-all cursor-pointer flex items-center gap-2 border border-brandOrange-200/60"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                    <span>{isEditingAddress ? 'Cancel Edit' : 'Edit Address'}</span>
-                  </button>
+                    );
+                  })}
                 </div>
+              )}
+            </div>
+          )}
 
-                {!isEditingAddress ? (
-                  <div className="p-6 sm:p-8 rounded-3xl bg-slate-50 border border-slate-200/90 space-y-4 relative">
-                    <span className="absolute top-6 right-6 px-3.5 py-1 bg-emerald-100 text-emerald-800 font-black text-[11px] rounded-full uppercase tracking-wider border border-emerald-300">
-                      PRIMARY SHIPPING ADDRESS
-                    </span>
+          {/* TAB 2: CONSULTATIONS */}
+          {activeTab === 'appointments' && (
+            <div className="space-y-4 sm:space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900">Consultations ({userAppointments.length})</h2>
+                <Link
+                  to="/appointment"
+                  className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Book</span>
+                </Link>
+              </div>
 
-                    <div className="space-y-1">
-                      <h3 className="font-black text-lg text-navy-950">{address?.fullName}</h3>
-                      <p className="text-xs font-bold text-slate-600">📞 Phone: {address?.phone}</p>
-                    </div>
-
-                    <div className="text-xs text-slate-700 font-medium leading-relaxed pt-2 border-t border-slate-200/60 space-y-1">
-                      <p>{address?.addressLine1}</p>
-                      {address?.addressLine2 && <p>{address?.addressLine2}</p>}
-                      <p className="font-bold text-navy-950">{address?.city}, {address?.state} - {address?.pincode}</p>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pt-1">{address?.country}</p>
-                    </div>
+              {userAppointments.length === 0 ? (
+                <div className="text-center py-10 sm:py-12 space-y-3">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
+                    <Calendar className="w-6 h-6" />
                   </div>
-                ) : (
-                  <form onSubmit={(e) => {
+                  <p className="text-sm font-medium text-slate-700">No consultations scheduled</p>
+                  <p className="text-xs text-slate-400">Book an appointment with Dr. Bharathi for personalized treatment.</p>
+                  <div className="pt-2">
+                    <Link
+                      to="/appointment"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Book Appointment</span>
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {userAppointments.map((apt) => (
+                    <div key={apt.id} className="p-3.5 sm:p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-sm text-slate-900">{apt.doctor || 'Dr. Bharathi (Homeopath)'}</h3>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                            {apt.status || 'Confirmed'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">
+                          📅 {apt.date} at {apt.time} • Mode: {apt.consultationMode || apt.type || 'In-Clinic'}
+                        </p>
+                        {apt.concern && (
+                          <p className="text-xs text-slate-600 mt-0.5">Focus: {apt.concern}</p>
+                        )}
+                      </div>
+                      <a
+                        href="tel:+919025854711"
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 self-start sm:self-center w-full sm:w-auto"
+                      >
+                        <Phone className="w-3.5 h-3.5" />
+                        <span>Call Reception</span>
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: PRESCRIPTIONS */}
+          {activeTab === 'prescriptions' && (
+            <div className="space-y-4 sm:space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900">Prescriptions ({userPrescriptions.length})</h2>
+              </div>
+
+              {userPrescriptions.length === 0 ? (
+                <div className="text-center py-10 sm:py-12 space-y-3">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-700">No prescriptions found</p>
+                  <p className="text-xs text-slate-400">Doctor prescriptions and dosage instructions will appear here after consultation.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {userPrescriptions.map((rx) => (
+                    <div key={rx.id} className="p-3.5 sm:p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <span className="font-mono font-bold text-xs text-slate-900">
+                          #{rx.prescriptionId || rx.id}
+                        </span>
+                        <p className="text-xs font-semibold text-slate-800 mt-0.5">
+                          {rx.diagnosis || 'Constitutional Care'}
+                        </p>
+                        <p className="text-[11px] text-slate-400">
+                          Date: {rx.date} • Issued by {rx.doctor || 'Dr. Bharathi'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPrescription(rx)}
+                          className="flex-1 sm:flex-none px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>View Slip</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedPrescription(rx);
+                            setTimeout(() => window.print(), 200);
+                          }}
+                          className="flex-1 sm:flex-none px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                          <span>Print</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 4: DELIVERY ADDRESS */}
+          {activeTab === 'address' && (
+            <div className="space-y-4 sm:space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900">Delivery Address</h2>
+                <button
+                  onClick={() => setIsEditingAddress(!isEditingAddress)}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>{isEditingAddress ? 'Cancel' : 'Edit'}</span>
+                </button>
+              </div>
+
+              {!isEditingAddress ? (
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                  <p className="font-bold text-sm text-slate-900">{address?.fullName}</p>
+                  <p className="text-xs text-slate-600">Phone: {address?.phone}</p>
+                  <div className="text-xs text-slate-600 space-y-0.5 pt-1 border-t border-slate-200">
+                    <p>{address?.addressLine1}</p>
+                    {address?.addressLine2 && <p>{address?.addressLine2}</p>}
+                    <p>{address?.city}, {address?.state} - {address?.pincode}</p>
+                    <p className="text-slate-400 font-semibold">{address?.country}</p>
+                  </div>
+                </div>
+              ) : (
+                <form 
+                  onSubmit={(e) => {
                     e.preventDefault();
                     try {
                       localStorage.setItem(`bh_address_${userKey}`, JSON.stringify(address));
                     } catch {}
                     setIsEditingAddress(false);
-                    showToast('Delivery address updated successfully', 'success');
-                  }} className="space-y-4 max-w-xl bg-slate-50 p-6 rounded-3xl border border-slate-200">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Full Recipient Name</label>
-                      <input
-                        type="text"
-                        value={address?.fullName || ''}
-                        onChange={(e) => setAddress({ ...address, fullName: e.target.value })}
-                        className="w-full p-3 text-xs bg-white border border-slate-300 rounded-xl outline-none focus:border-brandOrange-500 font-semibold"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number for Courier Contact</label>
-                      <input
-                        type="text"
-                        value={address?.phone || ''}
-                        onChange={(e) => setAddress({ ...address, phone: e.target.value })}
-                        className="w-full p-3 text-xs bg-white border border-slate-300 rounded-xl outline-none focus:border-brandOrange-500 font-semibold"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Door / Street Address</label>
-                      <input
-                        type="text"
-                        value={address?.addressLine1 || ''}
-                        onChange={(e) => setAddress({ ...address, addressLine1: e.target.value })}
-                        className="w-full p-3 text-xs bg-white border border-slate-300 rounded-xl outline-none focus:border-brandOrange-500 font-semibold"
-                        required
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">City</label>
-                        <input
-                          type="text"
-                          value={address?.city || ''}
-                          onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                          className="w-full p-3 text-xs bg-white border border-slate-300 rounded-xl outline-none focus:border-brandOrange-500 font-semibold"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Pincode</label>
-                        <input
-                          type="text"
-                          value={address?.pincode || ''}
-                          onChange={(e) => setAddress({ ...address, pincode: e.target.value })}
-                          className="w-full p-3 text-xs bg-white border border-slate-300 rounded-xl outline-none focus:border-brandOrange-500 font-semibold"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="px-6 py-3 bg-gradient-to-r from-brandOrange-500 to-amber-500 text-white text-xs font-black rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer"
-                    >
-                      Save Address Details
-                    </button>
-                  </form>
-                )}
-
-              </div>
-            )}
-
-            {/* --------------------------------------------------------------------- */}
-            {/* TAB 4: PRESCRIPTION VAULT & MEDICAL PROFILE */}
-            {/* --------------------------------------------------------------------- */}
-            {activeTab === 'medical' && (
-              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xl space-y-6">
-                
-                <div className="pb-5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    showToast('Address saved', 'success');
+                  }} 
+                  className="space-y-3 max-w-md"
+                >
                   <div>
-                    <h2 className="text-xl font-black text-navy-950 flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-brandOrange-500" />
-                      Digital Prescription Vault
-                    </h2>
-                    <p className="text-xs text-slate-500 font-medium">Your verified homeopathic prescriptions and doctor dosage instructions</p>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      value={address?.fullName || ''}
+                      onChange={(e) => setAddress({ ...address, fullName: e.target.value })}
+                      className="w-full p-2.5 text-sm sm:text-xs bg-white border border-slate-300 rounded-lg outline-none focus:border-amber-500"
+                      required
+                    />
                   </div>
-                  {userPrescriptions.length > 0 && (
-                    <span className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200">
-                      {userPrescriptions.length} Active {userPrescriptions.length === 1 ? 'Prescription' : 'Prescriptions'}
-                    </span>
-                  )}
-                </div>
 
-                {/* Prescriptions Wallet List */}
-                <div className="space-y-4 pt-1">
-                  <h3 className="text-sm font-black text-navy-950 uppercase tracking-wider">Active Digital Prescriptions</h3>
-
-                  {userPrescriptions.length === 0 ? (
-                    <div className="text-center py-14 px-6 rounded-3xl bg-slate-50 border border-dashed border-slate-200 space-y-4">
-                      <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 text-brandOrange-500 flex items-center justify-center shadow-inner">
-                        <FileText className="w-8 h-8" />
-                      </div>
-                      <div className="space-y-1">
-                        <h3 className="font-black text-lg text-navy-950">Prescription Vault is Empty</h3>
-                        <p className="text-xs text-slate-500 font-medium max-w-md mx-auto">
-                          No digital prescriptions have been issued to this patient account yet. Dr. Bharathi will generate your official homeopathic prescription slip with dosage instructions following your consultation.
-                        </p>
-                      </div>
-                      <Link
-                        to="/appointment"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-navy-950 hover:bg-brandOrange-500 text-white text-xs font-black rounded-xl shadow-md transition-all"
-                      >
-                        <Stethoscope className="w-4 h-4" />
-                        <span>Schedule Consultation for Rx</span>
-                      </Link>
-                    </div>
-                  ) : (
-                    userPrescriptions.map((rx) => (
-                      <div key={rx.id} className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono font-black text-xs text-navy-950 bg-white px-2.5 py-0.5 rounded-lg border border-slate-200">
-                              #{rx.prescriptionId || rx.id}
-                            </span>
-                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-black rounded-full uppercase">
-                              ACTIVE REMEDY
-                            </span>
-                          </div>
-                          <p className="text-xs font-bold text-slate-800">
-                            {rx.diagnosis || (rx.remedies && rx.remedies.map(r => r.name).join(' + ')) || 'Homeopathic Constitutional Care'}
-                          </p>
-                          <p className="text-[11px] text-slate-400 font-medium">
-                            Issued by {rx.doctor || 'Dr. Bharathi'} on {rx.date} • {rx.remedies?.length || 1} Remedies Prescribed
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedPrescription(rx)}
-                            className="px-4 py-2 bg-white border border-slate-200 hover:border-brandOrange-400 text-navy-950 text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
-                          >
-                            <Eye className="w-3.5 h-3.5 text-brandOrange-500" />
-                            <span>View Slip</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedPrescription(rx);
-                              setTimeout(() => window.print(), 200);
-                            }}
-                            className="px-4 py-2 bg-navy-950 hover:bg-navy-900 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
-                          >
-                            <Download className="w-3.5 h-3.5 text-amber-300" />
-                            <span>Print / PDF</span>
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-              </div>
-            )}
-
-            {/* --------------------------------------------------------------------- */}
-            {/* TAB 5: ACCOUNT & PRIVACY SETTINGS */}
-            {/* --------------------------------------------------------------------- */}
-            {activeTab === 'settings' && (
-              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xl space-y-6">
-                
-                <div className="pb-5 border-b border-slate-100">
-                  <h2 className="text-xl font-black text-navy-950 flex items-center gap-2">
-                    <Settings className="w-5 h-5 text-brandOrange-500" />
-                    Account & Security Preferences
-                  </h2>
-                  <p className="text-xs text-slate-500 font-medium">Manage notifications and patient communication channels</p>
-                </div>
-
-                <div className="space-y-4">
-                  <label className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl cursor-pointer hover:bg-slate-100/80 transition-colors border border-slate-200/60">
-                    <div className="space-y-0.5">
-                      <span className="font-black text-sm text-navy-950 block">SMS Dispatch Alerts</span>
-                      <span className="text-xs text-slate-500">Receive tracking updates & courier numbers on mobile</span>
-                    </div>
-                    <input 
-                      type="checkbox" 
-                      checked={notifications.sms}
-                      onChange={(e) => setNotifications({ ...notifications, sms: e.target.checked })}
-                      className="w-5 h-5 text-brandOrange-500 accent-brandOrange-500 rounded cursor-pointer" 
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">Phone</label>
+                    <input
+                      type="text"
+                      value={address?.phone || ''}
+                      onChange={(e) => setAddress({ ...address, phone: e.target.value })}
+                      className="w-full p-2.5 text-sm sm:text-xs bg-white border border-slate-300 rounded-lg outline-none focus:border-amber-500"
+                      required
                     />
-                  </label>
+                  </div>
 
-                  <label className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl cursor-pointer hover:bg-slate-100/80 transition-colors border border-slate-200/60">
-                    <div className="space-y-0.5">
-                      <span className="font-black text-sm text-navy-950 block">WhatsApp Doctor Reminders</span>
-                      <span className="text-xs text-slate-500">Receive consultation reminders 1 hour prior to appointment</span>
-                    </div>
-                    <input 
-                      type="checkbox" 
-                      checked={notifications.whatsapp}
-                      onChange={(e) => setNotifications({ ...notifications, whatsapp: e.target.checked })}
-                      className="w-5 h-5 text-brandOrange-500 accent-brandOrange-500 rounded cursor-pointer" 
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 mb-1">Address</label>
+                    <input
+                      type="text"
+                      value={address?.addressLine1 || ''}
+                      onChange={(e) => setAddress({ ...address, addressLine1: e.target.value })}
+                      className="w-full p-2.5 text-sm sm:text-xs bg-white border border-slate-300 rounded-lg outline-none focus:border-amber-500"
+                      required
                     />
-                  </label>
+                  </div>
 
-                  <label className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl cursor-pointer hover:bg-slate-100/80 transition-colors border border-slate-200/60">
-                    <div className="space-y-0.5">
-                      <span className="font-black text-sm text-navy-950 block">Prescription Dose Refill Alerts</span>
-                      <span className="text-xs text-slate-500">Notify when 30-day remedy supply is running low</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">City</label>
+                      <input
+                        type="text"
+                        value={address?.city || ''}
+                        onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                        className="w-full p-2.5 text-sm sm:text-xs bg-white border border-slate-300 rounded-lg outline-none focus:border-amber-500"
+                        required
+                      />
                     </div>
-                    <input 
-                      type="checkbox" 
-                      checked={notifications.refillReminders}
-                      onChange={(e) => setNotifications({ ...notifications, refillReminders: e.target.checked })}
-                      className="w-5 h-5 text-brandOrange-500 accent-brandOrange-500 rounded cursor-pointer" 
-                    />
-                  </label>
-                </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Pincode</label>
+                      <input
+                        type="text"
+                        value={address?.pincode || ''}
+                        onChange={(e) => setAddress({ ...address, pincode: e.target.value })}
+                        className="w-full p-2.5 text-sm sm:text-xs bg-white border border-slate-300 rounded-lg outline-none focus:border-amber-500"
+                        required
+                      />
+                    </div>
+                  </div>
 
-                <div className="pt-4 border-t border-slate-100">
                   <button
-                    onClick={() => showToast('Preferences updated successfully', 'success')}
-                    className="px-6 py-3 bg-gradient-to-r from-brandOrange-500 to-amber-500 text-white text-xs font-black rounded-2xl shadow-md hover:shadow-lg transition-all cursor-pointer"
+                    type="submit"
+                    className="w-full sm:w-auto px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg transition-all"
                   >
-                    Save Preferences
+                    Save Address
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* TAB 5: SETTINGS */}
+          {activeTab === 'settings' && (
+            <div className="space-y-4">
+              <div className="pb-3 border-b border-slate-100">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900">Notifications</h2>
+              </div>
+
+              <div className="space-y-3 max-w-md">
+                <label className="flex items-center justify-between p-3 bg-slate-50 rounded-xl cursor-pointer border border-slate-200">
+                  <span className="text-xs font-semibold text-slate-800">SMS Order Updates</span>
+                  <input 
+                    type="checkbox" 
+                    checked={notifications.sms}
+                    onChange={(e) => setNotifications({ ...notifications, sms: e.target.checked })}
+                    className="w-4 h-4 accent-amber-500 rounded cursor-pointer" 
+                  />
+                </label>
+
+                <label className="flex items-center justify-between p-3 bg-slate-50 rounded-xl cursor-pointer border border-slate-200">
+                  <span className="text-xs font-semibold text-slate-800">WhatsApp Appointment Reminders</span>
+                  <input 
+                    type="checkbox" 
+                    checked={notifications.whatsapp}
+                    onChange={(e) => setNotifications({ ...notifications, whatsapp: e.target.checked })}
+                    className="w-4 h-4 accent-amber-500 rounded cursor-pointer" 
+                  />
+                </label>
+
+                <div className="pt-2">
+                  <button
+                    onClick={() => showToast('Preferences saved', 'success')}
+                    className="w-full sm:w-auto px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition-all"
+                  >
+                    Save
                   </button>
                 </div>
-
               </div>
-            )}
-
-          </main>
+            </div>
+          )}
 
         </div>
 
       </div>
 
-      {/* ========================================================================= */}
-      {/* 3. INTERACTIVE MODAL 1: LIVE ORDER TRACKING MODAL */}
-      {/* ========================================================================= */}
+      {/* Tracking Modal */}
       {selectedOrderForTracking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/70 backdrop-blur-md animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-200 relative overflow-hidden">
-            
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-xl border border-slate-200 relative">
             <button
               onClick={() => setSelectedOrderForTracking(null)}
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 text-brandOrange-600 flex items-center justify-center">
-                <Truck className="w-5 h-5" />
-              </div>
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+              <Truck className="w-5 h-5 text-amber-500" />
               <div>
-                <h3 className="font-black text-lg text-navy-950">Order Tracking #{selectedOrderForTracking.id}</h3>
-                <p className="text-xs text-slate-500 font-medium">{selectedOrderForTracking.courierPartner || selectedOrderForTracking.courier || 'ST COURIER'} Waybill: <strong className="font-mono text-navy-950">{selectedOrderForTracking.trackingNumber || `ST-${selectedOrderForTracking.id}`}</strong></p>
+                <h3 className="font-bold text-sm text-slate-900">Track #{selectedOrderForTracking.id}</h3>
+                <p className="text-xs text-slate-400">{selectedOrderForTracking.courierPartner || 'ST Courier'}</p>
               </div>
             </div>
 
-            {/* Tracking Timeline */}
-            <div className="space-y-6 pl-2 relative before:absolute before:left-[17px] before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200">
-              
-              <div className="relative flex items-start gap-4">
-                <div className="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-black z-10 shrink-0 ring-4 ring-white shadow-xs">
-                  ✓
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-navy-950">Order Received & Payment Verified</h4>
-                  <p className="text-[11px] text-slate-400">{selectedOrderForTracking.date || 'Today'} • Confirmed</p>
-                </div>
+            <div className="space-y-3 text-xs">
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                <span className="text-slate-700">Order Confirmed</span>
               </div>
-
-              <div className="relative flex items-start gap-4">
-                <div className="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-black z-10 shrink-0 ring-4 ring-white shadow-xs">
-                  ✓
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-navy-950">Formulated by Dr. Bharathi Clinic Dispensary</h4>
-                  <p className="text-[11px] text-slate-400">Classical Homeopathy Laboratory</p>
-                </div>
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                <span className="text-slate-700">Remedy Prepared</span>
               </div>
-
-              <div className="relative flex items-start gap-4">
-                <div className={`w-7 h-7 rounded-full text-white flex items-center justify-center text-xs font-black z-10 shrink-0 ring-4 ring-white ${selectedOrderForTracking.status?.toLowerCase() === 'delivered' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}>
-                  🚚
-                </div>
-                <div>
-                  <h4 className={`font-bold text-xs ${selectedOrderForTracking.status?.toLowerCase() === 'delivered' ? 'text-emerald-700' : 'text-amber-700'}`}>
-                    {selectedOrderForTracking.status?.toLowerCase() === 'delivered' ? 'Dispatched & Transit Completed' : 'In Transit - Out with Courier'}
-                  </h4>
-                  <p className="text-[11px] text-slate-400">Partner: {selectedOrderForTracking.courierPartner || selectedOrderForTracking.courier || 'ST COURIER'}</p>
-                </div>
+              <div className="flex items-center gap-3">
+                <span className={`w-2.5 h-2.5 rounded-full ${selectedOrderForTracking.status?.toLowerCase() === 'delivered' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+                <span className="text-slate-700">Out for Delivery</span>
               </div>
-
-              <div className={`relative flex items-start gap-4 ${selectedOrderForTracking.status?.toLowerCase() === 'delivered' ? '' : 'opacity-60'}`}>
-                <div className={`w-7 h-7 rounded-full text-white flex items-center justify-center text-xs font-black z-10 shrink-0 ring-4 ring-white ${selectedOrderForTracking.status?.toLowerCase() === 'delivered' ? 'bg-emerald-500' : 'bg-slate-200 text-slate-500'}`}>
-                  🏡
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs text-slate-700">
-                    {selectedOrderForTracking.status?.toLowerCase() === 'delivered' ? 'Delivered to Patient ✓' : 'Estimated Patient Delivery'}
-                  </h4>
-                  <p className="text-[11px] text-slate-400">
-                    {selectedOrderForTracking.shippingAddress?.city ? `Destination: ${selectedOrderForTracking.shippingAddress.city}` : 'To Registered Address'}
-                  </p>
-                </div>
+              <div className="flex items-center gap-3">
+                <span className={`w-2.5 h-2.5 rounded-full ${selectedOrderForTracking.status?.toLowerCase() === 'delivered' ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
+                <span className="text-slate-700">Delivered</span>
               </div>
-
             </div>
 
-            <div className="pt-2">
-              <button
-                onClick={() => setSelectedOrderForTracking(null)}
-                className="w-full py-3 bg-navy-950 hover:bg-navy-900 text-white text-xs font-black rounded-2xl shadow-md transition-colors cursor-pointer"
-              >
-                Close Tracking
-              </button>
-            </div>
-
+            <button
+              onClick={() => setSelectedOrderForTracking(null)}
+              className="w-full py-2 bg-slate-900 text-white text-xs font-bold rounded-lg cursor-pointer"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* 4. INTERACTIVE MODAL 2: DIGITAL PRESCRIPTION SLIP VIEWER */}
-      {/* ========================================================================= */}
+      {/* Prescription Slip Modal */}
       <PrescriptionSlipModal
         prescription={selectedPrescription}
         isOpen={!!selectedPrescription}
         onClose={() => setSelectedPrescription(null)}
       />
 
-      {/* Medical Bill (Invoice) Modal */}
+      {/* Medical Bill Modal */}
       <OrderInvoiceModal
         order={invoiceModalOrder}
         isOpen={!!invoiceModalOrder}
         onClose={() => setInvoiceModalOrder(null)}
       />
 
+      {/* Sign Out Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-slate-200 text-center relative">
+            <button
+              onClick={() => setShowLogoutModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 mx-auto flex items-center justify-center">
+              <LogOut className="w-6 h-6" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="font-bold text-base text-slate-900">Sign Out Confirmation</h3>
+              <p className="text-xs text-slate-500">
+                Are you sure you want to sign out of your account?
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(false)}
+                className="w-full py-2.5 px-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs transition-colors cursor-pointer"
+              >
+                No, Stay
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLogoutModal(false);
+                  logout();
+                  showToast('Signed out successfully', 'info');
+                  navigate('/');
+                }}
+                className="w-full py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition-colors cursor-pointer"
+              >
+                Yes, Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
-
+export default MyAccount;

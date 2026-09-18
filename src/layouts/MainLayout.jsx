@@ -25,7 +25,7 @@ export const MainLayout = () => {
 
   return (
     <div 
-      className="min-h-screen flex flex-col w-full pb-16 lg:pb-0"
+      className="min-h-screen flex flex-col w-full pb-16 lg:pb-0 print:pb-0 print:bg-white print:min-h-0"
       style={{ 
         backgroundImage: `url(${assets.paperBg})`, 
         backgroundSize: 'cover', 
@@ -33,45 +33,49 @@ export const MainLayout = () => {
         backgroundPosition: 'center'
       }}
     >
-      {/* Country Selection Modal */}
-      <CountryModal />
+      <div className="print:hidden">
+        {/* Country Selection Modal */}
+        <CountryModal />
 
-      {/* Interactive Symptom & Classical Remedy Guide Modal */}
-      <SymptomGuideModal />
+        {/* Interactive Symptom & Classical Remedy Guide Modal */}
+        <SymptomGuideModal />
 
-      {/* Live Order Tracking Modal */}
-      <TrackOrderModal 
-        isOpen={trackOrderOpen} 
-        onClose={() => setTrackOrderOpen(false)} 
-      />
+        {/* Live Order Tracking Modal */}
+        <TrackOrderModal 
+          isOpen={trackOrderOpen} 
+          onClose={() => setTrackOrderOpen(false)} 
+        />
 
-      {/* Top Bar that scrolls away */}
-      <TopContactBar />
+        {/* Top Bar that scrolls away */}
+        <TopContactBar />
+      </div>
 
-      {/* Main Navbar - On Mobile Shop page, navbar scrolls away so Category/Filter bar sticks to top-0 */}
-      <header className={`w-full bg-white z-50 shadow-sm ${isShopPage ? 'relative sm:sticky sm:top-0' : 'sticky top-0'}`}>
+      {/* Main Navbar - Hidden in print */}
+      <header className={`w-full bg-white z-50 shadow-sm print:hidden ${isShopPage ? 'relative sm:sticky sm:top-0' : 'sticky top-0'}`}>
         <Navbar />
       </header>
 
       {/* Page Content */}
-      <main className="flex-1 w-full">
+      <main className="flex-1 w-full print:p-0 print:m-0 print:bg-white">
         <Outlet />
       </main>
 
-      {/* Footer */}
-      <Footer />
+      <div className="print:hidden">
+        {/* Footer */}
+        <Footer />
 
-      {/* Fixed Right-side Quick Actions (Call, WhatsApp, Instagram) */}
-      <FloatingActions />
+        {/* Fixed Right-side Quick Actions (Call, WhatsApp, Instagram) */}
+        <FloatingActions />
 
-      {/* Fixed Mobile Bottom Navigation Bar (Phone & Tablet) */}
-      <MobileBottomBar />
+        {/* Fixed Mobile Bottom Navigation Bar (Phone & Tablet) */}
+        <MobileBottomBar />
 
-      {/* Global Patient Auth Popup Modal (Register / Sign In) */}
-      <AuthModal />
+        {/* Global Patient Auth Popup Modal (Register / Sign In) */}
+        <AuthModal />
 
-      {/* PWA Mobile App Install Banner */}
-      <PwaInstallPrompt />
+        {/* PWA Mobile App Install Banner */}
+        <PwaInstallPrompt />
+      </div>
     </div>
   );
 };
