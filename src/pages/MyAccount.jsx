@@ -37,6 +37,7 @@ export const MyAccount = () => {
   // Modals & Active Selections
   const [selectedOrderForTracking, setSelectedOrderForTracking] = useState(null);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
+  const [prescriptionModalRx, setPrescriptionModalRx] = useState(null);
   const [invoiceModalOrder, setInvoiceModalOrder] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
