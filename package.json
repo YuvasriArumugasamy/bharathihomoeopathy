@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "optimize:images": "node scripts/optimize-images.js",
-    "convert:webp": "node scripts/convert-to-webp.js"
+    "convert:webp": "node scripts/convert-to-webp.js",
+    "compress:videos": "node scripts/compress-videos.js"
   },
   "dependencies": {
     "@react-oauth/google": "^0.12.2",

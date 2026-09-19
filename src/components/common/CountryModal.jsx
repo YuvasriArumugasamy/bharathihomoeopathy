@@ -49,8 +49,8 @@ export const CountryModal = () => {
         setIsOpen(true);
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
-            () => console.log("Location access granted."),
-            () => console.log("Location access denied or failed.")
+            () => {/* Location access granted */},
+            () => {/* Location access denied or failed */}
           );
         }
       }, 1500);

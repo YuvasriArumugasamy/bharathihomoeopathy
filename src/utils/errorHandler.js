@@ -70,8 +70,8 @@ const logError = (error) => {
   // Example: Sentry, LogRocket, etc.
   
   if (process.env.NODE_ENV === 'production') {
-    // Send to analytics or error tracking
-    console.log('Error logged:', error);
+    // Send to analytics or error tracking service
+    // Intentionally not logging to console in production
     
     // Optional: Send to backend
     // fetch('/api/log-error', {
@@ -79,6 +79,9 @@ const logError = (error) => {
     //   headers: { 'Content-Type': 'application/json' },
     //   body: JSON.stringify(error)
     // }).catch(() => {});
+  } else {
+    // Development mode - log for debugging
+    console.error('Error:', error);
   }
 };
 

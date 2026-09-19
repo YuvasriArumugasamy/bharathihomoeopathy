@@ -39,11 +39,10 @@ class ErrorBoundary extends Component {
   logErrorToService = (error, errorInfo) => {
     // Send to error tracking service (e.g., Sentry, LogRocket)
     // Example: Sentry.captureException(error, { extra: errorInfo });
-    console.log('Error logged:', {
-      message: error.toString(),
-      stack: errorInfo.componentStack,
-      timestamp: new Date().toISOString()
-    });
+    // Error logged for tracking in production
+    if (process.env.NODE_ENV === 'production') {
+      // Send to monitoring service here
+    }
   };
 
   handleRefresh = () => {

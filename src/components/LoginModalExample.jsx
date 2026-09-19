@@ -7,12 +7,12 @@ const LoginModalExample = () => {
   const { googleLogin } = useAuth();
 
   const handleGoogleSuccess = async (credentialResponse) => {
-    console.log('Google Login Success:', credentialResponse);
+    // Google Login Success
     
     const result = await googleLogin(credentialResponse.credential);
     
     if (result.success) {
-      console.log('User logged in:', result.user);
+      // User logged in successfully
       setIsModalOpen(false);
       // Redirect or show success message
     } else {

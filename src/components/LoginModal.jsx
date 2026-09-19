@@ -49,13 +49,13 @@ const LoginModal = ({ isOpen, onClose, onGoogleSuccess }) => {
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
-    console.log('Login submitted:', { loginEmail, loginPassword });
+    // Login submitted - handled by parent component
     if (onClose) onClose();
   };
 
   const handleRegisterSubmit = (e) => {
     e.preventDefault();
-    console.log('Register submitted:', registerData);
+    // Registration submitted - handled by parent component
     if (onClose) onClose();
   };
 
