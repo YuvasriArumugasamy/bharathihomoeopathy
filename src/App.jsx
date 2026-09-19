@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Layouts
 import { MainLayout } from './layouts/MainLayout';
@@ -8,7 +9,6 @@ import { AdminLayout } from './layouts/AdminLayout';
 // Common & Route Guards
 import { ProtectedRoute, AdminProtectedRoute } from './components/common/ProtectedRoute';
 import { ScrollToTop } from './components/common/ScrollToTop';
-import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SeoManager } from './components/common/SeoManager';
 
 // Customer Pages

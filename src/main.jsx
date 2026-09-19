@@ -8,6 +8,10 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { ToastProvider } from './context/ToastContext';
+import { initializeErrorHandlers } from './utils/errorHandler';
+
+// Initialize global error handlers
+initializeErrorHandlers();
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '968192588862-u9i40gh2jtkqgen53e3s0jk1h6o421hh.apps.googleusercontent.com';
 

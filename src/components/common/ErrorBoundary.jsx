@@ -1,21 +1,52 @@
-import React from 'react';
-import { AlertCircle, RotateCcw, Home, PhoneCall } from 'lucide-react';
+import React, { Component } from 'react';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
-export class ErrorBoundary extends React.Component {
+/**
+ * Global Error Boundary Component
+ * Catches all JavaScript errors and displays user-friendly error page
+ * Prevents app crashes and shows recovery options
+ */
+class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      errorCount: 0
+    };
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, error };
+    return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error("Uncaught application error:", error, errorInfo);
+    // Log error to console for debugging
+    console.error('Error caught by ErrorBoundary:', error, errorInfo);
+    
+    // Update state with error details
+    this.setState({
+      error: error,
+      errorInfo: errorInfo,
+      errorCount: this.state.errorCount + 1
+    });
+
+    // Log to external service (optional)
+    // this.logErrorToService(error, errorInfo);
   }
 
-  handleReload = () => {
+  logErrorToService = (error, errorInfo) => {
+    // Send to error tracking service (e.g., Sentry, LogRocket)
+    // Example: Sentry.captureException(error, { extra: errorInfo });
+    console.log('Error logged:', {
+      message: error.toString(),
+      stack: errorInfo.componentStack,
+      timestamp: new Date().toISOString()
+    });
+  };
+
+  handleRefresh = () => {
     window.location.reload();
   };
 
@@ -23,69 +54,116 @@ export class ErrorBoundary extends React.Component {
     window.location.href = '/';
   };
 
+  handleResetError = () => {
+    this.setState({
+      hasError: false,
+      error: null,
+      errorInfo: null
+    });
+  };
+
   render() {
     if (this.state.hasError) {
+      const { error, errorInfo } = this.state;
+      const isDevelopment = process.env.NODE_ENV === 'development';
+
       return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-slate-200 shadow-xl text-center space-y-6">
-            <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto border border-rose-200/60 shadow-sm">
-              <AlertCircle className="w-8 h-8" />
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+          <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8">
+            
+            {/* Error Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-10 h-10 text-red-600" />
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Dr. Bharathi’s Homeo Care</span>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900">Something went unexpectedly wrong</h2>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                We encountered an unexpected technical issue. Don't worry — your appointment and order data remain safe.
-              </p>
-              {this.state.error && (
-                <div className="p-3 bg-rose-50/80 border border-rose-200/80 rounded-xl text-[11px] text-rose-800 font-mono text-left overflow-x-auto max-h-28">
-                  {this.state.error.message || String(this.state.error)}
-                </div>
-              )}
-            </div>
+            {/* Error Title */}
+            <h1 className="text-3xl font-bold text-gray-900 text-center mb-4">
+              Something went unexpectedly wrong
+            </h1>
 
+            {/* Error Description */}
+            <p className="text-gray-600 text-center mb-8">
+              We encountered an unexpected technical issue. Don't worry — your appointment and order data remain safe.
+            </p>
+
+            {/* Error Message Box */}
+            {isDevelopment && error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <p className="font-mono text-sm text-red-800 break-all">
+                  {error.toString()}
+                </p>
+                {errorInfo && (
+                  <details className="mt-3">
+                    <summary className="cursor-pointer text-xs font-semibold text-red-700 hover:text-red-900">
+                      View Stack Trace
+                    </summary>
+                    <pre className="mt-2 text-xs text-red-700 overflow-auto max-h-40 bg-red-100 p-2 rounded">
+                      {errorInfo.componentStack}
+                    </pre>
+                  </details>
+                )}
+              </div>
+            )}
+
+            {/* Production Error Message */}
+            {!isDevelopment && (
+              <div className="bg-pink-50 border border-pink-200 rounded-lg p-4 mb-6">
+                <p className="font-mono text-sm text-pink-800">
+                  Error Code: {error?.name || 'UnknownError'}
+                </p>
+              </div>
+            )}
+
+            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
-                onClick={this.handleReload}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brandOrange-500 to-[#f97316] text-white text-xs font-black shadow-md shadow-orange-500/20 active:scale-95 transition-all cursor-pointer"
+                onClick={this.handleRefresh}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors"
               >
-                <RotateCcw className="w-4 h-4" />
-                <span>Try Refreshing</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  try {
-                    localStorage.removeItem('admin_customers_store');
-                    localStorage.removeItem('admin_orders_store');
-                    localStorage.removeItem('admin_appointments_store');
-                    localStorage.removeItem('admin_inventory_store');
-                  } catch {}
-                  window.location.reload();
-                }}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold active:scale-95 transition-all cursor-pointer"
-              >
-                <RotateCcw className="w-4 h-4" />
-                <span>Reset Admin Cache</span>
+                <RefreshCw className="w-5 h-5" />
+                Try Refreshing
               </button>
 
               <button
                 onClick={this.handleGoHome}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold active:scale-95 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-900 text-white font-semibold rounded-lg transition-colors"
               >
-                <Home className="w-4 h-4" />
-                <span>Return to Home</span>
+                <Home className="w-5 h-5" />
+                Return to Home
               </button>
+
+              {isDevelopment && (
+                <button
+                  onClick={this.handleResetError}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors"
+                >
+                  Reset Error
+                </button>
+              )}
             </div>
 
-            <div className="pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-500">
-              <PhoneCall className="w-3.5 h-3.5 text-brandOrange-500" />
-              <span>Need help? Call clinic: </span>
-              <a href="tel:+919360577726" className="font-bold text-slate-800 hover:text-brandOrange-600">
-                +91 93605 77726
-              </a>
+            {/* Support Contact */}
+            <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+              <p className="text-sm text-gray-600">
+                📞 Need help? Call clinic:{' '}
+                <a 
+                  href="tel:+919360577726" 
+                  className="text-orange-600 font-semibold hover:underline"
+                >
+                  +91 93605 77726
+                </a>
+              </p>
             </div>
+
+            {/* Error Count (Development only) */}
+            {isDevelopment && this.state.errorCount > 1 && (
+              <div className="mt-4 text-center text-xs text-gray-500">
+                Error occurred {this.state.errorCount} times
+              </div>
+            )}
+
           </div>
         </div>
       );
@@ -94,3 +172,5 @@ export class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
+
+export default ErrorBoundary;
