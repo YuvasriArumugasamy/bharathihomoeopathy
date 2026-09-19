@@ -22,6 +22,10 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { OrderInvoiceModal } from '../components/admin/OrderInvoiceModal';
 import { PrescriptionSlipModal } from '../components/account/PrescriptionSlipModal';
+import { ReorderConfirmationModal } from '../components/account/ReorderConfirmationModal';
+import { OrderSearch } from '../components/account/OrderSearch';
+import { SkeletonLoader } from '../components/common/SkeletonLoader';
+import { EmptyState } from '../components/common/EmptyState';
 import { getUserOrders, orderService } from '../services/orderService';
 import { getUserAppointments, appointmentService } from '../services/appointmentService';
 import { getUserPrescriptions, prescriptionService } from '../services/prescriptionService';
@@ -40,6 +44,15 @@ export const MyAccount = () => {
   const [prescriptionModalRx, setPrescriptionModalRx] = useState(null);
   const [invoiceModalOrder, setInvoiceModalOrder] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [reorderOrder, setReorderOrder] = useState(null);
+
+  // Loading states
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
+  const [loadingPrescriptions, setLoadingPrescriptions] = useState(true);
+
+  // Filtered data for search
+  const [filteredOrders, setFilteredOrders] = useState([]);
 
   // User-Isolated Real-time state
   const [rawOrders, setRawOrders] = useState(() => getUserOrders(user));
@@ -48,10 +61,18 @@ export const MyAccount = () => {
 
   // Listen to live updates from MongoDB, local checkout/booking and Firebase Firestore cloud
   useEffect(() => {
-    const refreshLiveUserData = () => {
+    const refreshLiveUserData = async () => {
+      setLoadingOrders(true);
+      setLoadingAppointments(true);
+      setLoadingPrescriptions(true);
+
       setRawOrders(getUserOrders(user));
       setUserAppointments(getUserAppointments(user));
       setUserPrescriptions(getUserPrescriptions(user));
+
+      setLoadingOrders(false);
+      setLoadingAppointments(false);
+      setLoadingPrescriptions(false);
     };
 
     refreshLiveUserData();
@@ -68,6 +89,10 @@ export const MyAccount = () => {
         if (rxs && rxs.length > 0) setUserPrescriptions(rxs);
       } catch (err) {
         // Handled by local fallback
+      } finally {
+        setLoadingOrders(false);
+        setLoadingAppointments(false);
+        setLoadingPrescriptions(false);
       }
     };
     loadMongoData();
@@ -145,6 +170,11 @@ export const MyAccount = () => {
       const amount = Number(raw.total || raw.totalAmount || raw.amount || 0);
       const status = raw.orderStatus || raw.status || 'Pending';
 
+      // Calculate estimated delivery (5-7 days from order date)
+      const orderDate = new Date(raw.createdAt || raw.date || Date.now());
+      const estimatedDelivery = new Date(orderDate);
+      estimatedDelivery.setDate(estimatedDelivery.getDate() + 6); // 6 days from order
+
       return {
         ...raw,
         id: orderId,
@@ -154,12 +184,29 @@ export const MyAccount = () => {
         itemsList: Array.isArray(raw.items) ? raw.items : null,
         itemsCount,
         amount,
-        status
+        status,
+        estimatedDelivery: estimatedDelivery.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric' 
+        })
       };
     });
   }, [rawOrders]);
 
+  // Initialize filtered orders
+  useEffect(() => {
+    setFilteredOrders(allOrders);
+  }, [allOrders]);
+
   const handleReorder = (order) => {
+    setReorderOrder(order);
+  };
+
+  const confirmReorder = () => {
+    const order = reorderOrder;
+    if (!order) return;
+
     if (Array.isArray(order.itemsList) && order.itemsList.length > 0) {
       order.itemsList.forEach(item => {
         addToCart({
@@ -306,7 +353,7 @@ export const MyAccount = () => {
           {activeTab === 'orders' && (
             <div className="space-y-4 sm:space-y-5">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h2 className="text-sm sm:text-base font-bold text-slate-900">Orders ({allOrders.length})</h2>
+                <h2 className="text-sm sm:text-base font-bold text-slate-900">Orders ({filteredOrders.length})</h2>
                 {allOrders.length > 0 && (
                   <Link to="/shop" className="text-xs font-semibold text-amber-600 hover:underline">
                     + Shop More
@@ -314,26 +361,19 @@ export const MyAccount = () => {
                 )}
               </div>
 
-              {allOrders.length === 0 ? (
-                <div className="text-center py-10 sm:py-12 space-y-3">
-                  <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
-                    <ShoppingBag className="w-6 h-6" />
-                  </div>
-                  <p className="text-sm font-medium text-slate-700">No orders yet</p>
-                  <p className="text-xs text-slate-400">Your remedy orders and shipments will show up here.</p>
-                  <div className="pt-2">
-                    <Link
-                      to="/shop"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all shadow-xs"
-                    >
-                      <ShoppingBag className="w-4 h-4" />
-                      <span>Browse Medicines</span>
-                    </Link>
-                  </div>
-                </div>
+              {/* Search & Filter */}
+              {allOrders.length > 0 && (
+                <OrderSearch orders={allOrders} onFilter={setFilteredOrders} />
+              )}
+
+              {/* Loading State */}
+              {loadingOrders ? (
+                <SkeletonLoader type="order" count={3} />
+              ) : filteredOrders.length === 0 ? (
+                <EmptyState type="orders" />
               ) : (
                 <div className="space-y-3 sm:space-y-4">
-                  {allOrders.map((order) => {
+                  {filteredOrders.map((order) => {
                     const isProcessing = order.status === 'Processing' || order.status === 'Pending';
                     return (
                       <div 
@@ -361,6 +401,14 @@ export const MyAccount = () => {
                         <p className="text-xs text-slate-700 line-clamp-1 font-medium">
                           {order.items}
                         </p>
+
+                        {/* Estimated Delivery */}
+                        {isProcessing && (
+                          <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded-lg">
+                            <Truck className="w-3.5 h-3.5" />
+                            <span>Expected delivery: <span className="font-semibold text-slate-700">{order.estimatedDelivery}</span></span>
+                          </div>
+                        )}
 
                         <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 sm:flex sm:flex-wrap">
                           <button
@@ -407,23 +455,10 @@ export const MyAccount = () => {
                 </Link>
               </div>
 
-              {userAppointments.length === 0 ? (
-                <div className="text-center py-10 sm:py-12 space-y-3">
-                  <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
-                    <Calendar className="w-6 h-6" />
-                  </div>
-                  <p className="text-sm font-medium text-slate-700">No consultations scheduled</p>
-                  <p className="text-xs text-slate-400">Book an appointment with Dr. Bharathi for personalized treatment.</p>
-                  <div className="pt-2">
-                    <Link
-                      to="/appointment"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Book Appointment</span>
-                    </Link>
-                  </div>
-                </div>
+              {loadingAppointments ? (
+                <SkeletonLoader type="appointment" count={2} />
+              ) : userAppointments.length === 0 ? (
+                <EmptyState type="appointments" />
               ) : (
                 <div className="space-y-3">
                   {userAppointments.map((apt) => (
@@ -463,14 +498,10 @@ export const MyAccount = () => {
                 <h2 className="text-sm sm:text-base font-bold text-slate-900">Prescriptions ({userPrescriptions.length})</h2>
               </div>
 
-              {userPrescriptions.length === 0 ? (
-                <div className="text-center py-10 sm:py-12 space-y-3">
-                  <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
-                    <FileText className="w-6 h-6" />
-                  </div>
-                  <p className="text-sm font-medium text-slate-700">No prescriptions found</p>
-                  <p className="text-xs text-slate-400">Doctor prescriptions and dosage instructions will appear here after consultation.</p>
-                </div>
+              {loadingPrescriptions ? (
+                <SkeletonLoader type="prescription" count={2} />
+              ) : userPrescriptions.length === 0 ? (
+                <EmptyState type="prescriptions" />
               ) : (
                 <div className="space-y-3">
                   {userPrescriptions.map((rx) => (
@@ -716,6 +747,15 @@ export const MyAccount = () => {
         isOpen={!!selectedPrescription}
         onClose={() => setSelectedPrescription(null)}
       />
+
+      {/* Reorder Confirmation Modal */}
+      {reorderOrder && (
+        <ReorderConfirmationModal
+          order={reorderOrder}
+          onConfirm={confirmReorder}
+          onCancel={() => setReorderOrder(null)}
+        />
+      )}
 
       {/* Medical Bill Modal */}
       <OrderInvoiceModal
