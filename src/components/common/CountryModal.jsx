@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Globe2, ChevronDown, Check, ArrowRight, ShieldCheck, Sparkles, MapPin, Search } from 'lucide-react';
-import modalBg from '../../assets/images/country-modal-bg.jpg';
+import modalBg from '../../assets/images/country-modal-bg.webp';
 import { countries } from '../../data/countries';
 
 export const CountryModal = () => {

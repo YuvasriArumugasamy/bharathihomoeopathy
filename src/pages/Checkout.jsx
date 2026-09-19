@@ -1,6 +1,6 @@
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useState, useEffect } from 'react';
-import phonepeQRImage from '../assets/WhatsApp Image 2026-09-10 at 10.05.20.jpeg';
+import phonepeQRImage from '../assets/WhatsApp Image 2026-09-10 at 10.05.20.webp';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';

@@ -1,35 +1,35 @@
-import logoImg from './logo.jpeg';
-import bharathiImg from './bharathi.png';
-import product1Img from './product1.png';
-import shopBgImg from './bgg1.png';
-import bgg1Img from './bgg1.png';
-import bg1Img from './bg1.png';
-import contactBgNewImg from './ChatGPT Image Sep 1, 2026, 03_42_22 PM.png';
-import blogBgImg from './blog.png';
-import bg7Img from './bg7.png';
-import bg9Img from './bg9.png';
+import logoImg from './logo.webp';
+import bharathiImg from './bharathi.webp';
+import product1Img from './product1.webp';
+import shopBgImg from './bgg1.webp';
+import bgg1Img from './bgg1.webp';
+import bg1Img from './bg1.webp';
+import contactBgNewImg from './ChatGPT Image Sep 1, 2026, 03_42_22 PM.webp';
+import blogBgImg from './blog.webp';
+import bg7Img from './bg7.webp';
+import bg9Img from './bg9.webp';
 import heroVideoMp4 from './WhatsApp Video 2026-08-26 at 20.01.57.mp4';
 import bgVideo1Mp4 from './bg-video1.mp4';
 import animoCoverRingMp4 from './animo-cover-ring-vertical-960p.mp4';
-import homeopathyAuthImg from './homeopathy_auth.jpg';
-import herbalBgImg from './Screenshot 2026-09-02 100844.png';
-import paperBgImg from './paper-bg.png';
+import homeopathyAuthImg from './homeopathy_auth.webp';
+import herbalBgImg from './Screenshot 2026-09-02 100844.webp';
+import paperBgImg from './paper-bg.webp';
 
-import p1Img from './p1.png';
-import p2Img from './p2.png';
-import p3Img from './p3.png';
-import p4Img from './p4.png';
-import p5Img from './p5.png';
-import p6Img from './p6.png';
-import p7Img from './p7.png';
-import p8Img from './p8.png';
-import p9Img from './p9.png';
-import p10Img from './p10.png';
-import p11Img from './p11.png';
+import p1Img from './p1.webp';
+import p2Img from './p2.webp';
+import p3Img from './p3.webp';
+import p4Img from './p4.webp';
+import p5Img from './p5.webp';
+import p6Img from './p6.webp';
+import p7Img from './p7.webp';
+import p8Img from './p8.webp';
+import p9Img from './p9.webp';
+import p10Img from './p10.webp';
+import p11Img from './p11.webp';
 
-import logoBg1Img from './logo bg1.png';
-import logoBg3Img from './logo bg 3.png';
-import loginBgImg from './login bg.png';
+import logoBg1Img from './logo bg1.webp';
+import logoBg3Img from './logo bg 3.webp';
+import loginBgImg from './login bg.webp';
 
 export const assets = {
   logo: logoImg,
