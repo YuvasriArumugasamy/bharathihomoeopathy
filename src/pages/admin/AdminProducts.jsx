@@ -314,11 +314,13 @@ export const AdminProducts = () => {
                 <tr key={prod.id} className="hover:bg-slate-50/80 transition-colors group">
                   <td className="py-3.5 px-5">
                     <div className="flex items-center gap-3.5">
-                      <img 
-                        src={prod.image} 
-                        alt={prod.name} 
-                        className="w-12 h-12 rounded-2xl object-cover bg-slate-100 border border-slate-200/80 shrink-0 shadow-xs group-hover:scale-105 transition-transform" 
-                      />
+                      <div className="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200/80 shrink-0 shadow-xs overflow-hidden group-hover:scale-105 transition-transform flex items-center justify-center">
+                        <img 
+                          src={prod.image} 
+                          alt={prod.name} 
+                          className="w-full h-full object-cover" 
+                        />
+                      </div>
                       <div>
                         <h4 className="font-extrabold text-slate-900 line-clamp-1 group-hover:text-brandOrange-600 transition-colors">
                           {prod.name}
