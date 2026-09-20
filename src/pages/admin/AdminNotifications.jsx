@@ -20,8 +20,41 @@ export const AdminNotifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState('All');
 
+  // Get dismissed notifications from localStorage
+  const getDismissedIds = () => {
+    try {
+      const dismissed = localStorage.getItem('admin_dismissed_notifications');
+      return dismissed ? JSON.parse(dismissed) : [];
+    } catch (e) {
+      return [];
+    }
+  };
+
+  // Save dismissed notification IDs to localStorage
+  const saveDismissedId = (id) => {
+    try {
+      const dismissed = getDismissedIds();
+      if (!dismissed.includes(id)) {
+        dismissed.push(id);
+        localStorage.setItem('admin_dismissed_notifications', JSON.stringify(dismissed));
+      }
+    } catch (e) {
+      console.warn('Could not save dismissed notification', e);
+    }
+  };
+
+  // Clear all dismissed notifications from localStorage
+  const clearAllDismissed = () => {
+    try {
+      localStorage.removeItem('admin_dismissed_notifications');
+    } catch (e) {
+      console.warn('Could not clear dismissed notifications', e);
+    }
+  };
+
   useEffect(() => {
     const list = [];
+    const dismissedIds = getDismissedIds();
 
     // 1. Orders
     try {
@@ -30,8 +63,12 @@ export const AdminNotifications = () => {
         const orders = JSON.parse(rawOrders);
         if (Array.isArray(orders)) {
           orders.filter(o => o && (o.orderStatus === 'Pending' || o.status === 'Pending')).slice(0, 4).forEach(o => {
+            const notifId = 'notif-ord-' + (o.id || o.orderId || o._id);
+            // Skip if dismissed
+            if (dismissedIds.includes(notifId)) return;
+            
             list.push({
-              id: 'notif-ord-' + (o.id || o.orderId || o._id),
+              id: notifId,
               type: 'Order',
               title: `New Order: ${o.orderId || o.orderNumber || 'Pending'}`,
               description: `Patient ${o.customer?.name || o.shippingAddress?.fullName || 'Customer'} placed order of ₹${Number(o.total || 0).toLocaleString('en-IN')}`,
@@ -53,8 +90,12 @@ export const AdminNotifications = () => {
         const apts = JSON.parse(rawApts);
         if (Array.isArray(apts)) {
           apts.filter(a => a && a.status === 'Pending').slice(0, 4).forEach(a => {
+            const notifId = 'notif-apt-' + (a.id || a.appointmentId || a._id);
+            // Skip if dismissed
+            if (dismissedIds.includes(notifId)) return;
+            
             list.push({
-              id: 'notif-apt-' + (a.id || a.appointmentId || a._id),
+              id: notifId,
               type: 'Appointment',
               title: `Consultation Request: ${a.patient?.name || 'Patient'}`,
               description: `${a.concern || 'Consultation'} on ${a.date || 'Soon'} at ${a.time || 'Scheduled'} (${a.consultationMode || 'In-Clinic'})`,
@@ -76,8 +117,12 @@ export const AdminNotifications = () => {
         const enqs = JSON.parse(rawEnqs);
         if (Array.isArray(enqs)) {
           enqs.filter(e => e && e.status === 'New').slice(0, 3).forEach(e => {
+            const notifId = 'notif-enq-' + (e.id || e.enquiryId || e._id);
+            // Skip if dismissed
+            if (dismissedIds.includes(notifId)) return;
+            
             list.push({
-              id: 'notif-enq-' + (e.id || e.enquiryId || e._id),
+              id: notifId,
               type: 'Enquiry',
               title: `New Patient Inquiry: ${e.customer?.name || 'Patient'}`,
               description: e.subject || 'Patient submitted a consultation question via website.',
@@ -99,8 +144,12 @@ export const AdminNotifications = () => {
         const prods = JSON.parse(rawProds);
         if (Array.isArray(prods)) {
           prods.filter(p => p && (Number(p.stock) || 0) <= (Number(p.lowStockThreshold) || 5)).slice(0, 3).forEach(p => {
+            const notifId = 'notif-stock-' + (p.id || p._id);
+            // Skip if dismissed
+            if (dismissedIds.includes(notifId)) return;
+            
             list.push({
-              id: 'notif-stock-' + (p.id || p._id),
+              id: notifId,
               type: 'Inventory',
               title: `Low Stock Alert: ${p.name || 'Remedy'}`,
               description: `Only ${p.stock || 0} units left in dispensary (Threshold: ${p.lowStockThreshold || 5})`,
@@ -133,11 +182,14 @@ export const AdminNotifications = () => {
   const filtered = filter === 'All' ? notifications : notifications.filter(n => n.type === filter);
 
   const handleDismiss = (id) => {
+    saveDismissedId(id); // Save to localStorage
     setNotifications(prev => prev.filter(n => n.id !== id));
     showToast('Notification dismissed', 'info');
   };
 
   const handleClearAll = () => {
+    // Save all current notification IDs as dismissed
+    notifications.forEach(n => saveDismissedId(n.id));
     setNotifications([]);
     showToast('All notifications cleared', 'info');
   };
