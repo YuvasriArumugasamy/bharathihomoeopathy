@@ -234,13 +234,13 @@ export const Offers = () => {
                   </div>
 
                   {/* Product Image - if provided */}
-                  {coupon.productImage && (
-                    <div className="mb-4 -mx-6 -mt-6">
+                  {coupon.productImage && coupon.productImage.trim() && (
+                    <div className="mb-4 -mx-6 -mt-6 bg-gradient-to-br from-slate-50 to-amber-50/30 rounded-t-2xl overflow-hidden relative" style={{ height: '160px' }}>
                       <img 
                         src={coupon.productImage} 
                         alt={coupon.offerTitle || 'Product'} 
-                        className="w-full h-40 object-cover rounded-t-2xl"
-                        onError={(e) => { e.target.style.display = 'none'; }}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     </div>
                   )}
