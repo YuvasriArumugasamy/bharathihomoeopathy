@@ -65,90 +65,6 @@ export const Offers = () => {
   // Show admin offers or fallback message
   const hasOffers = adminOffers.length > 0 || adminCoupons.length > 0;
 
-  const offersByCategory = [
-    {
-      category: "Homeopathy Medicines",
-      badge: "UP TO 20% OFF",
-      badgeColor: "bg-brandOrange-500",
-      image: assets.p1,
-      btnBorder: "border-brandOrange-500 text-brandOrange-600 hover:bg-brandOrange-500 hover:text-white"
-    },
-    {
-      category: "Mother Tinctures",
-      badge: "UP TO 15% OFF",
-      badgeColor: "bg-emerald-600",
-      image: assets.p2,
-      btnBorder: "border-emerald-600 text-emerald-700 hover:bg-emerald-600 hover:text-white"
-    },
-    {
-      category: "Biochemic Medicines",
-      badge: "UP TO 15% OFF",
-      badgeColor: "bg-amber-500",
-      image: assets.p3,
-      btnBorder: "border-amber-500 text-amber-700 hover:bg-amber-500 hover:text-white"
-    },
-    {
-      category: "Personal Care",
-      badge: "UP TO 10% OFF",
-      badgeColor: "bg-rose-500",
-      image: assets.p4,
-      btnBorder: "border-rose-500 text-rose-700 hover:bg-rose-500 hover:text-white"
-    },
-    {
-      category: "Combo Offers",
-      badge: "SPECIAL COMBO OFFERS",
-      badgeColor: "bg-purple-600",
-      image: assets.p5,
-      btnBorder: "border-purple-600 text-purple-700 hover:bg-purple-600 hover:text-white"
-    },
-    {
-      category: "Health Conditions",
-      badge: "UP TO 10% OFF",
-      badgeColor: "bg-sky-600",
-      image: assets.p6,
-      btnBorder: "border-sky-600 text-sky-700 hover:bg-sky-600 hover:text-white"
-    }
-  ];
-
-  const comboDeals = [
-    {
-      name: "Immunity Care Combo",
-      badge: "20% OFF",
-      desc: "Boost your immunity naturally with this powerful combo.",
-      price: 699,
-      originalPrice: 875,
-      image: assets.p7,
-      btnColor: "bg-emerald-600 hover:bg-emerald-700"
-    },
-    {
-      name: "Allergy Relief Combo",
-      badge: "15% OFF",
-      desc: "Relief from allergies, sinusitis & respiratory issues.",
-      price: 599,
-      originalPrice: 705,
-      image: assets.p8,
-      btnColor: "bg-brandOrange-500 hover:bg-brandOrange-600"
-    },
-    {
-      name: "Women's Wellness Combo",
-      badge: "20% OFF",
-      desc: "Care for women's health, hormonal balance & well-being.",
-      price: 749,
-      originalPrice: 935,
-      image: assets.p9,
-      btnColor: "bg-rose-500 hover:bg-rose-600"
-    },
-    {
-      name: "Daily Health Combo",
-      badge: "15% OFF",
-      desc: "Complete family care for everyday health & wellness.",
-      price: 799,
-      originalPrice: 940,
-      image: assets.p10,
-      btnColor: "bg-purple-600 hover:bg-purple-700"
-    }
-  ];
-
   return (
     <div className="space-y-12 pb-12 w-full max-w-full overflow-x-hidden">
       
@@ -273,33 +189,68 @@ export const Offers = () => {
       </section>
       )}
 
-      {/* 3. Offers by Category Section */}
+      {/* 3. Admin Coupons Display - Only show coupons created by admin */}
       {hasOffers ? (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           
-          <SectionHeader title="Offers by Category" />
+          <SectionHeader title="Active Offers & Coupons" />
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {offersByCategory.map((item, idx) => (
-              <ScrollReveal key={idx} direction="up" delay={idx * 60}>
-                <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm flex flex-col justify-between items-center text-center space-y-3 relative group h-full">
-                  <span className={`absolute top-2 left-2 ${item.badgeColor} text-white font-extrabold text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded shadow-sm`}>
-                    {item.badge}
-                  </span>
-
-                  <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-50 p-2 mt-4 flex items-center justify-center">
-                    <img src={item.image} alt={item.category} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {adminCoupons.map((coupon, idx) => (
+              <ScrollReveal key={coupon.id || idx} direction="up" delay={idx * 60}>
+                <div className="bg-white rounded-2xl border-2 border-dashed border-brandOrange-300 p-6 shadow-sm hover:shadow-md transition-all relative group">
+                  {/* Discount Badge */}
+                  <div className="absolute -top-3 -right-3 w-16 h-16 rounded-full bg-gradient-to-br from-brandOrange-500 to-amber-500 text-white flex items-center justify-center text-center shadow-lg">
+                    <div>
+                      <span className="text-lg font-black block leading-none">
+                        {coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}
+                      </span>
+                      <span className="text-[8px] font-bold uppercase">OFF</span>
+                    </div>
                   </div>
 
-                  <h3 className="font-bold text-xs text-navy-950 leading-tight">
-                    {item.category}
-                  </h3>
+                  {/* Coupon Code */}
+                  <div className="mb-4">
+                    <div className="inline-block px-4 py-2 bg-gradient-to-r from-slate-100 to-slate-50 border-2 border-dashed border-slate-300 rounded-lg">
+                      <span className="text-xl font-black text-slate-900 font-mono tracking-wider">
+                        {coupon.code}
+                      </span>
+                    </div>
+                  </div>
 
+                  {/* Description */}
+                  <p className="text-sm text-slate-600 font-semibold mb-3">
+                    {coupon.description || 'Special discount offer'}
+                  </p>
+
+                  {/* Details */}
+                  <div className="space-y-1.5 mb-4 text-xs text-slate-500">
+                    {coupon.minOrderValue && (
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-3.5 h-3.5 text-brandOrange-500" />
+                        <span>Min Order: ₹{coupon.minOrderValue}</span>
+                      </div>
+                    )}
+                    {coupon.maxDiscount && coupon.discountType === 'percentage' && (
+                      <div className="flex items-center gap-2">
+                        <Percent className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Max Discount: ₹{coupon.maxDiscount}</span>
+                      </div>
+                    )}
+                    {coupon.validTill && (
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-rose-500" />
+                        <span>Valid till: {new Date(coupon.validTill).toLocaleDateString()}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CTA Button */}
                   <Link
-                    to={`/shop?category=${encodeURIComponent(item.category)}`}
-                    className={`w-full py-1.5 px-3 border rounded-lg text-xs font-bold transition-colors ${item.btnBorder}`}
+                    to="/shop"
+                    className="w-full block text-center py-2.5 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-bold text-sm rounded-xl shadow-md transition-all"
                   >
-                    Shop Now
+                    Shop Now & Apply
                   </Link>
                 </div>
               </ScrollReveal>
@@ -333,105 +284,7 @@ export const Offers = () => {
         </section>
       )}
 
-      {/* 4. Exclusive Combo Deals Section - Only show if admin has created offers */}
-      {hasOffers && comboDeals.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        
-        <SectionHeader title="Exclusive Combo Deals" />
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {comboDeals.map((combo, i) => (
-            <ScrollReveal key={i} direction={i % 2 === 0 ? "left" : "right"} delay={i * 80}>
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-3 flex flex-col justify-between relative group h-full">
-                <span className="absolute top-3 right-3 w-10 h-10 rounded-full bg-brandOrange-500 text-white font-black text-[10px] flex items-center justify-center text-center leading-tight shadow-md">
-                  {combo.badge}
-                </span>
-
-                <div className="aspect-[4/3] rounded-xl overflow-hidden bg-slate-50 p-3 flex items-center justify-center">
-                  <img src={combo.image} alt={combo.name} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform" />
-                </div>
-
-                <div className="space-y-1">
-                  <h3 className="font-extrabold text-sm text-navy-950">{combo.name}</h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">{combo.desc}</p>
-                  <div className="flex items-baseline gap-2 pt-1">
-                    <span className="text-base font-extrabold text-navy-950">₹{combo.price}.00</span>
-                    <span className="text-xs text-slate-400 line-through">₹{combo.originalPrice}.00</span>
-                  </div>
-                </div>
-
-                <Link
-                  to="/shop?category=Combo%20Offers"
-                  className={`w-full py-2.5 text-center text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-sm transition-colors ${combo.btnColor}`}
-                >
-                  Shop Combo
-                </Link>
-              </div>
-            </ScrollReveal>
-          ))}
-        </div>
-
-      </section>
-      )}
-
-      {/* 5. Seasonal Offers Section - Only show if admin has created offers */}
-      {hasOffers && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        
-        <SectionHeader title="Seasonal Offers" />
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
-          <div className="bg-[#fff7ed] rounded-3xl p-6 sm:p-8 border border-amber-100 space-y-4 shadow-sm flex flex-col justify-between items-center text-center">
-            <div className="space-y-2">
-              <h3 className="text-lg font-extrabold text-navy-950">
-                Monsoon Care<br />Special Offer
-              </h3>
-              <p className="text-xs font-bold text-brandOrange-600">Up to 20% OFF</p>
-              <p className="text-xs text-slate-600">Stay protected this monsoon with trusted homeopathic care.</p>
-            </div>
-            <div>
-              <Link to="/shop" className="inline-block px-6 py-2 bg-brandOrange-500 hover:bg-brandOrange-600 text-white font-bold text-xs uppercase rounded-lg">
-                Shop Now
-              </Link>
-            </div>
-          </div>
-
-          <div className="bg-[#eff6ff] rounded-3xl p-6 sm:p-8 border border-blue-100 space-y-4 shadow-sm flex flex-col justify-between items-center text-center">
-            <div className="space-y-2">
-              <h3 className="text-lg font-extrabold text-navy-950">
-                Back to Health<br />Special
-              </h3>
-              <p className="text-xs font-bold text-blue-600">Up to 15% OFF</p>
-              <p className="text-xs text-slate-600">Boost your health and energy this season.</p>
-            </div>
-            <div>
-              <Link to="/shop" className="inline-block px-6 py-2 bg-navy-950 hover:bg-slate-900 text-white font-bold text-xs uppercase rounded-lg">
-                Shop Now
-              </Link>
-            </div>
-          </div>
-
-          <div className="bg-[#f0fdf4] rounded-3xl p-6 sm:p-8 border border-emerald-100 space-y-4 shadow-sm flex flex-col justify-between items-center text-center">
-            <div className="space-y-2">
-              <h3 className="text-lg font-extrabold text-navy-950">
-                Summer Wellness<br />Offer
-              </h3>
-              <p className="text-xs font-bold text-emerald-600">Up to 15% OFF</p>
-              <p className="text-xs text-slate-600">Stay cool, stay healthy naturally.</p>
-            </div>
-            <div>
-              <Link to="/shop" className="inline-block px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase rounded-lg">
-                Shop Now
-              </Link>
-            </div>
-          </div>
-
-        </div>
-      </section>
-      )}
-
-      {/* 6. Five Trust Badges Card Strip at Bottom */}
+      {/* Trust Badges - Always show */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] p-3 sm:p-4 lg:p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-0 lg:divide-x lg:divide-slate-100">
           
