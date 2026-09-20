@@ -25,13 +25,23 @@ import {
   Package,
   Layers,
   Phone,
-  Palette
+  Palette,
+  Bell,
+  BellOff
 } from 'lucide-react';
 import { adminDashboardData } from '../../data/adminDashboardData';
 import { orderService, getStoredOrders } from '../../services/orderService';
 import { productService } from '../../services/productService';
 import { appointmentService, getStoredAppointments } from '../../services/appointmentService';
 import { customerService, getStoredCustomers } from '../../services/customerService';
+import { 
+  initializeNotifications, 
+  listenForNotifications, 
+  showNewOrderNotification,
+  showNewAppointmentNotification,
+  areNotificationsEnabled,
+  getNotificationPermission
+} from '../../services/notificationService';
 
 export const AdminDashboard = () => {
   const getGreeting = () => {
@@ -48,6 +58,64 @@ export const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
   const [appointments, setAppointments] = useState(() => (typeof getStoredAppointments === 'function' ? getStoredAppointments() : []));
   const [customers, setCustomers] = useState(() => (typeof getStoredCustomers === 'function' ? getStoredCustomers() : []));
+  const [notificationsEnabled, setNotificationsEnabled] = useState(areNotificationsEnabled());
+  const [showNotificationBanner, setShowNotificationBanner] = useState(
+    !areNotificationsEnabled() && getNotificationPermission() !== 'denied'
+  );
+
+  // Initialize notifications on mount
+  useEffect(() => {
+    // Listen for new orders and appointments
+    const unsubscribe = listenForNotifications();
+
+    // Check for notification permission
+    setNotificationsEnabled(areNotificationsEnabled());
+
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
+  }, []);
+
+  // Monitor for new orders/appointments and show notifications
+  useEffect(() => {
+    let previousOrderCount = orders.length;
+    let previousAppointmentCount = appointments.length;
+
+    const checkForNew = () => {
+      const currentOrderCount = orders.length;
+      const currentAppointmentCount = appointments.length;
+
+      // New order detected
+      if (currentOrderCount > previousOrderCount && notificationsEnabled) {
+        const newOrder = orders[0]; // Latest order
+        showNewOrderNotification(newOrder);
+      }
+
+      // New appointment detected
+      if (currentAppointmentCount > previousAppointmentCount && notificationsEnabled) {
+        const newAppointment = appointments[0]; // Latest appointment
+        showNewAppointmentNotification(newAppointment);
+      }
+
+      previousOrderCount = currentOrderCount;
+      previousAppointmentCount = currentAppointmentCount;
+    };
+
+    // Check after data loads
+    if (orders.length > 0 || appointments.length > 0) {
+      checkForNew();
+    }
+  }, [orders, appointments, notificationsEnabled]);
+
+  const handleEnableNotifications = async () => {
+    const token = await initializeNotifications();
+    if (token) {
+      setNotificationsEnabled(true);
+      setShowNotificationBanner(false);
+    }
+  };
 
   const loadDashboardData = async () => {
     try {
@@ -297,6 +365,49 @@ export const AdminDashboard = () => {
   return (
     <div className="space-y-8 pb-12 font-serif">
       
+      {/* Push Notification Banner */}
+      {showNotificationBanner && (
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4 shadow-sm animate-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shrink-0">
+              <Bell className="w-5 h-5 text-white animate-bounce" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-slate-900 mb-0.5">
+                Enable Push Notifications 🔔
+              </h3>
+              <p className="text-xs text-slate-600">
+                Get instant alerts for new orders, appointments & enquiries - just like WhatsApp!
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setShowNotificationBanner(false)}
+              className="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-white rounded-lg transition-colors"
+            >
+              Later
+            </button>
+            <button
+              onClick={handleEnableNotifications}
+              className="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg transition-all shadow-sm hover:shadow-md flex items-center gap-1.5"
+            >
+              <Bell className="w-3.5 h-3.5" />
+              Enable Now
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Notification Status Indicator */}
+      {notificationsEnabled && (
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2 text-xs">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          <span className="font-semibold text-emerald-800">
+            Push Notifications Active - You'll be notified of new orders & appointments
+          </span>
+        </div>
+      )}
       {/* 1. Hero Command Center Banner */}
       <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
