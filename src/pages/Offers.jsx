@@ -222,9 +222,9 @@ export const Offers = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {adminCoupons.map((coupon, idx) => (
               <ScrollReveal key={coupon.id || idx} direction="up" delay={idx * 60}>
-                <div className="bg-white rounded-2xl border-2 border-dashed border-brandOrange-300 p-6 shadow-sm hover:shadow-md transition-all relative group">
+                <div className="bg-white rounded-2xl border-2 border-dashed border-brandOrange-300 p-6 shadow-sm hover:shadow-lg transition-all relative group overflow-hidden">
                   {/* Discount Badge */}
-                  <div className="absolute -top-3 -right-3 w-16 h-16 rounded-full bg-gradient-to-br from-brandOrange-500 to-amber-500 text-white flex items-center justify-center text-center shadow-lg">
+                  <div className="absolute -top-3 -right-3 w-16 h-16 rounded-full bg-gradient-to-br from-brandOrange-500 to-amber-500 text-white flex items-center justify-center text-center shadow-lg z-10">
                     <div>
                       <span className="text-lg font-black block leading-none">
                         {coupon.discountType === 'Percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}
@@ -232,6 +232,25 @@ export const Offers = () => {
                       <span className="text-[8px] font-bold uppercase">OFF</span>
                     </div>
                   </div>
+
+                  {/* Product Image - if provided */}
+                  {coupon.productImage && (
+                    <div className="mb-4 -mx-6 -mt-6">
+                      <img 
+                        src={coupon.productImage} 
+                        alt={coupon.offerTitle || 'Product'} 
+                        className="w-full h-40 object-cover rounded-t-2xl"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Offer Title - if provided */}
+                  {coupon.offerTitle && (
+                    <h3 className="text-base font-black text-navy-950 mb-3 leading-tight">
+                      {coupon.offerTitle}
+                    </h3>
+                  )}
 
                   {/* Coupon Code - Large and Clear */}
                   <div className="mb-4">

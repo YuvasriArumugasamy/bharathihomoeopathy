@@ -78,7 +78,9 @@ export const AdminOffers = () => {
     discountValue: 10,
     minimumOrderValue: 499,
     maximumDiscount: 200,
-    usageLimit: 100
+    usageLimit: 100,
+    offerTitle: '',
+    productImage: ''
   });
 
   // Metrics
@@ -140,7 +142,9 @@ export const AdminOffers = () => {
       discountValue: 10,
       minimumOrderValue: 499,
       maximumDiscount: 200,
-      usageLimit: 100
+      usageLimit: 100,
+      offerTitle: '',
+      productImage: ''
     });
   };
 
@@ -378,7 +382,9 @@ export const AdminOffers = () => {
                           discountValue: c.discountValue,
                           minimumOrderValue: c.minimumOrderValue,
                           maximumDiscount: c.maximumDiscount,
-                          usageLimit: c.usageLimit
+                          usageLimit: c.usageLimit,
+                          offerTitle: c.offerTitle || '',
+                          productImage: c.productImage || ''
                         });
                         setEditingCouponId(c.id);
                         setCouponModalOpen(true);
@@ -647,6 +653,30 @@ export const AdminOffers = () => {
                 />
               </div>
 
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5">Offer Title *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Cold & Cough Relief Pack"
+                  value={newCoupon.offerTitle}
+                  onChange={(e) => setNewCoupon({ ...newCoupon, offerTitle: e.target.value })}
+                  className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-brandOrange-500 focus:bg-white text-navy-950 font-semibold transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5">Product Image URL</label>
+                <input
+                  type="url"
+                  placeholder="https://example.com/product-image.jpg"
+                  value={newCoupon.productImage}
+                  onChange={(e) => setNewCoupon({ ...newCoupon, productImage: e.target.value })}
+                  className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-brandOrange-500 focus:bg-white text-slate-700 text-xs transition-all"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">Optional: Add product image to make offer more attractive</p>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1.5">Discount Type</label>
@@ -711,7 +741,9 @@ export const AdminOffers = () => {
                       discountValue: 10,
                       minimumOrderValue: 499,
                       maximumDiscount: 200,
-                      usageLimit: 100
+                      usageLimit: 100,
+                      offerTitle: '',
+                      productImage: ''
                     });
                   }}
                   className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all"
