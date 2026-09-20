@@ -127,8 +127,11 @@ export const ProductCard = ({ product }) => {
           className="w-full h-full flex items-center justify-center"
         >
           <img
-            src={product.image || assets?.p1 || ''}
+            src={product.image || assets.p1 || '/images/placeholder-product.png'}
             alt={product.name}
+            onError={(e) => {
+              e.target.src = assets.p1 || '/images/placeholder-product.png';
+            }}
             className={`max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300 ${
               isOutOfStock ? 'opacity-40 grayscale-[40%]' : ''
             }`}
