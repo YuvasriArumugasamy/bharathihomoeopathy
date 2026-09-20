@@ -314,11 +314,11 @@ export const AdminProducts = () => {
                 <tr key={prod.id} className="hover:bg-slate-50/80 transition-colors group">
                   <td className="py-3.5 px-5">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-14 h-14 aspect-square rounded-2xl bg-slate-100 border border-slate-200/80 shrink-0 shadow-xs overflow-hidden group-hover:scale-105 transition-transform">
+                      <div className="w-14 h-14 aspect-square rounded-2xl bg-white border border-slate-200/80 shrink-0 shadow-xs overflow-hidden group-hover:scale-105 transition-transform p-1">
                         <img 
                           src={prod.image} 
                           alt={prod.name} 
-                          className="w-full h-full object-cover" 
+                          className="w-full h-full object-contain" 
                           onError={(e) => {
                             e.target.style.display = 'none';
                             e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-slate-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
