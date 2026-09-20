@@ -70,6 +70,7 @@ export const AdminOffers = () => {
 
   const [couponModalOpen, setCouponModalOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState(null);
+  const [editingCouponId, setEditingCouponId] = useState(null);
 
   const [newCoupon, setNewCoupon] = useState({
     code: '',
@@ -96,21 +97,42 @@ export const AdminOffers = () => {
   const handleAddCoupon = (e) => {
     e.preventDefault();
     if (!newCoupon.code) return;
-    const added = {
-      ...newCoupon,
-      id: 'cpn-' + Date.now(),
-      code: newCoupon.code.toUpperCase().trim(),
-      usedCount: 0,
-      status: 'Active',
-      createdAt: new Date().toISOString().slice(0, 10)
-    };
-    const updated = [added, ...coupons];
-    setCoupons(updated);
-    try {
-      localStorage.setItem('admin_coupons_store', JSON.stringify(updated));
-    } catch (err) {
-      console.warn("Could not save coupons:", err);
+
+    if (editingCouponId) {
+      // Edit existing coupon
+      const updated = coupons.map(c => 
+        c.id === editingCouponId 
+          ? { ...c, ...newCoupon, code: newCoupon.code.toUpperCase().trim() }
+          : c
+      );
+      setCoupons(updated);
+      try {
+        localStorage.setItem('admin_coupons_store', JSON.stringify(updated));
+      } catch (err) {
+        console.warn("Could not save coupons:", err);
+      }
+      showToast('Coupon updated successfully!', 'success');
+      setEditingCouponId(null);
+    } else {
+      // Add new coupon
+      const added = {
+        ...newCoupon,
+        id: 'cpn-' + Date.now(),
+        code: newCoupon.code.toUpperCase().trim(),
+        usedCount: 0,
+        status: 'Active',
+        createdAt: new Date().toISOString().slice(0, 10)
+      };
+      const updated = [added, ...coupons];
+      setCoupons(updated);
+      try {
+        localStorage.setItem('admin_coupons_store', JSON.stringify(updated));
+      } catch (err) {
+        console.warn("Could not save coupons:", err);
+      }
+      showToast('New coupon code created and activated!', 'success');
     }
+
     setCouponModalOpen(false);
     setNewCoupon({
       code: '',
@@ -120,7 +142,6 @@ export const AdminOffers = () => {
       maximumDiscount: 200,
       usageLimit: 100
     });
-    showToast('New coupon code created and activated!', 'success');
   };
 
   const handleDeleteCoupon = (id) => {
@@ -348,13 +369,33 @@ export const AdminOffers = () => {
                 {/* Footer Action */}
                 <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
                   <span className="text-[11px] text-slate-400 font-medium">Valid on Dispensary store</span>
-                  <button
-                    onClick={() => handleDeleteCoupon(c.id)}
-                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
-                    title="Remove Coupon"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setNewCoupon({
+                          code: c.code,
+                          discountType: c.discountType,
+                          discountValue: c.discountValue,
+                          minimumOrderValue: c.minimumOrderValue,
+                          maximumDiscount: c.maximumDiscount,
+                          usageLimit: c.usageLimit
+                        });
+                        setEditingCouponId(c.id);
+                        setCouponModalOpen(true);
+                      }}
+                      className="p-2 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-xl transition-all"
+                      title="Edit Coupon"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCoupon(c.id)}
+                      className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                      title="Remove Coupon"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -578,8 +619,12 @@ export const AdminOffers = () => {
           <div className="bg-white rounded-[2.25rem] p-7 sm:p-8 max-w-md w-full space-y-5 shadow-2xl border border-slate-100">
             <div className="flex justify-between items-start">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-brandOrange-500">New Promo Code</span>
-                <h3 className="font-heading font-black text-navy-950 text-lg">Create Coupon Voucher</h3>
+                <span className="text-[10px] font-black uppercase tracking-wider text-brandOrange-500">
+                  {editingCouponId ? 'Edit Promo Code' : 'New Promo Code'}
+                </span>
+                <h3 className="font-heading font-black text-navy-950 text-lg">
+                  {editingCouponId ? 'Edit Coupon Voucher' : 'Create Coupon Voucher'}
+                </h3>
               </div>
               <button 
                 onClick={() => setCouponModalOpen(false)}
@@ -657,7 +702,18 @@ export const AdminOffers = () => {
               <div className="flex gap-3 pt-3">
                 <button
                   type="button"
-                  onClick={() => setCouponModalOpen(false)}
+                  onClick={() => {
+                    setCouponModalOpen(false);
+                    setEditingCouponId(null);
+                    setNewCoupon({
+                      code: '',
+                      discountType: 'Percentage',
+                      discountValue: 10,
+                      minimumOrderValue: 499,
+                      maximumDiscount: 200,
+                      usageLimit: 100
+                    });
+                  }}
                   className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all"
                 >
                   Cancel
@@ -666,7 +722,7 @@ export const AdminOffers = () => {
                   type="submit"
                   className="flex-1 py-3 bg-gradient-to-r from-brandOrange-500 via-orange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-black rounded-xl shadow-lg shadow-brandOrange-500/25 transition-all"
                 >
-                  Create Voucher
+                  {editingCouponId ? 'Update Voucher' : 'Create Voucher'}
                 </button>
               </div>
             </form>
