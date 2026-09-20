@@ -19,6 +19,15 @@ import { SectionHeader } from '../components/common/SectionHeader';
 import { ScrollReveal } from '../components/common/ScrollReveal';
 
 export const Offers = () => {
+  // Load timer settings from admin
+  const [timerSettings, setTimerSettings] = useState({
+    enabled: false,
+    days: 3,
+    hours: 14,
+    minutes: 25,
+    seconds: 45
+  });
+
   const [timeLeft, setTimeLeft] = useState({
     days: '03',
     hours: '14',
@@ -31,10 +40,11 @@ export const Offers = () => {
   const [adminCoupons, setAdminCoupons] = useState([]);
 
   useEffect(() => {
-    // Load admin offers and coupons
+    // Load admin offers, coupons AND timer settings
     try {
       const rawOffers = localStorage.getItem('admin_offers_store');
       const rawCoupons = localStorage.getItem('admin_coupons_store');
+      const rawTimer = localStorage.getItem('admin_offer_timer_settings');
       
       if (rawOffers) {
         const offers = JSON.parse(rawOffers);
@@ -45,8 +55,22 @@ export const Offers = () => {
         const coupons = JSON.parse(rawCoupons);
         setAdminCoupons(Array.isArray(coupons) ? coupons : []);
       }
+
+      if (rawTimer) {
+        const timer = JSON.parse(rawTimer);
+        setTimerSettings(timer);
+        // Set initial timer display from admin settings
+        if (timer.enabled) {
+          setTimeLeft({
+            days: String(timer.days).padStart(2, '0'),
+            hours: String(timer.hours).padStart(2, '0'),
+            minutes: String(timer.minutes).padStart(2, '0'),
+            seconds: String(timer.seconds).padStart(2, '0')
+          });
+        }
+      }
     } catch (e) {
-      console.warn('Could not load admin offers:', e);
+      console.warn('Could not load admin data:', e);
     }
   }, []);
 
@@ -119,8 +143,8 @@ export const Offers = () => {
         </div>
       </section>
 
-      {/* 2. Limited Time Offers Countdown Timer Box - Only show if offers exist */}
-      {hasOffers && (
+      {/* 2. Limited Time Offers Countdown Timer Box - Only show if admin enabled AND offers exist */}
+      {hasOffers && timerSettings.enabled && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] p-6 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
           
