@@ -57,6 +57,12 @@ export const AdminNotifications = () => {
     const list = [];
     const dismissedIds = getDismissedIds();
 
+    // Mark notifications page as visited
+    localStorage.setItem('admin_notifications_last_visit', Date.now().toString());
+    
+    // Dispatch custom event to update topbar count
+    window.dispatchEvent(new Event('notifications_visited'));
+
     // 1. Orders
     try {
       const rawOrders = localStorage.getItem('admin_orders_store');

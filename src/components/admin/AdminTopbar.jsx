@@ -39,10 +39,14 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
         const pendingApts = apts.filter(a => a.status === 'Pending').length;
         const pendingEnqs = enqs.filter(e => e.status === 'New').length;
 
+        // Check if user has visited notifications page recently
+        const lastVisitTime = localStorage.getItem('admin_notifications_last_visit');
+        const isRecentlyVisited = lastVisitTime && (Date.now() - parseInt(lastVisitTime)) < 30000; // 30 seconds
+
         setPendingCounts({
-          orders: pendingOrders,
-          appointments: pendingApts,
-          enquiries: pendingEnqs
+          orders: isRecentlyVisited ? 0 : pendingOrders,
+          appointments: isRecentlyVisited ? 0 : pendingApts,
+          enquiries: isRecentlyVisited ? 0 : pendingEnqs
         });
       } catch {
         setPendingCounts({ orders: 1, appointments: 2, enquiries: 1 });
@@ -51,9 +55,11 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
 
     updateCounts();
     window.addEventListener('storage', updateCounts);
+    window.addEventListener('notifications_visited', updateCounts); // Custom event
     const interval = setInterval(updateCounts, 8000);
     return () => {
       window.removeEventListener('storage', updateCounts);
+      window.removeEventListener('notifications_visited', updateCounts);
       clearInterval(interval);
     };
   }, []);
