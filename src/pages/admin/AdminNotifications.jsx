@@ -19,6 +19,7 @@ export const AdminNotifications = () => {
   const { showToast } = useToast();
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState('All');
+  const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
 
   // Get dismissed notifications from localStorage
   const getDismissedIds = () => {
@@ -188,10 +189,20 @@ export const AdminNotifications = () => {
   };
 
   const handleClearAll = () => {
+    // Show confirmation modal
+    setShowClearConfirmModal(true);
+  };
+
+  const confirmClearAll = () => {
     // Save all current notification IDs as dismissed
     notifications.forEach(n => saveDismissedId(n.id));
     setNotifications([]);
-    showToast('All notifications cleared', 'info');
+    setShowClearConfirmModal(false);
+    showToast('All notifications cleared', 'success');
+  };
+
+  const cancelClearAll = () => {
+    setShowClearConfirmModal(false);
   };
 
   const getTypeIcon = (type) => {
@@ -218,6 +229,49 @@ export const AdminNotifications = () => {
   return (
     <div className="space-y-6 pb-12 font-serif">
       
+      {/* Clear Confirmation Modal */}
+      {showClearConfirmModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-8 space-y-5 animate-in zoom-in-95 duration-200">
+            
+            {/* Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mx-auto shadow-lg shadow-orange-500/25">
+              <AlertTriangle className="w-8 h-8 text-white stroke-[2.5]" />
+            </div>
+
+            {/* Title */}
+            <div className="text-center space-y-2">
+              <h3 className="text-xl font-black text-slate-900 font-heading">
+                Clear All Notifications?
+              </h3>
+              <p className="text-sm text-slate-600 font-sans leading-relaxed">
+                நீங்க எல்லா notifications-யும் clear பண்ண போறீங்க. இது permanent action - மறுபடி வராது!
+              </p>
+              <p className="text-xs text-amber-600 font-bold bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 inline-block">
+                ⚠️ This action cannot be undone
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                onClick={cancelClearAll}
+                className="flex-1 px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-all border border-slate-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmClearAll}
+                className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-black text-sm shadow-lg shadow-rose-500/25 transition-all"
+              >
+                Yes, Clear All
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* 1. Hero Header Banner */}
       <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
