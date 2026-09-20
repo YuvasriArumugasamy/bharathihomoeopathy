@@ -227,54 +227,76 @@ export const Offers = () => {
                   <div className="absolute -top-3 -right-3 w-16 h-16 rounded-full bg-gradient-to-br from-brandOrange-500 to-amber-500 text-white flex items-center justify-center text-center shadow-lg">
                     <div>
                       <span className="text-lg font-black block leading-none">
-                        {coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}
+                        {coupon.discountType === 'Percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}
                       </span>
                       <span className="text-[8px] font-bold uppercase">OFF</span>
                     </div>
                   </div>
 
-                  {/* Coupon Code */}
+                  {/* Coupon Code - Large and Clear */}
                   <div className="mb-4">
-                    <div className="inline-block px-4 py-2 bg-gradient-to-r from-slate-100 to-slate-50 border-2 border-dashed border-slate-300 rounded-lg">
-                      <span className="text-xl font-black text-slate-900 font-mono tracking-wider">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                      Coupon Code
+                    </span>
+                    <div className="inline-block px-4 py-2.5 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-dashed border-brandOrange-400 rounded-xl">
+                      <span className="text-2xl font-black text-brandOrange-600 font-mono tracking-widest">
                         {coupon.code}
                       </span>
                     </div>
                   </div>
 
-                  {/* Description */}
-                  <p className="text-sm text-slate-600 font-semibold mb-3">
-                    {coupon.description || 'Special discount offer'}
-                  </p>
+                  {/* Offer Description - Clear and Bold */}
+                  <div className="mb-4 p-3 bg-gradient-to-br from-slate-50 to-amber-50/30 rounded-xl border border-slate-100">
+                    <p className="text-sm text-navy-950 font-bold leading-relaxed">
+                      {coupon.discountType === 'Percentage' 
+                        ? `Get ${coupon.discountValue}% discount on your purchase!` 
+                        : `Get flat ₹${coupon.discountValue} off on your order!`}
+                    </p>
+                  </div>
 
-                  {/* Details */}
-                  <div className="space-y-1.5 mb-4 text-xs text-slate-500">
-                    {coupon.minOrderValue && (
-                      <div className="flex items-center gap-2">
-                        <Tag className="w-3.5 h-3.5 text-brandOrange-500" />
-                        <span>Min Order: ₹{coupon.minOrderValue}</span>
+                  {/* Details - Clear Requirements */}
+                  <div className="space-y-2 mb-4 text-xs">
+                    {coupon.minimumOrderValue > 0 && (
+                      <div className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg">
+                        <div className="w-7 h-7 rounded-lg bg-brandOrange-50 flex items-center justify-center shrink-0">
+                          <Tag className="w-3.5 h-3.5 text-brandOrange-600" />
+                        </div>
+                        <div>
+                          <span className="text-slate-500 font-semibold">Minimum Order:</span>
+                          <span className="text-navy-950 font-black ml-1.5">₹{coupon.minimumOrderValue}</span>
+                        </div>
                       </div>
                     )}
-                    {coupon.maxDiscount && coupon.discountType === 'percentage' && (
-                      <div className="flex items-center gap-2">
-                        <Percent className="w-3.5 h-3.5 text-emerald-500" />
-                        <span>Max Discount: ₹{coupon.maxDiscount}</span>
+                    {coupon.maximumDiscount && coupon.discountType === 'Percentage' && (
+                      <div className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                          <Percent className="w-3.5 h-3.5 text-emerald-600" />
+                        </div>
+                        <div>
+                          <span className="text-slate-500 font-semibold">Max Savings:</span>
+                          <span className="text-navy-950 font-black ml-1.5">₹{coupon.maximumDiscount}</span>
+                        </div>
                       </div>
                     )}
-                    {coupon.validTill && (
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 text-rose-500" />
-                        <span>Valid till: {new Date(coupon.validTill).toLocaleDateString()}</span>
+                    <div className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg">
+                      <div className="w-7 h-7 rounded-lg bg-sky-50 flex items-center justify-center shrink-0">
+                        <ShoppingBag className="w-3.5 h-3.5 text-sky-600" />
                       </div>
-                    )}
+                      <div>
+                        <span className="text-emerald-600 font-black text-xs">
+                          {coupon.usageLimit - (coupon.usedCount || 0)} uses remaining
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
                   {/* CTA Button */}
                   <Link
                     to="/shop"
-                    className="w-full block text-center py-2.5 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-bold text-sm rounded-xl shadow-md transition-all"
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-black text-sm rounded-xl shadow-md hover:shadow-lg transition-all group"
                   >
-                    Shop Now & Apply
+                    <span>Shop Now & Save</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </div>
               </ScrollReveal>
