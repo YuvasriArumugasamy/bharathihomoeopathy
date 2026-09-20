@@ -26,6 +26,30 @@ export const Offers = () => {
     seconds: '45'
   });
 
+  // Load real offers and coupons from admin
+  const [adminOffers, setAdminOffers] = useState([]);
+  const [adminCoupons, setAdminCoupons] = useState([]);
+
+  useEffect(() => {
+    // Load admin offers and coupons
+    try {
+      const rawOffers = localStorage.getItem('admin_offers_store');
+      const rawCoupons = localStorage.getItem('admin_coupons_store');
+      
+      if (rawOffers) {
+        const offers = JSON.parse(rawOffers);
+        setAdminOffers(Array.isArray(offers) ? offers : []);
+      }
+      
+      if (rawCoupons) {
+        const coupons = JSON.parse(rawCoupons);
+        setAdminCoupons(Array.isArray(coupons) ? coupons : []);
+      }
+    } catch (e) {
+      console.warn('Could not load admin offers:', e);
+    }
+  }, []);
+
   useEffect(() => {
     const timer = setInterval(() => {
       const sec = parseInt(timeLeft.seconds, 10);
@@ -37,6 +61,9 @@ export const Offers = () => {
     }, 1000);
     return () => clearInterval(timer);
   }, [timeLeft.seconds]);
+
+  // Show admin offers or fallback message
+  const hasOffers = adminOffers.length > 0 || adminCoupons.length > 0;
 
   const offersByCategory = [
     {
@@ -245,41 +272,68 @@ export const Offers = () => {
       </section>
 
       {/* 3. Offers by Category Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        
-        <SectionHeader title="Offers by Category" />
+      {hasOffers ? (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+          
+          <SectionHeader title="Offers by Category" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {offersByCategory.map((item, idx) => (
-            <ScrollReveal key={idx} direction="up" delay={idx * 60}>
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm flex flex-col justify-between items-center text-center space-y-3 relative group h-full">
-                <span className={`absolute top-2 left-2 ${item.badgeColor} text-white font-extrabold text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded shadow-sm`}>
-                  {item.badge}
-                </span>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {offersByCategory.map((item, idx) => (
+              <ScrollReveal key={idx} direction="up" delay={idx * 60}>
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm flex flex-col justify-between items-center text-center space-y-3 relative group h-full">
+                  <span className={`absolute top-2 left-2 ${item.badgeColor} text-white font-extrabold text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded shadow-sm`}>
+                    {item.badge}
+                  </span>
 
-                <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-50 p-2 mt-4 flex items-center justify-center">
-                  <img src={item.image} alt={item.category} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform" />
+                  <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-50 p-2 mt-4 flex items-center justify-center">
+                    <img src={item.image} alt={item.category} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform" />
+                  </div>
+
+                  <h3 className="font-bold text-xs text-navy-950 leading-tight">
+                    {item.category}
+                  </h3>
+
+                  <Link
+                    to={`/shop?category=${encodeURIComponent(item.category)}`}
+                    className={`w-full py-1.5 px-3 border rounded-lg text-xs font-bold transition-colors ${item.btnBorder}`}
+                  >
+                    Shop Now
+                  </Link>
                 </div>
+              </ScrollReveal>
+            ))}
+          </div>
 
-                <h3 className="font-bold text-xs text-navy-950 leading-tight">
-                  {item.category}
-                </h3>
+        </section>
+      ) : (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl border border-slate-200/90 shadow-sm p-12 text-center space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 text-brandOrange-600 flex items-center justify-center mx-auto">
+              <Tag className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-black text-slate-900">
+              No Active Offers Currently
+            </h3>
+            <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+              Our admin team hasn't created any offers yet. Check back soon for exciting deals on homeopathic medicines!
+            </p>
+            <div className="pt-2">
+              <Link
+                to="/shop"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-orange-500/25 transition-all"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>Browse All Products</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
-                <Link
-                  to={`/shop?category=${encodeURIComponent(item.category)}`}
-                  className={`w-full py-1.5 px-3 border rounded-lg text-xs font-bold transition-colors ${item.btnBorder}`}
-                >
-                  Shop Now
-                </Link>
-              </div>
-            </ScrollReveal>
-          ))}
-        </div>
-
-      </section>
-
-      {/* 4. Exclusive Combo Deals Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      {/* 4. Exclusive Combo Deals Section - Only show if admin has created offers */}
+      {hasOffers && comboDeals.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
         <SectionHeader title="Exclusive Combo Deals" />
 
@@ -316,9 +370,11 @@ export const Offers = () => {
         </div>
 
       </section>
+      )}
 
-      {/* 5. Seasonal Offers Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      {/* 5. Seasonal Offers Section - Only show if admin has created offers */}
+      {hasOffers && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
         <SectionHeader title="Seasonal Offers" />
 
@@ -371,6 +427,7 @@ export const Offers = () => {
 
         </div>
       </section>
+      )}
 
       {/* 6. Five Trust Badges Card Strip at Bottom */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
