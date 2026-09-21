@@ -66,6 +66,14 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
 
   const unreadCount = pendingCounts.orders + pendingCounts.appointments + pendingCounts.enquiries;
 
+  const handleBellClick = () => {
+    const now = Date.now().toString();
+    localStorage.setItem('admin_notifications_last_visit', now);
+    window.dispatchEvent(new Event('notifications_visited'));
+    setNotificationsOpen(!notificationsOpen);
+    setProfileOpen(false);
+  };
+
   return (
     <header 
       style={{ top: 0 }}
@@ -111,10 +119,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
         {/* Notification Bell with Dropdown */}
         <div className="relative">
           <button
-            onClick={() => {
-              setNotificationsOpen(!notificationsOpen);
-              setProfileOpen(false);
-            }}
+            onClick={handleBellClick}
             className="relative w-10 h-10 rounded-2xl bg-white hover:bg-gradient-to-br hover:from-orange-50 hover:to-amber-50/60 text-slate-600 hover:text-brandOrange-600 border border-slate-200/90 hover:border-orange-300 flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06)] hover:shadow-[0_6px_20px_-2px_rgba(249,115,22,0.22)] transition-all duration-300 hover:-translate-y-0.5 active:scale-95 cursor-pointer group"
             aria-label="Notifications"
             title="Notifications"
