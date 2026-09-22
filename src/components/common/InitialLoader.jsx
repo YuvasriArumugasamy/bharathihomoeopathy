@@ -6,17 +6,28 @@ export function InitialLoader() {
   const [imageIndex, setImageIndex] = useState(0);
 
   useEffect(() => {
+    const minimumDisplayTime = 2600;
+    const startedAt = Date.now();
+
     const rotateImages = window.setInterval(() => {
       setImageIndex((current) => (current + 1) % assets.loaders.length);
-    }, 350);
+    }, 600);
 
-    const hideLoader = () => window.setTimeout(() => setVisible(false), 350);
-    const timeout = document.readyState === 'complete' ? hideLoader() : null;
+    let hideTimeout;
+    const hideLoader = () => {
+      const remainingTime = Math.max(0, minimumDisplayTime - (Date.now() - startedAt));
+      hideTimeout = window.setTimeout(() => setVisible(false), remainingTime);
+    };
 
-    window.addEventListener('load', hideLoader, { once: true });
+    if (document.readyState === 'complete') {
+      hideLoader();
+    } else {
+      window.addEventListener('load', hideLoader, { once: true });
+    }
+
     return () => {
       window.clearInterval(rotateImages);
-      if (timeout) window.clearTimeout(timeout);
+      window.clearTimeout(hideTimeout);
       window.removeEventListener('load', hideLoader);
     };
   }, []);
@@ -26,6 +37,7 @@ export function InitialLoader() {
   return (
     <div className="initial-loader" role="status" aria-label="Loading website">
       <img
+        key={imageIndex}
         className="initial-loader__image"
         src={assets.loaders[imageIndex]}
         alt=""
