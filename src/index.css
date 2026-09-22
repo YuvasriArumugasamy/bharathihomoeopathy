@@ -602,3 +602,28 @@ body {
     print-color-adjust: exact !important;
   }
 }
+
+/* Initial page loader */
+.initial-loader {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.initial-loader__image {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  box-shadow: 0 5px 18px rgba(22, 101, 52, 0.24);
+  animation: initial-loader-pulse 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes initial-loader-pulse {
+  from { transform: scale(0.92); opacity: 0.76; }
+  to { transform: scale(1); opacity: 1; }
+}

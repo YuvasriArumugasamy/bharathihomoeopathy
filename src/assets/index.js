@@ -14,6 +14,10 @@ import animoCoverRingMp4 from './animo-cover-ring-vertical-960p.mp4';
 import homeopathyAuthImg from './homeopathy_auth.webp';
 import herbalBgImg from './Screenshot 2026-09-02 100844.webp';
 import paperBgImg from './paper-bg.webp';
+import loader1Img from './loader1.png';
+import loader2Img from './loader2.png';
+import loader3Img from './loader3.png';
+import loader4Img from './loader4.png';
 
 import p1Img from './p1.webp';
 import p2Img from './p2.webp';
@@ -51,6 +55,7 @@ export const assets = {
   offersBg: bg9Img,
   bg9: bg9Img,
   paperBg: paperBgImg,
+  loaders: [loader1Img, loader2Img, loader3Img, loader4Img],
   heroVideo: heroVideoMp4,
   bgVideo1: bgVideo1Mp4,
   animoCoverRing: animoCoverRingMp4,
@@ -69,4 +74,3 @@ export const assets = {
 };
 
 export default assets;
-
