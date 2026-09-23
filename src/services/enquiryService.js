@@ -25,6 +25,10 @@ export const getStoredEnquiries = () => {
 export const saveStoredEnquiries = (enquiries) => {
   try {
     localStorage.setItem(ENQUIRIES_STORAGE_KEY, JSON.stringify(enquiries));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('enquiries_updated'));
+      window.dispatchEvent(new Event('admin_notifications_updated'));
+    }
   } catch (err) {
     console.warn("Could not save enquiries to storage:", err.message);
   }

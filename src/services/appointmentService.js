@@ -34,6 +34,7 @@ export const saveStoredAppointments = (appointments) => {
     localStorage.setItem(APPOINTMENTS_STORAGE_KEY, JSON.stringify(appointments));
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('appointments_updated'));
+      window.dispatchEvent(new Event('admin_notifications_updated'));
     }
   } catch (err) {
     console.warn("Could not save appointments to storage:", err.message);

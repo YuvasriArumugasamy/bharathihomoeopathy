@@ -14,6 +14,12 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import { 
+  getAdminNotifications, 
+  markAllNotificationsAsSeen, 
+  dismissNotification, 
+  clearAllNotifications 
+} from '../../services/adminNotificationService';
 
 export const AdminNotifications = () => {
   const { showToast } = useToast();
@@ -21,156 +27,9 @@ export const AdminNotifications = () => {
   const [filter, setFilter] = useState('All');
   const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
 
-  // Get dismissed notifications from localStorage
-  const getDismissedIds = () => {
-    try {
-      const dismissed = localStorage.getItem('admin_dismissed_notifications');
-      return dismissed ? JSON.parse(dismissed) : [];
-    } catch (e) {
-      return [];
-    }
-  };
-
-  // Save dismissed notification IDs to localStorage
-  const saveDismissedId = (id) => {
-    try {
-      const dismissed = getDismissedIds();
-      if (!dismissed.includes(id)) {
-        dismissed.push(id);
-        localStorage.setItem('admin_dismissed_notifications', JSON.stringify(dismissed));
-      }
-    } catch (e) {
-      console.warn('Could not save dismissed notification', e);
-    }
-  };
-
-  // Clear all dismissed notifications from localStorage
-  const clearAllDismissed = () => {
-    try {
-      localStorage.removeItem('admin_dismissed_notifications');
-    } catch (e) {
-      console.warn('Could not clear dismissed notifications', e);
-    }
-  };
-
-  useEffect(() => {
-    const list = [];
-    const dismissedIds = getDismissedIds();
-
-    // Mark notifications page as visited
-    localStorage.setItem('admin_notifications_last_visit', Date.now().toString());
-    
-    // Dispatch custom event to update topbar count
-    window.dispatchEvent(new Event('notifications_visited'));
-
-    // 1. Orders
-    try {
-      const rawOrders = localStorage.getItem('admin_orders_store');
-      if (rawOrders) {
-        const orders = JSON.parse(rawOrders);
-        if (Array.isArray(orders)) {
-          orders.filter(o => o && (o.orderStatus === 'Pending' || o.status === 'Pending')).slice(0, 4).forEach(o => {
-            const notifId = 'notif-ord-' + (o.id || o.orderId || o._id);
-            // Skip if dismissed
-            if (dismissedIds.includes(notifId)) return;
-            
-            list.push({
-              id: notifId,
-              type: 'Order',
-              title: `New Order: ${o.orderId || o.orderNumber || 'Pending'}`,
-              description: `Patient ${o.customer?.name || o.shippingAddress?.fullName || 'Customer'} placed order of ₹${Number(o.total || 0).toLocaleString('en-IN')}`,
-              link: '/admin/orders',
-              time: 'Needs Packing / Dispatch',
-              priority: 'High'
-            });
-          });
-        }
-      }
-    } catch (e) {
-      console.warn("Could not read orders for notifications", e);
-    }
-
-    // 2. Appointments
-    try {
-      const rawApts = localStorage.getItem('admin_appointments_store');
-      if (rawApts) {
-        const apts = JSON.parse(rawApts);
-        if (Array.isArray(apts)) {
-          apts.filter(a => a && a.status === 'Pending').slice(0, 4).forEach(a => {
-            const notifId = 'notif-apt-' + (a.id || a.appointmentId || a._id);
-            // Skip if dismissed
-            if (dismissedIds.includes(notifId)) return;
-            
-            list.push({
-              id: notifId,
-              type: 'Appointment',
-              title: `Consultation Request: ${a.patient?.name || 'Patient'}`,
-              description: `${a.concern || 'Consultation'} on ${a.date || 'Soon'} at ${a.time || 'Scheduled'} (${a.consultationMode || 'In-Clinic'})`,
-              link: '/admin/appointments',
-              time: 'Awaiting Doctor Confirmation',
-              priority: 'High'
-            });
-          });
-        }
-      }
-    } catch (e) {
-      console.warn("Could not read appointments for notifications", e);
-    }
-
-    // 3. Enquiries
-    try {
-      const rawEnqs = localStorage.getItem('admin_enquiries_store');
-      if (rawEnqs) {
-        const enqs = JSON.parse(rawEnqs);
-        if (Array.isArray(enqs)) {
-          enqs.filter(e => e && e.status === 'New').slice(0, 3).forEach(e => {
-            const notifId = 'notif-enq-' + (e.id || e.enquiryId || e._id);
-            // Skip if dismissed
-            if (dismissedIds.includes(notifId)) return;
-            
-            list.push({
-              id: notifId,
-              type: 'Enquiry',
-              title: `New Patient Inquiry: ${e.customer?.name || 'Patient'}`,
-              description: e.subject || 'Patient submitted a consultation question via website.',
-              link: '/admin/enquiries',
-              time: 'Pending Reply',
-              priority: 'Medium'
-            });
-          });
-        }
-      }
-    } catch (e) {
-      console.warn("Could not read enquiries for notifications", e);
-    }
-
-    // 4. Low stock products
-    try {
-      const rawProds = localStorage.getItem('admin_products_store');
-      if (rawProds) {
-        const prods = JSON.parse(rawProds);
-        if (Array.isArray(prods)) {
-          prods.filter(p => p && (Number(p.stock) || 0) <= (Number(p.lowStockThreshold) || 5)).slice(0, 3).forEach(p => {
-            const notifId = 'notif-stock-' + (p.id || p._id);
-            // Skip if dismissed
-            if (dismissedIds.includes(notifId)) return;
-            
-            list.push({
-              id: notifId,
-              type: 'Inventory',
-              title: `Low Stock Alert: ${p.name || 'Remedy'}`,
-              description: `Only ${p.stock || 0} units left in dispensary (Threshold: ${p.lowStockThreshold || 5})`,
-              link: '/admin/inventory',
-              time: 'Action Required',
-              priority: 'Warning'
-            });
-          });
-        }
-      }
-    } catch (e) {
-      console.warn("Could not read products for notifications", e);
-    }
-
+  const loadNotifications = () => {
+    markAllNotificationsAsSeen();
+    const list = getAdminNotifications();
     if (list.length === 0) {
       list.push({
         id: 'notif-welcome',
@@ -182,26 +41,60 @@ export const AdminNotifications = () => {
         priority: 'Normal'
       });
     }
-
     setNotifications(list);
+  };
+
+  useEffect(() => {
+    loadNotifications();
+
+    const handleUpdate = () => {
+      const list = getAdminNotifications();
+      if (list.length === 0) {
+        list.push({
+          id: 'notif-welcome',
+          type: 'System',
+          title: 'System Operational & Certified',
+          description: 'Dispensary pipeline, database synchronization, and patient appointment desk are functioning smoothly.',
+          link: '/admin',
+          time: 'All caught up',
+          priority: 'Normal'
+        });
+      }
+      setNotifications(list);
+    };
+
+    window.addEventListener('storage', handleUpdate);
+    window.addEventListener('admin_notifications_updated', handleUpdate);
+    window.addEventListener('orders_updated', handleUpdate);
+    window.addEventListener('appointments_updated', handleUpdate);
+    window.addEventListener('enquiries_updated', handleUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleUpdate);
+      window.removeEventListener('admin_notifications_updated', handleUpdate);
+      window.removeEventListener('orders_updated', handleUpdate);
+      window.removeEventListener('appointments_updated', handleUpdate);
+      window.removeEventListener('enquiries_updated', handleUpdate);
+    };
   }, []);
 
   const filtered = filter === 'All' ? notifications : notifications.filter(n => n.type === filter);
 
   const handleDismiss = (id) => {
-    saveDismissedId(id); // Save to localStorage
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    if (id === 'notif-welcome') {
+      setNotifications([]);
+      return;
+    }
+    dismissNotification(id);
     showToast('Notification dismissed', 'info');
   };
 
   const handleClearAll = () => {
-    // Show confirmation modal
     setShowClearConfirmModal(true);
   };
 
   const confirmClearAll = () => {
-    // Save all current notification IDs as dismissed
-    notifications.forEach(n => saveDismissedId(n.id));
+    clearAllNotifications();
     setNotifications([]);
     setShowClearConfirmModal(false);
     showToast('All notifications cleared', 'success');

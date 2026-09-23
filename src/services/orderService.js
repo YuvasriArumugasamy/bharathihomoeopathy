@@ -79,6 +79,7 @@ export const saveStoredOrders = (orders) => {
     localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('orders_updated'));
+      window.dispatchEvent(new Event('admin_notifications_updated'));
     }
   } catch (err) {
     console.warn("Could not save orders to storage:", err.message);

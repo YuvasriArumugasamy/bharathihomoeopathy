@@ -14,7 +14,11 @@ import {
   Search
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { adminDashboardData } from '../../data/adminDashboardData';
+import { 
+  getCategoryCounts, 
+  getUnreadNotificationCount, 
+  markAllNotificationsAsSeen 
+} from '../../services/adminNotificationService';
 import { AdminSpotlightSearchModal } from './AdminSpotlightSearchModal';
 
 export const AdminTopbar = ({ onToggleSidebar }) => {
@@ -22,56 +26,57 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [spotlightOpen, setSpotlightOpen] = useState(false);
-  const [pendingCounts, setPendingCounts] = useState({ orders: 0, appointments: 0, enquiries: 0 });
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [categoryCounts, setCategoryCounts] = useState({
+    orders: 0,
+    appointments: 0,
+    enquiries: 0,
+    inventory: 0,
+    totalPending: 0
+  });
 
   useEffect(() => {
-    const updateCounts = () => {
+    const updateStats = () => {
       try {
-        const rawOrders = localStorage.getItem('admin_orders_store');
-        const rawApts = localStorage.getItem('admin_appointments_store');
-        const rawEnqs = localStorage.getItem('admin_enquiries_store');
-        
-        const orders = rawOrders ? JSON.parse(rawOrders) : [];
-        const apts = rawApts ? JSON.parse(rawApts) : [];
-        const enqs = rawEnqs ? JSON.parse(rawEnqs) : [];
-
-        const pendingOrders = orders.filter(o => (o.orderStatus || o.status) === 'Pending').length;
-        const pendingApts = apts.filter(a => a.status === 'Pending').length;
-        const pendingEnqs = enqs.filter(e => e.status === 'New').length;
-
-        // Check if user has visited notifications page recently
-        const lastVisitTime = localStorage.getItem('admin_notifications_last_visit');
-        const isRecentlyVisited = lastVisitTime && (Date.now() - parseInt(lastVisitTime)) < 30000; // 30 seconds
-
-        setPendingCounts({
-          orders: isRecentlyVisited ? 0 : pendingOrders,
-          appointments: isRecentlyVisited ? 0 : pendingApts,
-          enquiries: isRecentlyVisited ? 0 : pendingEnqs
-        });
-      } catch {
-        setPendingCounts({ orders: 1, appointments: 2, enquiries: 1 });
+        const counts = getCategoryCounts();
+        const unread = getUnreadNotificationCount();
+        setCategoryCounts(counts);
+        setUnreadCount(unread);
+      } catch (e) {
+        console.warn('Error updating notifications in topbar:', e);
       }
     };
 
-    updateCounts();
-    window.addEventListener('storage', updateCounts);
-    window.addEventListener('notifications_visited', updateCounts); // Custom event
-    const interval = setInterval(updateCounts, 8000);
+    updateStats();
+    window.addEventListener('storage', updateStats);
+    window.addEventListener('orders_updated', updateStats);
+    window.addEventListener('appointments_updated', updateStats);
+    window.addEventListener('enquiries_updated', updateStats);
+    window.addEventListener('admin_notifications_updated', updateStats);
+    window.addEventListener('notifications_visited', updateStats);
+
+    const interval = setInterval(updateStats, 5000);
     return () => {
-      window.removeEventListener('storage', updateCounts);
-      window.removeEventListener('notifications_visited', updateCounts);
+      window.removeEventListener('storage', updateStats);
+      window.removeEventListener('orders_updated', updateStats);
+      window.removeEventListener('appointments_updated', updateStats);
+      window.removeEventListener('enquiries_updated', updateStats);
+      window.removeEventListener('admin_notifications_updated', updateStats);
+      window.removeEventListener('notifications_visited', updateStats);
       clearInterval(interval);
     };
   }, []);
 
-  const unreadCount = pendingCounts.orders + pendingCounts.appointments + pendingCounts.enquiries;
-
   const handleBellClick = () => {
-    const now = Date.now().toString();
-    localStorage.setItem('admin_notifications_last_visit', now);
-    window.dispatchEvent(new Event('notifications_visited'));
-    setNotificationsOpen(!notificationsOpen);
+    const nextState = !notificationsOpen;
+    setNotificationsOpen(nextState);
     setProfileOpen(false);
+
+    // Once viewed, clear badge permanently until a new real action arrives
+    if (nextState) {
+      markAllNotificationsAsSeen();
+      setUnreadCount(0);
+    }
   };
 
   return (
@@ -135,57 +140,93 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
 
           {/* Interactive Notifications Popup Dropdown */}
           {notificationsOpen && (
-            <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-3 font-serif">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <div className="absolute right-0 mt-2 w-72 sm:w-84 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-3 font-serif">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <span className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Live Alerts & Pending</span>
-                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-orange-100 text-brandOrange-700">
-                  {unreadCount} Actions
+                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
+                  categoryCounts.totalPending > 0 ? 'bg-orange-100 text-brandOrange-700' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                }`}>
+                  {categoryCounts.totalPending} {categoryCounts.totalPending === 1 ? 'Action' : 'Actions'}
                 </span>
               </div>
 
-              <div className="space-y-2">
-                <Link
-                  to="/admin/orders"
-                  onClick={() => setNotificationsOpen(false)}
-                  className="flex items-center justify-between p-2.5 rounded-xl hover:bg-orange-50 border border-slate-100 hover:border-orange-200 transition-colors group"
-                >
-                  <div className="text-left">
-                    <div className="text-xs font-bold text-slate-800 group-hover:text-brandOrange-600">Dispensary Orders</div>
-                    <div className="text-[11px] text-slate-500">Orders waiting for confirmation</div>
+              {categoryCounts.totalPending === 0 ? (
+                <div className="py-6 px-3 text-center space-y-2 bg-slate-50/70 rounded-xl border border-dashed border-slate-200">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-xs">
+                    <CheckCircle2 className="w-5 h-5" />
                   </div>
-                  <span className="text-xs font-black px-2 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200">
-                    {pendingCounts.orders}
-                  </span>
-                </Link>
+                  <div className="text-xs font-black text-slate-800">All Caught Up!</div>
+                  <p className="text-[11px] text-slate-500 max-w-[200px] mx-auto leading-relaxed">
+                    No pending orders, unconfirmed consultations, or patient messages.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Link
+                    to="/admin/orders"
+                    onClick={() => setNotificationsOpen(false)}
+                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-orange-50 border border-slate-100 hover:border-orange-200 transition-colors group"
+                  >
+                    <div className="text-left">
+                      <div className="text-xs font-bold text-slate-800 group-hover:text-brandOrange-600">Dispensary Orders</div>
+                      <div className="text-[11px] text-slate-500">Orders waiting for confirmation</div>
+                    </div>
+                    <span className={`text-xs font-black px-2 py-1 rounded-lg border ${
+                      categoryCounts.orders > 0 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-slate-50 text-slate-500 border-slate-200'
+                    }`}>
+                      {categoryCounts.orders}
+                    </span>
+                  </Link>
 
-                <Link
-                  to="/admin/appointments"
-                  onClick={() => setNotificationsOpen(false)}
-                  className="flex items-center justify-between p-2.5 rounded-xl hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 transition-colors group"
-                >
-                  <div className="text-left">
-                    <div className="text-xs font-bold text-slate-800 group-hover:text-emerald-700">Patient Consultations</div>
-                    <div className="text-[11px] text-slate-500">Unconfirmed appointments</div>
-                  </div>
-                  <span className="text-xs font-black px-2 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    {pendingCounts.appointments}
-                  </span>
-                </Link>
+                  <Link
+                    to="/admin/appointments"
+                    onClick={() => setNotificationsOpen(false)}
+                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 transition-colors group"
+                  >
+                    <div className="text-left">
+                      <div className="text-xs font-bold text-slate-800 group-hover:text-emerald-700">Patient Consultations</div>
+                      <div className="text-[11px] text-slate-500">Unconfirmed appointments</div>
+                    </div>
+                    <span className={`text-xs font-black px-2 py-1 rounded-lg border ${
+                      categoryCounts.appointments > 0 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-50 text-slate-500 border-slate-200'
+                    }`}>
+                      {categoryCounts.appointments}
+                    </span>
+                  </Link>
 
-                <Link
-                  to="/admin/enquiries"
-                  onClick={() => setNotificationsOpen(false)}
-                  className="flex items-center justify-between p-2.5 rounded-xl hover:bg-sky-50 border border-slate-100 hover:border-sky-200 transition-colors group"
-                >
-                  <div className="text-left">
-                    <div className="text-xs font-bold text-slate-800 group-hover:text-sky-700">Patient Enquiries</div>
-                    <div className="text-[11px] text-slate-500">New messages received</div>
-                  </div>
-                  <span className="text-xs font-black px-2 py-1 rounded-lg bg-sky-50 text-sky-800 border border-sky-200">
-                    {pendingCounts.enquiries}
-                  </span>
-                </Link>
-              </div>
+                  <Link
+                    to="/admin/enquiries"
+                    onClick={() => setNotificationsOpen(false)}
+                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-sky-50 border border-slate-100 hover:border-sky-200 transition-colors group"
+                  >
+                    <div className="text-left">
+                      <div className="text-xs font-bold text-slate-800 group-hover:text-sky-700">Patient Enquiries</div>
+                      <div className="text-[11px] text-slate-500">New messages received</div>
+                    </div>
+                    <span className={`text-xs font-black px-2 py-1 rounded-lg border ${
+                      categoryCounts.enquiries > 0 ? 'bg-sky-50 text-sky-800 border-sky-200' : 'bg-slate-50 text-slate-500 border-slate-200'
+                    }`}>
+                      {categoryCounts.enquiries}
+                    </span>
+                  </Link>
+
+                  {categoryCounts.inventory > 0 && (
+                    <Link
+                      to="/admin/inventory"
+                      onClick={() => setNotificationsOpen(false)}
+                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-rose-50 border border-slate-100 hover:border-rose-200 transition-colors group"
+                    >
+                      <div className="text-left">
+                        <div className="text-xs font-bold text-slate-800 group-hover:text-rose-700">Low Stock Remedies</div>
+                        <div className="text-[11px] text-slate-500">Items below dispensary threshold</div>
+                      </div>
+                      <span className="text-xs font-black px-2 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200">
+                        {categoryCounts.inventory}
+                      </span>
+                    </Link>
+                  )}
+                </div>
+              )}
 
               <div className="border-t border-slate-100 pt-2 text-center">
                 <Link
