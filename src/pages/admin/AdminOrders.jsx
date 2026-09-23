@@ -28,6 +28,7 @@ import {
 import { orderService, getStoredOrders } from '../../services/orderService';
 import { cloudSyncService } from '../../services/cloudSyncService';
 import { useToast } from '../../context/ToastContext';
+import { dismissNotification } from '../../services/adminNotificationService';
 import { exportToCsv } from '../../utils/exportUtils';
 import { sendOrderWhatsApp } from '../../utils/whatsappUtils';
 import { OrderInvoiceModal } from '../../components/admin/OrderInvoiceModal';
@@ -148,12 +149,22 @@ export const AdminOrders = () => {
     return true;
   });
 
+  const handleOpenOrderDetails = (ord) => {
+    setSelectedOrderDrawer(ord);
+    if (ord) {
+      const notifId = `notif-ord-${ord.id || ord.orderId || ord.orderNumber}`;
+      dismissNotification(notifId);
+    }
+  };
+
   const handleUpdateStatus = async (orderId, newStatus) => {
     await orderService.updateAdminOrderStatus(orderId, newStatus);
     setOrders(prev => prev.map(o => (o.id === orderId || o.orderId === orderId || o.originalOrderId === orderId || o._id === orderId) ? { ...o, orderStatus: newStatus } : o));
     if (selectedOrderDrawer && (selectedOrderDrawer.id === orderId || selectedOrderDrawer.orderId === orderId || selectedOrderDrawer.originalOrderId === orderId)) {
       setSelectedOrderDrawer(prev => ({ ...prev, orderStatus: newStatus }));
     }
+    const notifId = `notif-ord-${orderId}`;
+    dismissNotification(notifId);
     showToast(`Order status updated to ${newStatus} and saved!`, 'success');
   };
 
@@ -437,7 +448,7 @@ export const AdminOrders = () => {
                         <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
                       </button>
                       <button
-                        onClick={() => setSelectedOrderDrawer(ord)}
+                        onClick={() => handleOpenOrderDetails(ord)}
                         className="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 hover:text-navy-950 font-black rounded-xl transition-all cursor-pointer border border-slate-200/70 text-xs"
                       >
                         <Eye className="w-3.5 h-3.5 text-brandOrange-500" />
@@ -456,7 +467,7 @@ export const AdminOrders = () => {
           {filteredOrders.map((ord) => (
             <div
               key={ord.id + '-card'}
-              onClick={() => setSelectedOrderDrawer(ord)}
+              onClick={() => handleOpenOrderDetails(ord)}
               className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_4px_16px_-2px_rgba(15,36,56,0.06)] p-4 flex flex-col gap-3 cursor-pointer active:scale-[0.98] transition-all hover:shadow-md hover:border-orange-300"
             >
               <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">

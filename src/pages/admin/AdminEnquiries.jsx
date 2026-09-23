@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { enquiryService } from '../../services/enquiryService';
 import { useToast } from '../../context/ToastContext';
+import { dismissNotification } from '../../services/adminNotificationService';
 
 export const AdminEnquiries = () => {
   const { showToast } = useToast();
@@ -299,7 +300,10 @@ export const AdminEnquiries = () => {
                 </div>
 
                 <button
-                  onClick={() => setSelectedEnquiry(enq)}
+                  onClick={() => {
+                    setSelectedEnquiry(enq);
+                    dismissNotification(`notif-enq-${enq.id || enq.enquiryId}`);
+                  }}
                   className="px-4 py-2 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-black rounded-xl text-xs shadow-md shadow-brandOrange-500/20 transition-all flex items-center gap-1.5"
                 >
                   <span>View & Reply</span>

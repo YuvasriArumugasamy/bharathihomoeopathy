@@ -11,6 +11,7 @@ import { useToast } from '../../context/ToastContext';
 import { exportToCsv } from '../../utils/exportUtils';
 import { sendAppointmentWhatsApp } from '../../utils/whatsappUtils';
 import { PrescriptionComposerModal } from '../../components/admin/PrescriptionComposerModal';
+import { dismissNotification } from '../../services/adminNotificationService';
 
 export const AdminAppointments = () => {
   const { showToast } = useToast();
@@ -113,6 +114,7 @@ export const AdminAppointments = () => {
   const handleUpdateStatus = async (id, newStatus) => {
     await appointmentService.updateAppointmentStatus(id, newStatus);
     setAppointments(prev => prev.map(a => (a.id === id || a.appointmentId === id) ? { ...a, status: newStatus } : a));
+    dismissNotification(`notif-apt-${id}`);
     showToast(`Appointment marked as ${newStatus} and saved!`, 'success');
   };
 
