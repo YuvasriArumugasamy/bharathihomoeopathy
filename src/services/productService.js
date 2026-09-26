@@ -209,7 +209,7 @@ export const productService = {
       return getStoredProducts();
     }
     try {
-      const res = await api.get('/products/admin/all');
+      const res = await api.get('/products/admin/all?limit=1000');
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
         saveStoredProducts(res.data);
         return res.data;

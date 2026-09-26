@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Tag, Plus, Edit, Trash2, Sparkles, Copy, X, Percent, 
   IndianRupee, Calendar, Check, Gift, Ticket, Flame, ArrowRight
 } from 'lucide-react';
 import { initialAdminOffers, initialAdminCoupons } from '../../data/adminOffersData';
 import { useToast } from '../../context/ToastContext';
+import { productService } from '../../services/productService';
 
 export const AdminOffers = () => {
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('coupons');
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    productService.getAdminProducts()
+      .then((items) => setProducts(Array.isArray(items) ? items : []))
+      .catch((error) => console.warn('Could not load products for coupons:', error));
+  }, []);
   
   // Timer settings state
   const [timerSettings, setTimerSettings] = useState(() => {
@@ -80,7 +88,26 @@ export const AdminOffers = () => {
     maximumDiscount: 200,
     usageLimit: 100,
     offerTitle: '',
-    productImage: ''
+    productImage: '',
+    productId: '',
+    productSku: ''
+  });
+
+  const handleSelectCouponProduct = (productId) => {
+    const product = products.find((item) => String(item.id || item._id) === productId);
+    setNewCoupon((current) => ({
+      ...current,
+      productId,
+      productSku: product?.sku || '',
+      offerTitle: product?.name || current.offerTitle,
+      productImage: product?.image || product?.images?.[0] || ''
+    }));
+  };
+
+  const resetCouponForm = () => setNewCoupon({
+    code: '', discountType: 'Percentage', discountValue: 10,
+    minimumOrderValue: 499, maximumDiscount: 200, usageLimit: 100,
+    offerTitle: '', productImage: '', productId: '', productSku: ''
   });
 
   // Metrics
@@ -136,16 +163,7 @@ export const AdminOffers = () => {
     }
 
     setCouponModalOpen(false);
-    setNewCoupon({
-      code: '',
-      discountType: 'Percentage',
-      discountValue: 10,
-      minimumOrderValue: 499,
-      maximumDiscount: 200,
-      usageLimit: 100,
-      offerTitle: '',
-      productImage: ''
-    });
+    resetCouponForm();
   };
 
   const handleDeleteCoupon = (id) => {
@@ -193,7 +211,7 @@ export const AdminOffers = () => {
             Offers & Coupons
           </h1>
           <button
-            onClick={() => setCouponModalOpen(true)}
+            onClick={() => { setEditingCouponId(null); resetCouponForm(); setCouponModalOpen(true); }}
             className="w-full sm:w-auto justify-center relative z-10 inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white shrink-0"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
@@ -384,7 +402,9 @@ export const AdminOffers = () => {
                           maximumDiscount: c.maximumDiscount,
                           usageLimit: c.usageLimit,
                           offerTitle: c.offerTitle || '',
-                          productImage: c.productImage || ''
+                          productImage: c.productImage || '',
+                          productId: c.productId || '',
+                          productSku: c.productSku || ''
                         });
                         setEditingCouponId(c.id);
                         setCouponModalOpen(true);
@@ -622,7 +642,7 @@ export const AdminOffers = () => {
       {/* Create Coupon Modal */}
       {couponModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white rounded-[2.25rem] p-7 sm:p-8 max-w-md w-full space-y-5 shadow-2xl border border-slate-100">
+          <div className="bg-white rounded-[2.25rem] p-7 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto space-y-5 shadow-2xl border border-slate-100">
             <div className="flex justify-between items-start">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-brandOrange-500">
@@ -641,6 +661,35 @@ export const AdminOffers = () => {
             </div>
 
             <form onSubmit={handleAddCoupon} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5">Choose Product</label>
+                <select
+                  value={newCoupon.productId}
+                  onChange={(e) => handleSelectCouponProduct(e.target.value)}
+                  className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-brandOrange-500 text-slate-800"
+                >
+                  <option value="">Select from all products ({products.length})</option>
+                  {products.map((product) => (
+                    <option key={product.id || product._id || product.sku} value={String(product.id || product._id)}>
+                      {product.name}{product.sku ? ` · ${product.sku}` : ''}
+                    </option>
+                  ))}
+                </select>
+                {newCoupon.productId && (() => {
+                  const selectedProduct = products.find((item) => String(item.id || item._id) === newCoupon.productId);
+                  const image = selectedProduct?.image || selectedProduct?.images?.[0];
+                  return selectedProduct ? (
+                    <div className="mt-2 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+                      {image ? <img src={image} alt={selectedProduct.name} className="h-12 w-12 rounded-lg object-cover" /> : null}
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-800 truncate">{selectedProduct.name}</p>
+                        <p className="text-[10px] text-slate-500">SKU: {selectedProduct.sku || '—'} · Price: ₹{selectedProduct.offerPrice || selectedProduct.salePrice || selectedProduct.price || selectedProduct.regularPrice || '—'}</p>
+                        <p className="text-[10px] text-slate-500">Category: {typeof selectedProduct.category === 'string' ? selectedProduct.category : selectedProduct.category?.name || '—'}</p>
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
+              </div>
               <div>
                 <label className="block font-bold text-slate-700 mb-1.5">Coupon Code *</label>
                 <input
@@ -735,16 +784,8 @@ export const AdminOffers = () => {
                   onClick={() => {
                     setCouponModalOpen(false);
                     setEditingCouponId(null);
-                    setNewCoupon({
-                      code: '',
-                      discountType: 'Percentage',
-                      discountValue: 10,
-                      minimumOrderValue: 499,
-                      maximumDiscount: 200,
-                      usageLimit: 100,
-                      offerTitle: '',
-                      productImage: ''
-                    });
+                    resetCouponForm();
+                    setEditingCouponId(null);
                   }}
                   className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all"
                 >
