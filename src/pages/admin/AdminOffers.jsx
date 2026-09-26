@@ -6,6 +6,16 @@ import {
 import { initialAdminOffers, initialAdminCoupons } from '../../data/adminOffersData';
 import { useToast } from '../../context/ToastContext';
 import { productService } from '../../services/productService';
+import { demoProducts } from '../../data/products';
+
+const getCouponProductImage = (product) => {
+  const catalogueProduct = demoProducts.find((item) =>
+    (product?.sku && item.sku === product.sku) ||
+    (product?.id && item.id === product.id) ||
+    (product?._id && item._id === product._id)
+  );
+  return catalogueProduct?.image || product?.image || product?.images?.[0] || '';
+};
 
 export const AdminOffers = () => {
   const { showToast } = useToast();
@@ -100,7 +110,7 @@ export const AdminOffers = () => {
       productId,
       productSku: product?.sku || '',
       offerTitle: product?.name || current.offerTitle,
-      productImage: product?.image || product?.images?.[0] || ''
+      productImage: getCouponProductImage(product)
     }));
   };
 
@@ -677,10 +687,16 @@ export const AdminOffers = () => {
                 </select>
                 {newCoupon.productId && (() => {
                   const selectedProduct = products.find((item) => String(item.id || item._id) === newCoupon.productId);
-                  const image = selectedProduct?.image || selectedProduct?.images?.[0];
+                  const image = getCouponProductImage(selectedProduct);
                   return selectedProduct ? (
                     <div className="mt-2 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
-                      {image ? <img src={image} alt={selectedProduct.name} className="h-12 w-12 rounded-lg object-cover" /> : null}
+                      {image ? <img src={image} alt={selectedProduct.name} onError={(event) => {
+                        const fallback = demoProducts[0]?.image;
+                        if (fallback && event.currentTarget.src !== new URL(fallback, window.location.href).href) {
+                          event.currentTarget.onerror = null;
+                          event.currentTarget.src = fallback;
+                        }
+                      }} className="h-12 w-12 rounded-lg object-cover" /> : null}
                       <div className="min-w-0">
                         <p className="font-bold text-slate-800 truncate">{selectedProduct.name}</p>
                         <p className="text-[10px] text-slate-500">SKU: {selectedProduct.sku || '—'} · Price: ₹{selectedProduct.offerPrice || selectedProduct.salePrice || selectedProduct.price || selectedProduct.regularPrice || '—'}</p>
