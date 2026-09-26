@@ -652,7 +652,7 @@ export const AdminOffers = () => {
       {/* Create Coupon Modal */}
       {couponModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white rounded-[2.25rem] p-7 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto space-y-5 shadow-2xl border border-slate-100">
+          <div className="bg-white rounded-[2.25rem] p-7 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden space-y-5 shadow-2xl border border-slate-100">
             <div className="flex justify-between items-start">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-brandOrange-500">
