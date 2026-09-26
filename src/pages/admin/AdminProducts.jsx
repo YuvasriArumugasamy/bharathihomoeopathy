@@ -24,6 +24,24 @@ import {
 import { productService } from '../../services/productService';
 import { useToast } from '../../context/ToastContext';
 import { slugify } from '../../utils/slugify';
+import { demoProducts } from '../../data/products';
+
+const getProductImageFallback = (product) => {
+  const matchingProduct = demoProducts.find((item) =>
+    (product.sku && item.sku === product.sku) ||
+    (product.id && item.id === product.id) ||
+    (product._id && item._id === product._id)
+  );
+  return matchingProduct?.image || demoProducts[0]?.image || '';
+};
+
+const handleProductImageError = (event, product) => {
+  const fallback = getProductImageFallback(product);
+  if (fallback && event.currentTarget.src !== new URL(fallback, window.location.href).href) {
+    event.currentTarget.onerror = null;
+    event.currentTarget.src = fallback;
+  }
+};
 
 export const AdminProducts = () => {
   const { showToast } = useToast();
@@ -315,8 +333,9 @@ export const AdminProducts = () => {
                   <td className="py-3.5 px-5">
                     <div className="flex items-center gap-3.5">
                       <img 
-                        src={prod.image} 
+                        src={prod.image || getProductImageFallback(prod)}
                         alt={prod.name} 
+                        onError={(event) => handleProductImageError(event, prod)}
                         className="w-12 h-12 rounded-2xl object-cover bg-slate-100 border border-slate-200/80 shrink-0 shadow-xs group-hover:scale-105 transition-transform" 
                       />
                       <div>
@@ -430,8 +449,9 @@ export const AdminProducts = () => {
               className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 flex items-start gap-3 cursor-pointer active:scale-[0.98] transition-all hover:shadow-md hover:border-orange-200"
             >
               <img
-                src={prod.image}
+                src={prod.image || getProductImageFallback(prod)}
                 alt={prod.name}
+                onError={(event) => handleProductImageError(event, prod)}
                 className="w-16 h-16 rounded-xl object-cover bg-slate-100 border border-slate-200/80 shrink-0 shadow-xs"
               />
               <div className="flex-1 min-w-0">
