@@ -24,7 +24,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <ToastProvider>
             <CartProvider>
             <WishlistProvider>
-              <InitialLoader />
+              {!window.location.pathname.startsWith('/admin') && <InitialLoader />}
               <App />
               </WishlistProvider>
             </CartProvider>
