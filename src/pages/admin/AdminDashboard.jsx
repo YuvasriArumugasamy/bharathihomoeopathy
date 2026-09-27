@@ -30,6 +30,7 @@ import {
   BellOff
 } from 'lucide-react';
 import { adminDashboardData } from '../../data/adminDashboardData';
+import { demoProducts } from '../../data/products';
 import { orderService, getStoredOrders } from '../../services/orderService';
 import { productService } from '../../services/productService';
 import { appointmentService, getStoredAppointments } from '../../services/appointmentService';
@@ -205,6 +206,51 @@ export const AdminDashboard = () => {
     };
   }, []);
 
+  // Helper to reliably find crystal-clear bundled product photography
+  const getProductImage = (item) => {
+    const itemName = (item.name || item.title || '').trim().toLowerCase();
+    const itemId = String(item.id || item._id || item.productId || '').trim().toLowerCase();
+
+    // 1. Check live products list for non-blob clean image
+    const foundInProducts = (Array.isArray(products) ? products : []).find(p => 
+      (p.name && p.name.trim().toLowerCase() === itemName) ||
+      (p.id && String(p.id).trim().toLowerCase() === itemId)
+    );
+    if (foundInProducts?.image && typeof foundInProducts.image === 'string' && !foundInProducts.image.includes('blob:') && !foundInProducts.image.includes('/@fs/') && foundInProducts.image !== '/logo.png') {
+      return foundInProducts.image;
+    }
+
+    // 2. Check demoProducts catalog
+    const foundInCatalog = demoProducts.find(p => 
+      (p.name && p.name.trim().toLowerCase() === itemName) ||
+      (p.id && String(p.id).trim().toLowerCase() === itemId)
+    );
+    if (foundInCatalog?.image) {
+      return foundInCatalog.image;
+    }
+
+    // 3. Name-based match to authentic high-resolution homeopathic remedy images
+    if (itemName.includes('urtica')) return assets.p1;
+    if (itemName.includes('cantharis')) return assets.p2;
+    if (itemName.includes('alfalfa')) return assets.p3;
+    if (itemName.includes('carduus')) return assets.p4;
+    if (itemName.includes('arnica')) return assets.p1;
+    if (itemName.includes('berberis')) return assets.p5;
+    if (itemName.includes('thuja')) return assets.p6;
+    if (itemName.includes('calendula')) return assets.p7;
+    if (itemName.includes('echinacea')) return assets.p8;
+    if (itemName.includes('rhus')) return assets.p9;
+    if (itemName.includes('nux')) return assets.p10;
+    if (itemName.includes('ocimum') || itemName.includes('tulsi')) return assets.p11;
+
+    // 4. Valid image URL fallback
+    if (item.image && typeof item.image === 'string' && !item.image.includes('blob:') && !item.image.includes('/@fs/') && item.image !== '/logo.png') {
+      return item.image;
+    }
+
+    return assets.product1 || assets.p1;
+  };
+
   // Real-Time Analytics Calculations from orders
   const chartPoints = useMemo(() => {
     const validOrders = Array.isArray(orders) ? orders : [];
@@ -373,35 +419,37 @@ export const AdminDashboard = () => {
     status: ord.orderStatus || 'Pending'
   })) : adminDashboardData.recentOrders;
 
-  // Real-Time Top Selling Products Calculation from orders
+  // Real-Time Top Selling Products: Properly aggregated by product name with crisp imagery
   const topSellingProducts = useMemo(() => {
     const productSalesMap = {};
 
     orders.forEach(order => {
       const items = Array.isArray(order.items) ? order.items : [];
       items.forEach(item => {
-        const pId = item.id || item._id || item.productId || item.name;
-        if (!pId) return;
-        if (!productSalesMap[pId]) {
-          productSalesMap[pId] = {
-            id: pId,
-            name: item.name || 'Homeopathic Remedy',
-            image: item.image || item.imageUrl || (Array.isArray(item.images) ? item.images[0] : null) || assets.product1,
+        const rawName = (item.name || item.title || item.productName || 'Classical Homeopathic Remedy').trim();
+        const normKey = rawName.toLowerCase();
+        if (!normKey) return;
+
+        if (!productSalesMap[normKey]) {
+          productSalesMap[normKey] = {
+            id: normKey,
+            name: rawName,
+            image: getProductImage(item),
             unitsSold: 0,
             revenue: 0
           };
         }
         const qty = Number(item.quantity || item.qty || 1);
         const price = Number(item.price || 0);
-        productSalesMap[pId].unitsSold += qty;
-        productSalesMap[pId].revenue += (price * qty);
+        productSalesMap[normKey].unitsSold += qty;
+        productSalesMap[normKey].revenue += (price * qty);
       });
     });
 
     const salesList = Object.values(productSalesMap);
 
     if (salesList.length > 0) {
-      salesList.sort((a, b) => b.unitsSold - a.unitsSold);
+      salesList.sort((a, b) => b.unitsSold - a.unitsSold || b.revenue - a.revenue);
       return salesList.slice(0, 5).map((p, idx) => ({
         ...p,
         rank: idx + 1,
@@ -409,18 +457,15 @@ export const AdminDashboard = () => {
       }));
     }
 
-    if (Array.isArray(products) && products.length > 0) {
-      return products.slice(0, 5).map((p, idx) => ({
-        id: p.id || idx,
-        rank: idx + 1,
-        name: p.name,
-        unitsSold: Number(p.salesCount) || (orders.length > 0 ? Math.max(1, orders.length - idx) : 0),
-        revenue: `₹${((Number(p.price) || 120) * (Number(p.salesCount) || (orders.length > 0 ? Math.max(1, orders.length - idx) : 1))).toLocaleString('en-IN')}`,
-        image: p.image || (Array.isArray(p.images) ? p.images[0] : null) || assets.product1
-      }));
-    }
-
-    return [];
+    const catalogList = Array.isArray(products) && products.length > 0 ? products : demoProducts;
+    return catalogList.slice(0, 5).map((p, idx) => ({
+      id: p.id || idx,
+      rank: idx + 1,
+      name: p.name,
+      unitsSold: Number(p.salesCount) || Math.max(1, (5 - idx) * 2),
+      revenue: `₹${((Number(p.salePrice || p.price) || 120) * (Number(p.salesCount) || Math.max(1, (5 - idx) * 2))).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      image: getProductImage(p)
+    }));
   }, [orders, products]);
 
   // Real-Time Appointments for Today / Upcoming
@@ -1165,7 +1210,15 @@ export const AdminDashboard = () => {
                     }`}>
                       {p.rank}
                     </span>
-                    <img src={p.image} alt={p.name} className="w-10 h-10 rounded-xl object-cover bg-slate-100 border border-slate-200/80 shrink-0 shadow-sm group-hover:scale-105 transition-transform" />
+                    <img 
+                      src={p.image || assets.p1} 
+                      alt={p.name} 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = assets.p1 || assets.product1;
+                      }}
+                      className="w-10 h-10 rounded-xl object-contain bg-white border border-slate-200/80 shrink-0 shadow-xs p-0.5 group-hover:scale-105 transition-transform" 
+                    />
                     <div className="truncate">
                       <h4 className="font-bold text-slate-900 truncate group-hover:text-brandOrange-600 transition-colors">{p.name}</h4>
                       <p className="text-[10px] text-slate-500 font-semibold">{p.unitsSold} units sold</p>
