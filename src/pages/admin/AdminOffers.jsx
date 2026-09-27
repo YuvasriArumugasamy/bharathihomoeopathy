@@ -460,41 +460,41 @@ export const AdminOffers = () => {
       </div>
 
       {/* Tabs Switcher */}
-      <div className="flex items-center gap-2 border-b border-slate-200/80 pb-3">
+      <div className="grid grid-cols-3 sm:flex sm:items-center gap-1.5 sm:gap-2 border-b border-slate-200/80 pb-3">
         <button
           onClick={() => setActiveTab('coupons')}
-          className={`px-5 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 ${
+          className={`px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black transition-all flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap ${
             activeTab === 'coupons'
               ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-md'
               : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80'
           }`}
         >
-          <Ticket className={`w-4 h-4 ${activeTab === 'coupons' ? 'text-white' : 'text-brandOrange-400'}`} />
-          <span>Coupon Vouchers ({coupons.length})</span>
+          <Ticket className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${activeTab === 'coupons' ? 'text-white' : 'text-brandOrange-400'}`} />
+          <span><span className="sm:hidden">Coupons ({coupons.length})</span><span className="hidden sm:inline">Coupon Vouchers ({coupons.length})</span></span>
         </button>
 
         <button
           onClick={() => setActiveTab('offers')}
-          className={`px-5 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 ${
+          className={`px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black transition-all flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap ${
             activeTab === 'offers'
               ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-md'
               : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80'
           }`}
         >
-          <Gift className={`w-4 h-4 ${activeTab === 'offers' ? 'text-white' : 'text-brandOrange-400'}`} />
-          <span>Promotional Campaigns ({offers.length})</span>
+          <Gift className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${activeTab === 'offers' ? 'text-white' : 'text-brandOrange-400'}`} />
+          <span><span className="sm:hidden">Campaigns ({offers.length})</span><span className="hidden sm:inline">Promotional Campaigns ({offers.length})</span></span>
         </button>
 
         <button
           onClick={() => setActiveTab('timer')}
-          className={`px-5 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 ${
+          className={`px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black transition-all flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap ${
             activeTab === 'timer'
               ? 'bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white shadow-md'
               : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80'
           }`}
         >
-          <Flame className={`w-4 h-4 ${activeTab === 'timer' ? 'text-white' : 'text-rose-400'}`} />
-          <span>Timer Settings</span>
+          <Flame className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${activeTab === 'timer' ? 'text-white' : 'text-rose-400'}`} />
+          <span><span className="sm:hidden">Timer</span><span className="hidden sm:inline">Timer Settings</span></span>
         </button>
       </div>
 
@@ -805,7 +805,7 @@ export const AdminOffers = () => {
               </div>
 
               {/* Timer Values Grid */}
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-2">Days</label>
                   <input
@@ -861,7 +861,7 @@ export const AdminOffers = () => {
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
                   Real-Time Live Countdown (Ticking Live):
                 </p>
-                <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center justify-center gap-1.5 sm:gap-3">
                   <div className="bg-[#236888] text-white rounded-xl px-4 py-3 min-w-[70px] border-2 border-white/20">
                     <span className="text-2xl font-black font-mono block leading-tight">{adminClock.days}</span>
                     <span className="text-[10px] font-black uppercase text-amber-300 tracking-wider">Days</span>
