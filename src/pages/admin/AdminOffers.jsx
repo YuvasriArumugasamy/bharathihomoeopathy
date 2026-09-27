@@ -131,15 +131,41 @@ export const AdminOffers = () => {
   });
 
   const handleSelectCouponProduct = (productId) => {
-    const product = products.find((item) => String(item.id || item._id) === productId);
+    if (!productId) {
+      setNewCoupon((current) => ({
+        ...current,
+        productId: '',
+        productSku: '',
+        offerTitle: '',
+        productImage: ''
+      }));
+      return;
+    }
+
+    const product = products.find((item) => String(item.id || item._id) === String(productId) || (item.sku && item.sku === productId));
+    const resolvedImage = getCouponProductImage(product);
+
     setNewCoupon((current) => ({
       ...current,
-      productId,
+      productId: String(product?.id || product?._id || productId),
       productSku: product?.sku || '',
       offerTitle: product?.name || current.offerTitle,
-      productImage: getCouponProductImage(product)
+      productImage: resolvedImage || product?.image || current.productImage || ''
     }));
   };
+
+  // Automatically sync product image into Product Image URL input whenever product is selected
+  useEffect(() => {
+    if (newCoupon.productId && !newCoupon.productImage) {
+      const prod = products.find(p => String(p.id || p._id) === String(newCoupon.productId) || (p.sku && p.sku === newCoupon.productSku));
+      if (prod) {
+        const img = getCouponProductImage(prod);
+        if (img) {
+          setNewCoupon(prev => ({ ...prev, productImage: img }));
+        }
+      }
+    }
+  }, [newCoupon.productId, products]);
 
   const resetCouponForm = () => {
     setNewCoupon({
@@ -443,7 +469,7 @@ export const AdminOffers = () => {
                           maximumDiscount: c.maximumDiscount,
                           usageLimit: c.usageLimit,
                           offerTitle: c.offerTitle || '',
-                          productImage: c.productImage || '',
+                          productImage: c.productImage || (c.productId ? getCouponProductImage(products.find(p => String(p.id || p._id) === String(c.productId) || (c.productSku && p.sku === c.productSku))) : ''),
                           productId: c.productId || '',
                           productSku: c.productSku || ''
                         });
@@ -888,9 +914,9 @@ export const AdminOffers = () => {
               <div>
                 <label className="block font-bold text-slate-700 mb-1.5">Product Image URL</label>
                 <input
-                  type="url"
+                  type="text"
                   placeholder="https://example.com/product-image.jpg"
-                  value={newCoupon.productImage}
+                  value={newCoupon.productImage || ''}
                   onChange={(e) => setNewCoupon({ ...newCoupon, productImage: e.target.value })}
                   className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-brandOrange-500 focus:bg-white text-slate-700 text-xs transition-all"
                 />
