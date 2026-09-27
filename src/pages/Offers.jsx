@@ -175,8 +175,9 @@ export const Offers = () => {
     return () => clearInterval(interval);
   }, [timerSettings.targetEndTime, timerSettings.days, timerSettings.hours, timerSettings.minutes, timerSettings.seconds]);
 
-  // Show admin offers or fallback message
-  const hasOffers = adminOffers.length > 0 || adminCoupons.length > 0;
+  // When timer reaches 0 (00:00:00:00), the flash sale has ended and promotional product cards must NOT show!
+  const isSaleExpired = Boolean(timerSettings?.enabled && timeLeft?.isExpired);
+  const hasOffers = !isSaleExpired && (adminOffers.length > 0 || adminCoupons.length > 0);
 
   return (
     <div className="space-y-12 pb-12 w-full max-w-full overflow-x-hidden">
@@ -447,13 +448,17 @@ export const Offers = () => {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white/95 backdrop-blur-sm rounded-3xl border border-slate-200/90 shadow-sm p-12 text-center space-y-4">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 text-brandOrange-600 flex items-center justify-center mx-auto">
-              <Tag className="w-8 h-8" />
+              {isSaleExpired ? (
+                <Clock className="w-8 h-8 text-rose-500" />
+              ) : (
+                <Tag className="w-8 h-8 text-brandOrange-600" />
+              )}
             </div>
             <h3 className="text-xl font-black text-slate-900">
-              No Active Offers Currently
+              {isSaleExpired ? 'Flash Sale Has Ended' : 'No Active Offers Currently'}
             </h3>
             <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-              Our admin team hasn't created any offers yet. Check back soon for exciting deals on homeopathic medicines!
+              {isSaleExpired ? 'The countdown has reached zero and all promotional vouchers for this flash sale have expired. Check back soon for upcoming clinical offers!' : "Our admin team hasn't created any offers yet. Check back soon for exciting deals on homeopathic medicines!"}
             </p>
             <div className="pt-2">
               <Link
