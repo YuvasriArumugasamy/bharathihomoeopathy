@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { 
   Package, 
   Plus, 
@@ -369,11 +369,11 @@ export const AdminProducts = () => {
                   <td className="py-3.5 px-4">
                     <div className="flex flex-col">
                       <span className="font-black text-slate-900 text-sm font-display">
-                        ₹{prod.offerPrice || prod.regularPrice}
+                        â‚¹{prod.offerPrice || prod.regularPrice}
                       </span>
                       {prod.regularPrice > (prod.offerPrice || prod.regularPrice) && (
                         <span className="text-[10px] text-slate-400 line-through font-semibold">
-                          ₹{prod.regularPrice}
+                          â‚¹{prod.regularPrice}
                         </span>
                       )}
                     </div>
@@ -481,9 +481,9 @@ export const AdminProducts = () => {
                 </div>
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-black text-slate-900 text-sm">₹{prod.offerPrice || prod.regularPrice}</span>
+                    <span className="font-black text-slate-900 text-sm">â‚¹{prod.offerPrice || prod.regularPrice}</span>
                     {prod.regularPrice > (prod.offerPrice || prod.regularPrice) && (
-                      <span className="text-[10px] text-slate-400 line-through font-semibold">₹{prod.regularPrice}</span>
+                      <span className="text-[10px] text-slate-400 line-through font-semibold">â‚¹{prod.regularPrice}</span>
                     )}
                   </div>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${prod.stock <= 5 ? 'text-rose-600 bg-rose-50' : 'text-slate-500 bg-slate-100'}`}>
@@ -553,7 +553,7 @@ export const AdminProducts = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Regular Price (₹)</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">Regular Price (â‚¹)</label>
                   <input
                     type="number"
                     value={formData.regularPrice}
@@ -562,7 +562,7 @@ export const AdminProducts = () => {
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Offer Price (₹)</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">Offer Price (â‚¹)</label>
                   <input
                     type="number"
                     value={formData.offerPrice}
@@ -608,8 +608,9 @@ export const AdminProducts = () => {
                   {formData.image && (
                     <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-brandOrange-300 shadow-md shrink-0 group bg-slate-100">
                       <img
-                        src={formData.image}
+                        src={formData.image || (editingProduct ? getProductImageFallback(editingProduct) : '')}
                         alt="Product preview"
+                        onError={(e) => handleProductImageError(e, editingProduct || formData)}
                         className="w-full h-full object-cover"
                       />
                       <button
@@ -709,3 +710,6 @@ export const AdminProducts = () => {
 };
 
 export default AdminProducts;
+
+
+
