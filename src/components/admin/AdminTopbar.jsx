@@ -102,12 +102,18 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
             <span className="hidden lg:inline-block font-serif font-bold sm:text-base tracking-tight text-slate-900">
               Dr. Bharathi's <span className="text-brandOrange-600 font-black">Homeo Care</span>
             </span>
-            {/* Mobile/Tablet Logo Image */}
-            <img 
-              src={assets.logo} 
-              alt="Dr. Bharathi's Homeo Care" 
-              className="lg:hidden h-[26px] object-contain rounded-sm" 
-            />
+            {/* Mobile/Tablet Stylized Text */}
+            <div className="flex flex-col items-center justify-center leading-none lg:hidden">
+              <div className="font-serif font-black tracking-wide text-[15px]">
+                <span className="text-amber-500 italic">Dr. </span>
+                <span className="text-slate-900">Bharathi's</span>
+              </div>
+              <div className="text-[9px] font-serif tracking-[0.15em] text-amber-600 font-bold flex items-center gap-1 mt-0.5">
+                <span className="w-2 h-[1px] bg-amber-600/50"></span>
+                HOMEO CARE
+                <span className="w-2 h-[1px] bg-amber-600/50"></span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -324,5 +330,6 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
     </header>
   );
 };
+
 
 
