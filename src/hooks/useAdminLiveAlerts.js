@@ -1,7 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { api } from '../utils/api';
+import { authStorage } from '../utils/authStorage';
 import { playNotificationSound } from './useFCM';
 import { useToast } from '../context/ToastContext';
+import { getStoredOrders } from '../services/orderService';
+import { getStoredAppointments } from '../services/appointmentService';
+import { cloudSyncService } from '../services/cloudSyncService';
 
 /**
  * useAdminLiveAlerts
@@ -21,131 +25,159 @@ export function useAdminLiveAlerts() {
   useEffect(() => {
     let isMounted = true;
 
-    const checkLiveUpdates = async () => {
-      try {
-        // 1. Check Orders
-        try {
-          const res = await api.get('/orders?limit=10').catch(() => null);
-          const orders = res?.data?.data || res?.data || [];
-          
-          if (Array.isArray(orders) && orders.length > 0) {
-            if (!initialLoadDoneRef.current) {
-              // Populate initial IDs on startup so we don't alert for existing history
-              orders.forEach(o => {
-                const id = String(o._id || o.id || o.orderNumber);
-                knownOrderIdsRef.current.add(id);
+    // Helper to process incoming orders and alert on new ones
+    const processOrders = (orders) => {
+      if (!Array.isArray(orders) || orders.length === 0) return;
+
+      if (!initialLoadDoneRef.current) {
+        orders.forEach(o => {
+          const id = String(o._id || o.id || o.orderNumber || o.orderId);
+          knownOrderIdsRef.current.add(id);
+        });
+        return;
+      }
+
+      for (const order of orders) {
+        const id = String(order._id || order.id || order.orderNumber || order.orderId);
+        if (!knownOrderIdsRef.current.has(id)) {
+          knownOrderIdsRef.current.add(id);
+
+          const customerName = order.shippingAddress?.fullName || order.guestName || order.customer?.name || 'Patient';
+          const orderNum = order.orderNumber || order.orderId || id.slice(-6);
+          const total = order.totalAmount || order.total || 0;
+
+          // 1. Play sweet bell chime
+          playNotificationSound();
+
+          // 2. Show in-app Toast
+          showToast(`🛍️ New Order Received! #${orderNum} from ${customerName} (₹${total})`, 'success');
+
+          // 3. Fire Desktop OS Native Notification
+          if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+            try {
+              new Notification('🛍️ New Order Received!', {
+                body: `Order #${orderNum} placed by ${customerName} - ₹${total}`,
+                icon: '/logo.png',
+                badge: '/favicon.png',
+                tag: `dhc-order-${id}`
               });
-            } else {
-              // Check for brand new orders
-              for (const order of orders) {
-                const id = String(order._id || order.id || order.orderNumber);
-                if (!knownOrderIdsRef.current.has(id)) {
-                  knownOrderIdsRef.current.add(id);
-
-                  const customerName = order.shippingAddress?.fullName || order.guestName || 'Patient';
-                  const orderNum = order.orderNumber || id.slice(-6);
-                  const total = order.totalAmount || order.total || 0;
-
-                  // 1. Play sweet bell chime
-                  playNotificationSound();
-
-                  // 2. Show in-app Toast
-                  showToast(`🛍️ New Order Received! #${orderNum} from ${customerName} (₹${total})`, 'success');
-
-                  // 3. Fire Desktop OS Native Notification
-                  if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-                    try {
-                      new Notification('🛍️ New Order Received!', {
-                        body: `Order #${orderNum} placed by ${customerName} - ₹${total}`,
-                        icon: '/logo.png',
-                        badge: '/favicon.png',
-                        tag: `dhc-order-${id}`
-                      });
-                    } catch (notifErr) {
-                      console.warn('Native alert error:', notifErr);
-                    }
-                  }
-
-                  // 4. Dispatch events for UI to auto-refresh orders list
-                  window.dispatchEvent(new Event('orders_updated'));
-                  window.dispatchEvent(new Event('admin_notifications_updated'));
-                }
-              }
+            } catch (notifErr) {
+              console.warn('Native alert error:', notifErr);
             }
           }
-        } catch (orderErr) {
-          // Silent fallback
+
+          // 4. Dispatch events for UI to auto-refresh orders list
+          window.dispatchEvent(new Event('orders_updated'));
+          window.dispatchEvent(new Event('admin_notifications_updated'));
         }
-
-        // 2. Check Appointments
-        try {
-          const aptRes = await api.get('/appointments?limit=10').catch(() => null);
-          const apts = aptRes?.data?.data || aptRes?.data || [];
-
-          if (Array.isArray(apts) && apts.length > 0) {
-            if (!initialLoadDoneRef.current) {
-              apts.forEach(a => {
-                const id = String(a._id || a.id || a.appointmentId);
-                knownAppointmentIdsRef.current.add(id);
-              });
-            } else {
-              for (const apt of apts) {
-                const id = String(apt._id || apt.id || apt.appointmentId);
-                if (!knownAppointmentIdsRef.current.has(id)) {
-                  knownAppointmentIdsRef.current.add(id);
-
-                  const patientName = apt.patientName || apt.patient?.name || 'Patient';
-                  const concern = apt.concern || 'Consultation';
-
-                  // 1. Play chime sound
-                  playNotificationSound();
-
-                  // 2. Show toast
-                  showToast(`📅 New Appointment Booked: ${patientName} (${concern})`, 'info');
-
-                  // 3. Native desktop notification
-                  if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-                    try {
-                      new Notification('📅 New Consultation Booking!', {
-                        body: `Patient ${patientName} requested consultation for ${concern}`,
-                        icon: '/logo.png',
-                        badge: '/favicon.png',
-                        tag: `dhc-apt-${id}`
-                      });
-                    } catch (notifErr) {
-                      console.warn('Native alert error:', notifErr);
-                    }
-                  }
-
-                  window.dispatchEvent(new Event('appointments_updated'));
-                  window.dispatchEvent(new Event('admin_notifications_updated'));
-                }
-              }
-            }
-          }
-        } catch (aptErr) {
-          // Silent fallback
-        }
-
-        initialLoadDoneRef.current = true;
-      } catch (err) {
-        console.warn('Live alert check:', err.message);
       }
     };
 
-    // Run immediately once
-    checkLiveUpdates();
+    // Helper to process incoming appointments and alert on new ones
+    const processAppointments = (apts) => {
+      if (!Array.isArray(apts) || apts.length === 0) return;
 
-    // Check periodically every 12 seconds
+      if (!initialLoadDoneRef.current) {
+        apts.forEach(a => {
+          const id = String(a._id || a.id || a.appointmentId);
+          knownAppointmentIdsRef.current.add(id);
+        });
+        return;
+      }
+
+      for (const apt of apts) {
+        const id = String(apt._id || apt.id || apt.appointmentId);
+        if (!knownAppointmentIdsRef.current.has(id)) {
+          knownAppointmentIdsRef.current.add(id);
+
+          const patientName = apt.patientName || apt.patient?.name || 'Patient';
+          const concern = apt.concern || 'Consultation';
+
+          // 1. Play chime sound
+          playNotificationSound();
+
+          // 2. Show toast
+          showToast(`📅 New Appointment Booked: ${patientName} (${concern})`, 'info');
+
+          // 3. Native desktop notification
+          if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+            try {
+              new Notification('📅 New Consultation Booking!', {
+                body: `Patient ${patientName} requested consultation for ${concern}`,
+                icon: '/logo.png',
+                badge: '/favicon.png',
+                tag: `dhc-apt-${id}`
+              });
+            } catch (notifErr) {
+              console.warn('Native alert error:', notifErr);
+            }
+          }
+
+          window.dispatchEvent(new Event('appointments_updated'));
+          window.dispatchEvent(new Event('admin_notifications_updated'));
+        }
+      }
+    };
+
+    // 1. Seed initial data from local storage
+    try {
+      processOrders(getStoredOrders());
+      processAppointments(getStoredAppointments());
+    } catch {}
+
+    // 2. Listen to real-time Firebase Cloud Firestore updates (0 console errors)
+    const unsubOrders = cloudSyncService.listenToCloudOrders((cloudOrders) => {
+      if (isMounted) processOrders(cloudOrders);
+    });
+
+    const unsubAppointments = cloudSyncService.listenToCloudAppointments((cloudApts) => {
+      if (isMounted) processAppointments(cloudApts);
+    });
+
+    // 3. Initial load completed
+    initialLoadDoneRef.current = true;
+
+    // 4. Background verification (only if authenticated with a real non-demo token)
+    const checkLiveUpdates = async () => {
+      const token = authStorage.getToken();
+      if (!token || token.startsWith('demo_')) {
+        // Demo session: rely on Firebase & local storage without polling Render
+        processOrders(getStoredOrders());
+        processAppointments(getStoredAppointments());
+        return;
+      }
+
+      // Check Orders via official admin route
+      try {
+        const res = await api.get('/orders/admin/all').catch(() => null);
+        const orders = res?.data?.data || res?.data || (Array.isArray(res) ? res : []);
+        if (isMounted && Array.isArray(orders)) {
+          processOrders(orders);
+        }
+      } catch {}
+
+      // Check Appointments via official admin route
+      try {
+        const aptRes = await api.get('/appointments').catch(() => null);
+        const apts = aptRes?.data?.data || aptRes?.data || (Array.isArray(aptRes) ? aptRes : []);
+        if (isMounted && Array.isArray(apts)) {
+          processAppointments(apts);
+        }
+      } catch {}
+    };
+
+    // Background polling every 30 seconds
     const interval = setInterval(() => {
       if (isMounted) {
         checkLiveUpdates();
       }
-    }, 12000);
+    }, 30000);
 
     return () => {
       isMounted = false;
       clearInterval(interval);
+      unsubOrders?.();
+      unsubAppointments?.();
     };
   }, [showToast]);
 }

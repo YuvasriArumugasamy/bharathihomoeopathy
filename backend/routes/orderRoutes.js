@@ -14,6 +14,7 @@ const router = express.Router();
 
 // Customer & Guest endpoints
 router.post('/', optionalProtect, createOrder);
+router.get('/', optionalProtect, getAdminOrders);
 router.get('/my-orders', optionalProtect, getMyOrders);
 router.get('/:id', optionalProtect, getOrderById);
 
