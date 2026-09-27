@@ -19,23 +19,67 @@ import { demoProducts } from '../data/products';
 import { assets } from '../assets';
 import { SectionHeader } from '../components/common/SectionHeader';
 import { ScrollReveal } from '../components/common/ScrollReveal';
+import { cloudSyncService } from '../services/cloudSyncService';
+
+// Real-time calculation helper
+const calculateRemaining = (targetEndTime, fallbackSettings) => {
+  let target = Number(targetEndTime);
+  if (!target || isNaN(target)) {
+    const days = parseInt(fallbackSettings?.days, 10) || 0;
+    const hours = parseInt(fallbackSettings?.hours, 10) || 0;
+    const minutes = parseInt(fallbackSettings?.minutes, 10) || 0;
+    const seconds = parseInt(fallbackSettings?.seconds, 10) || 0;
+    const dur = ((days * 86400) + (hours * 3600) + (minutes * 60) + seconds) * 1000;
+    target = Date.now() + (dur > 0 ? dur : (3 * 86400 + 14 * 3600 + 25 * 60) * 1000);
+  }
+
+  const now = Date.now();
+  const diff = target - now;
+
+  if (diff <= 0) {
+    return {
+      days: '00',
+      hours: '00',
+      minutes: '00',
+      seconds: '00',
+      isExpired: true,
+      target
+    };
+  }
+
+  const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const m = Math.floor((diff / (1000 * 60)) % 60);
+  const s = Math.floor((diff / 1000) % 60);
+
+  return {
+    days: String(d).padStart(2, '0'),
+    hours: String(h).padStart(2, '0'),
+    minutes: String(m).padStart(2, '0'),
+    seconds: String(s).padStart(2, '0'),
+    isExpired: false,
+    target
+  };
+};
 
 export const Offers = () => {
-  // Load timer settings from admin
-  const [timerSettings, setTimerSettings] = useState({
-    enabled: false,
-    days: 3,
-    hours: 14,
-    minutes: 25,
-    seconds: 45
+  // Load timer settings from admin or storage
+  const [timerSettings, setTimerSettings] = useState(() => {
+    try {
+      const raw = localStorage.getItem('admin_offer_timer_settings');
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return {
+      enabled: true,
+      days: 3,
+      hours: 14,
+      minutes: 25,
+      seconds: 45,
+      targetEndTime: null
+    };
   });
 
-  const [timeLeft, setTimeLeft] = useState({
-    days: '03',
-    hours: '14',
-    minutes: '25',
-    seconds: '45'
-  });
+  const [timeLeft, setTimeLeft] = useState(() => calculateRemaining(timerSettings?.targetEndTime, timerSettings));
 
   // Load real offers and coupons from admin
   const [adminOffers, setAdminOffers] = useState([]);
@@ -53,8 +97,8 @@ export const Offers = () => {
     }
   };
 
+  // 1. Initial Local Storage Load + Firebase Cloud Listeners
   useEffect(() => {
-    // Load admin offers, coupons AND timer settings
     try {
       const rawOffers = localStorage.getItem('admin_offers_store');
       const rawCoupons = localStorage.getItem('admin_coupons_store');
@@ -72,33 +116,64 @@ export const Offers = () => {
 
       if (rawTimer) {
         const timer = JSON.parse(rawTimer);
-        setTimerSettings(timer);
-        // Set initial timer display from admin settings
-        if (timer.enabled) {
-          setTimeLeft({
-            days: String(timer.days).padStart(2, '0'),
-            hours: String(timer.hours).padStart(2, '0'),
-            minutes: String(timer.minutes).padStart(2, '0'),
-            seconds: String(timer.seconds).padStart(2, '0')
-          });
-        }
+        setTimerSettings(prev => ({ ...prev, ...timer }));
       }
     } catch (e) {
-      console.warn('Could not load admin data:', e);
+      console.warn('Could not load local admin data:', e);
     }
+
+    // Subscribe to Cloud Firestore updates so admin changes reflect instantly
+    const unsubTimer = cloudSyncService.listenToOfferTimer((cloudTimer) => {
+      if (cloudTimer) {
+        setTimerSettings(prev => ({ ...prev, ...cloudTimer }));
+        try {
+          localStorage.setItem('admin_offer_timer_settings', JSON.stringify(cloudTimer));
+        } catch {}
+      }
+    });
+
+    const unsubCoupons = cloudSyncService.listenToCoupons((cloudCoupons) => {
+      if (Array.isArray(cloudCoupons) && cloudCoupons.length > 0) {
+        setAdminCoupons(cloudCoupons);
+        try {
+          localStorage.setItem('admin_coupons_store', JSON.stringify(cloudCoupons));
+        } catch {}
+      }
+    });
+
+    return () => {
+      unsubTimer?.();
+      unsubCoupons?.();
+    };
   }, []);
 
+  // 2. Real-Time Dynamic Countdown Tick (ticks every second, decrements seconds, minutes, hours, days accurately)
   useEffect(() => {
-    const timer = setInterval(() => {
-      const sec = parseInt(timeLeft.seconds, 10);
-      if (sec > 0) {
-        setTimeLeft(prev => ({ ...prev, seconds: String(sec - 1).padStart(2, '0') }));
-      } else {
-        setTimeLeft(prev => ({ ...prev, seconds: '59' }));
-      }
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft.seconds]);
+    let target = Number(timerSettings.targetEndTime);
+
+    // If targetEndTime doesn't exist, calculate one from the duration settings and cache it
+    if (!target || isNaN(target)) {
+      const days = parseInt(timerSettings.days, 10) || 0;
+      const hours = parseInt(timerSettings.hours, 10) || 0;
+      const minutes = parseInt(timerSettings.minutes, 10) || 0;
+      const seconds = parseInt(timerSettings.seconds, 10) || 0;
+      const dur = ((days * 86400) + (hours * 3600) + (minutes * 60) + seconds) * 1000;
+      target = Date.now() + (dur > 0 ? dur : (3 * 86400 + 14 * 3600 + 25 * 60) * 1000);
+      
+      const updated = { ...timerSettings, targetEndTime: target };
+      try {
+        localStorage.setItem('admin_offer_timer_settings', JSON.stringify(updated));
+      } catch {}
+    }
+
+    const tick = () => {
+      setTimeLeft(calculateRemaining(target, timerSettings));
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [timerSettings.targetEndTime, timerSettings.days, timerSettings.hours, timerSettings.minutes, timerSettings.seconds]);
 
   // Show admin offers or fallback message
   const hasOffers = adminOffers.length > 0 || adminCoupons.length > 0;
@@ -157,8 +232,8 @@ export const Offers = () => {
         </div>
       </section>
 
-      {/* 2. Limited Time Offers Countdown Timer Box - Only show if admin enabled AND offers exist */}
-      {hasOffers && timerSettings.enabled && (
+      {/* 2. Limited Time Offers Countdown Timer Box - Show if admin enabled */}
+      {timerSettings?.enabled && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] p-6 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
           
@@ -175,12 +250,12 @@ export const Offers = () => {
                 <h3 className="font-black text-base sm:text-lg text-slate-900 tracking-tight">
                   Limited Time Offers!
                 </h3>
-                <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black uppercase tracking-wider shadow-xs animate-bounce">
-                  FLASH SALE
+                <span className={`px-2 py-0.5 rounded-full text-white text-[9px] font-black uppercase tracking-wider shadow-xs ${timeLeft.isExpired ? 'bg-slate-500' : 'bg-rose-500 animate-bounce'}`}>
+                  {timeLeft.isExpired ? 'SALE ENDED' : 'FLASH SALE'}
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-semibold">
-                Hurry up! Special discounts end in:
+                {timeLeft.isExpired ? 'Stay tuned! New exclusive remedies arriving soon.' : 'Hurry up! Special discounts end in:'}
               </p>
             </div>
           </div>

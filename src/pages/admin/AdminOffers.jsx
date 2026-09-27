@@ -8,6 +8,7 @@ import { initialAdminOffers, initialAdminCoupons } from '../../data/adminOffersD
 import { useToast } from '../../context/ToastContext';
 import { productService } from '../../services/productService';
 import { demoProducts } from '../../data/products';
+import { cloudSyncService } from '../../services/cloudSyncService';
 
 const getCouponProductImage = (product) => {
   const catalogueProduct = demoProducts.find((item) =>
@@ -45,9 +46,82 @@ export const AdminOffers = () => {
       days: 3,
       hours: 14,
       minutes: 25,
-      seconds: 45
+      seconds: 45,
+      targetEndTime: null
     };
   });
+
+  // Admin Live Preview Clock State (ticks every second)
+  const [adminClock, setAdminClock] = useState({
+    days: '03',
+    hours: '14',
+    minutes: '25',
+    seconds: '45',
+    isExpired: false
+  });
+
+  // Live ticking countdown for Admin Preview
+  useEffect(() => {
+    let target = Number(timerSettings.targetEndTime);
+    if (!target || isNaN(target)) {
+      const d = Math.max(0, parseInt(timerSettings.days, 10) || 0);
+      const h = Math.max(0, parseInt(timerSettings.hours, 10) || 0);
+      const m = Math.max(0, parseInt(timerSettings.minutes, 10) || 0);
+      const s = Math.max(0, parseInt(timerSettings.seconds, 10) || 0);
+      const dur = ((d * 86400) + (h * 3600) + (m * 60) + s) * 1000;
+      target = Date.now() + (dur > 0 ? dur : 3 * 86400 * 1000);
+    }
+
+    const tick = () => {
+      const now = Date.now();
+      const diff = target - now;
+      if (diff <= 0) {
+        setAdminClock({ days: '00', hours: '00', minutes: '00', seconds: '00', isExpired: true });
+        return;
+      }
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+      setAdminClock({
+        days: String(days).padStart(2, '0'),
+        hours: String(hours).padStart(2, '0'),
+        minutes: String(minutes).padStart(2, '0'),
+        seconds: String(seconds).padStart(2, '0'),
+        isExpired: false
+      });
+    };
+
+    tick();
+    const iv = setInterval(tick, 1000);
+    return () => clearInterval(iv);
+  }, [timerSettings.targetEndTime, timerSettings.days, timerSettings.hours, timerSettings.minutes, timerSettings.seconds]);
+
+  // Sync with Firestore Cloud settings
+  useEffect(() => {
+    const unsubTimer = cloudSyncService.listenToOfferTimer((cloudTimer) => {
+      if (cloudTimer) {
+        setTimerSettings(prev => ({ ...prev, ...cloudTimer }));
+        try {
+          localStorage.setItem('admin_offer_timer_settings', JSON.stringify(cloudTimer));
+        } catch {}
+      }
+    });
+
+    const unsubCoupons = cloudSyncService.listenToCoupons((cloudCoupons) => {
+      if (Array.isArray(cloudCoupons) && cloudCoupons.length > 0) {
+        setCoupons(cloudCoupons);
+        try {
+          localStorage.setItem('admin_coupons_store', JSON.stringify(cloudCoupons));
+        } catch {}
+      }
+    });
+
+    return () => {
+      unsubTimer?.();
+      unsubCoupons?.();
+    };
+  }, []);
 
   const [coupons, setCoupons] = useState(() => {
     try {
@@ -244,7 +318,49 @@ export const AdminOffers = () => {
     showToast('Coupon code deactivated and removed', 'info');
   };
 
-  const handleSaveTimerSettings = () => {
+  const handleSaveTimerSettings = async () => {
+    try {
+      const days = Math.max(0, parseInt(timerSettings.days, 10) || 0);
+      const hours = Math.max(0, parseInt(timerSettings.hours, 10) || 0);
+      const minutes = Math.max(0, parseInt(timerSettings.minutes, 10) || 0);
+      const seconds = Math.max(0, parseInt(timerSettings.seconds, 10) || 0);
+      const totalDurationMs = ((days * 86400) + (hours * 3600) + (minutes * 60) + seconds) * 1000;
+      const targetEndTime = Date.now() + (totalDurationMs > 0 ? totalDurationMs : 3 * 86400 * 1000);
+      const updated = { ...timerSettings, days, hours, minutes, seconds, targetEndTime, updatedAt: new Date().toISOString() };
+      setTimerSettings(updated);
+      localStorage.setItem('admin_offer_timer_settings', JSON.stringify(updated));
+      await cloudSyncService.syncOfferTimerToCloud(updated);
+      showToast('Live Countdown Timer synchronized across website!', 'success');
+      return;
+    } catch (err) {
+      console.warn("Could not save timer settings:", err);
+      showToast('Failed to save timer settings', 'error');
+    }
+  };
+
+  const handleToggleTimer = async (enabled) => {
+    let targetEndTime = timerSettings.targetEndTime;
+    if (enabled && (!targetEndTime || targetEndTime <= Date.now())) {
+      const days = Math.max(0, parseInt(timerSettings.days, 10) || 0);
+      const hours = Math.max(0, parseInt(timerSettings.hours, 10) || 0);
+      const minutes = Math.max(0, parseInt(timerSettings.minutes, 10) || 0);
+      const seconds = Math.max(0, parseInt(timerSettings.seconds, 10) || 0);
+      const totalDurationMs = ((days * 86400) + (hours * 3600) + (minutes * 60) + seconds) * 1000;
+      targetEndTime = Date.now() + (totalDurationMs > 0 ? totalDurationMs : 3 * 86400 * 1000);
+    }
+    const updated = { ...timerSettings, enabled, targetEndTime };
+    setTimerSettings(updated);
+    try {
+      localStorage.setItem('admin_offer_timer_settings', JSON.stringify(updated));
+      await cloudSyncService.syncOfferTimerToCloud(updated);
+      showToast(enabled ? 'Live timer enabled on user website!' : 'Live timer hidden from user website!', 'success');
+      return;
+    } catch (err) {
+      console.warn("Could not save timer settings:", err);
+    }
+  };
+
+  /*
     try {
       localStorage.setItem('admin_offer_timer_settings', JSON.stringify(timerSettings));
       showToast('Timer settings saved successfully!', 'success');
@@ -263,7 +379,7 @@ export const AdminOffers = () => {
     } catch (err) {
       console.warn("Could not save timer settings:", err);
     }
-  };
+  */
 
   return (
     <div className="space-y-8 ">
@@ -682,25 +798,28 @@ export const AdminOffers = () => {
 
               {/* Preview */}
               <div className="p-6 bg-gradient-to-r from-[#236888] via-[#236888] to-[#1a5270] rounded-2xl">
-                <p className="text-xs text-amber-300 font-bold mb-3 text-center">Live Preview:</p>
+                <p className="text-xs text-amber-300 font-bold mb-3 text-center flex items-center justify-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
+                  Real-Time Live Countdown (Ticking Live):
+                </p>
                 <div className="flex items-center justify-center gap-3">
                   <div className="bg-[#236888] text-white rounded-xl px-4 py-3 min-w-[70px] border-2 border-white/20">
-                    <span className="text-2xl font-black font-mono block leading-tight">{String(timerSettings.days).padStart(2, '0')}</span>
+                    <span className="text-2xl font-black font-mono block leading-tight">{adminClock.days}</span>
                     <span className="text-[10px] font-black uppercase text-amber-300 tracking-wider">Days</span>
                   </div>
                   <span className="text-2xl font-black text-rose-300">:</span>
                   <div className="bg-[#236888] text-white rounded-xl px-4 py-3 min-w-[70px] border-2 border-white/20">
-                    <span className="text-2xl font-black font-mono block leading-tight">{String(timerSettings.hours).padStart(2, '0')}</span>
+                    <span className="text-2xl font-black font-mono block leading-tight">{adminClock.hours}</span>
                     <span className="text-[10px] font-black uppercase text-amber-300 tracking-wider">Hours</span>
                   </div>
                   <span className="text-2xl font-black text-rose-300">:</span>
                   <div className="bg-[#236888] text-white rounded-xl px-4 py-3 min-w-[70px] border-2 border-white/20">
-                    <span className="text-2xl font-black font-mono block leading-tight">{String(timerSettings.minutes).padStart(2, '0')}</span>
+                    <span className="text-2xl font-black font-mono block leading-tight">{adminClock.minutes}</span>
                     <span className="text-[10px] font-black uppercase text-amber-300 tracking-wider">Mins</span>
                   </div>
                   <span className="text-2xl font-black text-rose-300">:</span>
                   <div className="bg-[#236888] text-white rounded-xl px-4 py-3 min-w-[70px] border-2 border-white/20">
-                    <span className="text-2xl font-black font-mono text-amber-300 block leading-tight">{String(timerSettings.seconds).padStart(2, '0')}</span>
+                    <span className="text-2xl font-black font-mono text-amber-300 block leading-tight">{adminClock.seconds}</span>
                     <span className="text-[10px] font-black uppercase text-rose-300 tracking-wider">Secs</span>
                   </div>
                 </div>
@@ -712,7 +831,7 @@ export const AdminOffers = () => {
                 className="w-full py-3 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
               >
                 <Check className="w-5 h-5" />
-                Save Timer Settings
+                <span>🚀 Sync & Start Real-Time Timer on Website</span>
               </button>
             </div>
           )}

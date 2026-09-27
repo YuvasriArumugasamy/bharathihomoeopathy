@@ -50,6 +50,7 @@ import {
   ExternalLink,
   ShoppingBag
 } from 'lucide-react';
+import { cloudSyncService } from '../services/cloudSyncService';
 
 export const Checkout = () => {
   const navigate = useNavigate();
@@ -110,6 +111,18 @@ export const Checkout = () => {
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
+
+  // Sync latest coupons from Cloud Firestore
+  useEffect(() => {
+    const unsub = cloudSyncService.listenToCoupons((cloudCoupons) => {
+      if (Array.isArray(cloudCoupons) && cloudCoupons.length > 0) {
+        try {
+          localStorage.setItem('admin_coupons_store', JSON.stringify(cloudCoupons));
+        } catch {}
+      }
+    });
+    return () => unsub?.();
+  }, []);
 
   const handleApplyCoupon = (e) => {
     e?.preventDefault?.();

@@ -199,6 +199,99 @@ export const cloudSyncService = {
       console.warn(`[CloudSync] Cloud appointment update skipped:`, err.message);
       return false;
     }
+  },
+
+  /**
+   * Sync countdown timer settings to Cloud Firestore
+   */
+  syncOfferTimerToCloud: async (timerSettings) => {
+    if (!timerSettings) return false;
+    try {
+      const timerRef = doc(db, "settings", "offer_timer");
+      const cleanPayload = {
+        ...JSON.parse(JSON.stringify(timerSettings)),
+        syncedAt: new Date().toISOString(),
+        cloudTimestamp: serverTimestamp()
+      };
+      await setDoc(timerRef, cleanPayload, { merge: true });
+      return true;
+    } catch (err) {
+      console.warn("[CloudSync] Could not sync timer settings to Cloud:", err.message);
+      return false;
+    }
+  },
+
+  /**
+   * Real-time listener for countdown timer settings
+   */
+  listenToOfferTimer: (callback) => {
+    try {
+      const timerRef = doc(db, "settings", "offer_timer");
+      const unsubscribe = onSnapshot(
+        timerRef,
+        (snap) => {
+          if (snap.exists()) {
+            const data = snap.data();
+            if (typeof callback === 'function') {
+              callback(data);
+            }
+          }
+        },
+        (error) => {
+          console.warn("[CloudSync] Live offer timer snapshot error:", error.message);
+        }
+      );
+      return unsubscribe;
+    } catch (err) {
+      console.warn("[CloudSync] Failed to initialize cloud timer listener:", err.message);
+      return () => {};
+    }
+  },
+
+  /**
+   * Sync coupons store to Cloud Firestore
+   */
+  syncCouponsToCloud: async (coupons) => {
+    if (!Array.isArray(coupons)) return false;
+    try {
+      const couponsRef = doc(db, "settings", "admin_coupons");
+      await setDoc(couponsRef, {
+        coupons: coupons.map(c => JSON.parse(JSON.stringify(c))),
+        updatedAt: new Date().toISOString(),
+        cloudTimestamp: serverTimestamp()
+      }, { merge: true });
+      return true;
+    } catch (err) {
+      console.warn("[CloudSync] Could not sync coupons to Cloud:", err.message);
+      return false;
+    }
+  },
+
+  /**
+   * Real-time listener for coupons from Cloud Firestore
+   */
+  listenToCoupons: (callback) => {
+    try {
+      const couponsRef = doc(db, "settings", "admin_coupons");
+      const unsubscribe = onSnapshot(
+        couponsRef,
+        (snap) => {
+          if (snap.exists()) {
+            const data = snap.data();
+            if (data?.coupons && Array.isArray(data.coupons) && typeof callback === 'function') {
+              callback(data.coupons);
+            }
+          }
+        },
+        (error) => {
+          console.warn("[CloudSync] Live coupons snapshot error:", error.message);
+        }
+      );
+      return unsubscribe;
+    } catch (err) {
+      console.warn("[CloudSync] Failed to initialize cloud coupons listener:", err.message);
+      return () => {};
+    }
   }
 };
 
