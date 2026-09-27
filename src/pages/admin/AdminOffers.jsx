@@ -253,7 +253,8 @@ export const AdminOffers = () => {
 
   // Metrics
   const totalCoupons = coupons.length;
-  const activeCoupons = coupons.filter(c => c.status === 'Active').length;
+  const isTimerExpired = Boolean(timerSettings?.enabled && adminClock?.isExpired);
+  const activeCoupons = isTimerExpired ? 0 : coupons.filter(c => c.status === 'Active').length;
   const totalRedemptions = coupons.reduce((sum, c) => sum + (c.usedCount || 0), 0);
   const totalCampaigns = offers.length;
 
@@ -500,6 +501,48 @@ export const AdminOffers = () => {
       {/* Coupons List View */}
       {activeTab === 'coupons' && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {isTimerExpired && coupons.length > 0 && (
+            <div className="col-span-full p-4 sm:p-5 bg-gradient-to-r from-rose-50 via-amber-50 to-orange-50 border-2 border-rose-200/90 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-center gap-3.5 text-center sm:text-left">
+                <div className="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-500/25">
+                  <Flame className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-rose-950 uppercase tracking-wide">
+                    Flash Sale Concluded — Vouchers Are Expired
+                  </h4>
+                  <p className="text-xs text-rose-700 font-medium mt-0.5">
+                    Countdown reached 0. These vouchers are automatically hidden on customer website.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCoupons([]);
+                    try {
+                      localStorage.setItem('admin_coupons_store', JSON.stringify([]));
+                      cloudSyncService.syncCouponsToCloud([]);
+                    } catch {}
+                    showToast('All expired coupons removed!', 'info');
+                  }}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl shadow-md shadow-rose-600/20 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Remove Expired Vouchers</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('timer')}
+                  className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-black rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                >
+                  <Flame className="w-3.5 h-3.5 text-rose-500" />
+                  <span>Restart Timer</span>
+                </button>
+              </div>
+            </div>
+          )}
           {coupons.map((c) => {
             const usagePercent = Math.min(100, Math.round(((c.usedCount || 0) / (c.usageLimit || 100)) * 100));
             const matchingProd = products.find(p => 
@@ -517,13 +560,29 @@ export const AdminOffers = () => {
                 <div className="space-y-4">
                   {/* Top Notch & Status */}
                   <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      {c.status}
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${isTimerExpired ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
+                      {isTimerExpired ? 'EXPIRED' : c.status}
                     </span>
                     <span className="text-[11px] text-slate-400 font-medium">
                       Created: {c.createdAt}
                     </span>
                   </div>
+
+                  {isTimerExpired && (
+                    <div className="flex items-center justify-between p-2.5 bg-rose-50/90 border border-rose-200 rounded-xl text-xs text-rose-800">
+                      <span className="flex items-center gap-1.5 font-bold text-[11px]">
+                        <Clock className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                        <span>Sale Ended (Timer is 00:00:00)</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCoupon(c.id)}
+                        className="px-2.5 py-1 bg-white hover:bg-rose-600 hover:text-white text-rose-700 border border-rose-300 rounded-lg text-[10px] font-black shadow-2xs transition-all cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
 
                   {/* Product Photo Banner */}
                   {couponImage ? (
