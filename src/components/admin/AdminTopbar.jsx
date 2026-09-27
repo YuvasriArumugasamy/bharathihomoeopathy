@@ -104,7 +104,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
             </span>
             {/* Mobile/Tablet Logo Image */}
             <img 
-              src={assets.logoBg1} 
+              src={assets.logo} 
               alt="Dr. Bharathi's Homeo Care" 
               className="lg:hidden h-[26px] object-contain rounded-sm" 
             />
@@ -324,4 +324,5 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
     </header>
   );
 };
+
 
