@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { 
   Tag, Plus, Edit, Trash2, Sparkles, Copy, X, Percent, 
-  IndianRupee, Calendar, Check, Gift, Ticket, Flame, ArrowRight
+  IndianRupee, Calendar, Check, Gift, Ticket, Flame, ArrowRight,
+  Search, ChevronDown
 } from 'lucide-react';
 import { initialAdminOffers, initialAdminCoupons } from '../../data/adminOffersData';
 import { useToast } from '../../context/ToastContext';
@@ -103,6 +104,32 @@ export const AdminOffers = () => {
     productSku: ''
   });
 
+  const [productSearchQuery, setProductSearchQuery] = useState('');
+  const [productDropdownOpen, setProductDropdownOpen] = useState(false);
+  const productDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (productDropdownRef.current && !productDropdownRef.current.contains(e.target)) {
+        setProductDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredCouponProducts = products.filter((p) => {
+    if (!productSearchQuery.trim()) return true;
+    const q = productSearchQuery.toLowerCase();
+    const nameMatch = (p.name || '').toLowerCase().includes(q);
+    const skuMatch = (p.sku || '').toLowerCase().includes(q);
+    const catMatch = typeof p.category === 'string' 
+      ? p.category.toLowerCase().includes(q) 
+      : (p.category?.name || '').toLowerCase().includes(q);
+    const brandMatch = (p.brand || '').toLowerCase().includes(q);
+    return nameMatch || skuMatch || catMatch || brandMatch;
+  });
+
   const handleSelectCouponProduct = (productId) => {
     const product = products.find((item) => String(item.id || item._id) === productId);
     setNewCoupon((current) => ({
@@ -114,11 +141,15 @@ export const AdminOffers = () => {
     }));
   };
 
-  const resetCouponForm = () => setNewCoupon({
-    code: '', discountType: 'Percentage', discountValue: 10,
-    minimumOrderValue: 499, maximumDiscount: 200, usageLimit: 100,
-    offerTitle: '', productImage: '', productId: '', productSku: ''
-  });
+  const resetCouponForm = () => {
+    setNewCoupon({
+      code: '', discountType: 'Percentage', discountValue: 10,
+      minimumOrderValue: 499, maximumDiscount: 200, usageLimit: 100,
+      offerTitle: '', productImage: '', productId: '', productSku: ''
+    });
+    setProductSearchQuery('');
+    setProductDropdownOpen(false);
+  };
 
   // Metrics
   const totalCoupons = coupons.length;
@@ -671,36 +702,160 @@ export const AdminOffers = () => {
             </div>
 
             <form onSubmit={handleAddCoupon} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1.5">Choose Product</label>
-                <select
-                  value={newCoupon.productId}
-                  onChange={(e) => handleSelectCouponProduct(e.target.value)}
-                  className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-brandOrange-500 text-slate-800"
+              <div className="relative" ref={productDropdownRef}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block font-bold text-slate-700">Choose Product</label>
+                  {newCoupon.productId && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectCouponProduct('')}
+                      className="text-[11px] font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1 cursor-pointer"
+                    >
+                      <X className="w-3 h-3" /> Clear Selection
+                    </button>
+                  )}
+                </div>
+
+                {/* Dropdown Trigger */}
+                <button
+                  type="button"
+                  onClick={() => setProductDropdownOpen(!productDropdownOpen)}
+                  className={`w-full p-3 bg-slate-50/90 border rounded-xl text-left flex items-center justify-between transition-all cursor-pointer ${
+                    productDropdownOpen 
+                      ? 'border-brandOrange-500 ring-2 ring-brandOrange-500/20 bg-white' 
+                      : 'border-slate-200 hover:border-slate-300'
+                  }`}
                 >
-                  <option value="">Select from all products ({products.length})</option>
-                  {products.map((product) => (
-                    <option key={product.id || product._id || product.sku} value={String(product.id || product._id)}>
-                      {product.name}{product.sku ? ` · ${product.sku}` : ''}
-                    </option>
-                  ))}
-                </select>
+                  <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                    <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                    {(() => {
+                      const selectedProduct = products.find((item) => String(item.id || item._id) === newCoupon.productId);
+                      return selectedProduct ? (
+                        <span className="font-bold text-slate-900 truncate">
+                          {selectedProduct.name} {selectedProduct.sku ? `(${selectedProduct.sku})` : ''}
+                        </span>
+                      ) : (
+                        <span className="text-slate-500">
+                          Search or select from all products ({products.length})
+                        </span>
+                      );
+                    })()}
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${productDropdownOpen ? 'rotate-180 text-brandOrange-500' : ''}`} />
+                </button>
+
+                {/* Searchable Floating Menu */}
+                {productDropdownOpen && (
+                  <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-2xl z-[70] overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col">
+                    {/* Search Input Bar */}
+                    <div className="p-2.5 border-b border-slate-100 bg-slate-50/80 sticky top-0 z-10">
+                      <div className="relative">
+                        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          autoFocus
+                          placeholder="Type product name, brand, or SKU..."
+                          value={productSearchQuery}
+                          onChange={(e) => setProductSearchQuery(e.target.value)}
+                          className="w-full pl-9 pr-8 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-brandOrange-500 text-slate-800 placeholder:text-slate-400"
+                        />
+                        {productSearchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setProductSearchQuery('')}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between px-1 pt-1.5 text-[10px] text-slate-400">
+                        <span>Showing {filteredCouponProducts.length} of {products.length} products</span>
+                        {productSearchQuery && <span className="font-bold text-brandOrange-600">Filtered</span>}
+                      </div>
+                    </div>
+
+                    {/* Products Scrollable List */}
+                    <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 text-xs">
+                      {filteredCouponProducts.length > 0 ? (
+                        filteredCouponProducts.map((product) => {
+                          const isSelected = String(product.id || product._id) === newCoupon.productId;
+                          const image = getCouponProductImage(product);
+                          const price = product.offerPrice || product.salePrice || product.price || product.regularPrice;
+
+                          return (
+                            <button
+                              key={product.id || product._id || product.sku}
+                              type="button"
+                              onClick={() => {
+                                handleSelectCouponProduct(String(product.id || product._id));
+                                setProductDropdownOpen(false);
+                                setProductSearchQuery('');
+                              }}
+                              className={`w-full p-2.5 text-left flex items-center gap-3 transition-colors cursor-pointer ${
+                                isSelected ? 'bg-orange-50/80 text-brandOrange-950 font-bold' : 'hover:bg-slate-50 text-slate-800'
+                              }`}
+                            >
+                              {image ? (
+                                <img
+                                  src={image}
+                                  alt={product.name}
+                                  className="w-9 h-9 rounded-lg object-cover shrink-0 border border-slate-100 bg-white"
+                                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
+                              ) : (
+                                <div className="w-9 h-9 rounded-lg bg-orange-100/60 text-brandOrange-600 flex items-center justify-center font-bold text-xs shrink-0">
+                                  💊
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-1">
+                                  <p className="font-bold text-slate-800 truncate text-xs">{product.name}</p>
+                                  {price && <span className="text-[11px] font-black text-slate-900 shrink-0">₹{price}</span>}
+                                </div>
+                                <div className="flex items-center gap-2 text-[10px] text-slate-500 mt-0.5">
+                                  {product.sku && <span className="bg-slate-100 px-1.5 py-0.5 rounded font-mono font-medium">{product.sku}</span>}
+                                  {product.category && (
+                                    <span className="truncate">
+                                      {typeof product.category === 'string' ? product.category : product.category?.name}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              {isSelected && <Check className="w-4 h-4 text-brandOrange-600 shrink-0" />}
+                            </button>
+                          );
+                        })
+                      ) : (
+                        <div className="p-6 text-center text-slate-400">
+                          <p className="text-xs font-medium">No matching products found</p>
+                          <p className="text-[10px] text-slate-400 mt-1">Try another keyword or clear search</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Selected Product Preview Card */}
                 {newCoupon.productId && (() => {
                   const selectedProduct = products.find((item) => String(item.id || item._id) === newCoupon.productId);
                   const image = getCouponProductImage(selectedProduct);
                   return selectedProduct ? (
-                    <div className="mt-2 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
-                      {image ? <img src={image} alt={selectedProduct.name} onError={(event) => {
-                        const fallback = demoProducts[0]?.image;
-                        if (fallback && event.currentTarget.src !== new URL(fallback, window.location.href).href) {
-                          event.currentTarget.onerror = null;
-                          event.currentTarget.src = fallback;
-                        }
-                      }} className="h-12 w-12 rounded-lg object-cover" /> : null}
-                      <div className="min-w-0">
-                        <p className="font-bold text-slate-800 truncate">{selectedProduct.name}</p>
-                        <p className="text-[10px] text-slate-500">SKU: {selectedProduct.sku || '—'} · Price: ₹{selectedProduct.offerPrice || selectedProduct.salePrice || selectedProduct.price || selectedProduct.regularPrice || '—'}</p>
-                        <p className="text-[10px] text-slate-500">Category: {typeof selectedProduct.category === 'string' ? selectedProduct.category : selectedProduct.category?.name || '—'}</p>
+                    <div className="mt-2.5 flex items-center gap-3 rounded-xl border border-orange-200/80 bg-orange-50/40 p-2.5 shadow-2xs">
+                      {image ? (
+                        <img
+                          src={image}
+                          alt={selectedProduct.name}
+                          className="h-11 w-11 rounded-lg object-cover border border-orange-100 shrink-0"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      ) : null}
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-slate-900 truncate text-xs">{selectedProduct.name}</p>
+                        <div className="flex items-center gap-2 text-[10px] text-slate-600 mt-0.5">
+                          <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-slate-200">SKU: {selectedProduct.sku || '—'}</span>
+                          <span className="font-bold text-brandOrange-700">₹{selectedProduct.offerPrice || selectedProduct.salePrice || selectedProduct.price || selectedProduct.regularPrice || '—'}</span>
+                        </div>
                       </div>
                     </div>
                   ) : null;
