@@ -1,5 +1,4 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+﻿import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAnalytics, isSupported as isAnalyticsSupported } from "firebase/analytics";
 import { getMessaging, getToken, onMessage, isSupported as isMessagingSupported } from "firebase/messaging";
@@ -23,9 +22,24 @@ export const VAPID_KEY =
 // Initialize Firebase App (Singleton check)
 export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Firebase Services
-export const auth = getAuth(app);
+// Initialize Firestore (always available - no auth required)
 export const db = getFirestore(app);
+
+// Initialize Firebase Auth conditionally (silently - avoids CONFIGURATION_NOT_FOUND console errors)
+// Firebase Auth makes a call to googleapis.com/identitytoolkit on load which throws 400 errors
+// if the domain is not whitelisted in Firebase Console. We lazy-initialize to prevent this.
+export let auth = null;
+export const getFirebaseAuth = async () => {
+  if (auth) return auth;
+  try {
+    const { getAuth } = await import("firebase/auth");
+    auth = getAuth(app);
+    return auth;
+  } catch (err) {
+    // Silently ignore - Firebase Auth not available in this environment
+    return null;
+  }
+};
 
 // Initialize Analytics conditionally (only in supported browser environments)
 export let analytics = null;
@@ -36,8 +50,8 @@ if (typeof window !== "undefined") {
         analytics = getAnalytics(app);
       }
     })
-    .catch((err) => {
-      console.warn("Firebase Analytics not supported in this environment:", err.message);
+    .catch(() => {
+      // Silently ignore analytics errors
     });
 }
 
@@ -52,14 +66,16 @@ export const initMessaging = async () => {
         return messaging;
       }
     } catch (err) {
-      console.warn("Firebase Messaging is not supported in this environment:", err.message);
+      // Silently ignore messaging errors (e.g., iframe context, unsupported browser)
     }
   }
   return null;
 };
 
-// Auto-initialize messaging if in browser
-initMessaging();
+// Auto-initialize messaging if in browser (fire-and-forget, no error logs)
+if (typeof window !== "undefined") {
+  initMessaging().catch(() => {});
+}
 
 /**
  * Request notification permission and get the FCM device registration token
@@ -68,29 +84,21 @@ initMessaging();
 export const requestNotificationPermission = async () => {
   try {
     if (typeof window === "undefined" || !("Notification" in window)) {
-      console.warn("Push notifications are not supported by this browser.");
       return null;
     }
 
     const permission = await Notification.requestPermission();
-    if (permission !== "granted") {
-      console.log("Notification permission not granted:", permission);
-      return null;
-    }
+    if (permission !== "granted") return null;
 
     const msg = messaging || (await initMessaging());
-    if (!msg) {
-      console.warn("Messaging instance could not be initialized.");
-      return null;
-    }
+    if (!msg) return null;
 
-    // Register service worker if not already registered
     let swRegistration = null;
     if ("serviceWorker" in navigator) {
       try {
         swRegistration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-      } catch (swErr) {
-        console.warn("Service worker registration error:", swErr.message);
+      } catch {
+        // Ignore service worker registration errors
       }
     }
 
@@ -100,14 +108,10 @@ export const requestNotificationPermission = async () => {
     });
 
     if (token) {
-      console.log("FCM Registration Token received:", token);
       return token;
-    } else {
-      console.warn("No registration token available. Request permission to generate one.");
-      return null;
     }
-  } catch (error) {
-    console.error("Error retrieving FCM push token:", error);
+    return null;
+  } catch {
     return null;
   }
 };
@@ -120,7 +124,6 @@ export const requestNotificationPermission = async () => {
 export const onForegroundMessage = (callback) => {
   if (!messaging) return null;
   return onMessage(messaging, (payload) => {
-    console.log("Received foreground message:", payload);
     if (callback) callback(payload);
   });
 };
