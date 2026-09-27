@@ -9,7 +9,6 @@ import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { ToastProvider } from './context/ToastContext';
 import { initializeErrorHandlers } from './utils/errorHandler';
-import { InitialLoader } from './components/common/InitialLoader';
 
 // Initialize global error handlers
 initializeErrorHandlers();
@@ -23,9 +22,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <AuthProvider>
           <ToastProvider>
             <CartProvider>
-            <WishlistProvider>
-              {!window.location.pathname.startsWith('/admin') && <InitialLoader />}
-              <App />
+              <WishlistProvider>
+                <App />
               </WishlistProvider>
             </CartProvider>
           </ToastProvider>

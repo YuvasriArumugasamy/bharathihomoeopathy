@@ -10,6 +10,7 @@ import { CountryModal } from '../components/common/CountryModal';
 import { TrackOrderModal } from '../components/common/TrackOrderModal';
 import { SymptomGuideModal } from '../components/common/SymptomGuideModal';
 import { PwaInstallPrompt } from '../components/common/PwaInstallPrompt';
+import { InitialLoader } from '../components/common/InitialLoader';
 import { assets } from '../assets';
 
 export const MainLayout = () => {
@@ -33,6 +34,9 @@ export const MainLayout = () => {
         backgroundPosition: 'center'
       }}
     >
+      {/* Initial Website Brand Loader (only on patient website, never on admin) */}
+      <InitialLoader />
+
       <div className="print:hidden">
         {/* Country Selection Modal */}
         <CountryModal />
