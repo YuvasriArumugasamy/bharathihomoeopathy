@@ -4,6 +4,7 @@ import Product from '../models/Product.js';
 import { validateOrderInput } from '../validators/orderValidator.js';
 import { getEffectivePrice } from '../utils/productUtils.js';
 import { generateOrderNumber, calculateShippingCharge, calculateOrderTotal, validateStatusTransition } from '../utils/orderUtils.js';
+import { sendEventNotification } from './notificationController.js';
 
 export const createOrder = async (req, res, next) => {
   try {
@@ -114,6 +115,19 @@ export const createOrder = async (req, res, next) => {
         await cart.save().catch(() => {});
       }
     }
+
+    // Trigger FCM real-time push notification to all clinic admin devices
+    sendEventNotification({
+      title: '🛍️ New Order Received',
+      message: `Order #${order.orderNumber || order._id} placed by ${order.shippingAddress?.fullName || 'Patient'} - ₹${order.totalAmount}`,
+      type: 'order',
+      link: '/admin/orders',
+      data: {
+        orderId: String(order._id),
+        orderNumber: String(order.orderNumber || ''),
+        amount: String(order.totalAmount || 0)
+      }
+    }).catch(err => console.warn('Order push notification error:', err?.message));
 
     res.status(201).json({
       success: true,

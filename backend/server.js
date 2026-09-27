@@ -1,10 +1,9 @@
-﻿// Backend server.js - backend entry point
-// Ensures all routes including appointmentRoutes are mounted correctly for Render deployment.
-// Last updated: 2026-09-16 - force Render re-deploy to pick up appointmentRoutes
+// Backend server.js - backend entry point
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { connectDB } from './config/db.js';
+import { initFirebase } from './config/firebase.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 import { notFound } from './middleware/notFoundMiddleware.js';
 
@@ -21,11 +20,15 @@ import customerRoutes from './routes/customerRoutes.js';
 import enquiryRoutes from './routes/enquiryRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 dotenv.config();
 
 // Connect to MongoDB
 connectDB();
+
+// Initialize Firebase Admin for Push Notifications
+initFirebase();
 
 const app = express();
 
@@ -47,7 +50,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-
 // API Routes Mounting
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
@@ -61,8 +63,7 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/enquiries', enquiryRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/reviews', reviewRoutes);
-
-
+app.use('/api/notifications', notificationRoutes);
 
 // Temp: update user to admin role (secret-protected)
 app.post('/api/make-admin', async (req, res) => {

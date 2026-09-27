@@ -1,4 +1,5 @@
 import Appointment from '../models/Appointment.js';
+import { sendEventNotification } from './notificationController.js';
 
 export const createAppointment = async (req, res, next) => {
   try {
@@ -44,6 +45,18 @@ export const createAppointment = async (req, res, next) => {
       attachment,
       attachmentName
     });
+
+    // Trigger FCM real-time push notification for new consultation
+    sendEventNotification({
+      title: '📅 New Consultation Booked',
+      message: `Appointment for ${newAppointment.patient?.name || 'Patient'} on ${newAppointment.date} at ${newAppointment.time}`,
+      type: 'booking',
+      link: '/admin/appointments',
+      data: {
+        appointmentId: String(newAppointment._id),
+        patient: newAppointment.patient?.name || ''
+      }
+    }).catch(err => console.warn('Appointment push notification error:', err?.message));
 
     res.status(201).json({
       success: true,

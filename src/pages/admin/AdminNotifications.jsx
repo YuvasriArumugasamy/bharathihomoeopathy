@@ -20,6 +20,7 @@ import {
   dismissNotification, 
   clearAllNotifications 
 } from '../../services/adminNotificationService';
+import PushNotificationCard from '../../components/admin/PushNotificationCard';
 
 export const AdminNotifications = () => {
   const { showToast } = useToast();
@@ -195,6 +196,9 @@ export const AdminNotifications = () => {
           )}
         </div>
       </div>
+
+      {/* Live Clinical Push Notification Control Card */}
+      <PushNotificationCard />
 
       {/* 2. Filter Pills */}
       <div className="flex flex-wrap items-center gap-2">
