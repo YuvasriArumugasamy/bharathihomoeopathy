@@ -28,6 +28,12 @@ export default function PushNotificationCard() {
       return;
     }
 
+    if (permission === 'granted') {
+      showToast('✅ Alerts are already active! Click "🔔 Test Notification" to test sound & browser alert.', 'info');
+      playNotificationSound();
+      return;
+    }
+
     try {
       setLoading(true);
       const res = await Notification.requestPermission();
@@ -35,6 +41,7 @@ export default function PushNotificationCard() {
 
       if (res === 'granted') {
         showToast('Push notifications enabled successfully!', 'success');
+        playNotificationSound();
 
         // Register FCM token with backend
         try {
@@ -89,10 +96,13 @@ export default function PushNotificationCard() {
     try {
       setLoading(true);
 
-      // 1. Play crystal-clear audio bell chime
+      // 1. Play crystal-clear audio bell chime immediately
       playNotificationSound();
 
-      // 2. Fire native OS notification
+      // 2. Show instant in-app toast immediately
+      showToast('🔔 Test Notification Triggered! Chime & Alert active.', 'success');
+
+      // 3. Fire native OS notification safely with fallback and timeout
       const title = '🔔 Dr. Bharathi Homeo Care - Test Alert';
       const options = {
         body: 'Real-time push notifications are working with 100% precision!',
@@ -101,22 +111,29 @@ export default function PushNotificationCard() {
         tag: 'dhc-test-' + Date.now(),
       };
 
-      if ('serviceWorker' in navigator) {
-        try {
-          const registration = await navigator.serviceWorker.ready;
+      try {
+        if ('serviceWorker' in navigator) {
+          const swPromise = navigator.serviceWorker.ready;
+          const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 1000));
+          const registration = await Promise.race([swPromise, timeoutPromise]);
           if (registration && registration.showNotification) {
             await registration.showNotification(title, options);
           } else {
             new Notification(title, options);
           }
-        } catch {
+        } else {
           new Notification(title, options);
         }
-      } else {
-        new Notification(title, options);
+      } catch (notifErr) {
+        console.warn('Native notification error:', notifErr);
+        try {
+          new Notification(title, options);
+        } catch {
+          // ignore
+        }
       }
 
-      // 3. Trigger server push notification broadcast
+      // 4. Trigger server push notification broadcast
       try {
         await api.post('/notifications/send', {
           title: '🔔 Push Notification Test',
@@ -125,8 +142,6 @@ export default function PushNotificationCard() {
       } catch (backendErr) {
         console.warn('Backend notification broadcast:', backendErr?.message);
       }
-
-      showToast('🔔 Test Notification Triggered! Chime & Alert active.', 'success');
     } catch (err) {
       console.error('Test notification error:', err);
       showToast('Failed to trigger test notification', 'error');
@@ -139,7 +154,7 @@ export default function PushNotificationCard() {
     switch (permission) {
       case 'granted':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
             Granted (Active)
           </span>
@@ -193,12 +208,13 @@ export default function PushNotificationCard() {
       <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
         <button
           onClick={handleEnableAlerts}
-          disabled={loading || permission === 'granted'}
+          disabled={loading}
           className={`px-5 py-2.5 rounded-xl font-bold text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer ${
             permission === 'granted'
-              ? 'bg-emerald-600 text-white cursor-default opacity-90'
+              ? 'bg-emerald-600 hover:bg-emerald-700 text-white hover:scale-105 active:scale-95'
               : 'bg-brandOrange-500 hover:bg-brandOrange-600 text-white hover:shadow-md hover:scale-105 active:scale-95'
           }`}
+          title={permission === 'granted' ? 'Alerts are active and enabled' : 'Click to enable alerts'}
         >
           {permission === 'granted' ? (
             <>
@@ -216,7 +232,7 @@ export default function PushNotificationCard() {
         <button
           onClick={handleTestNotification}
           disabled={loading}
-          className="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-slate-900 hover:bg-slate-800 shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
+          className="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-slate-900 hover:bg-slate-800 shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95 ring-2 ring-amber-400/30"
         >
           <Sparkles className="w-4 h-4 text-amber-300" />
           <span>🔔 Test Notification</span>
