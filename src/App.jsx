@@ -46,10 +46,14 @@ import { AdminSeo } from './pages/admin/AdminSeo';
 import { AdminSettings } from './pages/admin/AdminSettings';
 import { AdminNotifications } from './pages/admin/AdminNotifications';
 import { useFCM } from './hooks/useFCM';
+import { useAdminLiveAlerts } from './hooks/useAdminLiveAlerts';
 
 export default function App() {
   // Initialize Firebase Cloud Messaging Push Notifications
   useFCM();
+
+  // Initialize Guaranteed Live Alerts for new orders & appointments
+  useAdminLiveAlerts();
 
   React.useEffect(() => {
     // Neutralize any body displacement or top margin injected by Google Translate or browser plugins

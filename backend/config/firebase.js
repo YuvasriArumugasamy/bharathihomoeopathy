@@ -1,14 +1,30 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 let admin = null;
 let initialized = false;
 
 export const initFirebase = async () => {
   if (initialized) return admin;
 
-  // Requires FIREBASE_SERVICE_ACCOUNT_JSON env var
-  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+  // Check if serviceAccountKey.json exists locally
+  const localKeyPath = path.join(__dirname, 'serviceAccountKey.json');
+  let serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+
+  if (!serviceAccount && fs.existsSync(localKeyPath)) {
+    try {
+      serviceAccount = fs.readFileSync(localKeyPath, 'utf8');
+    } catch (e) {
+      console.warn('Could not read local serviceAccountKey.json:', e.message);
+    }
+  }
 
   if (!serviceAccount) {
-    console.warn('⚠️  FIREBASE_SERVICE_ACCOUNT_JSON not set — server push notifications via FCM disabled.');
+    console.warn('⚠️  FIREBASE_SERVICE_ACCOUNT_JSON / serviceAccountKey.json not set — server push notifications via FCM disabled.');
     return null;
   }
 
