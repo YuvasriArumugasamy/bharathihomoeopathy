@@ -856,30 +856,30 @@ export const AdminOffers = () => {
               </div>
 
               {/* Preview */}
-              <div className="p-6 bg-gradient-to-r from-[#236888] via-[#236888] to-[#1a5270] rounded-2xl">
+              <div className="p-3.5 sm:p-6 bg-gradient-to-r from-[#236888] via-[#236888] to-[#1a5270] rounded-2xl overflow-hidden shadow-inner">
                 <p className="text-xs text-amber-300 font-bold mb-3 text-center flex items-center justify-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
                   Real-Time Live Countdown (Ticking Live):
                 </p>
-                <div className="flex items-center justify-center gap-1.5 sm:gap-3">
-                  <div className="bg-[#236888] text-white rounded-xl px-4 py-3 min-w-[70px] border-2 border-white/20">
-                    <span className="text-2xl font-black font-mono block leading-tight">{adminClock.days}</span>
-                    <span className="text-[10px] font-black uppercase text-amber-300 tracking-wider">Days</span>
+                <div className="flex items-center justify-between sm:justify-center gap-1 sm:gap-2.5 max-w-sm sm:max-w-md mx-auto w-full">
+                  <div className="flex-1 sm:flex-initial min-w-0 sm:min-w-[70px] bg-[#236888] text-white rounded-xl px-1.5 py-2 sm:px-4 sm:py-3 border border-white/20 text-center shadow-sm">
+                    <span className="text-lg sm:text-2xl font-black font-mono block leading-tight">{adminClock.days}</span>
+                    <span className="text-[8.5px] sm:text-[10px] font-black uppercase text-amber-300 tracking-wider block mt-0.5">Days</span>
                   </div>
-                  <span className="text-2xl font-black text-rose-300">:</span>
-                  <div className="bg-[#236888] text-white rounded-xl px-4 py-3 min-w-[70px] border-2 border-white/20">
-                    <span className="text-2xl font-black font-mono block leading-tight">{adminClock.hours}</span>
-                    <span className="text-[10px] font-black uppercase text-amber-300 tracking-wider">Hours</span>
+                  <span className="text-base sm:text-2xl font-black text-rose-300 select-none shrink-0 px-0.5">:</span>
+                  <div className="flex-1 sm:flex-initial min-w-0 sm:min-w-[70px] bg-[#236888] text-white rounded-xl px-1.5 py-2 sm:px-4 sm:py-3 border border-white/20 text-center shadow-sm">
+                    <span className="text-lg sm:text-2xl font-black font-mono block leading-tight">{adminClock.hours}</span>
+                    <span className="text-[8.5px] sm:text-[10px] font-black uppercase text-amber-300 tracking-wider block mt-0.5">Hours</span>
                   </div>
-                  <span className="text-2xl font-black text-rose-300">:</span>
-                  <div className="bg-[#236888] text-white rounded-xl px-4 py-3 min-w-[70px] border-2 border-white/20">
-                    <span className="text-2xl font-black font-mono block leading-tight">{adminClock.minutes}</span>
-                    <span className="text-[10px] font-black uppercase text-amber-300 tracking-wider">Mins</span>
+                  <span className="text-base sm:text-2xl font-black text-rose-300 select-none shrink-0 px-0.5">:</span>
+                  <div className="flex-1 sm:flex-initial min-w-0 sm:min-w-[70px] bg-[#236888] text-white rounded-xl px-1.5 py-2 sm:px-4 sm:py-3 border border-white/20 text-center shadow-sm">
+                    <span className="text-lg sm:text-2xl font-black font-mono block leading-tight">{adminClock.minutes}</span>
+                    <span className="text-[8.5px] sm:text-[10px] font-black uppercase text-amber-300 tracking-wider block mt-0.5">Mins</span>
                   </div>
-                  <span className="text-2xl font-black text-rose-300">:</span>
-                  <div className="bg-[#236888] text-white rounded-xl px-4 py-3 min-w-[70px] border-2 border-white/20">
-                    <span className="text-2xl font-black font-mono text-amber-300 block leading-tight">{adminClock.seconds}</span>
-                    <span className="text-[10px] font-black uppercase text-rose-300 tracking-wider">Secs</span>
+                  <span className="text-base sm:text-2xl font-black text-rose-300 select-none shrink-0 px-0.5">:</span>
+                  <div className="flex-1 sm:flex-initial min-w-0 sm:min-w-[70px] bg-[#236888] text-white rounded-xl px-1.5 py-2 sm:px-4 sm:py-3 border border-white/20 text-center shadow-sm">
+                    <span className="text-lg sm:text-2xl font-black font-mono text-amber-300 block leading-tight">{adminClock.seconds}</span>
+                    <span className="text-[8.5px] sm:text-[10px] font-black uppercase text-rose-300 tracking-wider block mt-0.5">Secs</span>
                   </div>
                 </div>
               </div>

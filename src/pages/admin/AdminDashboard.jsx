@@ -278,6 +278,7 @@ export const AdminDashboard = () => {
         const rev = matching.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
         points.push({
           label: dayLabel,
+          shortLabel: dayLabel,
           revenue: Math.round(rev * 100) / 100,
           orders: matching.length
         });
@@ -298,6 +299,7 @@ export const AdminDashboard = () => {
         endDay.setHours(23, 59, 59, 999);
 
         const label = `${startDay.getDate()} ${startDay.toLocaleDateString('en-US', { month: 'short' })} - ${endDay.getDate()} ${endDay.toLocaleDateString('en-US', { month: 'short' })}`;
+        const shortLabel = `${startDay.getDate()}-${endDay.getDate()} ${endDay.toLocaleDateString('en-US', { month: 'short' })}`;
 
         const matching = validOrders.filter(o => {
           if (!o.createdAt) return false;
@@ -308,6 +310,7 @@ export const AdminDashboard = () => {
         const rev = matching.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
         points.push({
           label,
+          shortLabel,
           revenue: Math.round(rev * 100) / 100,
           orders: matching.length
         });
@@ -321,6 +324,7 @@ export const AdminDashboard = () => {
       for (let m = 2; m >= 0; m--) {
         const d = new Date(now.getFullYear(), now.getMonth() - m, 1);
         const monthLabel = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        const shortLabel = d.toLocaleDateString('en-US', { month: 'short' });
         const y = d.getFullYear();
         const mon = d.getMonth();
 
@@ -333,6 +337,7 @@ export const AdminDashboard = () => {
         const rev = matching.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
         points.push({
           label: monthLabel,
+          shortLabel,
           revenue: Math.round(rev * 100) / 100,
           orders: matching.length
         });
@@ -776,7 +781,7 @@ export const AdminDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         {/* Analytics Interactive Chart */}
-        <div className="lg:col-span-8 bg-white/95 backdrop-blur-sm p-6 sm:p-7 rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-6">
+        <div className="lg:col-span-8 bg-white/95 backdrop-blur-sm p-4 sm:p-6 lg:p-7 rounded-2xl sm:rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-5 sm:space-y-6 overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <div>
               <div className="flex items-center gap-2.5">
@@ -852,7 +857,7 @@ export const AdminDashboard = () => {
           </div>
 
           {/* Visual Chart Container */}
-          <div className="relative h-60 sm:h-64 flex items-end gap-2 sm:gap-4 lg:gap-6 pt-10 pb-3 border-b border-slate-100">
+          <div className="relative h-60 sm:h-64 flex items-end gap-1 sm:gap-3 lg:gap-6 pt-10 pb-3 border-b border-slate-100 overflow-x-auto scrollbar-none">
             {/* Background reference lines */}
             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-25">
               <div className="border-b border-dashed border-slate-300 w-full" />
@@ -869,7 +874,7 @@ export const AdminDashboard = () => {
                 const isPeak = currentVal === maxVal && maxVal > 0;
 
                 return (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1.5 sm:gap-2 h-full justify-end group relative z-10">
+                  <div key={i} className="flex-1 min-w-0 flex flex-col items-center gap-1 sm:gap-2 h-full justify-end group relative z-10">
                     {/* Interactive Floating Tooltip */}
                     <div className="absolute -top-10 bg-slate-900 text-white text-[10px] sm:text-[11px] px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none shadow-xl z-30 whitespace-nowrap flex items-center gap-1.5 border border-slate-700">
                       <span className={`w-1.5 h-1.5 rounded-full ${activeChartTheme.dot}`} />
@@ -891,9 +896,14 @@ export const AdminDashboard = () => {
                     </div>
                     
                     {/* Label */}
-                    <span className={`text-[10px] sm:text-[11px] font-bold mt-1 truncate ${isPeak ? 'text-slate-900 font-black' : 'text-slate-500'}`}>
-                      {pt.label}
-                    </span>
+                    <div className={`mt-1 text-center w-full min-w-0 ${isPeak ? 'text-slate-900 font-black' : 'text-slate-500 font-bold'}`}>
+                      <span className="hidden sm:block text-[10.5px] lg:text-[11px] truncate">
+                        {pt.label}
+                      </span>
+                      <span className="block sm:hidden text-[9px] leading-tight truncate">
+                        {pt.shortLabel || pt.label}
+                      </span>
+                    </div>
                   </div>
                 );
               })
@@ -907,13 +917,13 @@ export const AdminDashboard = () => {
 
           {/* Chart Footer Stats */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-500 gap-2.5 pt-1">
-            <div className="flex items-center gap-2 font-semibold text-[11px] sm:text-xs">
+            <div className="flex items-center gap-2 font-semibold text-[11px] sm:text-xs min-w-0">
               <span className={`w-2.5 h-2.5 sm:w-3 sm:h-3 bg-gradient-to-r ${activeChartTheme.legend} rounded-full shrink-0 shadow-2xs`} />
               <span className="text-slate-700 font-bold truncate">Dispensary & Booking Volume ({activeChartTheme.name})</span>
             </div>
 
             <div className="flex items-center">
-              <div className={`w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] sm:text-xs font-bold ${activeChartTheme.pill}`}>
+              <div className={`w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10.5px] sm:text-xs font-bold ${activeChartTheme.pill} truncate`}>
                 {chartPoints && chartPoints.some(pt => (metricView === 'revenue' ? pt.revenue : pt.orders) > 0) ? (
                   <>
                     <Sparkles className="w-3.5 h-3.5 shrink-0" />

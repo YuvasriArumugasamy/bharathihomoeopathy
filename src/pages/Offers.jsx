@@ -262,31 +262,31 @@ export const Offers = () => {
           </div>
 
           {/* Digital Countdown Clock Display */}
-          <div className="flex items-center gap-2 sm:gap-3 text-center w-full justify-center lg:w-auto">
-            <div className="bg-[#236888] text-white rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 min-w-[62px] sm:min-w-[72px] shadow-md shadow-[#236888]/30 border border-white/20">
-              <span className="text-xl sm:text-2xl font-black font-mono text-white block leading-tight">{timeLeft.days}</span>
-              <span className="text-[9px] sm:text-[10px] font-black uppercase text-amber-300 tracking-wider">Days</span>
+          <div className="flex items-center gap-1 sm:gap-2.5 md:gap-3 text-center w-full justify-center max-w-sm sm:max-w-md lg:w-auto">
+            <div className="flex-1 sm:flex-initial min-w-0 sm:min-w-[70px] bg-[#236888] text-white rounded-xl sm:rounded-2xl px-1.5 py-2 sm:px-4 sm:py-2.5 shadow-md shadow-[#236888]/30 border border-white/20">
+              <span className="text-lg sm:text-2xl font-black font-mono text-white block leading-tight">{timeLeft.days}</span>
+              <span className="text-[8.5px] sm:text-[10px] font-black uppercase text-amber-300 tracking-wider block mt-0.5">Days</span>
             </div>
 
-            <span className="text-lg sm:text-2xl font-black text-rose-500 animate-pulse">:</span>
+            <span className="text-base sm:text-2xl font-black text-rose-500 animate-pulse select-none shrink-0 px-0.5">:</span>
 
-            <div className="bg-[#236888] text-white rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 min-w-[62px] sm:min-w-[72px] shadow-md shadow-[#236888]/30 border border-white/20">
-              <span className="text-xl sm:text-2xl font-black font-mono text-white block leading-tight">{timeLeft.hours}</span>
-              <span className="text-[9px] sm:text-[10px] font-black uppercase text-amber-300 tracking-wider">Hours</span>
+            <div className="flex-1 sm:flex-initial min-w-0 sm:min-w-[70px] bg-[#236888] text-white rounded-xl sm:rounded-2xl px-1.5 py-2 sm:px-4 sm:py-2.5 shadow-md shadow-[#236888]/30 border border-white/20">
+              <span className="text-lg sm:text-2xl font-black font-mono text-white block leading-tight">{timeLeft.hours}</span>
+              <span className="text-[8.5px] sm:text-[10px] font-black uppercase text-amber-300 tracking-wider block mt-0.5">Hours</span>
             </div>
 
-            <span className="text-lg sm:text-2xl font-black text-rose-500 animate-pulse">:</span>
+            <span className="text-base sm:text-2xl font-black text-rose-500 animate-pulse select-none shrink-0 px-0.5">:</span>
 
-            <div className="bg-[#236888] text-white rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 min-w-[62px] sm:min-w-[72px] shadow-md shadow-[#236888]/30 border border-white/20">
-              <span className="text-xl sm:text-2xl font-black font-mono text-white block leading-tight">{timeLeft.minutes}</span>
-              <span className="text-[9px] sm:text-[10px] font-black uppercase text-amber-300 tracking-wider">Mins</span>
+            <div className="flex-1 sm:flex-initial min-w-0 sm:min-w-[70px] bg-[#236888] text-white rounded-xl sm:rounded-2xl px-1.5 py-2 sm:px-4 sm:py-2.5 shadow-md shadow-[#236888]/30 border border-white/20">
+              <span className="text-lg sm:text-2xl font-black font-mono text-white block leading-tight">{timeLeft.minutes}</span>
+              <span className="text-[8.5px] sm:text-[10px] font-black uppercase text-amber-300 tracking-wider block mt-0.5">Mins</span>
             </div>
 
-            <span className="text-lg sm:text-2xl font-black text-rose-500 animate-pulse">:</span>
+            <span className="text-base sm:text-2xl font-black text-rose-500 animate-pulse select-none shrink-0 px-0.5">:</span>
 
-            <div className="bg-[#236888] text-white rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 min-w-[62px] sm:min-w-[72px] shadow-md shadow-[#236888]/30 border border-white/20">
-              <span className="text-xl sm:text-2xl font-black font-mono text-amber-300 block leading-tight">{timeLeft.seconds}</span>
-              <span className="text-[9px] sm:text-[10px] font-black uppercase text-rose-300 tracking-wider">Secs</span>
+            <div className="flex-1 sm:flex-initial min-w-0 sm:min-w-[70px] bg-[#236888] text-white rounded-xl sm:rounded-2xl px-1.5 py-2 sm:px-4 sm:py-2.5 shadow-md shadow-[#236888]/30 border border-white/20">
+              <span className="text-lg sm:text-2xl font-black font-mono text-amber-300 block leading-tight">{timeLeft.seconds}</span>
+              <span className="text-[8.5px] sm:text-[10px] font-black uppercase text-rose-300 tracking-wider block mt-0.5">Secs</span>
             </div>
           </div>
 
