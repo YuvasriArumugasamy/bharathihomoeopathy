@@ -19,7 +19,7 @@ export const demoProducts = [
     reviewsCount: 28,
     isBestSeller: true,
     isFeatured: true,
-    image: assets.p1,
+    image: assets.product1,
     shortDescription: "Certified Homeopathic formulation for muscle soreness, sprains & trauma relief.",
     description: "Certified clinical homeopathic remedy indicated for holistic wellness, trauma healing, muscle soreness, and joint stiffness.",
     ingredients: ["Active Arnica Montana 200CH", "Pure Sucrose Cane Sugar Pellets"]

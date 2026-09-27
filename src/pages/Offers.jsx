@@ -226,7 +226,9 @@ export const Offers = () => {
                 (coupon.productSku && p.sku === coupon.productSku) ||
                 (coupon.offerTitle && p.name && (coupon.offerTitle.toLowerCase().includes(p.name.toLowerCase()) || p.name.toLowerCase().includes(coupon.offerTitle.toLowerCase())))
               );
-              const displayImage = coupon.productImage?.trim() || matchingProd?.image || '';
+              // If coupon.productImage was mistakenly saved as p1 (Urtica Urens) but the coupon is for Arnica Montana, override with genuine remedy image
+              const isMismatched = coupon.offerTitle?.toLowerCase().includes('arnica') && coupon.productImage?.includes('p1');
+              const displayImage = (!isMismatched && coupon.productImage?.trim()) || matchingProd?.image || '';
 
               return (
               <ScrollReveal key={coupon.id || idx} direction="up" delay={idx * 60}>
@@ -243,11 +245,11 @@ export const Offers = () => {
 
                   {/* Product Image */}
                   {displayImage ? (
-                    <div className="mb-4 -mx-6 -mt-6 bg-gradient-to-br from-slate-50 to-amber-50/30 rounded-t-2xl overflow-hidden relative" style={{ height: '160px' }}>
+                    <div className="mb-5 -mx-6 -mt-6 bg-gradient-to-b from-slate-50 via-white to-amber-50/40 rounded-t-2xl overflow-hidden relative h-52 flex items-center justify-center p-4 border-b border-slate-100 group-hover:bg-amber-50/20 transition-colors">
                       <img 
                         src={displayImage} 
                         alt={coupon.offerTitle || matchingProd?.name || 'Product'} 
-                        className="w-full h-full object-cover"
+                        className="max-h-full max-w-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.08)] group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
                         onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }}
                       />

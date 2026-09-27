@@ -391,7 +391,8 @@ export const AdminOffers = () => {
               (c.productSku && p.sku === c.productSku) ||
               (c.offerTitle && p.name && (c.offerTitle.toLowerCase().includes(p.name.toLowerCase()) || p.name.toLowerCase().includes(c.offerTitle.toLowerCase())))
             );
-            const couponImage = c.productImage || (matchingProd ? getCouponProductImage(matchingProd) : '');
+            const isMismatched = c.offerTitle?.toLowerCase().includes('arnica') && c.productImage?.includes('p1');
+            const couponImage = (!isMismatched && c.productImage) || (matchingProd ? getCouponProductImage(matchingProd) : '');
             return (
               <div 
                 key={c.id} 
@@ -414,7 +415,7 @@ export const AdminOffers = () => {
                       <img 
                         src={couponImage} 
                         alt={c.offerTitle || matchingProd?.name || 'Product'} 
-                        className="w-14 h-14 rounded-xl object-cover bg-white border border-orange-200/80 shadow-xs shrink-0"
+                        className="w-14 h-14 rounded-xl object-contain p-1 bg-white border border-orange-200/80 shadow-xs shrink-0"
                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
                       />
                       <div className="min-w-0 flex-1">
