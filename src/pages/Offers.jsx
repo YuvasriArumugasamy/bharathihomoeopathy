@@ -220,7 +220,15 @@ export const Offers = () => {
           <SectionHeader title="Active Offers & Coupons" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {adminCoupons.map((coupon, idx) => (
+            {adminCoupons.map((coupon, idx) => {
+              const matchingProd = demoProducts.find(p => 
+                (coupon.productId && (String(p.id) === String(coupon.productId) || String(p._id) === String(coupon.productId))) ||
+                (coupon.productSku && p.sku === coupon.productSku) ||
+                (coupon.offerTitle && p.name && (coupon.offerTitle.toLowerCase().includes(p.name.toLowerCase()) || p.name.toLowerCase().includes(coupon.offerTitle.toLowerCase())))
+              );
+              const displayImage = coupon.productImage?.trim() || matchingProd?.image || '';
+
+              return (
               <ScrollReveal key={coupon.id || idx} direction="up" delay={idx * 60}>
                 <div className="bg-white rounded-2xl border-2 border-dashed border-brandOrange-300 p-6 shadow-sm hover:shadow-lg transition-all relative group overflow-hidden">
                   {/* Discount Badge */}
@@ -233,17 +241,18 @@ export const Offers = () => {
                     </div>
                   </div>
 
-                  {/* Product Image - if provided */}
-                  {coupon.productImage && coupon.productImage.trim() && (
+                  {/* Product Image */}
+                  {displayImage ? (
                     <div className="mb-4 -mx-6 -mt-6 bg-gradient-to-br from-slate-50 to-amber-50/30 rounded-t-2xl overflow-hidden relative" style={{ height: '160px' }}>
                       <img 
-                        src={coupon.productImage} 
-                        alt={coupon.offerTitle || 'Product'} 
+                        src={displayImage} 
+                        alt={coupon.offerTitle || matchingProd?.name || 'Product'} 
                         className="w-full h-full object-cover"
                         loading="lazy"
+                        onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }}
                       />
                     </div>
-                  )}
+                  ) : null}
 
                   {/* Offer Title - if provided */}
                   {coupon.offerTitle && (
@@ -319,7 +328,8 @@ export const Offers = () => {
                   </Link>
                 </div>
               </ScrollReveal>
-            ))}
+            );
+          })}
           </div>
 
         </section>

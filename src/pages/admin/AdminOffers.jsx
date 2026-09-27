@@ -386,6 +386,12 @@ export const AdminOffers = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {coupons.map((c) => {
             const usagePercent = Math.min(100, Math.round(((c.usedCount || 0) / (c.usageLimit || 100)) * 100));
+            const matchingProd = products.find(p => 
+              (c.productId && String(p.id || p._id) === String(c.productId)) || 
+              (c.productSku && p.sku === c.productSku) ||
+              (c.offerTitle && p.name && (c.offerTitle.toLowerCase().includes(p.name.toLowerCase()) || p.name.toLowerCase().includes(c.offerTitle.toLowerCase())))
+            );
+            const couponImage = c.productImage || (matchingProd ? getCouponProductImage(matchingProd) : '');
             return (
               <div 
                 key={c.id} 
@@ -401,6 +407,31 @@ export const AdminOffers = () => {
                       Created: {c.createdAt}
                     </span>
                   </div>
+
+                  {/* Product Photo Banner */}
+                  {couponImage ? (
+                    <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-orange-50/70 to-amber-50/40 rounded-2xl border border-orange-100/90 shadow-2xs">
+                      <img 
+                        src={couponImage} 
+                        alt={c.offerTitle || matchingProd?.name || 'Product'} 
+                        className="w-14 h-14 rounded-xl object-cover bg-white border border-orange-200/80 shadow-xs shrink-0"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-bold text-brandOrange-600 uppercase tracking-wider block">
+                          Linked Remedy
+                        </span>
+                        <h4 className="font-bold text-xs text-slate-900 truncate">
+                          {c.offerTitle || matchingProd?.name || 'Homeopathy Medicine'}
+                        </h4>
+                        {(c.productSku || matchingProd?.sku) && (
+                          <span className="text-[10px] font-mono text-slate-500 bg-white/80 px-1.5 py-0.5 rounded border border-slate-200 mt-0.5 inline-block">
+                            SKU: {c.productSku || matchingProd?.sku}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
 
                   {/* Code Card Ribbon */}
                   <div className="p-4 bg-gradient-to-r from-slate-50 to-amber-50/40 rounded-2xl border border-slate-200/80 flex items-center justify-between">
