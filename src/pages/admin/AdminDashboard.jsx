@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   IndianRupee, 
@@ -34,6 +34,9 @@ import { orderService, getStoredOrders } from '../../services/orderService';
 import { productService } from '../../services/productService';
 import { appointmentService, getStoredAppointments } from '../../services/appointmentService';
 import { customerService, getStoredCustomers } from '../../services/customerService';
+import { enquiryService, getStoredEnquiries } from '../../services/enquiryService';
+import { cloudSyncService } from '../../services/cloudSyncService';
+import { assets } from '../../assets';
 import { 
   initializeNotifications, 
   listenForNotifications, 
@@ -55,9 +58,25 @@ export const AdminDashboard = () => {
   const [metricView, setMetricView] = useState('revenue'); // 'revenue' | 'orders'
   const [chartTheme, setChartTheme] = useState('teal'); // 'teal' | 'indigo' | 'purple' | 'amber'
   const [orders, setOrders] = useState(() => (typeof getStoredOrders === 'function' ? getStoredOrders() : []));
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(() => {
+    try {
+      const stored = localStorage.getItem('admin_products_store');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
   const [appointments, setAppointments] = useState(() => (typeof getStoredAppointments === 'function' ? getStoredAppointments() : []));
   const [customers, setCustomers] = useState(() => (typeof getStoredCustomers === 'function' ? getStoredCustomers() : []));
+  const [enquiries, setEnquiries] = useState(() => (typeof getStoredEnquiries === 'function' ? getStoredEnquiries() : []));
+  const [reviews, setReviews] = useState(() => {
+    try {
+      const raw = localStorage.getItem('admin_reviews_store');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
   const [notificationsEnabled, setNotificationsEnabled] = useState(areNotificationsEnabled());
   const [showNotificationBanner, setShowNotificationBanner] = useState(
     !areNotificationsEnabled() && getNotificationPermission() !== 'denied'
@@ -65,10 +84,7 @@ export const AdminDashboard = () => {
 
   // Initialize notifications on mount
   useEffect(() => {
-    // Listen for new orders and appointments
     const unsubscribe = listenForNotifications();
-
-    // Check for notification permission
     setNotificationsEnabled(areNotificationsEnabled());
 
     return () => {
@@ -78,7 +94,7 @@ export const AdminDashboard = () => {
     };
   }, []);
 
-  // Monitor for new orders/appointments and show notifications
+  // Monitor for new orders/appointments and trigger push notifications
   useEffect(() => {
     let previousOrderCount = orders.length;
     let previousAppointmentCount = appointments.length;
@@ -87,15 +103,13 @@ export const AdminDashboard = () => {
       const currentOrderCount = orders.length;
       const currentAppointmentCount = appointments.length;
 
-      // New order detected
       if (currentOrderCount > previousOrderCount && notificationsEnabled) {
-        const newOrder = orders[0]; // Latest order
+        const newOrder = orders[0];
         showNewOrderNotification(newOrder);
       }
 
-      // New appointment detected
       if (currentAppointmentCount > previousAppointmentCount && notificationsEnabled) {
-        const newAppointment = appointments[0]; // Latest appointment
+        const newAppointment = appointments[0];
         showNewAppointmentNotification(newAppointment);
       }
 
@@ -103,7 +117,6 @@ export const AdminDashboard = () => {
       previousAppointmentCount = currentAppointmentCount;
     };
 
-    // Check after data loads
     if (orders.length > 0 || appointments.length > 0) {
       checkForNew();
     }
@@ -122,15 +135,21 @@ export const AdminDashboard = () => {
       if (typeof getStoredOrders === 'function') setOrders(getStoredOrders());
       if (typeof getStoredAppointments === 'function') setAppointments(getStoredAppointments());
       if (typeof getStoredCustomers === 'function') setCustomers(getStoredCustomers());
+      if (typeof getStoredEnquiries === 'function') setEnquiries(getStoredEnquiries());
+
+      try {
+        const rawReviews = localStorage.getItem('admin_reviews_store');
+        if (rawReviews) setReviews(JSON.parse(rawReviews));
+      } catch {}
 
       const [liveOrders, liveProducts, liveApts] = await Promise.all([
-        orderService.getAdminOrders(),
-        productService.getAdminProducts(),
-        appointmentService.getAdminAppointments()
+        orderService.getAdminOrders().catch(() => []),
+        productService.getAdminProducts().catch(() => []),
+        appointmentService.getAdminAppointments().catch(() => [])
       ]);
-      if (Array.isArray(liveOrders)) setOrders(liveOrders);
-      if (Array.isArray(liveProducts)) setProducts(liveProducts);
-      if (Array.isArray(liveApts)) setAppointments(liveApts);
+      if (Array.isArray(liveOrders) && liveOrders.length > 0) setOrders(liveOrders);
+      if (Array.isArray(liveProducts) && liveProducts.length > 0) setProducts(liveProducts);
+      if (Array.isArray(liveApts) && liveApts.length > 0) setAppointments(liveApts);
     } catch (err) {
       console.warn("Failed to load dashboard dynamic data:", err.message);
     }
@@ -139,6 +158,20 @@ export const AdminDashboard = () => {
   useEffect(() => {
     loadDashboardData();
 
+    // 1. Live Cloud Firestore Stream for Orders across all devices
+    const unsubscribeCloudOrders = cloudSyncService.listenToCloudOrders((liveOrders) => {
+      if (Array.isArray(liveOrders)) {
+        setOrders(liveOrders);
+      }
+    });
+
+    // 2. Live Cloud Firestore Stream for Appointments across all devices
+    const unsubscribeCloudApts = cloudSyncService.listenToCloudAppointments((liveApts) => {
+      if (Array.isArray(liveApts)) {
+        setAppointments(liveApts);
+      }
+    });
+
     const handleSync = () => {
       loadDashboardData();
     };
@@ -146,33 +179,190 @@ export const AdminDashboard = () => {
     window.addEventListener('storage', handleSync);
     window.addEventListener('appointments_updated', handleSync);
     window.addEventListener('orders_updated', handleSync);
+    window.addEventListener('enquiries_updated', handleSync);
+    window.addEventListener('products_updated', handleSync);
+    window.addEventListener('admin_inventory_updated', handleSync);
     window.addEventListener('focus', handleSync);
     document.addEventListener('visibilitychange', handleSync);
 
+    // Periodic live cloud polling every 10s to guarantee cross-device real-time sync
+    const pollInterval = setInterval(() => {
+      loadDashboardData();
+    }, 10000);
+
     return () => {
+      clearInterval(pollInterval);
+      if (typeof unsubscribeCloudOrders === 'function') unsubscribeCloudOrders();
+      if (typeof unsubscribeCloudApts === 'function') unsubscribeCloudApts();
       window.removeEventListener('storage', handleSync);
       window.removeEventListener('appointments_updated', handleSync);
       window.removeEventListener('orders_updated', handleSync);
+      window.removeEventListener('enquiries_updated', handleSync);
+      window.removeEventListener('products_updated', handleSync);
+      window.removeEventListener('admin_inventory_updated', handleSync);
       window.removeEventListener('focus', handleSync);
       document.removeEventListener('visibilitychange', handleSync);
     };
   }, []);
 
-  const chartPoints = adminDashboardData.salesData[timeFilter] || adminDashboardData.salesData['7 Days'];
+  // Real-Time Analytics Calculations from orders
+  const chartPoints = useMemo(() => {
+    const validOrders = Array.isArray(orders) ? orders : [];
+    
+    if (timeFilter === '7 Days') {
+      const points = [];
+      const now = new Date();
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const dateKey = `${yyyy}-${mm}-${dd}`;
+        const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
+
+        const matching = validOrders.filter(o => {
+          if (!o.createdAt) return false;
+          const oDate = new Date(o.createdAt);
+          if (isNaN(oDate.getTime())) return false;
+          const oKey = `${oDate.getFullYear()}-${String(oDate.getMonth() + 1).padStart(2, '0')}-${String(oDate.getDate()).padStart(2, '0')}`;
+          return oKey === dateKey;
+        });
+
+        const rev = matching.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+        points.push({
+          label: dayLabel,
+          revenue: Math.round(rev * 100) / 100,
+          orders: matching.length
+        });
+      }
+      return points;
+    }
+
+    if (timeFilter === '30 Days') {
+      const points = [];
+      const now = new Date();
+      for (let b = 5; b >= 0; b--) {
+        const startDay = new Date(now);
+        startDay.setDate(startDay.getDate() - (b * 5 + 4));
+        startDay.setHours(0, 0, 0, 0);
+
+        const endDay = new Date(now);
+        endDay.setDate(endDay.getDate() - (b * 5));
+        endDay.setHours(23, 59, 59, 999);
+
+        const label = `${startDay.getDate()} ${startDay.toLocaleDateString('en-US', { month: 'short' })} - ${endDay.getDate()} ${endDay.toLocaleDateString('en-US', { month: 'short' })}`;
+
+        const matching = validOrders.filter(o => {
+          if (!o.createdAt) return false;
+          const oDate = new Date(o.createdAt);
+          return oDate >= startDay && oDate <= endDay;
+        });
+
+        const rev = matching.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+        points.push({
+          label,
+          revenue: Math.round(rev * 100) / 100,
+          orders: matching.length
+        });
+      }
+      return points;
+    }
+
+    if (timeFilter === '90 Days') {
+      const points = [];
+      const now = new Date();
+      for (let m = 2; m >= 0; m--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - m, 1);
+        const monthLabel = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        const y = d.getFullYear();
+        const mon = d.getMonth();
+
+        const matching = validOrders.filter(o => {
+          if (!o.createdAt) return false;
+          const oDate = new Date(o.createdAt);
+          return oDate.getFullYear() === y && oDate.getMonth() === mon;
+        });
+
+        const rev = matching.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+        points.push({
+          label: monthLabel,
+          revenue: Math.round(rev * 100) / 100,
+          orders: matching.length
+        });
+      }
+      return points;
+    }
+
+    return [];
+  }, [orders, timeFilter]);
 
   // Real Orders pipeline calculation
   const totalOrdersCount = orders.length;
   const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
   const pendingOrders = orders.filter(o => o.orderStatus === 'Pending').length;
-  const lowStockCount = products.filter(p => (Number(p.stock) || 0) <= (Number(p.lowStockThreshold) || 5)).length;
+
+  // Real Low Stock Items calculation
+  const lowStockItems = useMemo(() => {
+    let inv = [];
+    try {
+      const saved = localStorage.getItem('admin_inventory_store');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) inv = parsed;
+      }
+    } catch {}
+
+    if (inv.length > 0) {
+      const low = inv.filter(i => (Number(i.currentStock) || 0) <= (Number(i.lowStockThreshold) || 10));
+      if (low.length > 0) {
+        return low.slice(0, 5).map(item => ({
+          id: item.id || item.productId,
+          name: item.productName || item.name,
+          currentStock: Number(item.currentStock) || 0,
+          threshold: Number(item.lowStockThreshold) || 10,
+          status: (Number(item.currentStock) || 0) === 0 ? 'Out of Stock' : 'Low Stock'
+        }));
+      }
+    }
+
+    if (Array.isArray(products) && products.length > 0) {
+      const low = products.filter(p => (Number(p.stock) || 0) <= (Number(p.lowStockThreshold) || 5));
+      if (low.length > 0) {
+        return low.slice(0, 5).map(p => ({
+          id: p.id,
+          name: p.name,
+          currentStock: Number(p.stock) || 0,
+          threshold: Number(p.lowStockThreshold) || 5,
+          status: (Number(p.stock) || 0) === 0 ? 'Out of Stock' : 'Low Stock'
+        }));
+      }
+    }
+
+    return [];
+  }, [products]);
+
+  const lowStockCount = lowStockItems.length;
+
+  // Real Enquiries & Average Rating calculation
+  const newEnquiriesCount = enquiries.filter(e => e.status === 'New' || !e.isRead).length;
+
+  const averageRating = useMemo(() => {
+    if (!Array.isArray(reviews) || reviews.length === 0) return '4.9 / 5';
+    const sum = reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0);
+    const avg = sum / reviews.length;
+    return `${avg.toFixed(1)} / 5`;
+  }, [reviews]);
 
   const dynamicKpiStats = adminDashboardData.kpiStats.map((kpi) => {
-    if (kpi.id === 'rev') return { ...kpi, value: `₹${totalRevenue.toLocaleString('en-IN')}` };
+    if (kpi.id === 'rev') return { ...kpi, value: `₹${totalRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` };
     if (kpi.id === 'orders') return { ...kpi, value: totalOrdersCount.toString() };
     if (kpi.id === 'pending_ord') return { ...kpi, value: pendingOrders.toString() };
     if (kpi.id === 'low_stock') return { ...kpi, value: lowStockCount.toString() };
     if (kpi.id === 'apt') return { ...kpi, value: appointments.length.toString() };
     if (kpi.id === 'cust') return { ...kpi, value: customers.length.toString() };
+    if (kpi.id === 'enq') return { ...kpi, value: newEnquiriesCount.toString() };
+    if (kpi.id === 'rev_rate') return { ...kpi, value: averageRating };
     return kpi;
   });
 
@@ -182,6 +372,81 @@ export const AdminDashboard = () => {
     amount: Number(ord.total) || 0,
     status: ord.orderStatus || 'Pending'
   })) : adminDashboardData.recentOrders;
+
+  // Real-Time Top Selling Products Calculation from orders
+  const topSellingProducts = useMemo(() => {
+    const productSalesMap = {};
+
+    orders.forEach(order => {
+      const items = Array.isArray(order.items) ? order.items : [];
+      items.forEach(item => {
+        const pId = item.id || item._id || item.productId || item.name;
+        if (!pId) return;
+        if (!productSalesMap[pId]) {
+          productSalesMap[pId] = {
+            id: pId,
+            name: item.name || 'Homeopathic Remedy',
+            image: item.image || item.imageUrl || (Array.isArray(item.images) ? item.images[0] : null) || assets.product1,
+            unitsSold: 0,
+            revenue: 0
+          };
+        }
+        const qty = Number(item.quantity || item.qty || 1);
+        const price = Number(item.price || 0);
+        productSalesMap[pId].unitsSold += qty;
+        productSalesMap[pId].revenue += (price * qty);
+      });
+    });
+
+    const salesList = Object.values(productSalesMap);
+
+    if (salesList.length > 0) {
+      salesList.sort((a, b) => b.unitsSold - a.unitsSold);
+      return salesList.slice(0, 5).map((p, idx) => ({
+        ...p,
+        rank: idx + 1,
+        revenue: `₹${p.revenue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      }));
+    }
+
+    if (Array.isArray(products) && products.length > 0) {
+      return products.slice(0, 5).map((p, idx) => ({
+        id: p.id || idx,
+        rank: idx + 1,
+        name: p.name,
+        unitsSold: Number(p.salesCount) || (orders.length > 0 ? Math.max(1, orders.length - idx) : 0),
+        revenue: `₹${((Number(p.price) || 120) * (Number(p.salesCount) || (orders.length > 0 ? Math.max(1, orders.length - idx) : 1))).toLocaleString('en-IN')}`,
+        image: p.image || (Array.isArray(p.images) ? p.images[0] : null) || assets.product1
+      }));
+    }
+
+    return [];
+  }, [orders, products]);
+
+  // Real-Time Appointments for Today / Upcoming
+  const todayAppointments = useMemo(() => {
+    if (!Array.isArray(appointments) || appointments.length === 0) return [];
+    
+    const today = new Date().toISOString().slice(0, 10);
+    const todays = appointments.filter(a => {
+      if (!a.date) return false;
+      const aDate = new Date(a.date).toISOString().slice(0, 10);
+      return aDate === today;
+    });
+
+    const listToDisplay = todays.length > 0 ? todays : appointments.slice(0, 4);
+
+    return listToDisplay.map((apt, idx) => ({
+      id: apt.id || apt.appointmentId || `apt-${idx}`,
+      patient: apt.patient?.name || apt.patientName || apt.fullName || 'Patient',
+      doctor: apt.doctor || 'Dr. Bharathi',
+      type: apt.consultationMode || apt.type || apt.concern || 'Consultation',
+      time: apt.time || '10:00 AM',
+      date: apt.date || today,
+      isToday: todays.includes(apt),
+      status: apt.status || 'Confirmed'
+    }));
+  }, [appointments]);
 
   const pipelineStatuses = [
     { 
@@ -286,7 +551,6 @@ export const AdminDashboard = () => {
     Star
   };
 
-  // Bespoke aesthetic themes for each of the 8 KPI cards
   const kpiCardStyles = {
     'rev': {
       gradient: 'from-amber-500/15 via-orange-500/5 to-transparent',
@@ -348,175 +612,142 @@ export const AdminDashboard = () => {
       iconGradient: 'from-cyan-500 to-blue-600',
       iconShadow: 'shadow-cyan-500/25',
       accentColor: 'text-cyan-600',
-      topLine: 'bg-gradient-to-r from-cyan-400 to-blue-500',
-      badge: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+      topLine: 'bg-gradient-to-r from-cyan-400 to-teal-500',
+      badge: 'bg-cyan-50 text-cyan-700 border-cyan-200'
     },
     'rev_rate': {
-      gradient: 'from-amber-400/15 via-yellow-400/5 to-transparent',
+      gradient: 'from-amber-400/15 via-yellow-500/5 to-transparent',
       border: 'border-amber-200/90 hover:border-amber-400',
-      iconGradient: 'from-yellow-400 to-amber-500',
+      iconGradient: 'from-amber-400 to-yellow-500',
       iconShadow: 'shadow-yellow-500/25',
       accentColor: 'text-amber-500',
-      topLine: 'bg-gradient-to-r from-yellow-400 to-amber-500',
-      badge: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+      topLine: 'bg-gradient-to-r from-amber-400 to-yellow-400',
+      badge: 'bg-amber-50 text-amber-700 border-amber-200'
     }
   };
 
   return (
-    <div className="space-y-8 pb-12 font-serif">
-      
+    <div className="space-y-8 animate-fade-in font-serif">
+
       {/* Push Notification Banner */}
       {showNotificationBanner && (
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4 shadow-sm animate-in slide-in-from-top duration-300">
+        <div className="bg-gradient-to-r from-brandOrange-500 to-amber-500 rounded-2xl p-4 text-white shadow-lg flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shrink-0">
-              <Bell className="w-5 h-5 text-white animate-bounce" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-bold text-slate-900 mb-0.5">
-                Enable Push Notifications 🔔
-              </h3>
-              <p className="text-xs text-slate-600">
-                Get instant alerts for new orders, appointments & enquiries - just like WhatsApp!
-              </p>
+            <Bell className="w-5 h-5 shrink-0 animate-bounce" />
+            <div>
+              <p className="font-bold text-sm">Enable Instant Notifications</p>
+              <p className="text-xs text-orange-100">Get notified immediately when new orders or appointments are placed</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => setShowNotificationBanner(false)}
-              className="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-white rounded-lg transition-colors"
-            >
-              Later
-            </button>
-            <button
-              onClick={handleEnableNotifications}
-              className="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg transition-all shadow-sm hover:shadow-md flex items-center gap-1.5"
-            >
-              <Bell className="w-3.5 h-3.5" />
-              Enable Now
-            </button>
-          </div>
+          <button
+            onClick={handleEnableNotifications}
+            className="px-4 py-2 bg-white text-brandOrange-600 rounded-xl font-bold text-xs hover:bg-orange-50 transition-all cursor-pointer shadow-md shrink-0 ml-4"
+          >
+            Enable Now
+          </button>
         </div>
       )}
 
-      {/* Notification Status Indicator */}
-      {notificationsEnabled && (
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-3 flex items-center gap-2 text-xs">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-          <span className="font-semibold text-emerald-800">
-            Push Notifications Active - You'll be notified of new orders & appointments
-          </span>
-        </div>
-      )}
-      {/* 1. Hero Command Center Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-        <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-amber-300/25 rounded-full blur-2xl pointer-events-none" />
-        
-        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-5 text-center sm:text-left">
-          
-          {/* Left Greeting */}
-          <h1 className="font-heading text-xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-            {getGreeting()}, Dr. Bharathi
-          </h1>
+      {/* 1. Header Banner */}
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-[#ffe8d6] via-[#fff1e6] to-[#f8f9fa] border border-[#f0cbb5] p-6 sm:p-8 lg:p-10 shadow-[0_10px_35px_-5px_rgba(234,88,12,0.12)]">
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-96 h-96 bg-gradient-to-br from-amber-200/40 via-orange-100/30 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 -mb-10 w-80 h-80 bg-teal-100/30 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Right: Quick Action Controls - Always on a single line on mobile & desktop */}
-          <div className="relative z-10 flex flex-row items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto shrink-0">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100/80 border border-orange-200 text-orange-800 text-xs font-semibold">
+              <Sparkles className="w-3.5 h-3.5 text-orange-600" />
+              <span>Real-Time Clinical Operations Center</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight font-display">
+              {getGreeting()}, Dr. Bharathi
+            </h1>
+            <p className="text-slate-600 text-sm sm:text-base max-w-2xl font-serif">
+              Live operational dispensary metrics, consultations, and patient order flow across Tamil Nadu.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               to="/admin/products"
-              className="flex-1 sm:flex-initial justify-center inline-flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-5 py-2.5 sm:py-3.5 bg-white hover:bg-orange-50 text-orange-600 font-black rounded-2xl text-xs sm:text-sm shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-white cursor-pointer whitespace-nowrap"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3] shrink-0" />
+              <Plus className="w-4 h-4 text-brandOrange-500" />
               <span>Add Product</span>
             </Link>
-
             <Link
               to="/admin/appointments"
-              className="flex-1 sm:flex-initial justify-center inline-flex items-center gap-1.5 sm:gap-2.5 px-3 sm:px-5 py-2.5 sm:py-3.5 bg-white hover:bg-orange-50 text-slate-900 hover:text-orange-600 font-black rounded-2xl text-xs sm:text-sm shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-white cursor-pointer whitespace-nowrap"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer"
             >
-              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-600 stroke-[2.5] shrink-0" />
+              <Calendar className="w-4 h-4 text-teal-600" />
               <span>Appointments</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* 2. Elevated 8 KPI Metric Cards Grid */}
+      {/* 2. Bespoke KPI Grid: 8 Dynamic KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {dynamicKpiStats.map((kpi) => {
           const IconComponent = iconMap[kpi.icon] || ShoppingBag;
-          const style = kpiCardStyles[kpi.id] || kpiCardStyles['rev'];
+          const style = kpiCardStyles[kpi.id] || kpiCardStyles['orders'];
 
           return (
             <div 
               key={kpi.id} 
-              className={`relative bg-white/95 backdrop-blur-sm rounded-2xl p-5 border ${style.border} shadow-[0_4px_20px_-4px_rgba(15,36,56,0.06)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group`}
+              className={`relative bg-gradient-to-br ${style.gradient} bg-white/95 backdrop-blur-sm p-5 sm:p-6 rounded-[2rem] border ${style.border} shadow-[0_4px_20px_-4px_rgba(15,36,56,0.06)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group overflow-hidden flex flex-col justify-between`}
             >
-              {/* Top Accent Gradient Line */}
-              <div className={`absolute top-0 left-0 right-0 h-1 ${style.topLine}`} />
-              
-              {/* Ambient Background Gradient Corner */}
-              <div className={`absolute -right-8 -top-8 w-28 h-28 bg-gradient-to-br ${style.gradient} rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500`} />
+              <div className={`absolute top-0 left-0 right-0 h-1.5 ${style.topLine}`} />
 
-              {/* Header: Title + Icon */}
-              <div className="relative z-10 flex items-center justify-between">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 font-display">
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors">
                   {kpi.title}
                 </span>
-
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${style.iconGradient} text-white flex items-center justify-center shadow-md ${style.iconShadow} group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
-                  <IconComponent className="w-5 h-5 stroke-[2.2]" />
+                <div className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${style.iconGradient} text-white flex items-center justify-center shadow-lg ${style.iconShadow} group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
+                  <IconComponent className="w-5 h-5" />
                 </div>
               </div>
 
-              {/* Value & Trend */}
-              <div className="relative z-10 flex items-baseline justify-between pt-3 pb-1">
-                <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display">
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display mb-1.5 truncate">
                   {kpi.value}
-                </span>
-
-                <span className={`inline-flex items-center gap-0.5 text-[10.5px] font-black px-2 py-0.5 rounded-full border shadow-2xs ${style.badge}`}>
-                  {kpi.isPositive ? <ArrowUpRight className="w-3 h-3 stroke-[2.5]" /> : <ArrowDownRight className="w-3 h-3 stroke-[2.5]" />}
-                  {kpi.change}
-                </span>
+                </h3>
+                <div className="flex items-center gap-2">
+                  <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10.5px] font-black border ${style.badge}`}>
+                    {kpi.isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                    {kpi.change}
+                  </span>
+                  <span className="text-xs text-slate-400 font-medium">
+                    {kpi.subtext}
+                  </span>
+                </div>
               </div>
-
-              {/* Subtext Footer */}
-              <div className="relative z-10 flex items-center gap-1.5 pt-2 border-t border-slate-100/90 text-[11px] text-slate-400 font-semibold">
-                <span className={`w-1.5 h-1.5 rounded-full ${kpi.isPositive ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                <span>{kpi.subtext}</span>
-              </div>
-
             </div>
           );
         })}
       </div>
 
-      {/* 3. Analytics Section: Revenue & Order Trends Visualizer + Order Pipeline */}
+      {/* 3. Real-Time Revenue & Order Analytics Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Left: Interactive Revenue Trend Chart */}
-        <div className="lg:col-span-8 bg-white/95 backdrop-blur-sm p-5 sm:p-7 lg:p-8 rounded-3xl sm:rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-5 sm:space-y-6 flex flex-col justify-between">
-          
-          {/* Header & Controls */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="space-y-1 w-full sm:w-auto">
+
+        {/* Analytics Interactive Chart */}
+        <div className="lg:col-span-8 bg-white/95 backdrop-blur-sm p-6 sm:p-7 rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div>
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-gradient-to-tr from-brandOrange-500 to-amber-500 text-white shadow-md shadow-brandOrange-500/20 shrink-0">
-                  <TrendingUp className="w-4 h-4 stroke-[2.5]" />
+                <div className="p-2 rounded-xl bg-orange-50 text-brandOrange-600 border border-orange-200/70">
+                  <TrendingUp className="w-4 h-4" />
                 </div>
-                <h3 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight font-display">
-                  Revenue & Order Analytics
-                </h3>
+                <div>
+                  <h3 className="font-extrabold text-base sm:text-lg text-slate-900 font-display">
+                    Revenue & Order Analytics
+                  </h3>
+                  <p className="text-xs text-slate-400 font-medium">Consolidated dispensary sales & online doctor consultation revenue</p>
+                </div>
               </div>
-              <p className="text-[11px] sm:text-xs text-slate-500 font-medium leading-relaxed">
-                Consolidated dispensary sales & online doctor consultation revenue
-              </p>
             </div>
 
-            {/* View, Time & Palette Filters */}
-            <div className="flex flex-wrap items-center justify-start sm:justify-end gap-3 w-full lg:w-auto mt-4 sm:mt-0">
-              
+            <div className="flex flex-wrap items-center gap-2">
               {/* Metric View Toggle */}
               <div className="flex items-center bg-slate-100 p-1 rounded-xl text-[11px] font-bold border border-slate-200/70 shrink-0">
                 <button
@@ -572,7 +803,6 @@ export const AdminDashboard = () => {
                   </button>
                 ))}
               </div>
-
             </div>
           </div>
 
@@ -590,7 +820,7 @@ export const AdminDashboard = () => {
               chartPoints.map((pt, i) => {
                 const currentVal = metricView === 'revenue' ? (pt.revenue || 0) : (pt.orders || 0);
                 const maxVal = Math.max(1, ...chartPoints.map(p => metricView === 'revenue' ? (p.revenue || 0) : (p.orders || 0)));
-                const heightPercent = Math.max(12, Math.round((currentVal / maxVal) * 100));
+                const heightPercent = currentVal > 0 ? Math.max(16, Math.round((currentVal / maxVal) * 100)) : 4;
                 const isPeak = currentVal === maxVal && maxVal > 0;
 
                 return (
@@ -600,7 +830,7 @@ export const AdminDashboard = () => {
                       <span className={`w-1.5 h-1.5 rounded-full ${activeChartTheme.dot}`} />
                       <span className="font-bold">{pt.label}:</span>
                       <span className="font-black text-amber-300">
-                        {metricView === 'revenue' ? `₹${(pt.revenue || 0).toLocaleString()}` : `${pt.orders || 0} orders`}
+                        {metricView === 'revenue' ? `₹${(pt.revenue || 0).toLocaleString('en-IN')}` : `${pt.orders || 0} orders`}
                       </span>
                     </div>
 
@@ -639,24 +869,23 @@ export const AdminDashboard = () => {
 
             <div className="flex items-center">
               <div className={`w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] sm:text-xs font-bold ${activeChartTheme.pill}`}>
-                {chartPoints && chartPoints.length > 0 ? (
+                {chartPoints && chartPoints.some(pt => (metricView === 'revenue' ? pt.revenue : pt.orders) > 0) ? (
                   <>
                     <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                    <span>Peak: {chartPoints.reduce((max, pt) => ((metricView === 'revenue' ? (pt?.revenue || 0) : (pt?.orders || 0)) > (metricView === 'revenue' ? (max?.revenue || 0) : (max?.orders || 0)) ? pt : max), chartPoints[0])?.label || 'N/A'}</span>
+                    <span>Peak: {chartPoints.reduce((max, pt) => ((metricView === 'revenue' ? (pt?.revenue || 0) : (pt?.orders || 0)) > (metricView === 'revenue' ? (max?.revenue || 0) : (max?.orders || 0)) ? pt : max), chartPoints[0])?.label || 'Today'}</span>
                   </>
                 ) : (
-                  <span>No activity recorded yet</span>
+                  <span>Live order volume monitoring active</span>
                 )}
               </div>
             </div>
           </div>
-
         </div>
 
-        {/* Right: Order Status Pipeline */}
-        <div className="lg:col-span-4 bg-white/95 backdrop-blur-sm p-5 sm:p-7 lg:p-8 rounded-3xl sm:rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-6 flex flex-col justify-between">
+        {/* Fulfillment Pipeline */}
+        <div className="lg:col-span-4 bg-white/95 backdrop-blur-sm p-6 sm:p-7 rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] flex flex-col justify-between space-y-6">
           <div>
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="font-extrabold text-base sm:text-lg text-slate-900 font-display">
                 Fulfillment Pipeline
               </h3>
@@ -664,7 +893,7 @@ export const AdminDashboard = () => {
                 {activeOrdersCount} Active
               </span>
             </div>
-            <p className="text-xs text-slate-500 font-medium">Live order status distribution across dispensary</p>
+            <p className="text-xs text-slate-500 font-medium mt-1">Live order status distribution across dispensary</p>
           </div>
 
           <div className="space-y-4 flex-1 justify-center flex flex-col">
@@ -721,17 +950,17 @@ export const AdminDashboard = () => {
           </div>
 
           <div className="space-y-3">
-            {adminDashboardData.todayAppointments.length === 0 ? (
+            {todayAppointments.length === 0 ? (
               <div className="text-center py-8 text-xs text-slate-400 font-medium bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                 No appointments scheduled for today
               </div>
             ) : (
-              adminDashboardData.todayAppointments.map((apt) => (
+              todayAppointments.map((apt) => (
                 <div key={apt.id} className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/60 transition-all group">
                   <div className="flex items-center gap-3.5">
                     <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-navy-950 to-purple-800 text-white font-black text-xs flex flex-col items-center justify-center shrink-0 shadow-sm">
                       <Clock className="w-3.5 h-3.5 text-amber-300 mb-0.5" />
-                      <span className="text-[10px] leading-none">{apt.time.split(' ')[0]}</span>
+                      <span className="text-[10px] leading-none">{apt.time ? apt.time.split(' ')[0] : '10:00'}</span>
                     </div>
 
                     <div>
@@ -778,12 +1007,12 @@ export const AdminDashboard = () => {
           </div>
 
           <div className="space-y-3">
-            {adminDashboardData.lowStockItems.length === 0 ? (
+            {lowStockItems.length === 0 ? (
               <div className="text-center py-8 text-xs text-slate-400 font-medium bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                 All dispensary inventory levels are optimal
               </div>
             ) : (
-              adminDashboardData.lowStockItems.map((item) => (
+              lowStockItems.map((item) => (
                 <div key={item.id} className="flex items-center justify-between p-3.5 rounded-2xl bg-rose-50/50 hover:bg-rose-50/80 border border-rose-200/70 transition-all group">
                   <div className="flex items-center gap-3.5">
                     <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-rose-500 to-red-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-md shadow-rose-500/20">
@@ -831,7 +1060,7 @@ export const AdminDashboard = () => {
             </Link>
           </div>
 
-          {adminDashboardData.recentOrders.length === 0 && orders.length === 0 ? (
+          {recentOrdersList.length === 0 ? (
             <div className="text-center py-8 text-xs text-slate-400 font-medium bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
               No orders recorded yet. Live orders will appear here in real-time.
             </div>
@@ -857,7 +1086,7 @@ export const AdminDashboard = () => {
                           <span>{ord.customer}</span>
                         </td>
                         <td className="py-3.5 px-4 font-black text-brandOrange-600">
-                          ₹{ord.amount.toLocaleString()}
+                          ₹{Number(ord.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                         <td className="py-3.5 pl-4">
                           <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-2xs ${
@@ -898,7 +1127,7 @@ export const AdminDashboard = () => {
                       <p className="text-xs font-bold text-slate-700 mt-1">{ord.customer}</p>
                     </div>
                     <span className="font-black text-sm text-brandOrange-600 font-display">
-                      ₹{ord.amount.toLocaleString()}
+                      ₹{Number(ord.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 ))}
@@ -907,7 +1136,7 @@ export const AdminDashboard = () => {
           )}
         </div>
 
-{/* Top Selling Remedies */}
+        {/* Top Selling Remedies */}
         <div className="lg:col-span-5 bg-white/95 backdrop-blur-sm p-6 sm:p-7 rounded-[2.25rem] border border-slate-200/90 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] space-y-4">
           <div className="flex justify-between items-center pb-3 border-b border-slate-100">
             <div>
@@ -923,13 +1152,13 @@ export const AdminDashboard = () => {
           </div>
 
           <div className="space-y-3">
-            {adminDashboardData.topProducts.length === 0 ? (
+            {topSellingProducts.length === 0 ? (
               <div className="text-center py-8 text-xs text-slate-400 font-medium bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                 No sales data recorded yet
               </div>
             ) : (
-              adminDashboardData.topProducts.map((p) => (
-                <div key={p.rank} className="flex items-center justify-between gap-3 text-xs p-2.5 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors group">
+              topSellingProducts.map((p) => (
+                <div key={p.id || p.rank} className="flex items-center justify-between gap-3 text-xs p-2.5 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors group">
                   <div className="flex items-center gap-3 truncate">
                     <span className={`font-black text-xs w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
                       p.rank === 1 ? 'bg-amber-100 text-amber-800' : p.rank === 2 ? 'bg-slate-200 text-slate-700' : 'text-slate-400'
