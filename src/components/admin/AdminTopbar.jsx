@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Menu, 
@@ -20,6 +20,7 @@ import {
   markAllNotificationsAsSeen 
 } from '../../services/adminNotificationService';
 import { AdminSpotlightSearchModal } from './AdminSpotlightSearchModal';
+import { assets } from '../../assets';
 
 export const AdminTopbar = ({ onToggleSidebar }) => {
   const { user, logout } = useAuth();
@@ -97,9 +98,16 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
 
         <div className="flex items-center gap-2.5">
           <div className="flex items-center gap-2">
-            <span className="font-serif font-bold text-sm sm:text-base tracking-tight text-slate-900">
-              Dr. Bharathi’s <span className="text-brandOrange-600 font-black">Homeo Care</span>
+            {/* Desktop Text */}
+            <span className="hidden lg:inline-block font-serif font-bold sm:text-base tracking-tight text-slate-900">
+              Dr. Bharathi's <span className="text-brandOrange-600 font-black">Homeo Care</span>
             </span>
+            {/* Mobile/Tablet Logo Image */}
+            <img 
+              src={assets.logoBg1} 
+              alt="Dr. Bharathi's Homeo Care" 
+              className="lg:hidden h-[26px] object-contain rounded-sm" 
+            />
           </div>
         </div>
       </div>
@@ -316,3 +324,4 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
     </header>
   );
 };
+
