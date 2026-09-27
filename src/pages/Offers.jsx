@@ -11,7 +11,9 @@ import {
   Truck, 
   CreditCard,
   ShoppingBag,
-  ArrowRight
+  ArrowRight,
+  Copy,
+  Check
 } from 'lucide-react';
 import { demoProducts } from '../data/products';
 import { assets } from '../assets';
@@ -38,6 +40,18 @@ export const Offers = () => {
   // Load real offers and coupons from admin
   const [adminOffers, setAdminOffers] = useState([]);
   const [adminCoupons, setAdminCoupons] = useState([]);
+  const [copiedCode, setCopiedCode] = useState(null);
+
+  const handleCopyCoupon = (code) => {
+    if (!code) return;
+    try {
+      navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode(null), 2200);
+    } catch {
+      // Fallback
+    }
+  };
 
   useEffect(() => {
     // Load admin offers, coupons AND timer settings
@@ -232,102 +246,121 @@ export const Offers = () => {
 
               return (
               <ScrollReveal key={coupon.id || idx} direction="up" delay={idx * 60}>
-                <div className="bg-white rounded-2xl border-2 border-dashed border-brandOrange-300 p-6 shadow-sm hover:shadow-lg transition-all relative group overflow-hidden">
-                  {/* Discount Badge */}
-                  <div className="absolute -top-3 -right-3 w-16 h-16 rounded-full bg-gradient-to-br from-brandOrange-500 to-amber-500 text-white flex items-center justify-center text-center shadow-lg z-10">
-                    <div>
-                      <span className="text-lg font-black block leading-none">
-                        {coupon.discountType === 'Percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}
-                      </span>
-                      <span className="text-[8px] font-bold uppercase">OFF</span>
-                    </div>
+                <div className="group relative bg-white rounded-[2.5rem] border border-orange-200/90 shadow-[0_12px_35px_-8px_rgba(234,88,12,0.12)] hover:shadow-[0_24px_50px_-10px_rgba(234,88,12,0.22)] transition-all duration-300 overflow-hidden flex flex-col justify-between">
+                  {/* Top Floating Luxury Discount Pill */}
+                  <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-brandOrange-500 via-amber-500 to-brandOrange-600 text-white shadow-md shadow-orange-500/25 text-[11px] font-black uppercase tracking-wider">
+                    <Sparkles className="w-3 h-3 text-amber-200" />
+                    <span>{coupon.discountType === 'Percentage' ? `${coupon.discountValue}% OFF` : `₹${coupon.discountValue} OFF`}</span>
                   </div>
 
-                  {/* Product Image */}
-                  {displayImage ? (
-                    <div className="mb-5 -mx-6 -mt-6 bg-gradient-to-b from-slate-50 via-white to-amber-50/40 rounded-t-2xl overflow-hidden relative h-52 flex items-center justify-center p-4 border-b border-slate-100 group-hover:bg-amber-50/20 transition-colors">
-                      <img 
-                        src={displayImage} 
-                        alt={coupon.offerTitle || matchingProd?.name || 'Product'} 
-                        className="max-h-full max-w-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.08)] group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                        onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }}
-                      />
-                    </div>
-                  ) : null}
+                  {/* Top Media & Title Section */}
+                  <div className="pt-6 pb-4 px-6 bg-gradient-to-b from-orange-50/70 via-amber-50/30 to-white flex flex-col items-center text-center">
+                    {displayImage ? (
+                      <div className="h-44 w-full flex items-center justify-center p-2 mb-2">
+                        <img 
+                          src={displayImage} 
+                          alt={coupon.offerTitle || matchingProd?.name || 'Homeopathy Medicine'} 
+                          className="max-h-full max-w-[170px] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.12)] group-hover:scale-108 transition-transform duration-500"
+                          loading="lazy"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-32 flex items-center justify-center mb-2">
+                        <div className="w-16 h-16 rounded-2xl bg-orange-100 text-brandOrange-600 flex items-center justify-center text-2xl shadow-inner">
+                          🌿
+                        </div>
+                      </div>
+                    )}
 
-                  {/* Offer Title - if provided */}
-                  {coupon.offerTitle && (
-                    <h3 className="text-base font-black text-navy-950 mb-3 leading-tight">
-                      {coupon.offerTitle}
-                    </h3>
-                  )}
-
-                  {/* Coupon Code - Large and Clear */}
-                  <div className="mb-4">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                      Coupon Code
+                    <span className="text-[10px] font-black tracking-widest uppercase text-brandOrange-600 bg-orange-100/70 px-2.5 py-0.5 rounded-full mb-1">
+                      Clinical Remedy Voucher
                     </span>
-                    <div className="inline-block px-4 py-2.5 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-dashed border-brandOrange-400 rounded-xl">
-                      <span className="text-2xl font-black text-brandOrange-600 font-mono tracking-widest">
-                        {coupon.code}
-                      </span>
-                    </div>
+                    <h3 className="font-heading font-black text-slate-900 text-base leading-snug line-clamp-2 px-2">
+                      {coupon.offerTitle || matchingProd?.name || 'Homeopathy Special Remedy'}
+                    </h3>
                   </div>
 
-                  {/* Offer Description - Clear and Bold */}
-                  <div className="mb-4 p-3 bg-gradient-to-br from-slate-50 to-amber-50/30 rounded-xl border border-slate-100">
-                    <p className="text-sm text-navy-950 font-bold leading-relaxed">
-                      {coupon.discountType === 'Percentage' 
-                        ? `Get ${coupon.discountValue}% discount on your purchase!` 
-                        : `Get flat ₹${coupon.discountValue} off on your order!`}
-                    </p>
+                  {/* Physical Ticket Perforation Divider with Notches */}
+                  <div className="relative flex items-center w-full my-0">
+                    <div className="w-5 h-5 rounded-full bg-[#f8f5ee] -ml-2.5 shadow-inner border-r border-slate-200" />
+                    <div className="flex-1 border-b-2 border-dashed border-slate-200 mx-2" />
+                    <div className="w-5 h-5 rounded-full bg-[#f8f5ee] -mr-2.5 shadow-inner border-l border-slate-200" />
                   </div>
 
-                  {/* Details - Clear Requirements */}
-                  <div className="space-y-2 mb-4 text-xs">
-                    {coupon.minimumOrderValue > 0 && (
-                      <div className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg">
-                        <div className="w-7 h-7 rounded-lg bg-brandOrange-50 flex items-center justify-center shrink-0">
-                          <Tag className="w-3.5 h-3.5 text-brandOrange-600" />
-                        </div>
-                        <div>
-                          <span className="text-slate-500 font-semibold">Minimum Order:</span>
-                          <span className="text-navy-950 font-black ml-1.5">₹{coupon.minimumOrderValue}</span>
-                        </div>
-                      </div>
-                    )}
-                    {coupon.maximumDiscount && coupon.discountType === 'Percentage' && (
-                      <div className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg">
-                        <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                          <Percent className="w-3.5 h-3.5 text-emerald-600" />
-                        </div>
-                        <div>
-                          <span className="text-slate-500 font-semibold">Max Savings:</span>
-                          <span className="text-navy-950 font-black ml-1.5">₹{coupon.maximumDiscount}</span>
-                        </div>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg">
-                      <div className="w-7 h-7 rounded-lg bg-sky-50 flex items-center justify-center shrink-0">
-                        <ShoppingBag className="w-3.5 h-3.5 text-sky-600" />
-                      </div>
+                  {/* Bottom Action & Voucher Details */}
+                  <div className="p-6 pt-3 space-y-4 flex-1 flex flex-col justify-between">
+                    {/* Interactive 1-Click Copy Coupon Code Box */}
+                    <div className="bg-gradient-to-r from-amber-50/90 via-orange-50/70 to-amber-50/90 rounded-2xl p-3 border-2 border-dashed border-brandOrange-300 flex items-center justify-between gap-3 shadow-2xs">
                       <div>
-                        <span className="text-emerald-600 font-black text-xs">
-                          {coupon.usageLimit - (coupon.usedCount || 0)} uses remaining
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                          Coupon Code
+                        </span>
+                        <span className="font-mono font-black text-xl text-brandOrange-600 tracking-wider">
+                          {coupon.code}
                         </span>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* CTA Button */}
-                  <Link
-                    to="/shop"
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-black text-sm rounded-xl shadow-md hover:shadow-lg transition-all group"
-                  >
-                    <span>Shop Now & Save</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </Link>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyCoupon(coupon.code)}
+                        className="px-3.5 py-1.5 bg-white hover:bg-brandOrange-500 text-slate-700 hover:text-white rounded-xl text-xs font-bold shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer border border-slate-200 hover:border-brandOrange-500 active:scale-95 shrink-0"
+                      >
+                        {copiedCode === coupon.code ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-500" />
+                            <span className="text-emerald-600 font-bold">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5 text-brandOrange-500" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Features Grid (2 columns) */}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-100 flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-orange-100 text-brandOrange-600 flex items-center justify-center shrink-0">
+                          <Tag className="w-3 h-3" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-slate-400 block text-[9px]">Min Order</span>
+                          <span className="font-bold text-slate-800 text-[11px]">₹{coupon.minimumOrderValue || 0}</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-100 flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                          <Percent className="w-3 h-3" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-slate-400 block text-[9px]">Max Savings</span>
+                          <span className="font-bold text-slate-800 text-[11px]">₹{coupon.maximumDiscount || 200}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Uses indicator */}
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 px-1 font-medium">
+                      <span className="flex items-center gap-1 text-emerald-600 font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block mr-1" />
+                        Verified Active
+                      </span>
+                      <span>{coupon.usageLimit ? `${coupon.usageLimit - (coupon.usedCount || 0)} uses left` : '100% Valid'}</span>
+                    </div>
+
+                    {/* CTA Button */}
+                    <Link
+                      to="/shop"
+                      className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-brandOrange-500 via-orange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer group"
+                    >
+                      <span>Claim & Shop Remedy</span>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
+                    </Link>
+                  </div>
                 </div>
               </ScrollReveal>
             );
