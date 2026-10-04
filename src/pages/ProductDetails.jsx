@@ -1,4 +1,4 @@
-import { getStoredProducts } from '../utils/productStorage';
+import { getStoredProducts, resolveProductImage } from '../utils/productStorage';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate } from 'react-router-dom';
@@ -229,8 +229,14 @@ export const ProductDetails = () => {
             className="aspect-square bg-white/95 backdrop-blur-2xl rounded-3xl overflow-hidden border border-slate-200/90 p-3 shadow-[0_15px_45px_rgba(15,23,42,0.08)] relative group flex items-center justify-center cursor-zoom-in"
           >
             <img
-              src={selectedImage || product.image}
+              src={selectedImage || resolveProductImage(product)}
               alt={product.name}
+              onError={(e) => {
+                const fallback = resolveProductImage(product);
+                if (e.currentTarget.src !== fallback) {
+                  e.currentTarget.src = fallback;
+                }
+              }}
               className="w-full h-full object-cover object-center rounded-2xl transition-all duration-300 group-hover:scale-[1.03]"
             />
 

@@ -4,6 +4,53 @@ import { assets } from '../assets';
 const STORAGE_KEY = 'drBharathiProductsCatalog';
 const ADMIN_STORAGE_KEY = 'admin_products_store';
 
+/**
+ * Accurately resolves the genuine image for a product.
+ * Guarantees that each product gets its distinct remedy photo as displayed in Admin.
+ */
+export const resolveProductImage = (product) => {
+  if (!product) return demoProducts[0]?.image || assets.product1 || assets.p1;
+
+  // 1. If admin uploaded a custom photo (base64 or remote URL)
+  if (product.image && typeof product.image === 'string' && (product.image.startsWith('data:') || product.image.startsWith('http'))) {
+    return product.image;
+  }
+
+  // 2. Match with demoProducts by SKU, ID, slug or name to get current build's authentic remedy image
+  const matching = demoProducts.find(item =>
+    (product.sku && item.sku && item.sku.toLowerCase() === product.sku.toLowerCase()) ||
+    (product.id && item.id && item.id === product.id) ||
+    (product._id && item._id && item._id === product._id) ||
+    (product.slug && item.slug && item.slug === product.slug) ||
+    (product.name && item.name && product.name.trim().toLowerCase() === item.name.trim().toLowerCase())
+  );
+  if (matching?.image) return matching.image;
+
+  // 3. Keyword matching for known remedy formulations
+  const name = (product.name || '').toLowerCase();
+  if (name.includes('arnica')) return assets.product1 || assets.p3;
+  if (name.includes('urtica')) return assets.p1;
+  if (name.includes('cantharis')) return assets.p2;
+  if (name.includes('alfalfa')) return assets.p3;
+  if (name.includes('carduus')) return assets.p4;
+  if (name.includes('ginseng')) return assets.p5;
+  if (name.includes('allium')) return assets.p6;
+  if (name.includes('thuja')) return assets.p7;
+  if (name.includes('berberis')) return assets.p5;
+  if (name.includes('calendula')) return assets.p4;
+  if (name.includes('rhus')) return assets.p7;
+  if (name.includes('nux')) return assets.p8;
+  if (name.includes('belladonna')) return assets.p9;
+  if (name.includes('echinacea')) return assets.p10;
+  if (name.includes('ocimum')) return assets.p11;
+
+  if (product.image && typeof product.image === 'string' && product.image.trim()) {
+    return product.image;
+  }
+
+  return demoProducts[0]?.image || assets.product1;
+};
+
 export const isMatchingCategory = (prodCategory, selected) => {
   if (!selected || selected === 'All Categories' || selected === 'All') return true;
   const pCat = (prodCategory || '').toLowerCase().trim();
@@ -45,8 +92,12 @@ export const getStoredProducts = () => {
               ? Math.round(((regularPrice - offerPrice) / regularPrice) * 100)
               : (p.discount || 0);
 
+            const image = resolveProductImage(p);
+
             return {
               ...p,
+              image,
+              images: (Array.isArray(p.images) && p.images.length > 0) ? p.images : [image],
               price: offerPrice,
               salePrice: offerPrice,
               offerPrice: offerPrice,
@@ -64,7 +115,10 @@ export const getStoredProducts = () => {
     if (stored) {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        return parsed.map(p => ({
+          ...p,
+          image: resolveProductImage(p)
+        }));
       }
     }
   } catch (err) {

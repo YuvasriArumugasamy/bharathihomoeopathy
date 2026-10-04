@@ -3,6 +3,7 @@ import { X, Star, Check, ShieldCheck, Heart } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import { Link } from 'react-router-dom';
+import { resolveProductImage } from '../../utils/productStorage';
 
 export const QuickViewModal = ({ product, onClose }) => {
   const { addToCart } = useCart();
@@ -43,8 +44,14 @@ export const QuickViewModal = ({ product, onClose }) => {
           {/* Image */}
           <div className="aspect-square bg-slate-50 rounded-2xl overflow-hidden flex items-center justify-center border border-slate-100">
             <img
-              src={product.image}
+              src={resolveProductImage(product)}
               alt={product.name}
+              onError={(e) => {
+                const fallback = resolveProductImage(product);
+                if (e.currentTarget.src !== fallback) {
+                  e.currentTarget.src = fallback;
+                }
+              }}
               className="w-full h-full object-cover object-center"
             />
           </div>
