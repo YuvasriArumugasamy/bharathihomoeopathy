@@ -108,31 +108,62 @@ export const AdminOffers = () => {
       }
     });
 
-    let initialCloudCheckDone = false;
+    let initialCloudCouponsDone = false;
     const unsubCoupons = cloudSyncService.listenToCoupons((cloudCoupons) => {
       if (!Array.isArray(cloudCoupons)) return;
-      // First load: if cloud is empty but this admin browser has coupons, publish them to cloud
-      if (!initialCloudCheckDone) {
-        initialCloudCheckDone = true;
+      if (!initialCloudCouponsDone) {
+        initialCloudCouponsDone = true;
         if (cloudCoupons.length === 0) {
           try {
             const local = JSON.parse(localStorage.getItem('admin_coupons_store') || '[]');
-            if (Array.isArray(local) && local.length > 0) {
-              cloudSyncService.syncCouponsToCloud(local);
-              return;
-            }
+            const toSync = Array.isArray(local) && local.length > 0 ? local : initialAdminCoupons;
+            cloudSyncService.syncCouponsToCloud(toSync);
+            setCoupons(toSync);
+            try {
+              localStorage.setItem('admin_coupons_store', JSON.stringify(toSync));
+            } catch {}
+            return;
           } catch {}
         }
       }
-      setCoupons(cloudCoupons);
-      try {
-        localStorage.setItem('admin_coupons_store', JSON.stringify(cloudCoupons));
-      } catch {}
+      if (cloudCoupons.length > 0) {
+        setCoupons(cloudCoupons);
+        try {
+          localStorage.setItem('admin_coupons_store', JSON.stringify(cloudCoupons));
+        } catch {}
+      }
+    });
+
+    let initialCloudOffersDone = false;
+    const unsubOffers = cloudSyncService.listenToOffers((cloudOffers) => {
+      if (!Array.isArray(cloudOffers)) return;
+      if (!initialCloudOffersDone) {
+        initialCloudOffersDone = true;
+        if (cloudOffers.length === 0) {
+          try {
+            const local = JSON.parse(localStorage.getItem('admin_offers_store') || '[]');
+            const toSync = Array.isArray(local) && local.length > 0 ? local : initialAdminOffers;
+            cloudSyncService.syncOffersToCloud(toSync);
+            setOffers(toSync);
+            try {
+              localStorage.setItem('admin_offers_store', JSON.stringify(toSync));
+            } catch {}
+            return;
+          } catch {}
+        }
+      }
+      if (cloudOffers.length > 0) {
+        setOffers(cloudOffers);
+        try {
+          localStorage.setItem('admin_offers_store', JSON.stringify(cloudOffers));
+        } catch {}
+      }
     });
 
     return () => {
       unsubTimer?.();
       unsubCoupons?.();
+      unsubOffers?.();
     };
   }, []);
 
@@ -152,7 +183,7 @@ export const AdminOffers = () => {
     } catch {
       // fallback
     }
-    return [];
+    return initialAdminCoupons;
   });
 
   const [offers, setOffers] = useState(() => {
@@ -171,7 +202,7 @@ export const AdminOffers = () => {
     } catch {
       // fallback
     }
-    return [];
+    return initialAdminOffers;
   });
 
   const [couponModalOpen, setCouponModalOpen] = useState(false);

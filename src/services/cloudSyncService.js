@@ -293,6 +293,52 @@ export const cloudSyncService = {
       console.warn("[CloudSync] Failed to initialize cloud coupons listener:", err.message);
       return () => {};
     }
+  },
+  /**
+   * Sync promotional offers to Cloud Firestore
+   */
+  syncOffersToCloud: async (offers) => {
+    if (!Array.isArray(offers)) return false;
+    try {
+      const offersRef = doc(db, "settings", "admin_offers");
+      await setDoc(offersRef, {
+        offers: offers.map(o => JSON.parse(JSON.stringify(o))),
+        updatedAt: new Date().toISOString(),
+        cloudTimestamp: serverTimestamp()
+      }, { merge: true });
+      return true;
+    } catch (err) {
+      console.warn("[CloudSync] Could not sync offers to Cloud:", err.message);
+      return false;
+    }
+  },
+
+  /**
+   * Real-time listener for promotional offers from Cloud Firestore
+   */
+  listenToOffers: (callback) => {
+    try {
+      const offersRef = doc(db, "settings", "admin_offers");
+      const unsubscribe = onSnapshot(
+        offersRef,
+        (snap) => {
+          if (typeof callback !== 'function') return;
+          if (snap.exists()) {
+            const data = snap.data();
+            callback(Array.isArray(data?.offers) ? data.offers : []);
+          } else {
+            callback([]);
+          }
+        },
+        (error) => {
+          console.warn("[CloudSync] Live offers snapshot error:", error.message);
+        }
+      );
+      return unsubscribe;
+    } catch (err) {
+      console.warn("[CloudSync] Failed to initialize cloud offers listener:", err.message);
+      return () => {};
+    }
   }
 };
 

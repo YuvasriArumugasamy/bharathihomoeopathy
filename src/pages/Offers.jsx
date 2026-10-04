@@ -20,6 +20,7 @@ import { assets } from '../assets';
 import { SectionHeader } from '../components/common/SectionHeader';
 import { ScrollReveal } from '../components/common/ScrollReveal';
 import { cloudSyncService } from '../services/cloudSyncService';
+import { initialAdminOffers, initialAdminCoupons } from '../data/adminOffersData';
 
 // Real-time calculation helper
 const calculateRemaining = (targetEndTime, fallbackSettings) => {
@@ -81,9 +82,29 @@ export const Offers = () => {
 
   const [timeLeft, setTimeLeft] = useState(() => calculateRemaining(timerSettings?.targetEndTime, timerSettings));
 
-  // Load real offers and coupons from admin
-  const [adminOffers, setAdminOffers] = useState([]);
-  const [adminCoupons, setAdminCoupons] = useState([]);
+  // Load real offers and coupons with authentic clinic defaults
+  const [adminOffers, setAdminOffers] = useState(() => {
+    try {
+      const raw = localStorage.getItem('admin_offers_store');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return initialAdminOffers;
+  });
+
+  const [adminCoupons, setAdminCoupons] = useState(() => {
+    try {
+      const raw = localStorage.getItem('admin_coupons_store');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return initialAdminCoupons;
+  });
+
   const [copiedCode, setCopiedCode] = useState(null);
 
   const handleCopyCoupon = (code) => {
@@ -97,7 +118,7 @@ export const Offers = () => {
     }
   };
 
-  // 1. Initial Local Storage Load + Firebase Cloud Listeners
+  // 1. Initial Local Storage Load + Firebase Cloud Listeners + Storage Events
   useEffect(() => {
     try {
       const rawOffers = localStorage.getItem('admin_offers_store');
@@ -106,12 +127,12 @@ export const Offers = () => {
       
       if (rawOffers) {
         const offers = JSON.parse(rawOffers);
-        setAdminOffers(Array.isArray(offers) ? offers : []);
+        if (Array.isArray(offers) && offers.length > 0) setAdminOffers(offers);
       }
       
       if (rawCoupons) {
         const coupons = JSON.parse(rawCoupons);
-        setAdminCoupons(Array.isArray(coupons) ? coupons : []);
+        if (Array.isArray(coupons) && coupons.length > 0) setAdminCoupons(coupons);
       }
 
       if (rawTimer) {
@@ -132,6 +153,15 @@ export const Offers = () => {
       }
     });
 
+    const unsubOffers = cloudSyncService.listenToOffers((cloudOffers) => {
+      if (Array.isArray(cloudOffers) && cloudOffers.length > 0) {
+        setAdminOffers(cloudOffers);
+        try {
+          localStorage.setItem('admin_offers_store', JSON.stringify(cloudOffers));
+        } catch {}
+      }
+    });
+
     const unsubCoupons = cloudSyncService.listenToCoupons((cloudCoupons) => {
       if (Array.isArray(cloudCoupons) && cloudCoupons.length > 0) {
         setAdminCoupons(cloudCoupons);
@@ -141,9 +171,33 @@ export const Offers = () => {
       }
     });
 
+    const handleStorage = (e) => {
+      if (e.key === 'admin_coupons_store' && e.newValue) {
+        try {
+          const p = JSON.parse(e.newValue);
+          if (Array.isArray(p) && p.length > 0) setAdminCoupons(p);
+        } catch {}
+      }
+      if (e.key === 'admin_offers_store' && e.newValue) {
+        try {
+          const p = JSON.parse(e.newValue);
+          if (Array.isArray(p) && p.length > 0) setAdminOffers(p);
+        } catch {}
+      }
+      if (e.key === 'admin_offer_timer_settings' && e.newValue) {
+        try {
+          const p = JSON.parse(e.newValue);
+          if (p) setTimerSettings(p);
+        } catch {}
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
     return () => {
       unsubTimer?.();
+      unsubOffers?.();
       unsubCoupons?.();
+      window.removeEventListener('storage', handleStorage);
     };
   }, []);
 
@@ -175,9 +229,9 @@ export const Offers = () => {
     return () => clearInterval(interval);
   }, [timerSettings.targetEndTime, timerSettings.days, timerSettings.hours, timerSettings.minutes, timerSettings.seconds]);
 
-  // When timer reaches 0 (00:00:00:00), the flash sale has ended and promotional product cards must NOT show!
+  // When timer reaches 0 (00:00:00:00), the flash sale timer ends
   const isSaleExpired = Boolean(timerSettings?.enabled && timeLeft?.isExpired);
-  const hasOffers = !isSaleExpired && (adminOffers.length > 0 || adminCoupons.length > 0);
+  const hasOffers = adminOffers.length > 0 || adminCoupons.length > 0;
 
   return (
     <div className="space-y-12 pb-12 w-full max-w-full overflow-x-hidden">
@@ -308,6 +362,47 @@ export const Offers = () => {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           
           <SectionHeader title="Active Offers & Coupons" />
+
+          {/* Clinical Promotional Campaigns */}
+          {adminOffers.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {adminOffers.map((off, idx) => (
+                <div 
+                  key={off.id || idx}
+                  className="relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-brandOrange-500 via-orange-500 to-amber-500 p-6 text-white shadow-xl shadow-orange-500/15 flex flex-col justify-between"
+                >
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <span className="px-3 py-1 bg-white/20 backdrop-blur-xs text-white font-black text-[10px] rounded-full uppercase border border-white/30 tracking-wider">
+                      {off.type || 'Clinic Special Offer'}
+                    </span>
+                    <span className="font-extrabold text-amber-100 text-xs bg-black/20 px-3 py-1 rounded-full">
+                      {off.discountBadge || 'Special Discount'}
+                    </span>
+                  </div>
+                  <div className="space-y-1.5 my-2">
+                    <h4 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                      {off.name}
+                    </h4>
+                    <p className="text-xs text-white/90 font-medium leading-relaxed">
+                      {off.description}
+                    </p>
+                  </div>
+                  <div className="pt-4 mt-3 border-t border-white/20 flex items-center justify-between text-xs">
+                    <span className="text-white/80 font-medium text-[11px]">
+                      {off.startDate && off.endDate ? `Valid: ${off.startDate} to ${off.endDate}` : 'Limited Period Offer'}
+                    </span>
+                    <Link
+                      to="/shop"
+                      className="px-4 py-2 bg-white hover:bg-orange-50 text-brandOrange-600 font-black rounded-xl text-xs shadow-md transition-all flex items-center gap-1.5 active:scale-95"
+                    >
+                      <span>Shop Deals</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {adminCoupons.map((coupon, idx) => {
