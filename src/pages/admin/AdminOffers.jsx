@@ -108,13 +108,26 @@ export const AdminOffers = () => {
       }
     });
 
+    let initialCloudCheckDone = false;
     const unsubCoupons = cloudSyncService.listenToCoupons((cloudCoupons) => {
-      if (Array.isArray(cloudCoupons) && cloudCoupons.length > 0) {
-        setCoupons(cloudCoupons);
-        try {
-          localStorage.setItem('admin_coupons_store', JSON.stringify(cloudCoupons));
-        } catch {}
+      if (!Array.isArray(cloudCoupons)) return;
+      // First load: if cloud is empty but this admin browser has coupons, publish them to cloud
+      if (!initialCloudCheckDone) {
+        initialCloudCheckDone = true;
+        if (cloudCoupons.length === 0) {
+          try {
+            const local = JSON.parse(localStorage.getItem('admin_coupons_store') || '[]');
+            if (Array.isArray(local) && local.length > 0) {
+              cloudSyncService.syncCouponsToCloud(local);
+              return;
+            }
+          } catch {}
+        }
       }
+      setCoupons(cloudCoupons);
+      try {
+        localStorage.setItem('admin_coupons_store', JSON.stringify(cloudCoupons));
+      } catch {}
     });
 
     return () => {
@@ -282,6 +295,7 @@ export const AdminOffers = () => {
       } catch (err) {
         console.warn("Could not save coupons:", err);
       }
+      cloudSyncService.syncCouponsToCloud(updated);
       showToast('Coupon updated successfully!', 'success');
       setEditingCouponId(null);
     } else {
@@ -301,6 +315,7 @@ export const AdminOffers = () => {
       } catch (err) {
         console.warn("Could not save coupons:", err);
       }
+      cloudSyncService.syncCouponsToCloud(updated);
       showToast('New coupon code created and activated!', 'success');
     }
 
@@ -316,6 +331,7 @@ export const AdminOffers = () => {
     } catch (err) {
       console.warn("Could not save coupons:", err);
     }
+    cloudSyncService.syncCouponsToCloud(updated);
     showToast('Coupon code deactivated and removed', 'info');
   };
 

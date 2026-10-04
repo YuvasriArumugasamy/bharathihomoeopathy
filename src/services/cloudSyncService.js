@@ -276,11 +276,12 @@ export const cloudSyncService = {
       const unsubscribe = onSnapshot(
         couponsRef,
         (snap) => {
+          if (typeof callback !== 'function') return;
           if (snap.exists()) {
             const data = snap.data();
-            if (data?.coupons && Array.isArray(data.coupons) && typeof callback === 'function') {
-              callback(data.coupons);
-            }
+            callback(Array.isArray(data?.coupons) ? data.coupons : []);
+          } else {
+            callback([]);
           }
         },
         (error) => {
