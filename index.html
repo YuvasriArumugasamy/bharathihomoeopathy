@@ -6,12 +6,46 @@
     <link rel="alternate icon" href="/favicon.png" />
     <link rel="shortcut icon" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
-    <link rel="manifest" href="/manifest.json" />
+    <link id="app-manifest" rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#e05a1e" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Dr. Bharathi" />
+    <script>
+      (function() {
+        try {
+          var path = window.location.pathname.toLowerCase();
+          var isAdminPath = path.startsWith('/admin');
+          var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+          var manifestEl = document.getElementById('app-manifest');
+
+          if (isAdminPath) {
+            localStorage.setItem('dr_bharathi_pwa_mode', 'admin');
+            if (manifestEl) {
+              manifestEl.setAttribute('href', '/manifest-admin.json');
+            }
+          } else if (isStandalone) {
+            var preferredMode = localStorage.getItem('dr_bharathi_pwa_mode');
+            var rawUser = localStorage.getItem('user');
+            var isUserAdmin = false;
+            try {
+              if (rawUser) {
+                var u = JSON.parse(rawUser);
+                if (u && (u.role === 'admin' || (u.email && u.email.toLowerCase().includes('admin')))) {
+                  isUserAdmin = true;
+                }
+              }
+            } catch(e) {}
+
+            // If the installed standalone app was opened by admin, route directly to /admin
+            if ((preferredMode === 'admin' || isUserAdmin) && (path === '/' || path === '')) {
+              window.location.replace('/admin');
+            }
+          }
+        } catch(err) {}
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Best Homeopathy Clinic in Trichy | Dr. Bharathi’s Homeo Care</title>
     <meta name="description" content="Looking for the best homeopathy clinic in Trichy? Dr. Bharathi provides proven natural treatments for chronic illness, skin allergy, hair fall & family wellness." />

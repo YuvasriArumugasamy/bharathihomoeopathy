@@ -1,6 +1,7 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import { PwaInstallPrompt } from './components/common/PwaInstallPrompt';
 
 // Layouts
 import { MainLayout } from './layouts/MainLayout';
@@ -49,11 +50,24 @@ import { useFCM } from './hooks/useFCM';
 import { useAdminLiveAlerts } from './hooks/useAdminLiveAlerts';
 
 export default function App() {
+  const location = useLocation();
+
   // Initialize Firebase Cloud Messaging Push Notifications
   useFCM();
 
   // Initialize Guaranteed Live Alerts for new orders & appointments
   useAdminLiveAlerts();
+
+  React.useEffect(() => {
+    const isPathAdmin = location.pathname.toLowerCase().startsWith('/admin');
+    const manifestEl = document.getElementById('app-manifest') || document.querySelector('link[rel="manifest"]');
+    if (manifestEl) {
+      manifestEl.setAttribute('href', isPathAdmin ? '/manifest-admin.json' : '/manifest.json');
+    }
+    if (isPathAdmin) {
+      localStorage.setItem('dr_bharathi_pwa_mode', 'admin');
+    }
+  }, [location.pathname]);
 
   React.useEffect(() => {
     // Neutralize any body displacement or top margin injected by Google Translate or browser plugins
@@ -81,6 +95,7 @@ export default function App() {
     <ErrorBoundary>
       <ScrollToTop />
       <SeoManager />
+      <PwaInstallPrompt />
       <Routes>
       {/* Patient & Customer Routes */}
       <Route path="/" element={<MainLayout />}>

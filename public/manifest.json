@@ -20,5 +20,30 @@
   "background_color": "#ffffff",
   "theme_color": "#e05a1e",
   "display": "standalone",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "shortcuts": [
+    {
+      "name": "Admin Portal",
+      "short_name": "Admin",
+      "description": "Clinic Administrator Management Portal",
+      "url": "/admin",
+      "icons": [
+        {
+          "src": "/logo.png",
+          "sizes": "512x512"
+        }
+      ]
+    },
+    {
+      "name": "Book Appointment",
+      "short_name": "Appointment",
+      "url": "/appointment",
+      "icons": [
+        {
+          "src": "/favicon.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
 }

@@ -9,7 +9,6 @@ import { AuthModal } from '../components/auth/AuthModal';
 import { CountryModal } from '../components/common/CountryModal';
 import { TrackOrderModal } from '../components/common/TrackOrderModal';
 import { SymptomGuideModal } from '../components/common/SymptomGuideModal';
-import { PwaInstallPrompt } from '../components/common/PwaInstallPrompt';
 import { InitialLoader } from '../components/common/InitialLoader';
 import { assets } from '../assets';
 
@@ -76,9 +75,6 @@ export const MainLayout = () => {
 
         {/* Global Patient Auth Popup Modal (Register / Sign In) */}
         <AuthModal />
-
-        {/* PWA Mobile App Install Banner */}
-        <PwaInstallPrompt />
       </div>
     </div>
   );

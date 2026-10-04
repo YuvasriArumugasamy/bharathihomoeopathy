@@ -1,0 +1,45 @@
+{
+  "short_name": "Admin Portal",
+  "name": "Dr. Bharathi Admin Portal",
+  "description": "Clinic Administrator Management Portal for Dr. Bharathi’s Homeopathic Care - Orders, Appointments & Notifications",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/admin",
+  "scope": "/admin",
+  "background_color": "#0c1425",
+  "theme_color": "#0c1425",
+  "display": "standalone",
+  "orientation": "portrait",
+  "shortcuts": [
+    {
+      "name": "Live Notifications",
+      "short_name": "Alerts",
+      "url": "/admin/notifications",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dispensary Orders",
+      "short_name": "Orders",
+      "url": "/admin/orders",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Appointments",
+      "short_name": "Consultations",
+      "url": "/admin/appointments",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192" }]
+    }
+  ]
+}
