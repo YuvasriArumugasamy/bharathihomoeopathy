@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, BellRing, CheckCircle2, AlertCircle, Sparkles, Send } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { api } from '../../utils/api';
@@ -29,7 +29,7 @@ export default function PushNotificationCard() {
     }
 
     if (permission === 'granted') {
-      showToast('âœ… Alerts are already active! Click "ðŸ”” Test Notification" to test sound & browser alert.', 'info');
+      showToast('✅ Alerts are already active! Click "🔔 Test Notification" to test sound & browser alert.', 'info');
       playNotificationSound();
       return;
     }
@@ -58,7 +58,7 @@ export default function PushNotificationCard() {
               if (token) {
                 localStorage.setItem('fcm_token', token);
                 await api.post('/notifications/fcm-token', { token });
-                console.log('âœ… FCM Token registered with clinic server');
+                console.log('✅ FCM Token registered with clinic server');
               }
             }
           }
@@ -100,10 +100,10 @@ export default function PushNotificationCard() {
       playNotificationSound();
 
       // 2. Show instant in-app toast immediately
-      showToast('ðŸ”” Test Notification Triggered! Chime & Alert active.', 'success');
+      showToast('🔔 Test Notification Triggered! Chime & Alert active.', 'success');
 
       // 3. Fire native OS notification safely with fallback and timeout
-      const title = 'ðŸ”” Dr. Bharathi Homeo Care - Test Alert';
+      const title = '🔔 Dr. Bharathi Homeo Care - Test Alert';
       const options = {
         body: 'Real-time push notifications are working with 100% precision!',
         icon: '/logo.png',
@@ -136,7 +136,7 @@ export default function PushNotificationCard() {
       // 4. Trigger server push notification broadcast
       try {
         await api.post('/notifications/send', {
-          title: 'ðŸ”” Push Notification Test',
+          title: '🔔 Push Notification Test',
           body: 'Clinical push notification broadcast triggered successfully.',
         });
       } catch (backendErr) {
