@@ -70,7 +70,7 @@ export const Offers = () => {
       if (raw) return JSON.parse(raw);
     } catch {}
     return {
-      enabled: true,
+      enabled: false,
       days: 3,
       hours: 14,
       minutes: 25,
@@ -233,8 +233,8 @@ export const Offers = () => {
         </div>
       </section>
 
-      {/* 2. Limited Time Offers Countdown Timer Box - Show if admin enabled */}
-      {timerSettings?.enabled && (
+      {/* 2. Limited Time Offers Countdown Timer Box - Show only if admin enabled AND active offers exist */}
+      {timerSettings?.enabled && hasOffers && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] p-6 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
           
