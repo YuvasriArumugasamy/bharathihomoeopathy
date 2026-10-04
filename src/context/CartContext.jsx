@@ -2,8 +2,40 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import { cartConfig } from '../data/cartConfig';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
+import { demoProducts } from '../data/products';
+import { assets } from '../assets';
 
 const CART_STORAGE_KEY = 'drBharathiCart';
+
+// Helper to guarantee valid, live remedy images even across new deployments
+const autoHealCartItem = (item) => {
+  if (!item) return item;
+  const catalog = demoProducts.find(p => 
+    p.id === item.id || 
+    p._id === item.id ||
+    (p.slug && item.slug && p.slug === item.slug) ||
+    (p.name && item.name && p.name.trim().toLowerCase() === item.name.trim().toLowerCase())
+  );
+  let liveImage = catalog?.image;
+  if (!liveImage) {
+    const name = (item.name || '').toLowerCase();
+    if (name.includes('urtica')) liveImage = assets.p1;
+    else if (name.includes('cantharis')) liveImage = assets.p2;
+    else if (name.includes('arnica')) liveImage = assets.product1 || assets.p3;
+    else if (name.includes('calendula')) liveImage = assets.p4;
+    else if (name.includes('berberis')) liveImage = assets.p5;
+    else if (name.includes('thuja')) liveImage = assets.p6;
+    else if (name.includes('rhus')) liveImage = assets.p7;
+    else if (name.includes('nux')) liveImage = assets.p8;
+    else if (name.includes('belladonna')) liveImage = assets.p9;
+    else if (name.includes('echinacea')) liveImage = assets.p10;
+    else if (name.includes('ocimum')) liveImage = assets.p11;
+  }
+  return {
+    ...item,
+    image: liveImage || item.image || assets.p1
+  };
+};
 
 const CartContext = createContext(null);
 
@@ -15,7 +47,7 @@ export const CartProvider = ({ children }) => {
     try {
       const saved = localStorage.getItem(CART_STORAGE_KEY);
       const parsed = saved ? JSON.parse(saved) : [];
-      return Array.isArray(parsed) ? parsed : [];
+      return (Array.isArray(parsed) ? parsed : []).map(autoHealCartItem);
     } catch {
       return [];
     }
@@ -80,7 +112,7 @@ export const CartProvider = ({ children }) => {
         };
         return updated;
       } else {
-        const newItem = {
+        const newItem = autoHealCartItem({
           id: product.id || product._id,
           name: product.name,
           sku: product.sku || '',
@@ -89,7 +121,7 @@ export const CartProvider = ({ children }) => {
           originalPrice: product.price,
           image: product.image || (product.images && product.images[0]) || '',
           quantity
-        };
+        });
         return [...prevItems, newItem];
       }
     });

@@ -1,9 +1,54 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Trash2, Plus, Minus, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { demoProducts } from '../../data/products';
+import { assets } from '../../assets';
+
+// Reliable remedy image resolver to guarantee genuine clinic product images
+const resolveProductImage = (item) => {
+  if (!item) return assets.p1;
+
+  // 1. Check catalog product match by ID, slug, SKU, or clean name
+  const catalog = demoProducts.find(p => 
+    p.id === item.id || 
+    p._id === item.id ||
+    (p.slug && item.slug && p.slug === item.slug) ||
+    (p.sku && item.sku && p.sku === item.sku) ||
+    (p.name && item.name && p.name.trim().toLowerCase() === item.name.trim().toLowerCase())
+  );
+  if (catalog?.image) return catalog.image;
+
+  // 2. Keyword fallback for famous remedies
+  const name = (item.name || '').toLowerCase();
+  if (name.includes('urtica')) return assets.p1;
+  if (name.includes('cantharis')) return assets.p2;
+  if (name.includes('arnica')) return assets.product1 || assets.p3;
+  if (name.includes('calendula')) return assets.p4;
+  if (name.includes('berberis')) return assets.p5;
+  if (name.includes('thuja')) return assets.p6;
+  if (name.includes('rhus')) return assets.p7;
+  if (name.includes('nux')) return assets.p8;
+  if (name.includes('belladonna')) return assets.p9;
+  if (name.includes('echinacea')) return assets.p10;
+  if (name.includes('ocimum')) return assets.p11;
+
+  // 3. Stored image if present
+  if (item.image && typeof item.image === 'string' && item.image.trim()) {
+    return item.image;
+  }
+
+  return assets.p1;
+};
 
 export const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
   if (!item) return null;
+
+  const [imgSrc, setImgSrc] = useState(() => resolveProductImage(item));
+
+  // Sync image if item prop changes
+  useEffect(() => {
+    setImgSrc(resolveProductImage(item));
+  }, [item?.id, item?.name, item?.image]);
 
   const unitPrice = Number(item.price) || 0;
   const totalPrice = unitPrice * (item.quantity || 1);
@@ -15,8 +60,16 @@ export const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
       <div className="flex items-center gap-4 flex-1 min-w-0">
         <div className="relative w-20 h-20 bg-slate-50 rounded-xl overflow-hidden shrink-0 border border-slate-100 p-1 flex items-center justify-center">
           <img
-            src={item.image || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=300&q=80'}
+            src={imgSrc}
             alt={item.name}
+            onError={() => {
+              const fallback = resolveProductImage(item);
+              if (imgSrc !== fallback) {
+                setImgSrc(fallback);
+              } else {
+                setImgSrc(assets.p1 || assets.product1);
+              }
+            }}
             className="w-full h-full object-contain object-center rounded-lg"
           />
         </div>
@@ -85,3 +138,5 @@ export const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
     </div>
   );
 };
+
+export default CartItem;
