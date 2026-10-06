@@ -181,11 +181,11 @@ export const ProductCard = ({ product }) => {
           {/* Size Selector & BULK % Badge Row */}
           <div className="flex items-center justify-between gap-1.5 mt-2">
             {/* Size Dropdown Box */}
-            <div className="relative inline-flex items-center">
+            <div className="relative inline-flex items-center min-w-0">
               <select
                 value={selectedSize}
                 onChange={(e) => setSelectedSize(e.target.value)}
-                className="text-[11px] font-semibold text-slate-700 bg-white border border-slate-300 rounded px-2 py-0.5 pr-5 appearance-none focus:outline-none focus:border-[#00a699] cursor-pointer"
+                className="text-[11px] font-semibold text-slate-700 bg-white border border-slate-300 rounded px-2 py-0.5 pr-5 appearance-none focus:outline-none focus:border-[#00a699] cursor-pointer truncate"
               >
                 {sizeOptions.map((opt, idx) => (
                   <option key={idx} value={opt}>
@@ -197,7 +197,7 @@ export const ProductCard = ({ product }) => {
             </div>
 
             {/* BULK % Tag */}
-            <div className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 text-[10px] font-black italic border border-amber-200">
+            <div className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 text-[10px] font-black italic border border-amber-200 shrink-0">
               <span className="text-amber-800 font-black tracking-tight">BULK</span>
               <span className="text-emerald-700 font-black">%</span>
             </div>
@@ -207,7 +207,7 @@ export const ProductCard = ({ product }) => {
         {/* Bottom Price & Add Button Row */}
         <div className="flex items-end justify-between gap-2 mt-3 pt-2">
           {/* Price Column */}
-          <div className="flex flex-col leading-none">
+          <div className="flex flex-col leading-none shrink-0">
             {hasDiscount && (
               <span className="text-[11px] text-slate-400 line-through mb-0.5">
                 ₹{Math.round(originalPrice)}

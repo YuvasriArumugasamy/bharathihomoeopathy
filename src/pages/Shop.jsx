@@ -595,12 +595,12 @@ export const Shop = () => {
               </div>
             )}
 
-            {/* 6-COLUMNS RESPONSIVE PRODUCT GRID MATCHING LAPTOP SCREENSHOT */}
+            {/* RESPONSIVE BALANCED PRODUCT GRID */}
             <div id="shop-product-grid">
               {paginatedProducts.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4">
                   {paginatedProducts.map((prod, idx) => (
-                    <ScrollReveal key={prod.id} direction="up" delay={(idx % 6) * 50}>
+                    <ScrollReveal key={prod.id} direction="up" delay={(idx % 4) * 40}>
                       <ProductCard product={prod} />
                     </ScrollReveal>
                   ))}
