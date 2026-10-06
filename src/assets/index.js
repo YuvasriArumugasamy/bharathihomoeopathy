@@ -45,7 +45,7 @@ export const assets = {
   shopBg: shopBgImg,
   bgg1: bgg1Img,
   bg1: bg1Img,
-  contactBg: contactBgNewImg,
+  contactBg: bg9Img,
   aboutBg: herbalBgImg,
   herbalBg: herbalBgImg,
   blogBg: blogBgImg,

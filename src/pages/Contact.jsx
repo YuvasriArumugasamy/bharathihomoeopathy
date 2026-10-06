@@ -52,38 +52,59 @@ export const Contact = () => {
   return (
     <div className="space-y-12 pb-12 w-full max-w-full overflow-x-hidden">
       
-      {/* 1. Contact Hero Banner: Compact on Mobile, Tall on Desktop */}
-      <section className="relative overflow-hidden min-h-[260px] sm:min-h-[380px] lg:min-h-[480px] flex items-start sm:items-center bg-slate-100 border-b border-slate-200/60 shadow-xs">
-        {/* 100% Crystal Clear Background Image */}
-        <div className="absolute inset-0 z-0 overflow-hidden">
+      {/* 1. Contact Hero Banner with Offers Background Image */}
+      <section className="relative overflow-hidden min-h-[220px] sm:min-h-[360px] md:min-h-[420px] lg:min-h-[480px] flex items-center justify-center bg-[#f7f4ee] border-b border-slate-200/60 shadow-xs">
+        {/* Crystal Clear Background Image with Full Landscape Visibility */}
+        <div className="absolute inset-0 z-0">
           <img
-            src={assets.contactBg}
-            alt="Contact Us Homeopathic Remedies"
-            className="w-full h-full object-cover object-right sm:object-center opacity-100"
+            src={assets.offersBg}
+            alt="Dr. Bharathi Homeopathy Contact & Support"
+            className="w-full h-full object-cover object-center"
+            style={{ imageRendering: '-webkit-optimize-contrast' }}
           />
         </div>
 
-        {/* Content Box moved UP (top) and RIGHT (right) to clear the left green leaves cleanly */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8 lg:pt-12 pb-8 sm:pb-16 w-full">
-          <div className="space-y-3 sm:space-y-4 max-w-[85%] sm:max-w-xl ml-4 sm:ml-28 lg:ml-40 -mt-2 sm:-mt-6">
-            
+        {/* Content Box placed in the exact center with proportional typography */}
+        <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 w-full py-3 sm:py-8 lg:py-12 flex justify-center text-center">
+          <ScrollReveal direction="up" className="w-full max-w-md sm:max-w-lg lg:max-w-xl space-y-1 sm:space-y-2.5 flex flex-col items-center text-center">
             {/* Breadcrumb Tag */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-slate-200/90 text-[11px] sm:text-xs font-bold text-slate-800 shadow-md">
-              <Link to="/" className="hover:text-brandOrange-600 transition-colors">Home</Link>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-brandOrange-600 font-extrabold">Contact Us</span>
-            </div>
+            <nav className="flex items-center justify-center gap-1.5 text-[9px] sm:text-xs font-bold text-slate-700 bg-white/75 backdrop-blur-xs px-2.5 py-0.5 rounded-full border border-amber-200/40">
+              <Link to="/" className="hover:text-[#e05a1e] transition-colors">Home</Link>
+              <span>&gt;</span>
+              <span className="text-[#e05a1e] font-extrabold">Contact Us</span>
+            </nav>
 
-            {/* Main Title with Elegant Display & Serif Font */}
-            <h1 className="text-4xl sm:text-6xl font-black text-[#0b1727] tracking-tight leading-none font-display drop-shadow-[0_2px_10px_rgba(255,255,255,0.9)]">
-              Contact <span className="text-[#e05a1e] font-serif italic font-bold">Us</span>
+            {/* Main Title */}
+            <h1 className="text-lg sm:text-3xl lg:text-5xl font-black text-navy-950 tracking-tight leading-tight text-center drop-shadow-xs">
+              Contact <span className="text-[#e05a1e] font-serif italic inline-block transition-transform duration-300 hover:scale-110">Us</span>
             </h1>
-
+            
+            {/* Subtitle */}
+            <p className="text-[10px] sm:text-sm md:text-base font-bold text-navy-950 text-center leading-tight">
+              We're Here to Help & Guide You
+            </p>
+            
             {/* Description */}
-            <p className="text-xs sm:text-base text-slate-900 font-extrabold leading-relaxed max-w-lg drop-shadow-[0_1px_8px_rgba(255,255,255,0.95)]">
+            <p className="hidden sm:block text-xs sm:text-sm text-slate-700 font-semibold leading-relaxed text-center max-w-sm sm:max-w-md">
               We are here to answer your questions regarding clinic appointments, homeopathic dilutions, prescription refills, and courier delivery.
             </p>
-          </div>
+
+            {/* Feature Pills */}
+            <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2.5 pt-0.5 sm:pt-1 text-[8px] sm:text-xs font-bold text-navy-950">
+              <span className="flex items-center gap-1 bg-white/85 backdrop-blur-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-amber-200/60 shadow-2xs">
+                <Phone className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-[#e05a1e] shrink-0" />
+                <span>Call & WhatsApp</span>
+              </span>
+              <span className="flex items-center gap-1 bg-white/85 backdrop-blur-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-amber-200/60 shadow-2xs">
+                <Clock className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-[#e05a1e] shrink-0" />
+                <span>Mon - Sat Support</span>
+              </span>
+              <span className="flex items-center gap-1 bg-white/85 backdrop-blur-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-amber-200/60 shadow-2xs">
+                <ShieldCheck className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-[#e05a1e] shrink-0" />
+                <span>Verified Clinic</span>
+              </span>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
