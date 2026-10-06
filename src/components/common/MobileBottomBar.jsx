@@ -28,13 +28,13 @@ export const MobileBottomBar = () => {
       label: 'Book',
       path: '/appointment',
       icon: 'fa-solid fa-calendar-check',
-      isSpecial: true,
     },
     {
       id: 'shop',
       label: 'Shop',
       path: '/shop',
       icon: 'fa-solid fa-store',
+      isSpecial: true,
     },
     {
       id: 'cart',
