@@ -24,12 +24,6 @@ export const MobileBottomBar = () => {
       icon: 'fa-solid fa-user-doctor',
     },
     {
-      id: 'shop',
-      label: 'Shop',
-      path: '/shop',
-      icon: 'fa-solid fa-store',
-    },
-    {
       id: 'appointment',
       label: 'Book',
       path: '/appointment',
@@ -37,10 +31,10 @@ export const MobileBottomBar = () => {
       isSpecial: true,
     },
     {
-      id: 'contact',
-      label: 'Contact',
-      path: '/contact',
-      icon: 'fa-solid fa-headset',
+      id: 'shop',
+      label: 'Shop',
+      path: '/shop',
+      icon: 'fa-solid fa-store',
     },
     {
       id: 'cart',
@@ -50,8 +44,14 @@ export const MobileBottomBar = () => {
       isCart: true,
     },
     {
+      id: 'contact',
+      label: 'Contact',
+      path: '/contact',
+      icon: 'fa-solid fa-headset',
+    },
+    {
       id: 'account',
-      label: isAuthenticated ? (user?.name?.split(' ')[0] || 'Account') : 'Login',
+      label: 'Account',
       path: isAuthenticated ? '/my-account' : '/login',
       icon: 'fa-solid fa-user',
       isAccount: true,
