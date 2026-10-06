@@ -273,7 +273,7 @@ export const Navbar = () => {
           </button>
 
           {/* Account Button */}
-          <div className="hidden md:block relative" ref={accountMenuRef}>
+          <div className="hidden lg:block relative" ref={accountMenuRef}>
             <button
               onClick={() => {
                 if (!isAuthenticated) {
@@ -341,7 +341,7 @@ export const Navbar = () => {
                 </span>
               )}
             </div>
-            <span className="hidden md:inline text-xs font-bold group-hover:text-rose-600 transition-colors">Wishlist</span>
+            <span className="hidden lg:inline text-xs font-bold group-hover:text-rose-600 transition-colors">Wishlist</span>
           </Link>
 
           {/* Cart with Orange Counter (Hidden on Mobile) */}
@@ -403,7 +403,7 @@ export const Navbar = () => {
       )}
 
       {/* 2. Subnav Bar: Rich Medical Teal Gradient Bar with Capsule Links & Badges */}
-      <div className="hidden md:block bg-gradient-to-r from-[#0b344d] via-[#18587c] to-[#0b344d] text-white shadow-xl border-t border-white/10 border-b border-amber-400/20 sticky top-0 z-40">
+      <div className="hidden lg:block bg-gradient-to-r from-[#0b344d] via-[#18587c] to-[#0b344d] text-white shadow-xl border-t border-white/10 border-b border-amber-400/20 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 flex items-center justify-center py-1.5 overflow-x-auto no-scrollbar">
           
           {/* Main Navigation Links with Pill/Capsule active states */}

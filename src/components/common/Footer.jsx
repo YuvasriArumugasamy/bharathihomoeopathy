@@ -183,7 +183,7 @@ export const Footer = () => {
       </div>
 
       {/* Bottom Copyright & Designer Credit Bar */}
-      <div className="border-t border-white/10 bg-[#051c2b] py-4 relative z-10">
+      <div className="border-t border-white/10 bg-[#051c2b] py-4 pb-20 lg:pb-4 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-slate-400 text-[11px] font-medium">
           <p>© 2025 Dr. Bharathi’s Homeo Care. All Rights Reserved.</p>
           <p>Designed with <span className="text-rose-500 font-bold">❤️</span> by YuvaTech Solutions</p>
