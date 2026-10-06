@@ -5,11 +5,18 @@ const CATEGORIES_STORAGE_KEY = 'admin_categories_store';
 
 const sanitizeCategories = (cats) => {
   if (!Array.isArray(cats)) return cats;
-  return cats.map(c => {
-    if (c.image && c.image.includes('1608248597359-0091807cf7c9')) {
-      return { ...c, image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=600&q=80' };
+  return cats.map((c, idx) => {
+    const id = c.id || c._id || `cat-${idx + 1}`;
+    let image = c.image;
+    if (image && image.includes('1608248597359-0091807cf7c9')) {
+      image = 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=600&q=80';
     }
-    return c;
+    return {
+      ...c,
+      id,
+      _id: c._id || id,
+      image
+    };
   });
 };
 
@@ -26,11 +33,13 @@ const getStoredCategories = () => {
     console.warn("Could not read categories from storage:", err.message);
   }
   try {
-    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(initialAdminCategories));
+    const initial = sanitizeCategories(initialAdminCategories);
+    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(initial));
+    return initial;
   } catch {
     // Ignore quota error
   }
-  return initialAdminCategories;
+  return sanitizeCategories(initialAdminCategories);
 };
 
 const saveStoredCategories = (categories) => {
@@ -48,8 +57,9 @@ export const categoryService = {
     try {
       const res = await api.get('/categories');
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-        saveStoredCategories(res.data);
-        return res.data;
+        const sanitized = sanitizeCategories(res.data);
+        saveStoredCategories(sanitized);
+        return sanitized;
       }
     } catch {
       // Backend offline, use persistent local store
@@ -74,9 +84,11 @@ export const categoryService = {
 
   createAdminCategory: async (categoryData) => {
     const categories = getStoredCategories();
+    const generatedId = categoryData.id || ('cat-' + Date.now());
     const newCategory = {
       ...categoryData,
-      id: categoryData.id || ('cat-' + Date.now()),
+      id: generatedId,
+      _id: categoryData._id || generatedId,
       createdAt: new Date().toISOString().slice(0, 10),
       productCount: 0
     };
@@ -93,8 +105,12 @@ export const categoryService = {
   },
 
   updateAdminCategory: async (id, categoryData) => {
+    if (!id) return { success: false };
     const categories = getStoredCategories();
-    const updated = categories.map(c => (c.id === id || c._id === id) ? { ...c, ...categoryData } : c);
+    const updated = categories.map(c => {
+      const match = (c.id && c.id === id) || (c._id && c._id === id) || (c.slug && c.slug === id) || (c.name && c.name === id);
+      return match ? { ...c, ...categoryData, id: c.id || id, _id: c._id || id } : c;
+    });
     saveStoredCategories(updated);
 
     try {
@@ -107,8 +123,12 @@ export const categoryService = {
   },
 
   deleteAdminCategory: async (id) => {
+    if (!id) return { success: false };
     const categories = getStoredCategories();
-    const updated = categories.filter(c => c.id !== id && c._id !== id);
+    const updated = categories.filter(c => {
+      const match = (c.id && c.id === id) || (c._id && c._id === id) || (c.slug && c.slug === id) || (c.name && c.name === id);
+      return !match;
+    });
     saveStoredCategories(updated);
 
     try {
@@ -118,7 +138,14 @@ export const categoryService = {
     }
 
     return { success: true };
+  },
+
+  resetToDefaultCategories: () => {
+    const defaultCats = sanitizeCategories(initialAdminCategories);
+    saveStoredCategories(defaultCats);
+    return defaultCats;
   }
 };
 
 export default categoryService;
+
