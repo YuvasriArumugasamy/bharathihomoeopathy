@@ -273,7 +273,7 @@ export const Navbar = () => {
           </button>
 
           {/* Account Button */}
-          <div className="relative" ref={accountMenuRef}>
+          <div className="hidden md:block relative" ref={accountMenuRef}>
             <button
               onClick={() => {
                 if (!isAuthenticated) {

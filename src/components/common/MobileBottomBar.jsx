@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 
 export const MobileBottomBar = () => {
   const location = useLocation();
   const pathname = location.pathname;
   const { totalItems } = useCart();
+  const { user, isAuthenticated, openAuthModal } = useAuth();
 
   const navItems = [
     {
@@ -46,6 +48,21 @@ export const MobileBottomBar = () => {
       path: '/cart',
       icon: 'fa-solid fa-cart-shopping',
       isCart: true,
+    },
+    {
+      id: 'account',
+      label: isAuthenticated ? (user?.name?.split(' ')[0] || 'Account') : 'Login',
+      path: isAuthenticated ? '/my-account' : '/login',
+      icon: 'fa-solid fa-user',
+      isAccount: true,
+      onClick: !isAuthenticated
+        ? (e) => {
+            e.preventDefault();
+            if (typeof openAuthModal === 'function') {
+              openAuthModal('login');
+            }
+          }
+        : undefined,
     },
   ];
 
@@ -91,12 +108,18 @@ export const MobileBottomBar = () => {
             );
           }
 
-          // 2. Standard NavLink (Home / About / Shop / Offers / Contact / Cart)
+          // 2. Standard NavLink (Home / About / Shop / Contact / Cart / Account)
           return (
             <Link
               key={item.id}
               to={item.path}
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              onClick={(e) => {
+                if (item.onClick) {
+                  item.onClick(e);
+                } else {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
               className={`group flex flex-col items-center justify-center py-1 px-1 sm:px-2 rounded-xl transition-all duration-200 active:scale-95 shrink-0 ${
                 isActive
                   ? 'text-brandOrange-600'
