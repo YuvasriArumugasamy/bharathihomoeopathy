@@ -18,7 +18,6 @@ import { About } from './pages/About';
 import { Shop } from './pages/Shop';
 import { ProductDetails } from './pages/ProductDetails';
 import { BestSellers } from './pages/BestSellers';
-import { Offers } from './pages/Offers';
 import { Blog } from './pages/Blog';
 import { Appointment } from './pages/Appointment';
 import { Contact } from './pages/Contact';
@@ -39,7 +38,6 @@ import { AdminCustomers } from './pages/admin/AdminCustomers';
 import { AdminAppointments } from './pages/admin/AdminAppointments';
 import { AdminInventory } from './pages/admin/AdminInventory';
 import { AdminPayments } from './pages/admin/AdminPayments';
-import { AdminOffers } from './pages/admin/AdminOffers';
 import { AdminReviews } from './pages/admin/AdminReviews';
 import { AdminBlog } from './pages/admin/AdminBlog';
 import { AdminEnquiries } from './pages/admin/AdminEnquiries';
@@ -104,7 +102,6 @@ export default function App() {
         <Route path="shop" element={<Shop />} />
         <Route path="product/:id" element={<ProductDetails />} />
         <Route path="best-sellers" element={<BestSellers />} />
-        <Route path="offers" element={<Offers />} />
         <Route path="blog" element={<Blog />} />
         <Route path="appointment" element={<Appointment />} />
         <Route path="contact" element={<Contact />} />
@@ -150,7 +147,6 @@ export default function App() {
         <Route path="appointments" element={<AdminAppointments />} />
         <Route path="inventory" element={<AdminInventory />} />
         <Route path="payments" element={<AdminPayments />} />
-        <Route path="offers" element={<AdminOffers />} />
         <Route path="reviews" element={<AdminReviews />} />
         <Route path="blog" element={<AdminBlog />} />
         <Route path="enquiries" element={<AdminEnquiries />} />

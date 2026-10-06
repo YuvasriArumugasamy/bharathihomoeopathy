@@ -36,12 +36,6 @@ export const SeoManager = () => {
           metaDescription: "Explore our most trusted and top-rated homeopathic medicines, dilutions, and wellness products with doorstep delivery.",
           focusKeyword: "best homeopathic medicines"
         };
-      } else if (!matchedPage && currentPath === '/offers') {
-        matchedPage = {
-          metaTitle: "Special Health Offers & Deals | Dr. Bharathi’s Homeo Care",
-          metaDescription: "Get genuine homeopathic medicines and natural wellness packs with exclusive discounts and free clinic consultation offers.",
-          focusKeyword: "homeopathy medicine offers"
-        };
       } else if (!matchedPage) {
         // Fallback for admin or unindexed utility routes
         if (currentPath.startsWith('/admin')) {

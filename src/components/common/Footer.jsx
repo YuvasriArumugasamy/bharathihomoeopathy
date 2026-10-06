@@ -100,7 +100,6 @@ export const Footer = () => {
                 { name: 'About Us', path: '/about' },
                 { name: 'All Products', path: '/shop' },
                 { name: 'Track Order', action: () => window.dispatchEvent(new Event('open_track_order')) },
-                { name: 'Special Offers', path: '/offers' },
                 { name: 'Book Appointment', path: '/appointment' },
                 { name: 'Contact Clinic', path: '/contact' },
               ].map((link) => (

@@ -35,12 +35,6 @@ export const MobileBottomBar = () => {
       isSpecial: true,
     },
     {
-      id: 'offers',
-      label: 'Offers',
-      path: '/offers',
-      icon: 'fa-solid fa-fire',
-    },
-    {
       id: 'contact',
       label: 'Contact',
       path: '/contact',

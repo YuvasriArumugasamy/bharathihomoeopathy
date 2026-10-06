@@ -465,7 +465,7 @@ export const Home = () => {
             </div>
             <div className="pt-6 z-10 w-full">
               <Link
-                to="/offers"
+                to="/shop"
                 className="btn-gradient-orange w-full sm:w-auto text-center"
               >
                 Explore Now

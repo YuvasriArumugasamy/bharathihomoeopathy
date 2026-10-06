@@ -118,7 +118,6 @@ export const Navbar = () => {
     { name: 'HOME', path: '/', icon: 'fa-solid fa-house', color: 'text-brandOrange-500', bg: 'bg-orange-50', badge: null },
     { name: 'ABOUT US', path: '/about', icon: 'fa-solid fa-user-doctor', color: 'text-sky-500', bg: 'bg-sky-50', badge: null },
     { name: 'SHOP', path: '/shop', icon: 'fa-solid fa-bag-shopping', color: 'text-emerald-500', bg: 'bg-emerald-50', badge: null },
-    { name: 'OFFERS', path: '/offers', icon: 'fa-solid fa-fire', color: 'text-rose-500', bg: 'bg-rose-50', badge: 'HOT' },
     { name: 'APPOINTMENT', path: '/appointment', icon: 'fa-solid fa-calendar-check', color: 'text-teal-500', bg: 'bg-teal-50', badge: null },
     { name: 'CONTACT US', path: '/contact', icon: 'fa-solid fa-headset', color: 'text-indigo-500', bg: 'bg-indigo-50', badge: null }
   ];
