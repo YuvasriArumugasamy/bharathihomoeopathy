@@ -53,7 +53,7 @@ export const Shop = () => {
   const [selectedForm, setSelectedForm] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState([]);
   const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(10000);
+  const [maxPrice, setMaxPrice] = useState(5000);
   const [sortBy, setSortBy] = useState('Relevancy');
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -194,7 +194,7 @@ export const Shop = () => {
     setSelectedForm([]);
     setSelectedBrand([]);
     setMinPrice(0);
-    setMaxPrice(10000);
+    setMaxPrice(5000);
     setSortBy('Relevancy');
     setSearchParams({});
   };
@@ -312,7 +312,7 @@ export const Shop = () => {
               <button
                 onClick={() => setShowFilterModal(true)}
                 className={`px-3 py-1 rounded border text-[11.5px] font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs ${
-                  selectedForm.length > 0 || selectedBrand.length > 0 || maxPrice < 10000
+                  selectedForm.length > 0 || selectedBrand.length > 0 || maxPrice < 5000
                     ? 'bg-[#00a699] text-white border-[#00a699]'
                     : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
                 }`}
@@ -352,7 +352,7 @@ export const Shop = () => {
                 </div>
                 <h2 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">Filters</h2>
               </div>
-              {(selectedCategory !== 'All Categories' || selectedBrand.length > 0 || maxPrice < 10000) && (
+              {(selectedCategory !== 'All Categories' || selectedBrand.length > 0 || maxPrice < 5000) && (
                 <button
                   onClick={clearAllFilters}
                   className="text-xs font-bold text-orange-600 hover:text-orange-700 bg-orange-50 px-2 py-1 rounded-md hover:bg-orange-100 transition-colors cursor-pointer"
@@ -430,7 +430,7 @@ export const Shop = () => {
               <input
                 type="range"
                 min="0"
-                max="10000"
+                max="5000"
                 step="100"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
@@ -445,27 +445,6 @@ export const Shop = () => {
                 <div className="flex-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-700 text-center">
                   ₹{maxPrice}+
                 </div>
-              </div>
-
-              {/* Quick price chips */}
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {[
-                  { label: "Under ₹200", val: 200 },
-                  { label: "Under ₹500", val: 500 },
-                  { label: "All Prices", val: 10000 }
-                ].map((chip) => (
-                  <button
-                    key={chip.label}
-                    onClick={() => setMaxPrice(chip.val)}
-                    className={`px-2.5 py-1 rounded-md text-[10.5px] font-bold transition-all cursor-pointer ${
-                      maxPrice === chip.val
-                        ? 'bg-orange-500 text-white shadow-2xs'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
-                    }`}
-                  >
-                    {chip.label}
-                  </button>
-                ))}
               </div>
             </div>
 
@@ -561,7 +540,7 @@ export const Shop = () => {
             </div>
 
             {/* Active Filters Bar */}
-            {(searchTerm || (selectedCategory && selectedCategory !== 'All Categories') || selectedForm.length > 0 || selectedBrand.length > 0 || maxPrice < 10000) && (
+            {(searchTerm || (selectedCategory && selectedCategory !== 'All Categories') || selectedForm.length > 0 || selectedBrand.length > 0 || maxPrice < 5000) && (
               <div className="flex flex-wrap items-center gap-2 text-xs py-1">
                 <span className="font-bold text-slate-500">Active Filters:</span>
                 
@@ -735,7 +714,7 @@ export const Shop = () => {
               <div className="w-1/3 sm:w-2/5 bg-[#f2f2f2] border-r border-slate-200 overflow-y-auto">
                 {[
                   { id: 'Category', label: 'Category', badge: null },
-                  { id: 'Price', label: 'Price', badge: maxPrice < 10000 ? '1' : null },
+                  { id: 'Price', label: 'Price', badge: maxPrice < 5000 ? '1' : null },
                   { id: 'Brand', label: 'Brand', badge: selectedBrand.length > 0 ? selectedBrand.length : null },
                 ].map((tab) => {
                   const isActive = activeFilterTab === tab.id;
@@ -799,7 +778,7 @@ export const Shop = () => {
                       <input
                         type="range"
                         min="0"
-                        max="10000"
+                        max="5000"
                         step="100"
                         value={maxPrice}
                         onChange={(e) => setMaxPrice(Number(e.target.value))}
