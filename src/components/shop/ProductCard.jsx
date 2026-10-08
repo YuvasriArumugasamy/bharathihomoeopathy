@@ -79,7 +79,7 @@ export const ProductCard = ({ product }) => {
   const ratingValue = Number(product.rating || 4.1);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between p-3 relative overflow-hidden group">
+    <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between p-3 relative overflow-hidden group h-full w-full">
       
       {/* Top Left Teal Discount Ribbon Badge */}
       {hasDiscount && discountPercent > 0 && (
@@ -122,7 +122,7 @@ export const ProductCard = ({ product }) => {
       </div>
 
       {/* Product Image */}
-      <div className="relative w-full h-36 sm:h-40 flex items-center justify-center p-2 pt-4 rounded-lg bg-white overflow-hidden">
+      <div className="relative w-full h-36 sm:h-40 flex items-center justify-center p-2 pt-4 rounded-lg bg-white overflow-hidden shrink-0">
         <Link
           to={`/product/${productId}`}
           className="w-full h-full flex items-center justify-center"
@@ -153,7 +153,7 @@ export const ProductCard = ({ product }) => {
       <div className="flex-1 flex flex-col justify-between mt-2">
         <div>
           {/* Star Rating & Low Stock Badge */}
-          <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+          <div className="flex items-center gap-1.5 mb-1.5 flex-wrap h-5">
             <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#fff8f0] border border-[#ffedd5] text-amber-800 text-[11px] font-bold">
               <span>{ratingValue.toFixed(1)}</span>
               <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
@@ -168,13 +168,13 @@ export const ProductCard = ({ product }) => {
           {/* Product Title */}
           <Link
             to={`/product/${productId}`}
-            className="font-bold text-xs sm:text-[13px] text-slate-900 line-clamp-2 min-h-[34px] hover:text-[#00a699] transition-colors leading-tight block"
+            className="font-bold text-xs sm:text-[13px] text-slate-900 line-clamp-2 h-[34px] sm:h-[38px] hover:text-[#00a699] transition-colors leading-tight flex items-start overflow-hidden"
           >
             {product.name}
           </Link>
 
           {/* Indications / Short Description (Light Gray Text) */}
-          <p className="text-[10.5px] sm:text-[11px] text-slate-500 font-medium line-clamp-2 min-h-[28px] leading-tight mt-1">
+          <p className="text-[10.5px] sm:text-[11px] text-slate-500 font-medium line-clamp-2 h-[28px] sm:h-[32px] leading-tight mt-1 overflow-hidden">
             {product.shortDescription || product.category || 'Natural Homeopathic formulation'}
           </p>
 
@@ -207,19 +207,23 @@ export const ProductCard = ({ product }) => {
         {/* Bottom Price & Add Button Row */}
         <div className="flex items-end justify-between gap-2 mt-3 pt-2">
           {/* Price Column */}
-          <div className="flex flex-col leading-none shrink-0">
-            {hasDiscount && (
+          <div className="flex flex-col leading-none shrink-0 min-h-[36px] justify-end">
+            {hasDiscount ? (
               <span className="text-[11px] text-slate-400 line-through mb-0.5">
                 ₹{Math.round(originalPrice)}
               </span>
+            ) : (
+              <span className="text-[11px] opacity-0 mb-0.5 select-none">₹0</span>
             )}
             <span className="font-extrabold text-sm sm:text-base text-slate-900">
               {priceDisplay.primary}
             </span>
-            {priceDisplay.secondary && (
+            {priceDisplay.secondary ? (
               <span className="text-[9px] font-extrabold text-[#00a699] mt-0.5 tracking-tight">
                 {priceDisplay.secondary}
               </span>
+            ) : (
+              <span className="text-[9px] opacity-0 mt-0.5 select-none">secondary</span>
             )}
           </div>
 
