@@ -246,14 +246,6 @@ export const AdminProducts = () => {
           </h1>
           <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
             <button
-              onClick={handleResetCatalog}
-              title="Restore Default Catalog Remedies"
-              className="justify-center relative z-10 inline-flex items-center gap-2 px-4 py-3 bg-white/20 hover:bg-white/30 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-md backdrop-blur-sm transition-all cursor-pointer border border-white/30"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>Restore Catalog</span>
-            </button>
-            <button
               onClick={handleOpenAdd}
               className="justify-center relative z-10 inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white"
             >
