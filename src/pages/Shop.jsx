@@ -382,7 +382,7 @@ export const Shop = () => {
                     <span>ALL CATEGORIES</span>
                   </span>
                   <span className={`text-[10px] font-bold ${selectedCategory === 'All Categories' ? 'text-white bg-black/15 px-2 py-0.5 rounded-full' : 'text-slate-400'}`}>
-                    ({allProducts.length})
+                    ({categories.filter(c => c.value !== 'All Categories').length})
                   </span>
                 </button>
 
