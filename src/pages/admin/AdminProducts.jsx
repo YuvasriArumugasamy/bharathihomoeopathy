@@ -71,6 +71,7 @@ export const AdminProducts = () => {
     name: '',
     sku: '',
     category: 'Homeopathic Medicines',
+    brand: 'SBL',
     regularPrice: 399,
     offerPrice: 349,
     stock: 25,
@@ -82,6 +83,7 @@ export const AdminProducts = () => {
     isFeatured: false
   });
 
+  const BRANDS_LIST = ['SBL', 'Willmar Schwabe', 'BJain', 'Wheezal', 'Dr. Reckeweg', "Bakson's", "Dr. Bharathi's Standard"];
   const [categoriesList, setCategoriesList] = useState(['All', 'Homeopathic Medicines', 'Mother Tinctures', 'Biochemic Medicines', 'Wellness Products', 'Personal Care', 'Combo Products']);
 
   useEffect(() => {
@@ -123,6 +125,7 @@ export const AdminProducts = () => {
       name: '',
       sku: `HOM-${Math.floor(100 + Math.random() * 900)}`,
       category: 'Homeopathic Medicines',
+    brand: 'SBL',
       regularPrice: 399,
       offerPrice: 349,
       stock: 25,
@@ -138,7 +141,7 @@ export const AdminProducts = () => {
 
   const handleOpenEdit = (product) => {
     setEditingProduct(product);
-    setFormData({ ...product });
+    setFormData({ brand: 'SBL', ...product });
     setModalOpen(true);
   };
 
@@ -337,6 +340,7 @@ export const AdminProducts = () => {
                               Best Seller
                             </span>
                           )}
+                          <span className="inline-flex items-center text-[9.5px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">🏷️ {prod.brand || 'SBL'}</span>
                           {prod.isFeatured && (
                             <span className="text-[9px] font-black text-purple-600 bg-purple-50 px-1.5 py-0.2 rounded border border-purple-200">
                               Featured
@@ -463,7 +467,8 @@ export const AdminProducts = () => {
                       <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" /> Best Seller
                     </span>
                   )}
-                  {prod.isFeatured && (
+                  <span className="inline-flex items-center text-[9.5px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">🏷️ {prod.brand || 'SBL'}</span>
+                          {prod.isFeatured && (
                     <span className="text-[9px] font-black text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded-lg border border-purple-200">Featured</span>
                   )}
                 </div>
@@ -516,7 +521,7 @@ export const AdminProducts = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1.5">SKU / Code *</label>
                   <input
@@ -535,6 +540,16 @@ export const AdminProducts = () => {
                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner cursor-pointer"
                   >
                     {categoriesList.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1.5">Brand / Manufacturer *</label>
+                  <select
+                    value={formData.brand || 'SBL'}
+                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner cursor-pointer"
+                  >
+                    {BRANDS_LIST.map(b => <option key={b} value={b}>{b}</option>)}
                   </select>
                 </div>
               </div>

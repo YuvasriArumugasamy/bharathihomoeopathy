@@ -160,22 +160,16 @@ export const Shop = () => {
     { name: "Syrup", count: allProducts.filter(p => p.form === "Syrup").length },
   ];
 
-  const brands = [
-    { name: "SBL", count: allProducts.filter(p => p.brand === "SBL").length },
-    { name: "Willmar Schwabe", count: allProducts.filter(p => p.brand === "Willmar Schwabe").length },
-    { name: "BJain", count: allProducts.filter(p => p.brand === "BJain").length },
-    { name: "Wheezal", count: allProducts.filter(p => p.brand === "Wheezal").length },
-    { name: "Dr. Reckeweg", count: allProducts.filter(p => p.brand === "Dr. Reckeweg").length },
-    { name: "Bakson's", count: allProducts.filter(p => p.brand === "Bakson's").length },
-  ];
-
-  const toggleFilter = (list, setList, item) => {
-    if (list.includes(item)) {
-      setList(list.filter(i => i !== item));
-    } else {
-      setList([...list, item]);
-    }
-  };
+  const brands = useMemo(() => {
+    const predefined = ["SBL", "Willmar Schwabe", "BJain", "Wheezal", "Dr. Reckeweg", "Bakson's", "Dr. Bharathi's Standard"];
+    const productBrands = (allProducts || []).map(p => p.brand).filter(Boolean);
+    const uniqueBrandNames = Array.from(new Set([...predefined, ...productBrands]));
+    
+    return uniqueBrandNames.map(name => ({
+      name,
+      count: allProducts.filter(p => p.brand === name).length
+    }));
+  }, [allProducts]);
 
   const handleCategorySelect = (catValue) => {
     setSelectedCategory(catValue);
