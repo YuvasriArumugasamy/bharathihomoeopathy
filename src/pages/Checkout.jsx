@@ -54,7 +54,7 @@ import { cloudSyncService } from '../services/cloudSyncService';
 
 export const Checkout = () => {
   const navigate = useNavigate();
-  const { items, subtotal, grandTotal, discount, shipping, tax, clearCart } = useCart();
+  const { items, subtotal, grandTotal, discount, shipping, tax, clearCart, getShippingFeeForLocation } = useCart();
   const { user } = useAuth();
   const { showToast } = useToast();
 
@@ -106,6 +106,23 @@ export const Checkout = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [upiTransactionId, setUpiTransactionId] = useState('');
   const [isVerifyingUpi, setIsVerifyingUpi] = useState(false);
+
+  // Location-based dynamic shipping fee
+  const locationShippingFee = useMemo(() => {
+    if (typeof getShippingFeeForLocation === 'function') {
+      return getShippingFeeForLocation({
+        state: formData?.state,
+        country: formData?.country
+      });
+    }
+    return shipping;
+  }, [getShippingFeeForLocation, formData?.state, formData?.country, shipping]);
+
+  const checkoutPayableTotal = useMemo(() => {
+    const disc = appliedCoupon?.discount || 0;
+    const gst = subtotal * 0.05;
+    return Math.max(0, subtotal - disc + locationShippingFee + gst).toFixed(2);
+  }, [subtotal, appliedCoupon, locationShippingFee]);
 
   // Coupon state
   const [couponCode, setCouponCode] = useState('');
@@ -646,13 +663,15 @@ export const Checkout = () => {
 
 
                     <div className="flex justify-between items-center text-amber-600 font-bold">
-                      <span>Shipping Fee</span>
-                      <span className="font-black">To Be Calculated</span>
+                      <span>Shipping Fee ({formData.state || 'Tamil Nadu'})</span>
+                      <span className="font-black">
+                        {locationShippingFee === 0 ? 'FREE' : `₹${locationShippingFee}`}
+                      </span>
                     </div>
 
                     <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
                       <span className="font-black text-slate-900 text-sm">Total Amount</span>
-                      <span className="font-black text-xl text-[#f97316]">₹{(subtotal + (subtotal * 0.05)).toFixed(2)}</span>
+                      <span className="font-black text-xl text-[#f97316]">₹{checkoutPayableTotal}</span>
                     </div>
                   </div>
 
@@ -888,15 +907,15 @@ export const Checkout = () => {
                       </div>
 
                       <div className="flex justify-between items-center">
-                        <span>Shipping Fee</span>
+                        <span>Shipping Fee ({formData.state || 'Tamil Nadu'})</span>
                         <span className="font-black text-emerald-600">
-                          {shipping === 0 ? 'FREE' : `₹${shipping}`}
+                          {locationShippingFee === 0 ? 'FREE' : `₹${locationShippingFee}`}
                         </span>
                       </div>
 
                       <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
                         <span className="font-black text-slate-900 text-sm">Total Amount</span>
-                        <span className="font-black text-2xl text-[#f97316]">₹{payableAmount}</span>
+                        <span className="font-black text-2xl text-[#f97316]">₹{checkoutPayableTotal}</span>
                       </div>
                     </div>
 

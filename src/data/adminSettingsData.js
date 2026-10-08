@@ -63,7 +63,10 @@ export const initialAdminSettings = {
     testMode: false
   },
   shipping: {
-    standardShippingFee: 50,
+    standardShippingFee: 22,
+    localStateFee: 22,
+    otherStatesFee: 50,
+    internationalFee: 250,
     freeShippingThreshold: 1000,
     expressShippingFee: 120,
     enableLocalPickup: true

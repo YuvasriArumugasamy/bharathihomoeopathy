@@ -62,14 +62,36 @@ export const CartProvider = ({ children }) => {
         const parsed = JSON.parse(raw);
         if (parsed.shipping) {
           return {
-            standardFee: Number(parsed.shipping.standardShippingFee ?? 50),
+            standardFee: Number(parsed.shipping.standardShippingFee ?? 22),
+            localStateFee: Number(parsed.shipping.localStateFee ?? parsed.shipping.standardShippingFee ?? 22),
+            otherStatesFee: Number(parsed.shipping.otherStatesFee ?? 50),
+            internationalFee: Number(parsed.shipping.internationalFee ?? 250),
             freeThreshold: Number(parsed.shipping.freeShippingThreshold ?? 1000)
           };
         }
       }
     } catch {}
-    return { standardFee: 50, freeThreshold: 1000 };
+    return { standardFee: 22, localStateFee: 22, otherStatesFee: 50, internationalFee: 250, freeThreshold: 1000 };
   });
+
+  const getShippingFeeForLocation = (locationObj = {}) => {
+    const state = locationObj.state || 'Tamil Nadu';
+    const country = locationObj.country || 'India';
+    if (subtotal === 0) return 0;
+    if (subtotal >= shippingSettings.freeThreshold) return 0;
+
+    const normalizedCountry = (country || 'India').trim().toLowerCase();
+    if (normalizedCountry !== 'india') {
+      return shippingSettings.internationalFee;
+    }
+
+    const normalizedState = (state || 'Tamil Nadu').trim().toLowerCase();
+    if (normalizedState.includes('tamil nadu') || normalizedState.includes('tn')) {
+      return shippingSettings.localStateFee;
+    }
+
+    return shippingSettings.otherStatesFee;
+  };
 
   useEffect(() => {
     const handleSettingsSync = () => {
@@ -79,7 +101,10 @@ export const CartProvider = ({ children }) => {
           const parsed = JSON.parse(raw);
           if (parsed.shipping) {
             setShippingSettings({
-              standardFee: Number(parsed.shipping.standardShippingFee ?? 50),
+              standardFee: Number(parsed.shipping.standardShippingFee ?? 22),
+              localStateFee: Number(parsed.shipping.localStateFee ?? parsed.shipping.standardShippingFee ?? 22),
+              otherStatesFee: Number(parsed.shipping.otherStatesFee ?? 50),
+              internationalFee: Number(parsed.shipping.internationalFee ?? 250),
               freeThreshold: Number(parsed.shipping.freeShippingThreshold ?? 1000)
             });
           }
@@ -243,6 +268,8 @@ export const CartProvider = ({ children }) => {
         appliedCoupon,
         freeShippingThreshold: shippingSettings.freeThreshold,
         standardShippingFee: shippingSettings.standardFee,
+        shippingSettings,
+        getShippingFeeForLocation,
         addToCart,
         updateQuantity,
         removeFromCart,

@@ -351,16 +351,86 @@ export const AdminSettings = () => {
               <div className="space-y-5">
                 <div className="pb-3 border-b border-slate-100">
                   <span className="text-[10px] font-black uppercase tracking-wider text-brandOrange-500">Logistics Rules</span>
-                  <h3 className="font-heading font-black text-lg text-navy-950">Delivery & Shipping Rules</h3>
+                  <h3 className="font-heading font-black text-lg text-navy-950">Delivery & Shipping Rules (Location-Based)</h3>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-3.5 bg-blue-50/80 border border-blue-200/80 rounded-2xl text-xs text-blue-900 font-medium flex items-center gap-2">
+                  <span className="text-base">📍</span>
+                  <span>Shipping fees automatically calculate based on patient's delivery address (State & Country) during checkout.</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1.5">Standard Courier Fee (₹)</label>
+                    <label className="block font-bold text-slate-700 mb-1.5">Local State Fee (TN) (₹)</label>
                     <input
                       type="number"
-                      value={settings.shipping.standardShippingFee}
-                      onChange={(e) => setSettings({ ...settings, shipping: { ...settings.shipping, standardShippingFee: Number(e.target.value) } })}
+                      value={settings.shipping.localStateFee ?? settings.shipping.standardShippingFee ?? 22}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        shipping: {
+                          ...settings.shipping,
+                          localStateFee: Number(e.target.value),
+                          standardShippingFee: Number(e.target.value)
+                        }
+                      })}
+                      className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-black text-navy-950"
+                    />
+                    <span className="text-[10px] text-slate-400 font-semibold mt-1 block">For Tamil Nadu delivery</span>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1.5">Rest of India Fee (₹)</label>
+                    <input
+                      type="number"
+                      value={settings.shipping.otherStatesFee ?? 50}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        shipping: {
+                          ...settings.shipping,
+                          otherStatesFee: Number(e.target.value)
+                        }
+                      })}
+                      className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-black text-navy-950"
+                    />
+                    <span className="text-[10px] text-slate-400 font-semibold mt-1 block">Other Indian States</span>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1.5">International Fee (₹)</label>
+                    <input
+                      type="number"
+                      value={settings.shipping.internationalFee ?? 250}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        shipping: {
+                          ...settings.shipping,
+                          internationalFee: Number(e.target.value)
+                        }
+                      })}
+                      className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-black text-navy-950"
+                    />
+                    <span className="text-[10px] text-slate-400 font-semibold mt-1 block">Outside India delivery</span>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1.5">Free Shipping Eligibility (₹)</label>
+                    <input
+                      type="number"
+                      value={settings.shipping.freeShippingThreshold ?? 1000}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        shipping: {
+                          ...settings.shipping,
+                          freeShippingThreshold: Number(e.target.value)
+                        }
+                      })}
+                      className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-black text-navy-950"
+                    />
+                    <span className="text-[10px] text-slate-400 font-semibold mt-1 block">₹0 delivery threshold</span>
+                  </div>
+                </div>
+              </div>
+            )}}
                       className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-black text-navy-950"
                     />
                   </div>
