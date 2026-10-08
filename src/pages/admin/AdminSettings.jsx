@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Settings, Save, ShieldCheck, Phone, Clock, CreditCard, 
   Truck, Bell, Mail, Lock, Sparkles, Check, Stethoscope, 
@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { initialAdminSettings } from '../../data/adminSettingsData';
 import { useToast } from '../../context/ToastContext';
+import { cloudSyncService } from '../../services/cloudSyncService';
 
 export const AdminSettings = () => {
   const { showToast } = useToast();
@@ -34,6 +35,29 @@ export const AdminSettings = () => {
     }
     return initialAdminSettings;
   });
+
+  useEffect(() => {
+    const unsub = cloudSyncService.listenToSettings((cloudSettings) => {
+      if (cloudSettings) {
+        setSettings(prev => ({
+          ...initialAdminSettings,
+          ...cloudSettings,
+          general: { ...initialAdminSettings.general, ...(cloudSettings.general || {}) },
+          clinic: { ...initialAdminSettings.clinic, ...(cloudSettings.clinic || {}) },
+          contact: { ...initialAdminSettings.contact, ...(cloudSettings.contact || {}) },
+          workingHours: { ...initialAdminSettings.workingHours, ...(cloudSettings.workingHours || {}) },
+          store: { ...initialAdminSettings.store, ...(cloudSettings.store || {}) },
+          orders: { ...initialAdminSettings.orders, ...(cloudSettings.orders || {}) },
+          appointments: { ...initialAdminSettings.appointments, ...(cloudSettings.appointments || {}) },
+          payments: { ...initialAdminSettings.payments, ...(cloudSettings.payments || {}) },
+          shipping: { ...initialAdminSettings.shipping, ...(cloudSettings.shipping || {}) },
+          tax: { ...initialAdminSettings.tax, ...(cloudSettings.tax || {}) }
+        }));
+      }
+    });
+    return () => unsub();
+  }, []);
+
   const [activeSection, setActiveSection] = useState('general');
 
   const handleSave = (e) => {
@@ -41,6 +65,7 @@ export const AdminSettings = () => {
     try {
       localStorage.setItem('admin_clinic_settings', JSON.stringify(settings));
       window.dispatchEvent(new Event('drBharathiSettingsUpdated'));
+      cloudSyncService.syncSettingsToCloud(settings);
     } catch (err) {
       console.warn('Failed to save settings to storage:', err);
     }
@@ -427,22 +452,6 @@ export const AdminSettings = () => {
                       className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-black text-navy-950"
                     />
                     <span className="text-[10px] text-slate-400 font-semibold mt-1 block">₹0 delivery threshold</span>
-                  </div>
-                </div>
-              </div>
-            )}}
-                      className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-black text-navy-950"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1.5">Free Shipping Eligibility (₹)</label>
-                    <input
-                      type="number"
-                      value={settings.shipping.freeShippingThreshold}
-                      onChange={(e) => setSettings({ ...settings, shipping: { ...settings.shipping, freeShippingThreshold: Number(e.target.value) } })}
-                      className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl font-black text-navy-950"
-                    />
                   </div>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { demoProducts } from '../data/products';
 import { assets } from '../assets';
+import { cloudSyncService } from '../services/cloudSyncService';
 
 const CART_STORAGE_KEY = 'drBharathiCart';
 
@@ -53,7 +54,7 @@ export const CartProvider = ({ children }) => {
     }
   });
 
-    const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
 
   const [shippingSettings, setShippingSettings] = useState(() => {
     try {
@@ -114,9 +115,24 @@ export const CartProvider = ({ children }) => {
 
     window.addEventListener('drBharathiSettingsUpdated', handleSettingsSync);
     window.addEventListener('storage', handleSettingsSync);
+
+    // Live Cloud Listener across all devices
+    const unsubCloud = cloudSyncService.listenToSettings((cloudSettings) => {
+      if (cloudSettings && cloudSettings.shipping) {
+        setShippingSettings({
+          standardFee: Number(cloudSettings.shipping.standardShippingFee ?? 22),
+          localStateFee: Number(cloudSettings.shipping.localStateFee ?? cloudSettings.shipping.standardShippingFee ?? 22),
+          otherStatesFee: Number(cloudSettings.shipping.otherStatesFee ?? 50),
+          internationalFee: Number(cloudSettings.shipping.internationalFee ?? 250),
+          freeThreshold: Number(cloudSettings.shipping.freeShippingThreshold ?? 1000)
+        });
+      }
+    });
+
     return () => {
       window.removeEventListener('drBharathiSettingsUpdated', handleSettingsSync);
       window.removeEventListener('storage', handleSettingsSync);
+      if (typeof unsubCloud === 'function') unsubCloud();
     };
   }, []);
 

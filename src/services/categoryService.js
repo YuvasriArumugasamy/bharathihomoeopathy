@@ -1,5 +1,6 @@
 import { api } from '../utils/api';
 import { initialAdminCategories } from '../data/adminCategoriesData';
+import { cloudSyncService } from './cloudSyncService';
 
 const CATEGORIES_STORAGE_KEY = 'admin_categories_store';
 
@@ -20,29 +21,27 @@ const sanitizeCategories = (cats) => {
   });
 };
 
-const getStoredCategories = () => {
+export const getStoredCategories = () => {
   try {
     const raw = localStorage.getItem(CATEGORIES_STORAGE_KEY);
     if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
+      if (Array.isArray(parsed) && parsed.length > 0) {
         return sanitizeCategories(parsed);
       }
     }
   } catch (err) {
     console.warn("Could not read categories from storage:", err.message);
   }
-  try {
-    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify([]));
-  } catch {}
-  return [];
+  return sanitizeCategories(initialAdminCategories);
 };
 
-const saveStoredCategories = (categories) => {
+export const saveStoredCategories = (categories) => {
   try {
     localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
     window.dispatchEvent(new CustomEvent('drBharathiCategoriesUpdated', { detail: categories }));
     window.dispatchEvent(new Event('storage'));
+    cloudSyncService.syncCategoriesToCloud(categories);
   } catch (err) {
     console.warn("Could not save categories to storage:", err.message);
   }
@@ -137,10 +136,26 @@ export const categoryService = {
   },
 
   resetToDefaultCategories: () => {
-    saveStoredCategories([]);
-    return [];
+    saveStoredCategories(initialAdminCategories);
+    return initialAdminCategories;
   }
 };
 
+// Initialize cloud synchronization for categories across all devices
+try {
+  cloudSyncService.listenToCategories((cloudCats) => {
+    if (Array.isArray(cloudCats) && cloudCats.length > 0) {
+      try {
+        localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(cloudCats));
+        window.dispatchEvent(new CustomEvent('drBharathiCategoriesUpdated', { detail: cloudCats }));
+        window.dispatchEvent(new Event('storage'));
+      } catch {}
+    }
+  });
+} catch (e) {
+  console.warn("Could not start cloud categories listener:", e);
+}
+
 export default categoryService;
+
 

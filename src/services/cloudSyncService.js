@@ -339,7 +339,115 @@ export const cloudSyncService = {
       console.warn("[CloudSync] Failed to initialize cloud offers listener:", err.message);
       return () => {};
     }
+  },
+
+  /**
+   * Sync clinic settings (shipping, contact, store parameters) to Cloud Firestore
+   */
+  syncSettingsToCloud: async (settings) => {
+    if (!settings) return false;
+    try {
+      const settingsRef = doc(db, "settings", "clinic_settings");
+      const cleanPayload = {
+        ...JSON.parse(JSON.stringify(settings)),
+        updatedAt: new Date().toISOString(),
+        cloudTimestamp: serverTimestamp()
+      };
+      await setDoc(settingsRef, cleanPayload, { merge: true });
+      console.log("[CloudSync] Clinic settings synced to Cloud Firestore successfully.");
+      return true;
+    } catch (err) {
+      console.warn("[CloudSync] Could not sync clinic settings to Cloud:", err.message);
+      return false;
+    }
+  },
+
+  /**
+   * Real-time listener for clinic settings from Cloud Firestore across all devices
+   */
+  listenToSettings: (callback) => {
+    try {
+      const settingsRef = doc(db, "settings", "clinic_settings");
+      const unsubscribe = onSnapshot(
+        settingsRef,
+        (snap) => {
+          if (snap.exists()) {
+            const data = snap.data();
+            const { cloudTimestamp, updatedAt, ...cleanSettings } = data;
+            try {
+              localStorage.setItem('admin_clinic_settings', JSON.stringify(cleanSettings));
+              window.dispatchEvent(new Event('drBharathiSettingsUpdated'));
+              window.dispatchEvent(new Event('storage'));
+            } catch {}
+            if (typeof callback === 'function') {
+              callback(cleanSettings);
+            }
+          }
+        },
+        (error) => {
+          console.warn("[CloudSync] Live clinic settings snapshot error:", error.message);
+        }
+      );
+      return unsubscribe;
+    } catch (err) {
+      console.warn("[CloudSync] Failed to initialize cloud settings listener:", err.message);
+      return () => {};
+    }
+  },
+
+  /**
+   * Sync categories catalog to Cloud Firestore across all devices
+   */
+  syncCategoriesToCloud: async (categories) => {
+    if (!Array.isArray(categories)) return false;
+    try {
+      const catRef = doc(db, "settings", "admin_categories");
+      await setDoc(catRef, {
+        categories: categories.map(c => JSON.parse(JSON.stringify(c))),
+        updatedAt: new Date().toISOString(),
+        cloudTimestamp: serverTimestamp()
+      }, { merge: true });
+      console.log("[CloudSync] Categories catalog synced to Cloud Firestore.");
+      return true;
+    } catch (err) {
+      console.warn("[CloudSync] Could not sync categories to Cloud:", err.message);
+      return false;
+    }
+  },
+
+  /**
+   * Real-time listener for remedy categories from Cloud Firestore
+   */
+  listenToCategories: (callback) => {
+    try {
+      const catRef = doc(db, "settings", "admin_categories");
+      const unsubscribe = onSnapshot(
+        catRef,
+        (snap) => {
+          if (snap.exists()) {
+            const data = snap.data();
+            const cloudCats = Array.isArray(data?.categories) ? data.categories : [];
+            try {
+              localStorage.setItem('admin_categories_store', JSON.stringify(cloudCats));
+              window.dispatchEvent(new CustomEvent('drBharathiCategoriesUpdated', { detail: cloudCats }));
+              window.dispatchEvent(new Event('storage'));
+            } catch {}
+            if (typeof callback === 'function') {
+              callback(cloudCats);
+            }
+          }
+        },
+        (error) => {
+          console.warn("[CloudSync] Live categories snapshot error:", error.message);
+        }
+      );
+      return unsubscribe;
+    } catch (err) {
+      console.warn("[CloudSync] Failed to initialize cloud categories listener:", err.message);
+      return () => {};
+    }
   }
 };
 
 export default cloudSyncService;
+

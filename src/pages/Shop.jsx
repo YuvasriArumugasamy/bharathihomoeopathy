@@ -26,6 +26,7 @@ import { ScrollReveal } from '../components/common/ScrollReveal';
 import { initialAdminCategories } from '../data/adminCategoriesData';
 import { demoProducts } from '../data/products';
 import { getStoredProducts, isMatchingCategory } from '../utils/productStorage';
+import { cloudSyncService } from '../services/cloudSyncService';
 
 export const Shop = () => {
   const [allProducts, setAllProducts] = useState(() => getStoredProducts());
@@ -74,10 +75,10 @@ export const Shop = () => {
       const raw = localStorage.getItem('admin_categories_store');
       if (raw !== null) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch {}
-    return [];
+    return initialAdminCategories;
   });
 
   useEffect(() => {
@@ -86,19 +87,27 @@ export const Shop = () => {
         const raw = localStorage.getItem('admin_categories_store');
         if (raw !== null) {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
+          if (Array.isArray(parsed) && parsed.length > 0) {
             setAdminCategories(parsed);
             return;
           }
         }
       } catch {}
-      setAdminCategories([]);
+      setAdminCategories(initialAdminCategories);
     };
     window.addEventListener('drBharathiCategoriesUpdated', handleCatSync);
     window.addEventListener('storage', handleCatSync);
+
+    const unsubCloud = cloudSyncService.listenToCategories((cloudCats) => {
+      if (Array.isArray(cloudCats) && cloudCats.length > 0) {
+        setAdminCategories(cloudCats);
+      }
+    });
+
     return () => {
       window.removeEventListener('drBharathiCategoriesUpdated', handleCatSync);
       window.removeEventListener('storage', handleCatSync);
+      if (typeof unsubCloud === 'function') unsubCloud();
     };
   }, []);
 
