@@ -33,13 +33,9 @@ const getStoredCategories = () => {
     console.warn("Could not read categories from storage:", err.message);
   }
   try {
-    const initial = sanitizeCategories(initialAdminCategories);
-    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(initial));
-    return initial;
-  } catch {
-    // Ignore quota error
-  }
-  return sanitizeCategories(initialAdminCategories);
+    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify([]));
+  } catch {}
+  return [];
 };
 
 const saveStoredCategories = (categories) => {
@@ -141,9 +137,8 @@ export const categoryService = {
   },
 
   resetToDefaultCategories: () => {
-    const defaultCats = sanitizeCategories(initialAdminCategories);
-    saveStoredCategories(defaultCats);
-    return defaultCats;
+    saveStoredCategories([]);
+    return [];
   }
 };
 

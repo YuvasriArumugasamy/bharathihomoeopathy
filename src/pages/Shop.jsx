@@ -77,7 +77,7 @@ export const Shop = () => {
         if (Array.isArray(parsed)) return parsed;
       }
     } catch {}
-    return initialAdminCategories;
+    return [];
   });
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export const Shop = () => {
           }
         }
       } catch {}
-      setAdminCategories(initialAdminCategories);
+      setAdminCategories([]);
     };
     window.addEventListener('drBharathiCategoriesUpdated', handleCatSync);
     window.addEventListener('storage', handleCatSync);

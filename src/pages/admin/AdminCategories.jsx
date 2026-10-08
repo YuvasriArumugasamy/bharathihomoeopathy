@@ -37,7 +37,7 @@ export const AdminCategories = () => {
     } catch {
       // fallback
     }
-    return initialAdminCategories.map((c, idx) => ({ ...c, id: c.id || `cat-${idx + 1}`, _id: c.id || `cat-${idx + 1}` }));
+    return [];
   });
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
@@ -150,14 +150,6 @@ export const AdminCategories = () => {
     showToast(`Category "${cat.name}" deleted successfully`, 'info');
   };
 
-  const handleResetDefaults = () => {
-    const isConfirmed = window.confirm('Restore standard dispensary categories?');
-    if (!isConfirmed) return;
-    const defaults = categoryService.resetToDefaultCategories();
-    setCategories(defaults);
-    showToast('Default categories restored successfully!', 'success');
-  };
-
   return (
     <div className="space-y-6 pb-12 font-serif">
       
@@ -171,14 +163,6 @@ export const AdminCategories = () => {
             Remedy Categories Management
           </h1>
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 w-full sm:w-auto">
-            <button
-              onClick={handleResetDefaults}
-              className="w-full sm:w-auto justify-center relative z-10 inline-flex items-center gap-2 px-4 py-3.5 bg-white/20 hover:bg-white/30 text-white rounded-2xl text-xs sm:text-sm font-bold backdrop-blur-md transition-all cursor-pointer border border-white/40 shadow-sm hover:scale-[1.02] active:scale-[0.98]"
-              title="Restore default clinic categories"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>Reset Defaults</span>
-            </button>
             <button
               onClick={handleOpenAdd}
               className="w-full sm:w-auto justify-center relative z-10 inline-flex items-center gap-2.5 px-5 py-3.5 bg-white hover:bg-orange-50 text-orange-600 rounded-2xl text-xs sm:text-sm font-black shadow-xl shadow-black/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white shrink-0"
@@ -304,7 +288,7 @@ export const AdminCategories = () => {
             <p className="text-xs text-slate-500 max-w-sm">
               {search 
                 ? `No categories found matching "${search}". Try searching for another keyword or clear search.`
-                : 'Your categories list is currently empty. You can restore the default catalog or create a new category.'}
+                : 'Your categories list is currently empty. Click below to create your first category.'}
             </p>
           </div>
           <div className="flex items-center gap-3 pt-2">
@@ -316,22 +300,13 @@ export const AdminCategories = () => {
                 Clear Search
               </button>
             ) : (
-              <>
-                <button
-                  onClick={handleResetDefaults}
-                  className="px-5 py-2.5 bg-brandOrange-500 hover:bg-brandOrange-600 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-md shadow-brandOrange-500/20 flex items-center gap-2"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  Restore Default Categories
-                </button>
-                <button
-                  onClick={handleOpenAdd}
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-2"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  Add New Category
-                </button>
-              </>
+              <button
+                onClick={handleOpenAdd}
+                className="px-6 py-3 bg-gradient-to-r from-brandOrange-600 to-amber-500 hover:from-brandOrange-700 hover:to-amber-600 text-white text-xs font-black rounded-xl transition-all cursor-pointer shadow-md shadow-brandOrange-500/25 flex items-center gap-2 active:scale-95"
+              >
+                <Plus className="w-4 h-4 stroke-[3]" />
+                Add New Category
+              </button>
             )}
           </div>
         </div>
