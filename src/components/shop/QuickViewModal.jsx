@@ -52,7 +52,7 @@ export const QuickViewModal = ({ product, onClose }) => {
                   e.currentTarget.src = fallback;
                 }
               }}
-              className="w-full h-full object-cover object-center"
+              className="w-full h-full object-contain object-center p-2"
             />
           </div>
 

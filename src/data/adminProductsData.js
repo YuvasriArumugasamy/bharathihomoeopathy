@@ -13,7 +13,7 @@ export const initialAdminProducts = demoProducts.map((p, idx) => ({
   offerPrice: p.salePrice || p.price,
   stock: p.stock,
   lowStockThreshold: p.lowStockThreshold || 5,
-  brand: "Dr. Bharathi's Standard",
+  brand: p.brand || "Dr. Bharathi's Standard",
   tags: ["Homeopathy", p.category],
   image: p.image,
   status: p.stock > 0 ? "Active" : (idx % 2 === 0 ? "Out of Stock" : "Draft"),

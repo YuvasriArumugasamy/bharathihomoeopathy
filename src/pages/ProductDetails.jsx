@@ -237,7 +237,7 @@ export const ProductDetails = () => {
                   e.currentTarget.src = fallback;
                 }
               }}
-              className="w-full h-full object-cover object-center rounded-2xl transition-all duration-300 group-hover:scale-[1.03]"
+              className="w-full h-full object-contain object-center rounded-2xl transition-all duration-300 group-hover:scale-[1.03] p-2"
             />
 
             {/* Hover Zoom Hint Badge */}
@@ -297,7 +297,7 @@ export const ProductDetails = () => {
                     selectedImage === img ? 'border-brandOrange-500 ring-4 ring-brandOrange-500/20 shadow-sm' : 'border-slate-200/90 hover:border-slate-300'
                   }`}
                 >
-                  <img src={img} alt={`${product.name} thumbnail ${idx}`} className="w-full h-full object-cover rounded-xl" />
+                  <img src={img} alt={`${product.name} thumbnail ${idx}`} className="w-full h-full object-contain rounded-xl p-0.5" />
                 </button>
               ))}
             </div>

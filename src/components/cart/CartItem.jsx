@@ -4,41 +4,7 @@ import { Link } from 'react-router-dom';
 import { demoProducts } from '../../data/products';
 import { assets } from '../../assets';
 
-// Reliable remedy image resolver to guarantee genuine clinic product images
-const resolveProductImage = (item) => {
-  if (!item) return assets.p1;
-
-  // 1. Check catalog product match by ID, slug, SKU, or clean name
-  const catalog = demoProducts.find(p => 
-    p.id === item.id || 
-    p._id === item.id ||
-    (p.slug && item.slug && p.slug === item.slug) ||
-    (p.sku && item.sku && p.sku === item.sku) ||
-    (p.name && item.name && p.name.trim().toLowerCase() === item.name.trim().toLowerCase())
-  );
-  if (catalog?.image) return catalog.image;
-
-  // 2. Keyword fallback for famous remedies
-  const name = (item.name || '').toLowerCase();
-  if (name.includes('urtica')) return assets.p1;
-  if (name.includes('cantharis')) return assets.p2;
-  if (name.includes('arnica')) return assets.product1 || assets.p3;
-  if (name.includes('calendula')) return assets.p4;
-  if (name.includes('berberis')) return assets.p5;
-  if (name.includes('thuja')) return assets.p6;
-  if (name.includes('rhus')) return assets.p7;
-  if (name.includes('nux')) return assets.p8;
-  if (name.includes('belladonna')) return assets.p9;
-  if (name.includes('echinacea')) return assets.p10;
-  if (name.includes('ocimum')) return assets.p11;
-
-  // 3. Stored image if present
-  if (item.image && typeof item.image === 'string' && item.image.trim()) {
-    return item.image;
-  }
-
-  return assets.p1;
-};
+import { resolveProductImage } from '../../utils/productStorage';
 
 export const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
   if (!item) return null;

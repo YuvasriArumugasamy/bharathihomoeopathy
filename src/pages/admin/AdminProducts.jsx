@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Package, 
   Plus, 
@@ -25,14 +25,10 @@ import { productService } from '../../services/productService';
 import { useToast } from '../../context/ToastContext';
 import { slugify } from '../../utils/slugify';
 import { demoProducts } from '../../data/products';
+import { resolveProductImage } from '../../utils/productStorage';
 
 const getProductImageFallback = (product) => {
-  const matchingProduct = demoProducts.find((item) =>
-    (product.sku && item.sku === product.sku) ||
-    (product.id && item.id === product.id) ||
-    (product._id && item._id === product._id)
-  );
-  return matchingProduct?.image || demoProducts[0]?.image || '';
+  return resolveProductImage(product);
 };
 
 const handleProductImageError = (event, product) => {

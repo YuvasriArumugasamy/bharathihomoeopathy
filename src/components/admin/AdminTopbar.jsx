@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Menu, 
@@ -28,6 +28,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [spotlightOpen, setSpotlightOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const topbarRef = useRef(null);
   const [categoryCounts, setCategoryCounts] = useState({
     orders: 0,
     appointments: 0,
@@ -35,6 +36,21 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
     inventory: 0,
     totalPending: 0
   });
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (topbarRef.current && !topbarRef.current.contains(event.target)) {
+        setNotificationsOpen(false);
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const updateStats = () => {
@@ -82,6 +98,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
 
   return (
     <header 
+      ref={topbarRef}
       style={{ top: 0 }}
       className="h-20 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 flex items-center justify-between fixed top-0 right-0 left-0 lg:left-64 z-30 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] transition-all font-serif"
     >
@@ -135,6 +152,15 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
       {/* Right: Notifications & Profile */}
       <div className="flex items-center gap-3">
         
+        {(notificationsOpen || profileOpen) && (
+          <div 
+            className="fixed inset-0 bg-slate-900/10 backdrop-blur-[1px] z-40 sm:hidden"
+            onClick={() => {
+              setNotificationsOpen(false);
+              setProfileOpen(false);
+            }}
+          />
+        )}
         {/* Notification Bell with Dropdown */}
         <div className="relative">
           <button
@@ -154,7 +180,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
 
           {/* Interactive Notifications Popup Dropdown */}
           {notificationsOpen && (
-            <div className="absolute right-0 mt-2 w-72 sm:w-84 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-3 font-serif">
+            <div className="fixed top-20 right-3 left-3 sm:absolute sm:top-full sm:right-0 sm:left-auto sm:mt-2 w-auto sm:w-84 max-w-sm sm:max-w-none bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-3 font-serif">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <span className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Live Alerts & Pending</span>
                 <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
@@ -282,7 +308,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
 
           {/* Interactive Profile Dropdown Menu */}
           {profileOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-2">
+            <div className="fixed top-20 right-3 left-auto sm:absolute sm:top-full sm:right-0 sm:mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-2">
               <div className="px-3 py-2.5 bg-gradient-to-br from-slate-50 to-orange-50/50 rounded-xl border border-slate-100">
                 <div className="text-xs font-black text-slate-900">{user?.name || 'Clinic Administrator'}</div>
                 <div className="text-[11px] text-slate-500 truncate">{user?.email || 'admin@drbharathi.com'}</div>

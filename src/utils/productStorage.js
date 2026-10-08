@@ -9,7 +9,16 @@ const ADMIN_STORAGE_KEY = 'admin_products_store';
  * Guarantees that each product gets its distinct remedy photo as displayed in Admin.
  */
 export const resolveProductImage = (product) => {
-  if (!product) return demoProducts[0]?.image || assets.product1 || assets.p1;
+  if (!product) return assets.arnicaMontana || demoProducts[0]?.image || assets.product1 || assets.p1;
+
+  const name = (product.name || '').toLowerCase();
+  const sku = (product.sku || '').toLowerCase();
+  const id = (product.id || product._id || '').toString().toLowerCase();
+
+  // Keyword / ID matching for known remedy formulations
+  if (name.includes('arnica') || sku.includes('102') || id === 'hom-102') {
+    return assets.arnicaMontana || assets.product1;
+  }
 
   // 1. If admin uploaded a custom photo (base64 or remote URL)
   if (product.image && typeof product.image === 'string' && (product.image.startsWith('data:') || product.image.startsWith('http'))) {
@@ -26,9 +35,6 @@ export const resolveProductImage = (product) => {
   );
   if (matching?.image) return matching.image;
 
-  // 3. Keyword matching for known remedy formulations
-  const name = (product.name || '').toLowerCase();
-  if (name.includes('arnica')) return assets.product1 || assets.p3;
   if (name.includes('urtica')) return assets.p1;
   if (name.includes('cantharis')) return assets.p2;
   if (name.includes('alfalfa')) return assets.p3;
@@ -93,9 +99,13 @@ export const getStoredProducts = () => {
               : (p.discount || 0);
 
             const image = resolveProductImage(p);
+            const brand = (p.brand && p.brand !== "Dr. Bharathi's Standard")
+              ? p.brand
+              : (demoProducts.find(dp => dp.sku === p.sku || dp.name === p.name)?.brand || p.brand || 'SBL');
 
             return {
               ...p,
+              brand,
               image,
               images: (Array.isArray(p.images) && p.images.length > 0) ? p.images : [image],
               price: offerPrice,

@@ -1,6 +1,7 @@
 import logoImg from './logo.webp';
 import bharathiImg from './bharathi.webp';
 import product1Img from './product1.webp';
+import arnicaMontanaImg from './arnica_montana_pellets.jpg';
 import shopBgImg from './bgg1.webp';
 import bgg1Img from './bgg1.webp';
 import bg1Img from './bg1.webp';
@@ -41,7 +42,8 @@ export const assets = {
   logoBg3: logoBg3Img,
   loginBg: loginBgImg,
   bharathi: bharathiImg,
-  product1: product1Img,
+  product1: arnicaMontanaImg,
+  arnicaMontana: arnicaMontanaImg,
   shopBg: shopBgImg,
   bgg1: bgg1Img,
   bg1: bg1Img,
