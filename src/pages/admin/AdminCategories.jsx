@@ -25,9 +25,9 @@ export const AdminCategories = () => {
   const [categories, setCategories] = useState(() => {
     try {
       const saved = localStorage.getItem('admin_categories_store');
-      if (saved) {
+      if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed.map((c, idx) => {
             const id = c.id || c._id || `cat-${idx + 1}`;
             return { ...c, id, _id: c._id || id };
@@ -47,12 +47,7 @@ export const AdminCategories = () => {
     const fetchCats = async () => {
       const data = await categoryService.getAdminCategories();
       if (data && Array.isArray(data)) {
-        if (data.length === 0) {
-          const restored = categoryService.resetToDefaultCategories();
-          setCategories(restored);
-        } else {
-          setCategories(data);
-        }
+        setCategories(data);
       }
     };
     fetchCats();

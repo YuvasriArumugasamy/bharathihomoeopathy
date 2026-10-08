@@ -92,7 +92,7 @@ export const AdminProducts = () => {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
             const names = parsed.map(c => c.name).filter(Boolean);
-            setCategoriesList(['All', ...new Set([...names, 'Homeopathic Medicines', 'Mother Tinctures', 'Biochemic Medicines', 'Wellness Products', 'Personal Care', 'Combo Products'])]);
+            setCategoriesList(['All', ...new Set(names)]);
           }
         }
       } catch {}

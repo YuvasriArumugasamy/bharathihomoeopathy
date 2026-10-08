@@ -23,9 +23,9 @@ const sanitizeCategories = (cats) => {
 const getStoredCategories = () => {
   try {
     const raw = localStorage.getItem(CATEGORIES_STORAGE_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
         return sanitizeCategories(parsed);
       }
     }
@@ -56,7 +56,7 @@ export const categoryService = {
   getCategories: async () => {
     try {
       const res = await api.get('/categories');
-      if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
+      if (res && res.data && Array.isArray(res.data)) {
         const sanitized = sanitizeCategories(res.data);
         saveStoredCategories(sanitized);
         return sanitized;

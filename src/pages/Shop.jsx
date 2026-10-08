@@ -72,9 +72,9 @@ export const Shop = () => {
   const [adminCategories, setAdminCategories] = useState(() => {
     try {
       const raw = localStorage.getItem('admin_categories_store');
-      if (raw) {
+      if (raw !== null) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch {}
     return initialAdminCategories;
@@ -84,9 +84,9 @@ export const Shop = () => {
     const handleCatSync = () => {
       try {
         const raw = localStorage.getItem('admin_categories_store');
-        if (raw) {
+        if (raw !== null) {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             setAdminCategories(parsed);
             return;
           }
