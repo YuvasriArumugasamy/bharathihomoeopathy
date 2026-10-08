@@ -35,7 +35,8 @@ export default {
       },
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'Outfit', 'system-ui', 'sans-serif'],
-        serif: ['"Playfair Display"', 'Georgia', 'serif'],
+        serif: ['"Lora"', '"Playfair Display"', 'Georgia', 'serif'],
+        lora: ['"Lora"', 'Georgia', 'serif'],
         display: ['Outfit', 'sans-serif'],
         cinzel: ['Cinzel', 'serif'],
       },

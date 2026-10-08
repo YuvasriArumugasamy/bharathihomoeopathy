@@ -638,3 +638,10 @@ body {
     transform: scale(1);
   }
 }
+
+/* Explicit Lora Bold & Serif Typography for Admin Portal */
+.font-lora,
+.font-serif {
+  font-family: 'Lora', Georgia, serif !important;
+}
+
