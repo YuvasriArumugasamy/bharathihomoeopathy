@@ -889,7 +889,9 @@ export const Checkout = () => {
 
                       <div className="flex justify-between items-center">
                         <span>Shipping Fee</span>
-                        <span className="font-black text-emerald-600">FREE</span>
+                        <span className="font-black text-emerald-600">
+                          {shipping === 0 ? 'FREE' : `₹${shipping}`}
+                        </span>
                       </div>
 
                       <div className="pt-3 border-t border-slate-100 flex justify-between items-center">

@@ -53,7 +53,47 @@ export const CartProvider = ({ children }) => {
     }
   });
 
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+
+  const [shippingSettings, setShippingSettings] = useState(() => {
+    try {
+      const raw = localStorage.getItem('admin_clinic_settings');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.shipping) {
+          return {
+            standardFee: Number(parsed.shipping.standardShippingFee ?? 50),
+            freeThreshold: Number(parsed.shipping.freeShippingThreshold ?? 1000)
+          };
+        }
+      }
+    } catch {}
+    return { standardFee: 50, freeThreshold: 1000 };
+  });
+
+  useEffect(() => {
+    const handleSettingsSync = () => {
+      try {
+        const raw = localStorage.getItem('admin_clinic_settings');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.shipping) {
+            setShippingSettings({
+              standardFee: Number(parsed.shipping.standardShippingFee ?? 50),
+              freeThreshold: Number(parsed.shipping.freeShippingThreshold ?? 1000)
+            });
+          }
+        }
+      } catch {}
+    };
+
+    window.addEventListener('drBharathiSettingsUpdated', handleSettingsSync);
+    window.addEventListener('storage', handleSettingsSync);
+    return () => {
+      window.removeEventListener('drBharathiSettingsUpdated', handleSettingsSync);
+      window.removeEventListener('storage', handleSettingsSync);
+    };
+  }, []);
 
   const safeItems = useMemo(() => (Array.isArray(items) ? items : []), [items]);
 
@@ -86,8 +126,8 @@ export const CartProvider = ({ children }) => {
 
   const shipping = useMemo(() => {
     if (subtotal === 0) return 0;
-    return subtotal >= cartConfig.freeShippingThreshold ? 0 : cartConfig.standardShippingFee;
-  }, [subtotal]);
+    return subtotal >= shippingSettings.freeThreshold ? 0 : shippingSettings.standardFee;
+  }, [subtotal, shippingSettings]);
 
   const tax = useMemo(() => {
     if (cartConfig.taxRatePercentage <= 0) return 0;
@@ -201,7 +241,8 @@ export const CartProvider = ({ children }) => {
         tax,
         grandTotal,
         appliedCoupon,
-        freeShippingThreshold: cartConfig.freeShippingThreshold,
+        freeShippingThreshold: shippingSettings.freeThreshold,
+        standardShippingFee: shippingSettings.standardFee,
         addToCart,
         updateQuantity,
         removeFromCart,

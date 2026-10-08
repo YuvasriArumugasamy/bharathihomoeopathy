@@ -40,6 +40,7 @@ export const AdminSettings = () => {
     e.preventDefault();
     try {
       localStorage.setItem('admin_clinic_settings', JSON.stringify(settings));
+      window.dispatchEvent(new Event('drBharathiSettingsUpdated'));
     } catch (err) {
       console.warn('Failed to save settings to storage:', err);
     }
