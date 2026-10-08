@@ -80,16 +80,24 @@ export const prescriptionService = {
   },
 
   getMyPatientPrescriptions: async (user) => {
+    const localRxs = getUserPrescriptions(user);
     try {
       const email = user?.email || (typeof localStorage !== 'undefined' ? localStorage.getItem('last_checkout_email') : '');
       const res = await api.get(`/prescriptions/my${email ? `?email=${encodeURIComponent(email)}` : ''}`);
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-        return res.data;
+        const mergedMap = new Map();
+        [...localRxs, ...res.data].forEach(r => {
+          const key = String(r.id || r.rxId || r._id);
+          if (!mergedMap.has(key)) {
+            mergedMap.set(key, r);
+          }
+        });
+        return Array.from(mergedMap.values());
       }
     } catch {
       // Fallback
     }
-    return getUserPrescriptions(user);
+    return localRxs;
   },
 
   createPrescription: async (data) => {

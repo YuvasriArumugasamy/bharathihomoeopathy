@@ -210,29 +210,42 @@ export const orderService = {
   },
 
   getMyPatientOrders: async (user) => {
+    const localOrders = getUserOrders(user);
     const email = user?.email || (typeof localStorage !== 'undefined' ? localStorage.getItem('last_checkout_email') : '');
     try {
       const res = await api.get(`/orders/my-orders${email ? `?email=${encodeURIComponent(email)}` : ''}`);
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-        const remoteOrders = res.data.filter(Boolean).map(o => ({
-          ...o,
-          id: o.orderNumber || o.id || o._id,
-          orderId: o.orderNumber || o.orderId,
-          total: o.totalAmount || o.total,
-          status: o.orderStatus || o.status || 'Pending',
-          paymentStatus: o.paymentStatus || 'Pending',
-          customer: {
-            name: o.shippingAddress?.fullName || o.guestName || user?.name || 'Online Patient',
-            phone: o.shippingAddress?.phone || o.guestPhone || user?.phone || '',
-            email: o.shippingAddress?.email || o.guestEmail || user?.email || ''
+        const remoteOrders = res.data.filter(Boolean).map(o => {
+          const num = formatOrderNumber(o.orderNumber || o.orderId || o.id);
+          return {
+            ...o,
+            id: num,
+            orderId: num,
+            orderNumber: num,
+            total: o.totalAmount || o.total,
+            status: o.orderStatus || o.status || 'Pending',
+            paymentStatus: o.paymentStatus || 'Pending',
+            customer: {
+              name: o.shippingAddress?.fullName || o.guestName || user?.name || 'Online Patient',
+              phone: o.shippingAddress?.phone || o.guestPhone || user?.phone || '',
+              email: o.shippingAddress?.email || o.guestEmail || user?.email || ''
+            }
+          };
+        });
+
+        const mergedMap = new Map();
+        [...localOrders, ...remoteOrders].forEach(o => {
+          const key = String(o.orderNumber || o.orderId || o.id);
+          if (!mergedMap.has(key)) {
+            mergedMap.set(key, o);
           }
-        }));
-        return remoteOrders;
+        });
+        return Array.from(mergedMap.values());
       }
     } catch (err) {
       console.warn("Could not fetch patient orders from backend:", err.message);
     }
-    return getUserOrders(user);
+    return localOrders;
   },
 
   getMyOrderById: async (id) => {

@@ -183,16 +183,24 @@ export const appointmentService = {
   },
 
   getMyPatientAppointments: async (user) => {
+    const localAppts = getUserAppointments(user);
     try {
       const email = user?.email || (typeof localStorage !== 'undefined' ? localStorage.getItem('last_checkout_email') : '');
       const res = await api.get(`/appointments/my${email ? `?email=${encodeURIComponent(email)}` : ''}`);
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-        return res.data;
+        const mergedMap = new Map();
+        [...localAppts, ...res.data].forEach(a => {
+          const key = String(a.id || a._id);
+          if (!mergedMap.has(key)) {
+            mergedMap.set(key, a);
+          }
+        });
+        return Array.from(mergedMap.values());
       }
     } catch {
       // Fallback to local
     }
-    return getUserAppointments(user);
+    return localAppts;
   }
 };
 

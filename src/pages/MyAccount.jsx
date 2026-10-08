@@ -84,9 +84,42 @@ export const MyAccount = () => {
           appointmentService.getMyPatientAppointments(user),
           prescriptionService.getMyPatientPrescriptions(user)
         ]);
-        if (orders && orders.length > 0) setRawOrders(orders);
-        if (appts && appts.length > 0) setUserAppointments(appts);
-        if (rxs && rxs.length > 0) setUserPrescriptions(rxs);
+        if (orders && orders.length > 0) {
+          setRawOrders(prev => {
+            const mergedMap = new Map();
+            [...prev, ...orders].forEach(o => {
+              const key = String(o.orderNumber || o.orderId || o.id);
+              if (!mergedMap.has(key)) {
+                mergedMap.set(key, o);
+              }
+            });
+            return Array.from(mergedMap.values());
+          });
+        }
+        if (appts && appts.length > 0) {
+          setUserAppointments(prev => {
+            const mergedMap = new Map();
+            [...prev, ...appts].forEach(a => {
+              const key = String(a.id || a._id);
+              if (!mergedMap.has(key)) {
+                mergedMap.set(key, a);
+              }
+            });
+            return Array.from(mergedMap.values());
+          });
+        }
+        if (rxs && rxs.length > 0) {
+          setUserPrescriptions(prev => {
+            const mergedMap = new Map();
+            [...prev, ...rxs].forEach(r => {
+              const key = String(r.id || r.rxId || r._id);
+              if (!mergedMap.has(key)) {
+                mergedMap.set(key, r);
+              }
+            });
+            return Array.from(mergedMap.values());
+          });
+        }
       } catch (err) {
         // Handled by local fallback
       } finally {
