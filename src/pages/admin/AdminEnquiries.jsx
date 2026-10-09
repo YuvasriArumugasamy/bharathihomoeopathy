@@ -96,6 +96,32 @@ export const AdminEnquiries = () => {
     Resolved: 'bg-emerald-50 text-emerald-700 border-emerald-200 ring-emerald-500/10'
   };
 
+  const formatDateTime = (dateVal) => {
+    if (!dateVal) return 'Recently';
+    try {
+      const d = new Date(dateVal);
+      if (isNaN(d.getTime())) return String(dateVal);
+      const hasTime = typeof dateVal === 'string' && (dateVal.includes('T') || dateVal.includes(':'));
+      if (hasTime) {
+        return d.toLocaleString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+      }
+      return d.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch {
+      return String(dateVal);
+    }
+  };
+
   return (
     <div className="space-y-8 ">
       
@@ -258,7 +284,7 @@ export const AdminEnquiries = () => {
                 </div>
 
                 {/* Patient / Sender Header */}
-                <div className="flex items-start gap-3">
+                <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <h4 className="font-heading font-black text-sm text-navy-950 truncate group-hover:text-brandOrange-600 transition-colors">
                       {enq.customer.name}
@@ -267,6 +293,17 @@ export const AdminEnquiries = () => {
                       {enq.customer.email}
                     </span>
                   </div>
+                  {enq.customer.phone && (
+                    <a
+                      href={`tel:${enq.customer.phone}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1.5 text-[11px] font-black text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-xl border border-emerald-200 shadow-2xs hover:shadow-xs transition-all shrink-0 cursor-pointer group/call active:scale-95"
+                      title={`Call patient: ${enq.customer.phone}`}
+                    >
+                      <Phone className="w-3 h-3 text-emerald-600 group-hover/call:scale-110 transition-transform" />
+                      <span>{enq.customer.phone}</span>
+                    </a>
+                  )}
                 </div>
 
                 {/* Subject & Message Preview */}
@@ -289,8 +326,8 @@ export const AdminEnquiries = () => {
               {/* Card Footer */}
               <div className="p-4 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 text-[11px] text-slate-400 font-medium">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>{enq.createdAt}</span>
+                  <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span className="font-semibold text-slate-500">{formatDateTime(enq.createdAt)}</span>
                   {enq.replies && enq.replies.length > 0 && (
                     <span className="inline-flex items-center gap-1 font-bold text-navy-900 bg-white px-2 py-0.5 rounded-md border border-slate-200 text-[10px]">
                       <MessageCircle className="w-3 h-3 text-brandOrange-500" />
@@ -316,14 +353,20 @@ export const AdminEnquiries = () => {
         </div>
       )}
 
-      {/* Enquiry Detail & Reply Drawer */}
+      {/* Enquiry Detail & Reply Centered Modal Dialog */}
       {selectedEnquiry && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-end bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-xl h-full overflow-y-auto p-6 sm:p-8 lg:p-9 space-y-6 shadow-2xl flex flex-col justify-between border-l border-slate-100">
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center p-3.5 sm:p-6 bg-navy-950/70 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200"
+          onClick={() => setSelectedEnquiry(null)}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-2xl max-h-[92vh] rounded-[2.25rem] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200 my-auto flex flex-col justify-between"
+          >
             
             <div className="space-y-6">
               
-              {/* Drawer Top Header */}
+              {/* Modal Top Header */}
               <div className="flex justify-between items-start pb-4 border-b border-slate-100">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -340,24 +383,35 @@ export const AdminEnquiries = () => {
                 </div>
                 <button 
                   onClick={() => setSelectedEnquiry(null)} 
-                  className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-all"
+                  className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-all cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Patient Contact Strip */}
-              <div className="p-4 bg-slate-50/90 rounded-[2rem] border border-slate-100 flex items-center justify-between">
+              {/* Patient Contact Strip with Clickable Call Button */}
+              <div className="p-4 bg-slate-50/90 rounded-[2rem] border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div>
-                    <h4 className="font-bold text-xs text-navy-950">{selectedEnquiry.customer.name}</h4>
-                    <span className="text-[11px] text-slate-400 block">{selectedEnquiry.customer.email}</span>
+                  <div className="w-10 h-10 rounded-2xl bg-amber-100 text-brandOrange-600 flex items-center justify-center font-bold text-sm shrink-0">
+                    <User className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-xs text-navy-950 truncate">{selectedEnquiry.customer.name}</h4>
+                    <span className="text-[11px] text-slate-400 block truncate">{selectedEnquiry.customer.email}</span>
                   </div>
                 </div>
                 {selectedEnquiry.customer.phone && (
-                  <span className="text-xs font-bold text-slate-600 bg-white px-3 py-1 rounded-xl border border-slate-200/80">
-                    {selectedEnquiry.customer.phone}
-                  </span>
+                  <a
+                    href={`tel:${selectedEnquiry.customer.phone}`}
+                    className="inline-flex items-center gap-2 text-xs font-black text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 rounded-xl border border-emerald-200 shadow-2xs hover:shadow-xs transition-all active:scale-95 group/call cursor-pointer shrink-0"
+                    title={`Call patient: ${selectedEnquiry.customer.phone}`}
+                  >
+                    <Phone className="w-3.5 h-3.5 text-emerald-600 group-hover/call:scale-110 transition-transform" />
+                    <span>{selectedEnquiry.customer.phone}</span>
+                    <span className="text-[10px] bg-emerald-200/80 text-emerald-900 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ml-0.5">
+                      Call
+                    </span>
+                  </a>
                 )}
               </div>
 
@@ -370,7 +424,7 @@ export const AdminEnquiries = () => {
                   </p>
                   <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 text-[10px] text-slate-400">
                     <span>Category: <strong>{selectedEnquiry.type || 'General'}</strong></span>
-                    <span>Received: {selectedEnquiry.createdAt}</span>
+                    <span>Received: <strong className="text-slate-600 font-bold">{formatDateTime(selectedEnquiry.createdAt)}</strong></span>
                   </div>
                 </div>
               </div>
