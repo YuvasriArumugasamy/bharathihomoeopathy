@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Leaf, 
@@ -19,8 +19,31 @@ import { ScrollReveal } from '../components/common/ScrollReveal';
 import { assets } from '../assets';
 
 export const BestSellers = () => {
+  const [products, setProducts] = useState(() => getStoredProducts());
+
+  useEffect(() => {
+    const handleSync = () => setProducts(getStoredProducts());
+    window.addEventListener('drBharathiProductsUpdated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('drBharathiProductsUpdated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
+
   const [sortBy, setSortBy] = useState('Best Selling');
-  const bestSellers = getStoredProducts().filter(p => p.isBestSeller);
+
+  const bestSellers = useMemo(() => {
+    const list = (products || []).filter(p => Boolean(p.isBestSeller) && p.status !== 'Draft');
+    return [...list].sort((a, b) => {
+      const priceA = Number(a.offerPrice || a.price || 0);
+      const priceB = Number(b.offerPrice || b.price || 0);
+      if (sortBy === 'PriceLow') return priceA - priceB;
+      if (sortBy === 'PriceHigh') return priceB - priceA;
+      if (sortBy === 'Rating') return (b.rating || 4.5) - (a.rating || 4.5);
+      return 0;
+    });
+  }, [products, sortBy]);
 
   return (
     <div className="space-y-12 pb-12 w-full max-w-full overflow-x-hidden">
@@ -123,31 +146,53 @@ export const BestSellers = () => {
           </h2>
 
           <div className="flex items-center gap-4 text-xs">
-            <span className="text-slate-500">Showing 1–12 of 24 products</span>
-            <div className="flex items-center gap-2">
-              <span className="text-slate-500">Sort by:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700"
-              >
-                <option value="Best Selling">Best Selling</option>
-                <option value="PriceLow">Price: Low to High</option>
-                <option value="PriceHigh">Price: High to Low</option>
-                <option value="Rating">Average Rating</option>
-              </select>
-            </div>
+            <span className="text-slate-500 font-bold">Showing {bestSellers.length} best seller remedies</span>
+            {bestSellers.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-slate-500 font-bold">Sort by:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700"
+                >
+                  <option value="Best Selling">Best Selling</option>
+                  <option value="PriceLow">Price: Low to High</option>
+                  <option value="PriceHigh">Price: High to Low</option>
+                  <option value="Rating">Average Rating</option>
+                </select>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* 12 Product Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
-          {bestSellers.map((prod, idx) => (
-            <ScrollReveal key={prod.id} direction="up" delay={(idx % 5) * 50} className="h-full">
-              <ProductCard product={prod} />
-            </ScrollReveal>
-          ))}
-        </div>
+        {/* Product Cards Grid or Empty State */}
+        {bestSellers.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
+            {bestSellers.map((prod, idx) => (
+              <ScrollReveal key={prod.id} direction="up" delay={(idx % 5) * 50} className="h-full">
+                <ProductCard product={prod} />
+              </ScrollReveal>
+            ))}
+          </div>
+        ) : (
+          <div className="py-16 text-center bg-white rounded-3xl border border-slate-200/80 p-8 space-y-3 shadow-2xs">
+            <div className="w-14 h-14 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center mx-auto border border-amber-200/60 shadow-xs">
+              <Sparkles className="w-7 h-7" />
+            </div>
+            <h3 className="font-extrabold text-slate-900 text-base">No Best Sellers Selected</h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto font-medium">
+              Products marked as "Best Seller" by the administrator in the Admin Panel will appear here immediately.
+            </p>
+            <div className="pt-2">
+              <Link 
+                to="/shop" 
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#0b344d] hover:bg-[#e05a1e] text-white text-xs font-bold transition-colors shadow-sm"
+              >
+                <span>Browse All Medicines</span>
+              </Link>
+            </div>
+          </div>
+        )}
 
       </section>
 

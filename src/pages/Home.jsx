@@ -100,8 +100,7 @@ export const Home = () => {
   }, []);
 
   const bestSellerProducts = useMemo(() => {
-    const best = (products || []).filter(p => p.isBestSeller && p.status !== 'Draft');
-    return (best.length > 0 ? best : (products || []).filter(p => p.status !== 'Draft')).slice(0, 5);
+    return (products || []).filter(p => Boolean(p.isBestSeller) && p.status !== 'Draft');
   }, [products]);
 
   const getCategoryImage = (cat, idx) => {
@@ -430,30 +429,32 @@ export const Home = () => {
         </section>
       )}
 
-      {/* 4. Best Sellers Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      {/* 4. Best Sellers Section (Only displayed when Admin has marked products as Best Seller) */}
+      {bestSellerProducts && bestSellerProducts.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-        <SectionHeader title="Best Sellers" />
-        <div className="flex justify-end -mt-4 mb-2 pr-4 relative z-10">
-          <Link
-            to="/best-sellers"
-            className="text-xs font-bold text-[#0b1727] hover:text-[#e05a1e] transition-colors flex items-center gap-1"
-          >
-            <span>View All Products</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+          <SectionHeader title="Best Sellers" />
+          <div className="flex justify-end -mt-4 mb-2 pr-4 relative z-10">
+            <Link
+              to="/best-sellers"
+              className="text-xs font-bold text-[#0b1727] hover:text-[#e05a1e] transition-colors flex items-center gap-1"
+            >
+              <span>View All Products</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
 
-        {/* 6 Grid Products */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-stretch">
-          {bestSellerProducts.map((prod, idx) => (
-            <ScrollReveal key={prod.id} direction="up" delay={idx * 60} className="h-full">
-              <ProductCard product={prod} />
-            </ScrollReveal>
-          ))}
-        </div>
+          {/* Grid Products */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-stretch">
+            {bestSellerProducts.map((prod, idx) => (
+              <ScrollReveal key={prod.id || prod._id || prod.sku} direction="up" delay={idx * 60} className="h-full">
+                <ProductCard product={prod} />
+              </ScrollReveal>
+            ))}
+          </div>
 
-      </section>
+        </section>
+      )}
 
       {/* 5. Three Promo Banners Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

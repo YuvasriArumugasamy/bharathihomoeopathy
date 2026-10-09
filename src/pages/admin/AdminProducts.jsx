@@ -46,6 +46,7 @@ export const AdminProducts = () => {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');
+  const [filterBestSellerOnly, setFilterBestSellerOnly] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -110,6 +111,7 @@ export const AdminProducts = () => {
 
   const filteredProducts = (Array.isArray(products) ? products : []).filter((p) => {
     if (!p) return false;
+    if (filterBestSellerOnly && !p.isBestSeller) return false;
     if (selectedCategory !== 'All' && p.category !== selectedCategory) return false;
     if (selectedStatus !== 'All' && p.status !== selectedStatus) return false;
     if (search.trim()) {
@@ -118,6 +120,25 @@ export const AdminProducts = () => {
     }
     return true;
   });
+
+  const handleToggleBestSeller = async (product, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const targetId = product.id || product._id;
+    const nextVal = !product.isBestSeller;
+    const updatedData = { ...product, isBestSeller: nextVal };
+    await productService.updateAdminProduct(targetId, updatedData);
+    setProducts(prev => prev.map(p => {
+      const isMatch = targetId && ((p.id && p.id === targetId) || (p._id && p._id === targetId));
+      return isMatch ? { ...p, isBestSeller: nextVal } : p;
+    }));
+    showToast(
+      nextVal ? `⭐ "${product.name}" added to Best Sellers!` : `"${product.name}" removed from Best Sellers`,
+      'success'
+    );
+  };
 
   const handleOpenAdd = () => {
     setEditingProduct(null);
@@ -277,7 +298,20 @@ export const AdminProducts = () => {
           )}
         </div>
 
-        <div className="flex flex-row items-center gap-2 sm:gap-3 w-full md:w-auto text-xs">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto text-xs">
+          <button
+            type="button"
+            onClick={() => setFilterBestSellerOnly(prev => !prev)}
+            className={`p-2.5 rounded-xl font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs text-xs whitespace-nowrap ${
+              filterBestSellerOnly
+                ? 'bg-amber-500 text-white shadow-amber-500/30'
+                : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+            }`}
+          >
+            <Star className={`w-3.5 h-3.5 ${filterBestSellerOnly ? 'fill-white text-white' : 'fill-amber-500 text-amber-500'}`} />
+            <span>Best Sellers ({(products || []).filter(p => p.isBestSeller).length})</span>
+          </button>
+
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
@@ -314,6 +348,7 @@ export const AdminProducts = () => {
                 <th className="py-3.5 px-4">SKU</th>
                 <th className="py-3.5 px-4">Price</th>
                 <th className="py-3.5 px-4">Stock Level</th>
+                <th className="py-3.5 px-4 text-center">Best Seller</th>
                 <th className="py-3.5 px-4">Status</th>
                 <th className="py-3.5 px-5 text-right">Actions</th>
               </tr>
@@ -386,6 +421,21 @@ export const AdminProducts = () => {
                         />
                       </div>
                     </div>
+                  </td>
+                  <td className="py-3.5 px-4 text-center">
+                    <button
+                      type="button"
+                      onClick={(e) => handleToggleBestSeller(prod, e)}
+                      title={prod.isBestSeller ? "Click to remove from Best Sellers" : "Click to mark as Best Seller"}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black transition-all cursor-pointer shadow-2xs active:scale-95 ${
+                        prod.isBestSeller
+                          ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 shadow-amber-200/50'
+                          : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200'
+                      }`}
+                    >
+                      <Star className={`w-3.5 h-3.5 ${prod.isBestSeller ? 'fill-amber-500 text-amber-500' : 'text-slate-400'}`} />
+                      <span>{prod.isBestSeller ? 'Best Seller' : 'Make Best Seller'}</span>
+                    </button>
                   </td>
                   <td className="py-3.5 px-4">
                     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-2xs ${
@@ -472,16 +522,30 @@ export const AdminProducts = () => {
                     <span className="text-[9px] font-black text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded-lg border border-purple-200">Featured</span>
                   )}
                 </div>
-                <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100 gap-2">
                   <div className="flex items-baseline gap-1.5">
                     <span className="font-black text-slate-900 text-sm">₹{prod.offerPrice || prod.regularPrice}</span>
                     {prod.regularPrice > (prod.offerPrice || prod.regularPrice) && (
                       <span className="text-[10px] text-slate-400 line-through font-semibold">₹{prod.regularPrice}</span>
                     )}
                   </div>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${prod.stock <= 5 ? 'text-rose-600 bg-rose-50' : 'text-slate-500 bg-slate-100'}`}>
-                    {prod.stock} in stock
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={(e) => handleToggleBestSeller(prod, e)}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black transition-all cursor-pointer shadow-2xs active:scale-95 ${
+                        prod.isBestSeller
+                          ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                          : 'bg-slate-100 text-slate-500 border border-slate-200'
+                      }`}
+                    >
+                      <Star className={`w-3 h-3 ${prod.isBestSeller ? 'fill-amber-500 text-amber-500' : 'text-slate-400'}`} />
+                      <span>{prod.isBestSeller ? 'Best Seller' : 'Make Best Seller'}</span>
+                    </button>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${prod.stock <= 5 ? 'text-rose-600 bg-rose-50' : 'text-slate-500 bg-slate-100'}`}>
+                      {prod.stock} in stock
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -640,25 +704,48 @@ export const AdminProducts = () => {
                 />
               </div>
 
-              <div className="flex flex-wrap gap-4 pt-2">
-                <label className="flex items-center gap-2 cursor-pointer select-none">
+              <div className="pt-2 space-y-2.5">
+                <div 
+                  className="bg-amber-50/70 border-2 border-amber-300/80 rounded-2xl p-3.5 flex items-center justify-between cursor-pointer hover:bg-amber-50 transition-colors shadow-2xs" 
+                  onClick={() => setFormData(prev => ({ ...prev, isBestSeller: !prev.isBestSeller }))}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${formData.isBestSeller ? 'bg-amber-500 text-white shadow-md shadow-amber-500/30' : 'bg-amber-100 text-amber-600'}`}>
+                      <Star className={`w-5 h-5 ${formData.isBestSeller ? 'fill-white' : ''}`} />
+                    </div>
+                    <div>
+                      <span className="font-extrabold text-slate-900 text-xs block">⭐ Best Seller Remedy</span>
+                      <span className="text-[10.5px] text-slate-500 font-medium block">Displays prominently in Home Page & Best Sellers catalogue</span>
+                    </div>
+                  </div>
                   <input
                     type="checkbox"
                     checked={formData.isBestSeller}
-                    onChange={(e) => setFormData({ ...formData, isBestSeller: e.target.checked })}
-                    className="rounded text-brandOrange-500 focus:ring-brandOrange-500 w-4 h-4"
+                    onChange={(e) => setFormData(prev => ({ ...prev, isBestSeller: e.target.checked }))}
+                    className="rounded text-brandOrange-500 focus:ring-brandOrange-500 w-5 h-5 cursor-pointer accent-amber-500"
+                    onClick={(e) => e.stopPropagation()}
                   />
-                  <span className="font-extrabold text-slate-700">Mark as Best Seller</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer select-none">
+                </div>
+
+                <div 
+                  className="bg-purple-50/60 border border-purple-200 rounded-2xl p-3 flex items-center justify-between cursor-pointer hover:bg-purple-50 transition-colors"
+                  onClick={() => setFormData(prev => ({ ...prev, isFeatured: !prev.isFeatured }))}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Sparkles className="w-4 h-4 text-purple-600" />
+                    <div>
+                      <span className="font-extrabold text-slate-800 text-xs block">Feature on Patient Home</span>
+                      <span className="text-[10px] text-slate-400 font-medium block">Highlights product in special promotional sections</span>
+                    </div>
+                  </div>
                   <input
                     type="checkbox"
                     checked={formData.isFeatured}
-                    onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                    className="rounded text-brandOrange-500 focus:ring-brandOrange-500 w-4 h-4"
+                    onChange={(e) => setFormData(prev => ({ ...prev, isFeatured: e.target.checked }))}
+                    className="rounded text-purple-600 focus:ring-purple-500 w-4 h-4 cursor-pointer accent-purple-600"
+                    onClick={(e) => e.stopPropagation()}
                   />
-                  <span className="font-extrabold text-slate-700">Feature on Patient Home</span>
-                </label>
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
