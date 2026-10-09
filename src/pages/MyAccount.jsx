@@ -32,7 +32,8 @@ import { getUserPrescriptions, prescriptionService } from '../services/prescript
 import { cloudSyncService } from '../services/cloudSyncService';
 
 export const MyAccount = () => {
-  const { user, logout, openAuthModal } = useAuth();
+  const { user, patientUser, logout, openAuthModal } = useAuth();
+  const activeUser = patientUser || (user?.role !== 'admin' ? user : null);
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -55,9 +56,9 @@ export const MyAccount = () => {
   const [filteredOrders, setFilteredOrders] = useState([]);
 
   // User-Isolated Real-time state
-  const [rawOrders, setRawOrders] = useState(() => getUserOrders(user));
-  const [userAppointments, setUserAppointments] = useState(() => getUserAppointments(user));
-  const [userPrescriptions, setUserPrescriptions] = useState(() => getUserPrescriptions(user));
+  const [rawOrders, setRawOrders] = useState(() => getUserOrders(activeUser));
+  const [userAppointments, setUserAppointments] = useState(() => getUserAppointments(activeUser));
+  const [userPrescriptions, setUserPrescriptions] = useState(() => getUserPrescriptions(activeUser));
 
   // Listen to live updates from MongoDB, local checkout/booking and Firebase Firestore cloud
   useEffect(() => {
@@ -66,9 +67,9 @@ export const MyAccount = () => {
       setLoadingAppointments(true);
       setLoadingPrescriptions(true);
 
-      setRawOrders(getUserOrders(user));
-      setUserAppointments(getUserAppointments(user));
-      setUserPrescriptions(getUserPrescriptions(user));
+      setRawOrders(getUserOrders(activeUser));
+      setUserAppointments(getUserAppointments(activeUser));
+      setUserPrescriptions(getUserPrescriptions(activeUser));
 
       setLoadingOrders(false);
       setLoadingAppointments(false);
@@ -80,9 +81,9 @@ export const MyAccount = () => {
     const loadMongoData = async () => {
       try {
         const [orders, appts, rxs] = await Promise.all([
-          orderService.getMyPatientOrders(user),
-          appointmentService.getMyPatientAppointments(user),
-          prescriptionService.getMyPatientPrescriptions(user)
+          orderService.getMyPatientOrders(activeUser),
+          appointmentService.getMyPatientAppointments(activeUser),
+          prescriptionService.getMyPatientPrescriptions(activeUser)
         ]);
         if (orders && orders.length > 0) {
           setRawOrders(prev => {
@@ -279,25 +280,25 @@ export const MyAccount = () => {
         <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-amber-500 text-white font-bold text-base sm:text-xl flex items-center justify-center shrink-0 shadow-sm">
-              {user?.picture ? (
-                <img src={user.picture} alt={user?.name} className="w-full h-full object-cover rounded-xl sm:rounded-2xl" />
+              {activeUser?.picture ? (
+                <img src={activeUser.picture} alt={activeUser?.name} className="w-full h-full object-cover rounded-xl sm:rounded-2xl" />
               ) : (
-                <span>{(user?.name || 'U').charAt(0).toUpperCase()}</span>
+                <span>{(activeUser?.name || 'P').charAt(0).toUpperCase()}</span>
               )}
             </div>
             <div className="min-w-0">
               <h1 className="text-sm sm:text-lg font-bold text-slate-900 truncate">
-                {user?.name || 'Patient Account'}
+                {activeUser?.name || 'Patient Account'}
               </h1>
-              <p className="text-xs text-slate-500 truncate">{user?.email || 'Registered Patient'}</p>
-              {user?.phone && (
-                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 truncate">{user.phone}</p>
+              <p className="text-xs text-slate-500 truncate">{activeUser?.email || 'Registered Patient'}</p>
+              {activeUser?.phone && (
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 truncate">{activeUser.phone}</p>
               )}
             </div>
           </div>
 
           <div className="shrink-0">
-            {user ? (
+            {activeUser ? (
               <button
                 onClick={() => setShowLogoutModal(true)}
                 className="px-3 sm:px-4 py-2 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
@@ -831,7 +832,7 @@ export const MyAccount = () => {
                 type="button"
                 onClick={() => {
                   setShowLogoutModal(false);
-                  logout();
+                  logout('patient');
                   showToast('Signed out successfully', 'info');
                   navigate('/');
                 }}

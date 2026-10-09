@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { patientUser, user, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -14,7 +14,8 @@ export const ProtectedRoute = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated) {
+  const activePatient = patientUser || (user?.role !== 'admin' ? user : null);
+  if (!activePatient) {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
@@ -22,7 +23,7 @@ export const ProtectedRoute = ({ children }) => {
 };
 
 export const AdminProtectedRoute = ({ children }) => {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { adminUser, user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -32,7 +33,8 @@ export const AdminProtectedRoute = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated || user?.role !== 'admin') {
+  const activeAdmin = adminUser || (user?.role === 'admin' ? user : null);
+  if (!activeAdmin || activeAdmin.role !== 'admin') {
     return <Navigate to="/admin/login" replace />;
   }
 

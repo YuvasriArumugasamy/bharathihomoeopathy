@@ -7,7 +7,9 @@ export const MobileBottomBar = () => {
   const location = useLocation();
   const pathname = location.pathname;
   const { totalItems } = useCart();
-  const { user, isAuthenticated, openAuthModal } = useAuth();
+  const { user, patientUser, openAuthModal } = useAuth();
+  const activePatient = patientUser || (user?.role !== 'admin' ? user : null);
+  const isPatientLoggedIn = !!activePatient;
 
   const navItems = [
     {
@@ -51,11 +53,11 @@ export const MobileBottomBar = () => {
     },
     {
       id: 'account',
-      label: 'Account',
-      path: isAuthenticated ? '/my-account' : '/login',
+      label: isPatientLoggedIn ? (activePatient?.name?.split(' ')[0] || 'Account') : 'Account',
+      path: isPatientLoggedIn ? '/my-account' : '/login',
       icon: 'fa-solid fa-user',
       isAccount: true,
-      onClick: !isAuthenticated
+      onClick: !isPatientLoggedIn
         ? (e) => {
             e.preventDefault();
             if (typeof openAuthModal === 'function') {

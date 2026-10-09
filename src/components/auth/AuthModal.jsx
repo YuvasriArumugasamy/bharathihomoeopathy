@@ -46,16 +46,17 @@ export const AuthModal = () => {
           if (profile && profile.email) {
             const realUser = {
               _id: 'usr-google-' + (profile.sub || Date.now()),
-              name: profile.name || profile.given_name || 'Bharathi User',
+              name: profile.name || profile.given_name || profile.email.split('@')[0],
               email: profile.email,
               picture: profile.picture || '',
               role: 'customer',
               phone: '',
               authProvider: 'google'
             };
-            authStorage.setToken('google_oauth_token_' + Date.now());
-            authStorage.setUser(realUser);
-            window.location.reload(); // Refresh session
+            authStorage.setPatientToken('google_oauth_token_' + Date.now());
+            authStorage.setPatientUser(realUser);
+            showToast(`Signed in successfully as ${realUser.name}!`, 'success');
+            closeAuthModal();
             return;
           }
         }
@@ -63,25 +64,14 @@ export const AuthModal = () => {
         console.warn("Could not fetch userinfo, fallback:", err);
       }
       const res = await googleLogin(tokenResponse.credential || tokenResponse.access_token);
-      if (res.success) {
+      if (res?.success) {
         showToast('Signed in with Google successfully!', 'success');
         closeAuthModal();
       }
     },
     onError: (errorResponse) => {
       console.warn("Google OAuth popup error:", errorResponse);
-      showToast('Google Sign-In popup closed. Logging in with verified account.', 'info');
-      const fallbackUser = {
-        _id: 'usr-google-bharathi',
-        name: 'Bharathi Homoeopathy',
-        email: 'bharathihomoeopathy246@gmail.com',
-        role: 'customer',
-        phone: '+91 90258 54711',
-        authProvider: 'google'
-      };
-      authStorage.setToken('google_oauth_fallback_' + Date.now());
-      authStorage.setUser(fallbackUser);
-      window.location.reload();
+      showToast('Google Sign-In was cancelled.', 'info');
     }
   });
 
@@ -95,11 +85,7 @@ export const AuthModal = () => {
     } catch (e) {
       console.warn("Google OAuth trigger failed:", e);
     }
-    showToast('Connecting to Google...', 'info');
-    setTimeout(() => {
-      login('bharathihomoeopathy246@gmail.com', 'google-auth');
-      closeAuthModal();
-    }, 400);
+    showToast('Opening Google Sign-In...', 'info');
   };
 
   // Close modal on Escape key press

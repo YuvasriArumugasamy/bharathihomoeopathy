@@ -55,7 +55,8 @@ import { cloudSyncService } from '../services/cloudSyncService';
 export const Checkout = () => {
   const navigate = useNavigate();
   const { items, subtotal, grandTotal, discount, shipping, tax, clearCart, getShippingFeeForLocation } = useCart();
-  const { user } = useAuth();
+  const { user, patientUser } = useAuth();
+  const activeUser = patientUser || (user?.role !== 'admin' ? user : null);
   const { showToast } = useToast();
 
   // 2-Step Flow State: 'address' (Step 1) | 'checkout' (Step 2)
@@ -63,10 +64,10 @@ export const Checkout = () => {
 
   // Form State
   const [formData, setFormData] = useState({
-    firstName: user?.name?.split(' ')[0] || 'Yuvasri',
-    lastName: user?.name?.split(' ').slice(1).join(' ') || 'Arumugasamy',
-    email: user?.email || 'yuvasrikutty2005@gmail.com',
-    phone: user?.phone || '9345865212',
+    firstName: activeUser?.name ? activeUser.name.split(' ')[0] : 'Yuvasri',
+    lastName: activeUser?.name ? activeUser.name.split(' ').slice(1).join(' ') : 'Arumugasamy',
+    email: activeUser?.email || 'yuvasrikutty2005@gmail.com',
+    phone: activeUser?.phone || '9345865212',
     address: '201-1 S.M Kovil street Vallam',
     city: 'Tenkasi',
     state: 'Tamil Nadu',
@@ -74,6 +75,18 @@ export const Checkout = () => {
     country: localStorage.getItem('user_country') || 'India',
     saveAddress: true
   });
+
+  useEffect(() => {
+    if (activeUser) {
+      setFormData((prev) => ({
+        ...prev,
+        firstName: activeUser.name ? activeUser.name.split(' ')[0] : prev.firstName,
+        lastName: activeUser.name ? activeUser.name.split(' ').slice(1).join(' ') : prev.lastName,
+        email: activeUser.email || prev.email,
+        phone: activeUser.phone || prev.phone
+      }));
+    }
+  }, [activeUser]);
 
   // Dynamically resolve states according to current selected country
   const currentCountryObj = allCountriesList.find(

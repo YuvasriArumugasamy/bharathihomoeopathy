@@ -68,7 +68,7 @@ export const AdminLogin = () => {
     // 4. Submit to Auth Provider
     setLoading(true);
     try {
-      const res = await login(cleanUsername, password);
+      const res = await login(cleanUsername, password, { isAdminLogin: true });
       setLoading(false);
 
       if (res.success && (res.user?.role === 'admin' || cleanUsername.includes('admin'))) {

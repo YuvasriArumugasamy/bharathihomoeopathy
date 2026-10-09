@@ -27,7 +27,8 @@ import { AdminSpotlightSearchModal } from './AdminSpotlightSearchModal';
 import { assets } from '../../assets';
 
 export const AdminTopbar = ({ onToggleSidebar }) => {
-  const { user, logout } = useAuth();
+  const { user, adminUser, logout } = useAuth();
+  const currentAdmin = adminUser || (user?.role === 'admin' ? user : null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [spotlightOpen, setSpotlightOpen] = useState(false);
@@ -316,11 +317,11 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
             className="flex items-center gap-3 p-1.5 pl-2 pr-2.5 rounded-2xl hover:bg-slate-100/90 border border-transparent hover:border-slate-200/80 transition-all cursor-pointer group text-left"
           >
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-black text-sm flex items-center justify-center shadow-md border-2 border-orange-200 group-hover:border-orange-300 group-hover:scale-105 transition-all">
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'C'}
+              {currentAdmin?.name ? currentAdmin.name.charAt(0).toUpperCase() : 'C'}
             </div>
             <div className="hidden md:flex flex-col text-left">
               <span className="text-xs font-black text-slate-900 group-hover:text-brandOrange-600 transition-colors leading-tight">
-                {user?.name || 'Clinic Administrator'}
+                {currentAdmin?.name || 'Clinic Administrator'}
               </span>
               <span className="text-[10px] text-emerald-600 font-extrabold flex items-center gap-1.5 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ring-2 ring-emerald-200 animate-pulse" />
@@ -334,8 +335,8 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
           {profileOpen && (
             <div className="fixed top-20 right-3 left-auto sm:absolute sm:top-full sm:right-0 sm:mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-2">
               <div className="px-3 py-2.5 bg-gradient-to-br from-slate-50 to-orange-50/50 rounded-xl border border-slate-100">
-                <div className="text-xs font-black text-slate-900">{user?.name || 'Clinic Administrator'}</div>
-                <div className="text-[11px] text-slate-500 truncate">{user?.email || 'admin@drbharathi.com'}</div>
+                <div className="text-xs font-black text-slate-900">{currentAdmin?.name || 'Clinic Administrator'}</div>
+                <div className="text-[11px] text-slate-500 truncate">{currentAdmin?.email || 'admin@drbharathi.com'}</div>
                 <div className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brandOrange-100 text-brandOrange-800 text-[9px] font-black uppercase tracking-wider">
                   <ShieldCheck className="w-3 h-3 text-brandOrange-600" />
                   Chief Administrator
@@ -357,7 +358,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
                 <button
                   onClick={() => {
                     setProfileOpen(false);
-                    logout();
+                    logout('admin');
                   }}
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                 >

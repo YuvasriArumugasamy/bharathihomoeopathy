@@ -5,8 +5,14 @@ import { customerService } from '../services/customerService';
 
 const AuthContext = createContext(null);
 
+const isCurrentPathAdmin = () => {
+  if (typeof window === 'undefined') return false;
+  return window.location.pathname.toLowerCase().startsWith('/admin');
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => authStorage.getUser());
+  const [patientUser, setPatientUser] = useState(() => authStorage.getPatientUser());
+  const [adminUser, setAdminUser] = useState(() => authStorage.getAdminUser());
   const [loading, setLoading] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState('register'); // 'register' | 'login'
@@ -21,57 +27,88 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Synchronize current storage state & purge legacy demo google cache
-    const storedUser = authStorage.getUser();
-    if (storedUser?.email === 'google.user@example.com') {
-      authStorage.clearAuth();
-      setUser(null);
-    } else if (storedUser) {
-      setUser(storedUser);
-    }
+    const syncAuth = () => {
+      setPatientUser(authStorage.getPatientUser());
+      setAdminUser(authStorage.getAdminUser());
+    };
+
+    window.addEventListener('drBharathiPatientAuthUpdated', syncAuth);
+    window.addEventListener('drBharathiAdminAuthUpdated', syncAuth);
+    window.addEventListener('storage', syncAuth);
+    return () => {
+      window.removeEventListener('drBharathiPatientAuthUpdated', syncAuth);
+      window.removeEventListener('drBharathiAdminAuthUpdated', syncAuth);
+      window.removeEventListener('storage', syncAuth);
+    };
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, options = {}) => {
     setLoading(true);
     try {
-      // Check if backend API is reachable, otherwise gracefully support demo login
+      const isTryingAdmin = options.isAdminLogin || email.toLowerCase().includes('admin') || isCurrentPathAdmin();
+
+      // Check if backend API is reachable
       try {
         const res = await api.post('/auth/login', { email, password });
-        // Backend returns: { success: true, data: { token, user } }
         const loginUser = res?.data?.data?.user || res?.data?.user;
         const loginToken = res?.data?.data?.token || res?.data?.token;
         if (loginUser && loginToken) {
-          authStorage.setToken(loginToken);
-          authStorage.setUser(loginUser);
-          setUser(loginUser);
+          if (loginUser.role === 'admin' || isTryingAdmin) {
+            authStorage.setAdminToken(loginToken);
+            authStorage.setAdminUser(loginUser);
+            setAdminUser(loginUser);
+          } else {
+            authStorage.setPatientToken(loginToken);
+            authStorage.setPatientUser(loginUser);
+            setPatientUser(loginUser);
+          }
           setLoading(false);
           return { success: true, user: loginUser };
         }
       } catch (backendErr) {
-        console.warn("Backend login unavailable, proceeding with verified demo session:", backendErr.message);
+        console.warn("Backend login unavailable, proceeding with verified local session:", backendErr.message);
       }
 
-      // Demo fallback authentication
-      const isAdmin = email.toLowerCase().includes('admin');
+      // Demo/local session fallback
+      if (isTryingAdmin) {
+        if (password !== 'admin123') {
+          setLoading(false);
+          return { success: false, message: 'Invalid Admin credentials. Incorrect password.' };
+        }
 
-      if (isAdmin && password !== 'admin123') {
+        const adminAccount = {
+          _id: 'usr-admin-01',
+          name: 'Clinic Administrator',
+          email: email || 'admin@drbharathi.com',
+          role: 'admin',
+          phone: '+91 90258 54711'
+        };
+
+        authStorage.setAdminToken('admin_session_token_' + Date.now());
+        authStorage.setAdminUser(adminAccount);
+        setAdminUser(adminAccount);
         setLoading(false);
-        return { success: false, message: 'Invalid Admin credentials. Incorrect password.' };
+        return { success: true, user: adminAccount };
       }
 
-      const demoUser = {
-        _id: isAdmin ? 'usr-admin-01' : 'usr-cust-01',
-        name: isAdmin ? 'Clinic Administrator' : 'Demo Customer',
+      // Patient / Customer Session
+      const formattedName = email
+        ? email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        : 'Patient';
+
+      const patientAccount = {
+        _id: 'usr-' + Date.now(),
+        name: formattedName,
         email: email,
-        role: isAdmin ? 'admin' : 'customer',
+        role: 'customer',
         phone: '+91 90258 54711'
       };
 
-      authStorage.setToken('demo_jwt_token_dr_bharathi_' + Date.now());
-      authStorage.setUser(demoUser);
-      setUser(demoUser);
+      authStorage.setPatientToken('patient_token_' + Date.now());
+      authStorage.setPatientUser(patientAccount);
+      setPatientUser(patientAccount);
       setLoading(false);
-      return { success: true, user: demoUser };
+      return { success: true, user: patientAccount };
     } catch (err) {
       setLoading(false);
       return { success: false, message: err.message || 'Login failed' };
@@ -83,13 +120,12 @@ export const AuthProvider = ({ children }) => {
     try {
       try {
         const res = await api.post('/auth/register', userData);
-        // Backend returns: { success: true, data: { token, user } }
         const regUser = res?.data?.data?.user || res?.data?.user;
         const regToken = res?.data?.data?.token || res?.data?.token;
         if (regUser && regToken) {
-          authStorage.setToken(regToken);
-          authStorage.setUser(regUser);
-          setUser(regUser);
+          authStorage.setPatientToken(regToken);
+          authStorage.setPatientUser(regUser);
+          setPatientUser(regUser);
           try {
             customerService.syncCustomer(userData);
           } catch (e) {
@@ -99,10 +135,10 @@ export const AuthProvider = ({ children }) => {
           return { success: true, user: regUser };
         }
       } catch (backendErr) {
-        console.warn("Backend register unavailable, proceeding with demo registration:", backendErr.message);
+        console.warn("Backend register unavailable, proceeding with local registration:", backendErr.message);
       }
 
-      const demoUser = {
+      const registeredPatient = {
         _id: 'usr-' + Date.now(),
         name: `${userData.firstName} ${userData.lastName || ''}`.trim(),
         email: userData.email,
@@ -110,25 +146,31 @@ export const AuthProvider = ({ children }) => {
         role: 'customer'
       };
 
-      authStorage.setToken('demo_jwt_token_dr_bharathi_' + Date.now());
-      authStorage.setUser(demoUser);
-      setUser(demoUser);
+      authStorage.setPatientToken('patient_token_' + Date.now());
+      authStorage.setPatientUser(registeredPatient);
+      setPatientUser(registeredPatient);
       try {
         customerService.syncCustomer(userData);
       } catch (e) {
         console.warn("Could not sync customer on register:", e);
       }
       setLoading(false);
-      return { success: true, user: demoUser };
+      return { success: true, user: registeredPatient };
     } catch (err) {
       setLoading(false);
       return { success: false, message: err.message || 'Registration failed' };
     }
   };
 
-  const logout = () => {
-    authStorage.clearAuth();
-    setUser(null);
+  const logout = (explicitScope) => {
+    const scope = explicitScope || (isCurrentPathAdmin() ? 'admin' : 'patient');
+    if (scope === 'admin') {
+      authStorage.clearAdminAuth();
+      setAdminUser(null);
+    } else {
+      authStorage.clearPatientAuth();
+      setPatientUser(null);
+    }
   };
 
   const googleLogin = async (credential) => {
@@ -150,7 +192,7 @@ export const AuthProvider = ({ children }) => {
           if (payload && payload.email) {
             realGoogleUser = {
               _id: 'usr-google-' + (payload.sub || Date.now()),
-              name: payload.name || payload.given_name || 'Bharathi',
+              name: payload.name || payload.given_name || payload.email.split('@')[0],
               email: payload.email,
               picture: payload.picture || '',
               role: 'customer',
@@ -169,9 +211,9 @@ export const AuthProvider = ({ children }) => {
         const tokenObj = res?.data?.data?.token || res?.data?.token;
 
         if (userObj) {
-          authStorage.setToken(tokenObj);
-          authStorage.setUser(userObj);
-          setUser(userObj);
+          authStorage.setPatientToken(tokenObj);
+          authStorage.setPatientUser(userObj);
+          setPatientUser(userObj);
           setLoading(false);
           return { success: true, user: userObj };
         }
@@ -179,33 +221,35 @@ export const AuthProvider = ({ children }) => {
         console.warn("Backend Google login response fallback:", backendErr.message);
       }
 
-      // Fallback with real decoded user info
-      const finalUser = realGoogleUser || {
-        _id: 'usr-google-' + Date.now(),
-        name: 'Google User',
-        email: 'google.user@example.com',
-        role: 'customer',
-        phone: '',
-        authProvider: 'google'
-      };
+      if (realGoogleUser) {
+        authStorage.setPatientToken('patient_jwt_google_' + Date.now());
+        authStorage.setPatientUser(realGoogleUser);
+        setPatientUser(realGoogleUser);
+        setLoading(false);
+        return { success: true, user: realGoogleUser };
+      }
 
-      authStorage.setToken('demo_jwt_token_google_' + Date.now());
-      authStorage.setUser(finalUser);
-      setUser(finalUser);
       setLoading(false);
-      return { success: true, user: finalUser };
+      return { success: false, message: 'Could not resolve Google profile.' };
     } catch (err) {
       setLoading(false);
       return { success: false, message: err.message || 'Google login failed' };
     }
   };
 
+  // Context-aware user resolution
+  const user = isCurrentPathAdmin() ? adminUser : patientUser;
+  const isAuthenticated = !!(isCurrentPathAdmin() ? adminUser : patientUser);
+  const isAdmin = !!(adminUser && adminUser.role === 'admin');
+
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user,
-        isAdmin: user?.role === 'admin',
+        patientUser,
+        adminUser,
+        isAuthenticated,
+        isAdmin,
         loading,
         login,
         register,

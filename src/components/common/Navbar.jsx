@@ -22,7 +22,9 @@ import { getStoredProducts } from '../../utils/productStorage';
 export const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isAuthenticated, logout, openAuthModal } = useAuth();
+  const { user, patientUser, logout, openAuthModal } = useAuth();
+  const activePatient = patientUser || (user?.role !== 'admin' ? user : null);
+  const isPatientLoggedIn = !!activePatient;
   const { totalItems } = useCart();
   const { totalWishlist } = useWishlist();
 
@@ -276,7 +278,7 @@ export const Navbar = () => {
           <div className="hidden lg:block relative" ref={accountMenuRef}>
             <button
               onClick={() => {
-                if (!isAuthenticated) {
+                if (!isPatientLoggedIn) {
                   openAuthModal('register');
                 } else {
                   setAccountMenuOpen(!accountMenuOpen);
@@ -290,19 +292,19 @@ export const Navbar = () => {
               </div>
               <div className="hidden sm:flex flex-col text-xs leading-tight">
                 <span className="font-bold text-navy-950">
-                  {isAuthenticated ? (user?.name || 'My Account') : 'My Account'}
+                  {isPatientLoggedIn ? (activePatient?.name || 'My Account') : 'My Account'}
                 </span>
                 <span className="text-[10px] text-slate-400">
-                  {isAuthenticated ? 'Patient Profile' : 'Login / Register'}
+                  {isPatientLoggedIn ? 'Patient Profile' : 'Login / Register'}
                 </span>
               </div>
             </button>
 
-            {accountMenuOpen && isAuthenticated && (
+            {accountMenuOpen && isPatientLoggedIn && (
               <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 z-50 space-y-1">
                 <div className="p-2 border-b border-slate-100 text-xs">
-                  <p className="font-bold text-navy-950 truncate">{user?.name}</p>
-                  <p className="text-[10px] text-slate-400 truncate">{user?.email}</p>
+                  <p className="font-bold text-navy-950 truncate">{activePatient?.name}</p>
+                  <p className="text-[10px] text-slate-400 truncate">{activePatient?.email}</p>
                 </div>
                 <Link
                   to="/my-account"
@@ -621,7 +623,7 @@ export const Navbar = () => {
                 type="button"
                 onClick={() => {
                   setShowLogoutModal(false);
-                  logout();
+                  logout('patient');
                   navigate('/');
                 }}
                 className="w-full py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition-colors cursor-pointer"
