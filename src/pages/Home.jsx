@@ -20,7 +20,6 @@ import {
   Phone
 } from 'lucide-react';
 import { assets } from '../assets';
-import { initialAdminCategories } from '../data/adminCategoriesData';
 import { getStoredProducts } from '../utils/productStorage';
 import { cloudSyncService } from '../services/cloudSyncService';
 import { useCart } from '../context/CartContext';
@@ -49,12 +48,12 @@ export const Home = () => {
       const raw = localStorage.getItem('admin_categories_store');
       if (raw !== null) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed.filter(c => c && c.name && (c.status === 'Active' || !c.status));
         }
       }
     } catch {}
-    return initialAdminCategories.filter(c => c && c.name && (c.status === 'Active' || !c.status));
+    return [];
   });
 
   useEffect(() => {
@@ -63,20 +62,20 @@ export const Home = () => {
         const raw = localStorage.getItem('admin_categories_store');
         if (raw !== null) {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             setAdminCategories(parsed.filter(c => c && c.name && (c.status === 'Active' || !c.status)));
             return;
           }
         }
       } catch {}
-      setAdminCategories(initialAdminCategories.filter(c => c && c.name && (c.status === 'Active' || !c.status)));
+      setAdminCategories([]);
     };
 
     window.addEventListener('drBharathiCategoriesUpdated', handleCatSync);
     window.addEventListener('storage', handleCatSync);
 
     const unsubCloud = cloudSyncService.listenToCategories((cloudCats) => {
-      if (Array.isArray(cloudCats) && cloudCats.length > 0) {
+      if (Array.isArray(cloudCats)) {
         setAdminCategories(cloudCats.filter(c => c && c.name && (c.status === 'Active' || !c.status)));
       }
     });
@@ -373,61 +372,63 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* 3. Shop by Category Section with Luxury Arched Dome Cards (Inspired by Image Reference) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      {/* 3. Shop by Category Section with Luxury Arched Dome Cards (Only displayed if Admin has created categories) */}
+      {adminCategories && adminCategories.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
-        {/* Section Heading */}
-        <SectionHeader title="Shop by Category" />
+          {/* Section Heading */}
+          <SectionHeader title="Shop by Category" />
 
-        {/* Dynamic Interactive Arched Category Cards from Admin */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-x-3 gap-y-7 sm:gap-x-4 sm:gap-y-8 lg:gap-4 pb-4">
-          {adminCategories.map((cat, idx) => (
-            <ScrollReveal key={cat.id || cat._id || cat.name} direction="up" delay={idx * 50}>
-              <Link
-                to={`/shop?category=${encodeURIComponent(cat.name)}`}
-                className="group relative flex flex-col items-center cursor-pointer transition-all duration-300 hover:-translate-y-2 pt-1 pb-4"
-              >
-                {/* Arched Dome Container (Top Arch Dome + Gold Trim) */}
-                <div className="relative w-full aspect-[3/4.2] rounded-t-full rounded-b-2xl border-2 border-amber-400/90 group-hover:border-amber-300 shadow-[0_6px_20px_-4px_rgba(217,119,6,0.18)] group-hover:shadow-[0_16px_35px_-4px_rgba(217,119,6,0.35)] overflow-hidden bg-gradient-to-b from-amber-50/50 via-white to-emerald-50/30 transition-all duration-300 flex items-center justify-center p-3">
-                  
-                  {/* Subtle Inner Gold Ring */}
-                  <div className="absolute inset-1 rounded-t-full rounded-b-xl border border-amber-300/40 pointer-events-none" />
+          {/* Dynamic Interactive Arched Category Cards from Admin */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-x-3 gap-y-7 sm:gap-x-4 sm:gap-y-8 lg:gap-4 pb-4">
+            {adminCategories.map((cat, idx) => (
+              <ScrollReveal key={cat.id || cat._id || cat.name} direction="up" delay={idx * 50}>
+                <Link
+                  to={`/shop?category=${encodeURIComponent(cat.name)}`}
+                  className="group relative flex flex-col items-center cursor-pointer transition-all duration-300 hover:-translate-y-2 pt-1 pb-4"
+                >
+                  {/* Arched Dome Container (Top Arch Dome + Gold Trim) */}
+                  <div className="relative w-full aspect-[3/4.2] rounded-t-full rounded-b-2xl border-2 border-amber-400/90 group-hover:border-amber-300 shadow-[0_6px_20px_-4px_rgba(217,119,6,0.18)] group-hover:shadow-[0_16px_35px_-4px_rgba(217,119,6,0.35)] overflow-hidden bg-gradient-to-b from-amber-50/50 via-white to-emerald-50/30 transition-all duration-300 flex items-center justify-center p-3">
+                    
+                    {/* Subtle Inner Gold Ring */}
+                    <div className="absolute inset-1 rounded-t-full rounded-b-xl border border-amber-300/40 pointer-events-none" />
 
-                  {/* Luxury Background Shimmer on Hover */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/10 via-transparent to-amber-200/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    {/* Luxury Background Shimmer on Hover */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/10 via-transparent to-amber-200/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-                  {/* Category Remedy Image */}
-                  <img
-                    src={getCategoryImage(cat, idx)}
-                    alt={cat.name}
-                    className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-500 ease-out drop-shadow-sm"
-                  />
-                </div>
-
-                {/* Luxury Emerald & Gold Capsule Badge (Anchored at the base of the Arch) */}
-                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-[90%] max-w-[145px] z-10 transition-transform duration-300 group-hover:scale-105">
-                  <div className="bg-[#073a2f] border-2 border-amber-400 shadow-md shadow-emerald-950/30 group-hover:bg-[#0a473a] group-hover:border-amber-300 text-white rounded-full py-1.5 px-2 text-center transition-all duration-300 flex items-center justify-center min-h-[34px]">
-                    <span className="text-[9.5px] sm:text-[10px] lg:text-[9.5px] font-black tracking-wider uppercase leading-tight line-clamp-2 text-white">
-                      {cat.name}
-                    </span>
+                    {/* Category Remedy Image */}
+                    <img
+                      src={getCategoryImage(cat, idx)}
+                      alt={cat.name}
+                      className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-500 ease-out drop-shadow-sm"
+                    />
                   </div>
-                </div>
-              </Link>
-            </ScrollReveal>
-          ))}
-        </div>
 
-        <div className="text-center pt-2">
-          <Link
-            to="/shop"
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-[#0b344d] to-[#18587c] hover:from-[#18587c] hover:to-[#0b344d] text-white text-xs sm:text-sm font-extrabold shadow-lg shadow-[#0b344d]/20 hover:scale-105 transition-all duration-200"
-          >
-            <span>View All Categories</span>
-            <ArrowRight className="w-4 h-4 text-amber-400" />
-          </Link>
-        </div>
+                  {/* Luxury Emerald & Gold Capsule Badge (Anchored at the base of the Arch) */}
+                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-[90%] max-w-[145px] z-10 transition-transform duration-300 group-hover:scale-105">
+                    <div className="bg-[#073a2f] border-2 border-amber-400 shadow-md shadow-emerald-950/30 group-hover:bg-[#0a473a] group-hover:border-amber-300 text-white rounded-full py-1.5 px-2 text-center transition-all duration-300 flex items-center justify-center min-h-[34px]">
+                      <span className="text-[9.5px] sm:text-[10px] lg:text-[9.5px] font-black tracking-wider uppercase leading-tight line-clamp-2 text-white">
+                        {cat.name}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </ScrollReveal>
+            ))}
+          </div>
 
-      </section>
+          <div className="text-center pt-2">
+            <Link
+              to="/shop"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-[#0b344d] to-[#18587c] hover:from-[#18587c] hover:to-[#0b344d] text-white text-xs sm:text-sm font-extrabold shadow-lg shadow-[#0b344d]/20 hover:scale-105 transition-all duration-200"
+            >
+              <span>View All Categories</span>
+              <ArrowRight className="w-4 h-4 text-amber-400" />
+            </Link>
+          </div>
+
+        </section>
+      )}
 
       {/* 4. Best Sellers Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">

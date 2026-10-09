@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Layers, Plus, Edit, Trash2, Search, Check, X, Star, Sparkles, FolderPlus, ArrowUpRight, Upload, RotateCcw } from 'lucide-react';
-import { initialAdminCategories } from '../../data/adminCategoriesData';
 import { categoryService } from '../../services/categoryService';
 import { useToast } from '../../context/ToastContext';
 import { slugify } from '../../utils/slugify';

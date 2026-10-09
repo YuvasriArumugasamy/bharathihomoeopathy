@@ -7,9 +7,9 @@ const PRODUCTS_STORAGE_KEY = 'admin_products_store';
 const getStoredProducts = () => {
   try {
     const raw = localStorage.getItem(PRODUCTS_STORAGE_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
         // Auto-heal if all products were accidentally overwritten with the same name
         const uniqueNames = new Set(parsed.map(p => p.name));
         if (parsed.length > 3 && uniqueNames.size === 1) {

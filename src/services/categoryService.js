@@ -26,14 +26,14 @@ export const getStoredCategories = () => {
     const raw = localStorage.getItem(CATEGORIES_STORAGE_KEY);
     if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
         return sanitizeCategories(parsed);
       }
     }
   } catch (err) {
     console.warn("Could not read categories from storage:", err.message);
   }
-  return sanitizeCategories(initialAdminCategories);
+  return [];
 };
 
 export const saveStoredCategories = (categories) => {
@@ -136,15 +136,15 @@ export const categoryService = {
   },
 
   resetToDefaultCategories: () => {
-    saveStoredCategories(initialAdminCategories);
-    return initialAdminCategories;
+    saveStoredCategories([]);
+    return [];
   }
 };
 
 // Initialize cloud synchronization for categories across all devices
 try {
   cloudSyncService.listenToCategories((cloudCats) => {
-    if (Array.isArray(cloudCats) && cloudCats.length > 0) {
+    if (Array.isArray(cloudCats)) {
       try {
         localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(cloudCats));
         window.dispatchEvent(new CustomEvent('drBharathiCategoriesUpdated', { detail: cloudCats }));

@@ -85,9 +85,9 @@ export const getStoredProducts = () => {
   try {
     // 1. Primary source: admin_products_store (where Admin edits are stored)
     const adminRaw = localStorage.getItem(ADMIN_STORAGE_KEY);
-    if (adminRaw) {
+    if (adminRaw !== null) {
       const parsed = JSON.parse(adminRaw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
         return parsed
           .filter(p => p.status !== 'Draft')
           .map(p => {
@@ -101,7 +101,7 @@ export const getStoredProducts = () => {
             const image = resolveProductImage(p);
             const brand = (p.brand && p.brand !== "Dr. Bharathi's Standard")
               ? p.brand
-              : (demoProducts.find(dp => dp.sku === p.sku || dp.name === p.name)?.brand || p.brand || 'SBL');
+              : (p.brand || '');
 
             return {
               ...p,
@@ -122,9 +122,9 @@ export const getStoredProducts = () => {
 
     // 2. Fallback: drBharathiProductsCatalog
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
+    if (stored !== null) {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
         return parsed.map(p => ({
           ...p,
           image: resolveProductImage(p)
@@ -134,7 +134,7 @@ export const getStoredProducts = () => {
   } catch (err) {
     console.warn('Error reading products from localStorage:', err);
   }
-  return demoProducts;
+  return [];
 };
 
 export const saveStoredProducts = (products) => {
