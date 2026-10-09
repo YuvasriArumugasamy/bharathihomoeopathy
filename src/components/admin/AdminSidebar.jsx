@@ -11,10 +11,8 @@ import {
   CreditCard, 
   Star, 
   MessageSquare, 
-  Search, 
   Settings,
   Bell, 
-  BookOpen,
   X, 
   LogOut
 } from 'lucide-react';
@@ -51,10 +49,8 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
       ]
     },
     {
-      title: 'Marketing & Portal',
+      title: 'Portal & Settings',
       items: [
-        { name: 'Blog & Articles', path: '/admin/blog', icon: BookOpen },
-        { name: 'SEO Management', path: '/admin/seo', icon: Search },
         { name: 'Settings', path: '/admin/settings', icon: Settings },
         { name: 'Notifications', path: '/admin/notifications', icon: Bell }
       ]

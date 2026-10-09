@@ -148,9 +148,9 @@ export default function App() {
         <Route path="inventory" element={<AdminInventory />} />
         <Route path="payments" element={<AdminPayments />} />
         <Route path="reviews" element={<AdminReviews />} />
-        <Route path="blog" element={<AdminBlog />} />
+        <Route path="blog" element={<Navigate to="/admin" replace />} />
         <Route path="enquiries" element={<AdminEnquiries />} />
-        <Route path="seo" element={<AdminSeo />} />
+        <Route path="seo" element={<Navigate to="/admin" replace />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="notifications" element={<AdminNotifications />} />
       </Route>
