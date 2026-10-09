@@ -327,43 +327,44 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* 3. Shop by Category Section with High-End Glass Cards */}
+      {/* 3. Shop by Category Section with Luxury Arched Dome Cards (Inspired by Image Reference) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
         {/* Section Heading */}
         <SectionHeader title="Shop by Category" />
 
-        {/* 7 Interactive Category Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4 lg:gap-4">
+        {/* 7 Interactive Arched Category Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-x-3 gap-y-7 sm:gap-x-4 sm:gap-y-8 lg:gap-4 pb-4">
           {categories.map((cat, idx) => (
             <ScrollReveal key={cat.name} direction="up" delay={idx * 50}>
               <Link
                 to={`/shop?category=${encodeURIComponent(cat.name)}`}
-                className="flex flex-col items-center text-center p-3.5 sm:p-4 rounded-3xl bg-white border border-slate-200/80 shadow-xs hover:shadow-xl hover:shadow-orange-500/10 hover:border-brandOrange-400/60 hover:-translate-y-1.5 transition-all duration-300 group relative overflow-hidden h-full"
+                className="group relative flex flex-col items-center cursor-pointer transition-all duration-300 hover:-translate-y-2 pt-1 pb-4"
               >
-                {/* Top Accent Gradient Line on Hover */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                {/* Arched Dome Container (Top Arch Dome + Gold Trim) */}
+                <div className="relative w-full aspect-[3/4.2] rounded-t-full rounded-b-2xl border-2 border-amber-400/90 group-hover:border-amber-300 shadow-[0_6px_20px_-4px_rgba(217,119,6,0.18)] group-hover:shadow-[0_16px_35px_-4px_rgba(217,119,6,0.35)] overflow-hidden bg-gradient-to-b from-amber-50/50 via-white to-emerald-50/30 transition-all duration-300 flex items-center justify-center p-3">
+                  
+                  {/* Subtle Inner Gold Ring */}
+                  <div className="absolute inset-1 rounded-t-full rounded-b-xl border border-amber-300/40 pointer-events-none" />
 
-                {/* Glowing Gradient Ring Pod around Image */}
-                <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full p-1 bg-gradient-to-tr from-brandOrange-500 via-amber-400 to-[#18587c] shadow-md group-hover:scale-105 group-hover:rotate-3 transition-all duration-300 flex items-center justify-center shrink-0">
-                  <div className="w-full h-full rounded-full bg-white p-1 overflow-hidden flex items-center justify-center border-2 border-white shadow-inner">
-                    <img
-                      src={cat.image}
-                      alt={cat.name}
-                      className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300"
-                    />
-                  </div>
+                  {/* Luxury Background Shimmer on Hover */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/10 via-transparent to-amber-200/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                  {/* Category Remedy Image */}
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-500 ease-out drop-shadow-sm"
+                  />
                 </div>
 
-                {/* Category Title */}
-                <h3 className="text-xs sm:text-[12.5px] font-extrabold text-navy-950 mt-3 group-hover:text-brandOrange-600 transition-colors leading-tight line-clamp-2 min-h-[32px] flex items-center justify-center">
-                  {cat.name}
-                </h3>
-
-                {/* Interactive Arrow Indicator on Hover */}
-                <div className="opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200 text-[10px] font-extrabold text-brandOrange-500 flex items-center gap-0.5 mt-1">
-                  <span>Explore</span>
-                  <ArrowRight className="w-3 h-3" />
+                {/* Luxury Emerald & Gold Capsule Badge (Anchored at the base of the Arch) */}
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-[90%] max-w-[145px] z-10 transition-transform duration-300 group-hover:scale-105">
+                  <div className="bg-[#073a2f] border-2 border-amber-400 shadow-md shadow-emerald-950/30 group-hover:bg-[#0a473a] group-hover:border-amber-300 text-white rounded-full py-1.5 px-2 text-center transition-all duration-300 flex items-center justify-center min-h-[34px]">
+                    <span className="text-[9.5px] sm:text-[10px] lg:text-[9.5px] font-black tracking-wider uppercase leading-tight line-clamp-2 text-white">
+                      {cat.name}
+                    </span>
+                  </div>
                 </div>
               </Link>
             </ScrollReveal>
