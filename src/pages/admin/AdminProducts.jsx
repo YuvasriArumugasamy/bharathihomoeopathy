@@ -348,7 +348,7 @@ export const AdminProducts = () => {
                 <th className="py-3.5 px-4">SKU</th>
                 <th className="py-3.5 px-4">Price</th>
                 <th className="py-3.5 px-4">Stock Level</th>
-                <th className="py-3.5 px-4 text-center">Best Seller</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[130px]">Best Seller</th>
                 <th className="py-3.5 px-4">Status</th>
                 <th className="py-3.5 px-5 text-right">Actions</th>
               </tr>
@@ -422,19 +422,19 @@ export const AdminProducts = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="py-3.5 px-4 text-center">
+                  <td className="py-3.5 px-4 text-center whitespace-nowrap">
                     <button
                       type="button"
                       onClick={(e) => handleToggleBestSeller(prod, e)}
-                      title={prod.isBestSeller ? "Click to remove from Best Sellers" : "Click to mark as Best Seller"}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black transition-all cursor-pointer shadow-2xs active:scale-95 ${
+                      title={prod.isBestSeller ? "Click to remove from Best Sellers" : "Click to set as Best Seller"}
+                      className={`inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer border shadow-2xs active:scale-95 group ${
                         prod.isBestSeller
-                          ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 shadow-amber-200/50'
-                          : 'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200'
+                          ? 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100 hover:border-amber-400'
+                          : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300'
                       }`}
                     >
-                      <Star className={`w-3.5 h-3.5 ${prod.isBestSeller ? 'fill-amber-500 text-amber-500' : 'text-slate-400'}`} />
-                      <span>{prod.isBestSeller ? 'Best Seller' : 'Make Best Seller'}</span>
+                      <Star className={`w-3.5 h-3.5 shrink-0 transition-transform group-hover:scale-110 ${prod.isBestSeller ? 'fill-amber-500 text-amber-500' : 'text-slate-400 group-hover:text-amber-500'}`} />
+                      <span>{prod.isBestSeller ? 'Best Seller' : 'Regular'}</span>
                     </button>
                   </td>
                   <td className="py-3.5 px-4">
@@ -533,14 +533,15 @@ export const AdminProducts = () => {
                     <button
                       type="button"
                       onClick={(e) => handleToggleBestSeller(prod, e)}
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black transition-all cursor-pointer shadow-2xs active:scale-95 ${
+                      title={prod.isBestSeller ? "Click to remove from Best Sellers" : "Click to set as Best Seller"}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap transition-all cursor-pointer shadow-2xs active:scale-95 border ${
                         prod.isBestSeller
-                          ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                          : 'bg-slate-100 text-slate-500 border border-slate-200'
+                          ? 'bg-amber-50 text-amber-900 border-amber-300'
+                          : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300'
                       }`}
                     >
-                      <Star className={`w-3 h-3 ${prod.isBestSeller ? 'fill-amber-500 text-amber-500' : 'text-slate-400'}`} />
-                      <span>{prod.isBestSeller ? 'Best Seller' : 'Make Best Seller'}</span>
+                      <Star className={`w-3 h-3 shrink-0 ${prod.isBestSeller ? 'fill-amber-500 text-amber-500' : 'text-slate-400'}`} />
+                      <span>{prod.isBestSeller ? 'Best Seller' : 'Regular'}</span>
                     </button>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${prod.stock <= 5 ? 'text-rose-600 bg-rose-50' : 'text-slate-500 bg-slate-100'}`}>
                       {prod.stock} in stock
