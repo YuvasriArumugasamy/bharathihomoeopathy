@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ChevronRight,
@@ -20,13 +20,15 @@ import {
   Phone
 } from 'lucide-react';
 import { assets } from '../assets';
-import { demoProducts } from '../data/products';
+import { initialAdminCategories } from '../data/adminCategoriesData';
 import { getStoredProducts } from '../utils/productStorage';
+import { cloudSyncService } from '../services/cloudSyncService';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { ProductCard } from '../components/shop/ProductCard';
 import { SectionHeader } from '../components/common/SectionHeader';
 import { ScrollReveal } from '../components/common/ScrollReveal';
+
 export const Home = () => {
   const { addToCart } = useCart();
   const { showToast } = useToast();
@@ -41,38 +43,82 @@ export const Home = () => {
     }, 1200);
   };
 
-  const categories = [
-    {
-      name: "Homeopathy Medicines",
-      image: assets.p1
-    },
-    {
-      name: "Mother Tinctures",
-      image: assets.p2
-    },
-    {
-      name: "Biochemic Medicines",
-      image: assets.p3
-    },
-    {
-      name: "Herbal Products",
-      image: assets.p4
-    },
-    {
-      name: "Personal Care",
-      image: assets.p5
-    },
-    {
-      name: "Combo Offers",
-      image: assets.p6
-    },
-    {
-      name: "Health Conditions",
-      image: assets.p7
-    }
-  ];
+  // Dynamically load active categories directly managed by Admin
+  const [adminCategories, setAdminCategories] = useState(() => {
+    try {
+      const raw = localStorage.getItem('admin_categories_store');
+      if (raw !== null) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.filter(c => c && c.name && (c.status === 'Active' || !c.status));
+        }
+      }
+    } catch {}
+    return initialAdminCategories.filter(c => c && c.name && (c.status === 'Active' || !c.status));
+  });
 
-  const bestSellerProducts = (getStoredProducts().filter(p => p.isBestSeller) || []).slice(0, 5);
+  useEffect(() => {
+    const handleCatSync = () => {
+      try {
+        const raw = localStorage.getItem('admin_categories_store');
+        if (raw !== null) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setAdminCategories(parsed.filter(c => c && c.name && (c.status === 'Active' || !c.status)));
+            return;
+          }
+        }
+      } catch {}
+      setAdminCategories(initialAdminCategories.filter(c => c && c.name && (c.status === 'Active' || !c.status)));
+    };
+
+    window.addEventListener('drBharathiCategoriesUpdated', handleCatSync);
+    window.addEventListener('storage', handleCatSync);
+
+    const unsubCloud = cloudSyncService.listenToCategories((cloudCats) => {
+      if (Array.isArray(cloudCats) && cloudCats.length > 0) {
+        setAdminCategories(cloudCats.filter(c => c && c.name && (c.status === 'Active' || !c.status)));
+      }
+    });
+
+    return () => {
+      window.removeEventListener('drBharathiCategoriesUpdated', handleCatSync);
+      window.removeEventListener('storage', handleCatSync);
+      if (typeof unsubCloud === 'function') unsubCloud();
+    };
+  }, []);
+
+  // Dynamically load products directly managed by Admin
+  const [products, setProducts] = useState(() => getStoredProducts());
+  useEffect(() => {
+    const handleSync = () => setProducts(getStoredProducts());
+    window.addEventListener('drBharathiProductsUpdated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('drBharathiProductsUpdated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
+
+  const bestSellerProducts = useMemo(() => {
+    const best = (products || []).filter(p => p.isBestSeller && p.status !== 'Draft');
+    return (best.length > 0 ? best : (products || []).filter(p => p.status !== 'Draft')).slice(0, 5);
+  }, [products]);
+
+  const getCategoryImage = (cat, idx) => {
+    if (cat.image && typeof cat.image === 'string' && (cat.image.startsWith('data:') || cat.image.startsWith('http') || cat.image.startsWith('/'))) {
+      return cat.image;
+    }
+    const name = (cat.name || '').toLowerCase();
+    if (name.includes('homeo')) return assets.p1;
+    if (name.includes('tincture')) return assets.p2;
+    if (name.includes('biochemic')) return assets.p3;
+    if (name.includes('wellness') || name.includes('herbal')) return assets.p4;
+    if (name.includes('personal')) return assets.p5;
+    if (name.includes('combo')) return assets.p6;
+    const fallbackList = [assets.p1, assets.p2, assets.p3, assets.p4, assets.p5, assets.p6, assets.p7];
+    return fallbackList[idx % fallbackList.length];
+  };
 
   const testimonials = [
     {
@@ -333,10 +379,10 @@ export const Home = () => {
         {/* Section Heading */}
         <SectionHeader title="Shop by Category" />
 
-        {/* 7 Interactive Arched Category Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-x-3 gap-y-7 sm:gap-x-4 sm:gap-y-8 lg:gap-4 pb-4">
-          {categories.map((cat, idx) => (
-            <ScrollReveal key={cat.name} direction="up" delay={idx * 50}>
+        {/* Dynamic Interactive Arched Category Cards from Admin */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-x-3 gap-y-7 sm:gap-x-4 sm:gap-y-8 lg:gap-4 pb-4">
+          {adminCategories.map((cat, idx) => (
+            <ScrollReveal key={cat.id || cat._id || cat.name} direction="up" delay={idx * 50}>
               <Link
                 to={`/shop?category=${encodeURIComponent(cat.name)}`}
                 className="group relative flex flex-col items-center cursor-pointer transition-all duration-300 hover:-translate-y-2 pt-1 pb-4"
@@ -352,7 +398,7 @@ export const Home = () => {
 
                   {/* Category Remedy Image */}
                   <img
-                    src={cat.image}
+                    src={getCategoryImage(cat, idx)}
                     alt={cat.name}
                     className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-500 ease-out drop-shadow-sm"
                   />

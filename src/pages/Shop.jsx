@@ -170,11 +170,9 @@ export const Shop = () => {
   ];
 
   const brands = useMemo(() => {
-    const predefined = ["SBL", "Willmar Schwabe", "BJain", "Wheezal", "Dr. Reckeweg", "Bakson's", "Dr. Bharathi's Standard"];
-    const productBrands = (allProducts || []).map(p => p.brand).filter(Boolean);
-    const uniqueBrandNames = Array.from(new Set([...predefined, ...productBrands]));
+    const productBrands = Array.from(new Set((allProducts || []).map(p => p.brand).filter(Boolean)));
     
-    return uniqueBrandNames.map(name => ({
+    return productBrands.map(name => ({
       name,
       count: allProducts.filter(p => p.brand === name).length
     }));
