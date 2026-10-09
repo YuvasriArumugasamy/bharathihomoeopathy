@@ -11,7 +11,11 @@ import {
   LogOut, 
   CheckCircle2,
   Sparkles,
-  Search
+  Search,
+  ShoppingBag,
+  Calendar,
+  MessageSquare,
+  AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -180,10 +184,10 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
 
           {/* Interactive Notifications Popup Dropdown */}
           {notificationsOpen && (
-            <div className="fixed top-20 right-3 left-3 sm:absolute sm:top-full sm:right-0 sm:left-auto sm:mt-2 w-auto sm:w-84 max-w-sm sm:max-w-none bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-3 font-serif">
+            <div className="fixed top-20 right-3 left-3 sm:absolute sm:top-full sm:right-0 sm:left-auto sm:mt-2.5 w-auto sm:w-[380px] md:w-[400px] bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-3 font-sans">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                <span className="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Live Alerts & Pending</span>
-                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
+                <span className="font-extrabold text-xs text-slate-900 uppercase tracking-wider whitespace-nowrap">Live Alerts & Pending</span>
+                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full whitespace-nowrap ${
                   categoryCounts.totalPending > 0 ? 'bg-orange-100 text-brandOrange-700' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                 }`}>
                   {categoryCounts.totalPending} {categoryCounts.totalPending === 1 ? 'Action' : 'Actions'}
@@ -205,13 +209,18 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
                   <Link
                     to="/admin/orders"
                     onClick={() => setNotificationsOpen(false)}
-                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-orange-50 border border-slate-100 hover:border-orange-200 transition-colors group"
+                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-orange-50/80 border border-slate-100 hover:border-orange-200 transition-colors group gap-3"
                   >
-                    <div className="text-left">
-                      <div className="text-xs font-bold text-slate-800 group-hover:text-brandOrange-600">Dispensary Orders</div>
-                      <div className="text-[11px] text-slate-500">Orders waiting for confirmation</div>
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200/60 group-hover:scale-105 transition-transform">
+                        <ShoppingBag className="w-4 h-4" />
+                      </div>
+                      <div className="text-left min-w-0 flex-1">
+                        <div className="text-xs font-bold text-slate-800 group-hover:text-brandOrange-600 transition-colors truncate">Dispensary Orders</div>
+                        <div className="text-[11px] text-slate-500 truncate">Orders waiting for confirmation</div>
+                      </div>
                     </div>
-                    <span className={`text-xs font-black px-2 py-1 rounded-lg border ${
+                    <span className={`text-xs font-black min-w-[28px] text-center px-2 py-1 rounded-lg border shrink-0 ${
                       categoryCounts.orders > 0 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-slate-50 text-slate-500 border-slate-200'
                     }`}>
                       {categoryCounts.orders}
@@ -221,13 +230,18 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
                   <Link
                     to="/admin/appointments"
                     onClick={() => setNotificationsOpen(false)}
-                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 transition-colors group"
+                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-emerald-50/80 border border-slate-100 hover:border-emerald-200 transition-colors group gap-3"
                   >
-                    <div className="text-left">
-                      <div className="text-xs font-bold text-slate-800 group-hover:text-emerald-700">Patient Consultations</div>
-                      <div className="text-[11px] text-slate-500">Unconfirmed appointments</div>
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200/60 group-hover:scale-105 transition-transform">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <div className="text-left min-w-0 flex-1">
+                        <div className="text-xs font-bold text-slate-800 group-hover:text-emerald-700 transition-colors truncate">Patient Consultations</div>
+                        <div className="text-[11px] text-slate-500 truncate">Unconfirmed appointments</div>
+                      </div>
                     </div>
-                    <span className={`text-xs font-black px-2 py-1 rounded-lg border ${
+                    <span className={`text-xs font-black min-w-[28px] text-center px-2 py-1 rounded-lg border shrink-0 ${
                       categoryCounts.appointments > 0 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-50 text-slate-500 border-slate-200'
                     }`}>
                       {categoryCounts.appointments}
@@ -237,13 +251,18 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
                   <Link
                     to="/admin/enquiries"
                     onClick={() => setNotificationsOpen(false)}
-                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-sky-50 border border-slate-100 hover:border-sky-200 transition-colors group"
+                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-sky-50/80 border border-slate-100 hover:border-sky-200 transition-colors group gap-3"
                   >
-                    <div className="text-left">
-                      <div className="text-xs font-bold text-slate-800 group-hover:text-sky-700">Patient Enquiries</div>
-                      <div className="text-[11px] text-slate-500">New messages received</div>
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0 border border-sky-200/60 group-hover:scale-105 transition-transform">
+                        <MessageSquare className="w-4 h-4" />
+                      </div>
+                      <div className="text-left min-w-0 flex-1">
+                        <div className="text-xs font-bold text-slate-800 group-hover:text-sky-700 transition-colors truncate">Patient Enquiries</div>
+                        <div className="text-[11px] text-slate-500 truncate">New messages received</div>
+                      </div>
                     </div>
-                    <span className={`text-xs font-black px-2 py-1 rounded-lg border ${
+                    <span className={`text-xs font-black min-w-[28px] text-center px-2 py-1 rounded-lg border shrink-0 ${
                       categoryCounts.enquiries > 0 ? 'bg-sky-50 text-sky-800 border-sky-200' : 'bg-slate-50 text-slate-500 border-slate-200'
                     }`}>
                       {categoryCounts.enquiries}
@@ -254,13 +273,18 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
                     <Link
                       to="/admin/inventory"
                       onClick={() => setNotificationsOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-rose-50 border border-slate-100 hover:border-rose-200 transition-colors group"
+                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-rose-50/80 border border-slate-100 hover:border-rose-200 transition-colors group gap-3"
                     >
-                      <div className="text-left">
-                        <div className="text-xs font-bold text-slate-800 group-hover:text-rose-700">Low Stock Remedies</div>
-                        <div className="text-[11px] text-slate-500">Items below dispensary threshold</div>
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-200/60 group-hover:scale-105 transition-transform">
+                          <AlertTriangle className="w-4 h-4" />
+                        </div>
+                        <div className="text-left min-w-0 flex-1">
+                          <div className="text-xs font-bold text-slate-800 group-hover:text-rose-700 transition-colors truncate">Low Stock Remedies</div>
+                          <div className="text-[11px] text-slate-500 truncate">Items below dispensary threshold</div>
+                        </div>
                       </div>
-                      <span className="text-xs font-black px-2 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200">
+                      <span className="text-xs font-black min-w-[28px] text-center px-2 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 shrink-0">
                         {categoryCounts.inventory}
                       </span>
                     </Link>
@@ -272,7 +296,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
                 <Link
                   to="/admin/notifications"
                   onClick={() => setNotificationsOpen(false)}
-                  className="text-xs font-black text-brandOrange-600 hover:text-brandOrange-700 flex items-center justify-center gap-1"
+                  className="text-xs font-black text-brandOrange-600 hover:text-brandOrange-700 flex items-center justify-center gap-1 py-1"
                 >
                   <span>View Full Notification Log</span>
                   <ChevronRight className="w-3.5 h-3.5" />

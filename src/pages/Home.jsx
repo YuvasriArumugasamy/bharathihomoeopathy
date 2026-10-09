@@ -1,13 +1,14 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  ChevronRight, 
+import {
+  ChevronRight,
   ChevronLeft,
-  Star, 
-  Sparkles, 
-  ShieldCheck, 
-  Calendar, 
-  CheckCircle2, 
+  Star,
+  Sparkles,
+  ShieldCheck,
+  Calendar,
+  CheckCircle2,
   ArrowRight,
   Leaf,
   Heart,
@@ -41,32 +42,32 @@ export const Home = () => {
   };
 
   const categories = [
-    { 
-      name: "Homeopathy Medicines", 
+    {
+      name: "Homeopathy Medicines",
       image: assets.p1
     },
-    { 
-      name: "Mother Tinctures", 
+    {
+      name: "Mother Tinctures",
       image: assets.p2
     },
-    { 
-      name: "Biochemic Medicines", 
+    {
+      name: "Biochemic Medicines",
       image: assets.p3
     },
-    { 
-      name: "Herbal Products", 
+    {
+      name: "Herbal Products",
       image: assets.p4
     },
-    { 
-      name: "Personal Care", 
+    {
+      name: "Personal Care",
       image: assets.p5
     },
-    { 
-      name: "Combo Offers", 
+    {
+      name: "Combo Offers",
       image: assets.p6
     },
-    { 
-      name: "Health Conditions", 
+    {
+      name: "Health Conditions",
       image: assets.p7
     }
   ];
@@ -189,10 +190,10 @@ export const Home = () => {
 
   return (
     <div className="space-y-16 pb-12 w-full max-w-full overflow-x-hidden">
-      
+
       {/* 1. Hero Section with Cinema Scrim and High-Contrast Typography */}
       <section className="relative min-h-[500px] sm:min-h-[520px] lg:min-h-[540px] flex items-center justify-center border-b border-slate-200 overflow-hidden pt-20 pb-14 sm:py-20">
-        
+
         {/* Background Video */}
         <video
           src={assets.bgVideo1 || assets.heroVideo}
@@ -208,7 +209,7 @@ export const Home = () => {
 
         {/* High-Contrast Hero Typography directly over video */}
         <div className="max-w-3xl mx-auto px-6 sm:px-6 lg:px-8 relative z-10 text-center space-y-6 pt-10 sm:pt-0">
-          
+
           <div className="space-y-3.5">
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.2] sm:leading-[1.15] drop-shadow-[0_6px_24px_rgba(0,0,0,1)]">
               Natural Healing.<br />
@@ -216,7 +217,7 @@ export const Home = () => {
                 Healthy Living.
               </span>
             </h1>
-            
+
             <p className="text-sm sm:text-lg md:text-xl text-white font-extrabold max-w-xl mx-auto leading-relaxed pt-1 drop-shadow-[0_3px_14px_rgba(0,0,0,1)]">
               Safe, gentle and effective homeopathic solutions for you and your family.
             </p>
@@ -247,7 +248,7 @@ export const Home = () => {
       {/* 2. Five Trust Badges Card Strip with Ultra-Premium Glassmorphic Aesthetics */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
         <div className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] p-3 sm:p-4 lg:p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-0 lg:divide-x lg:divide-slate-100">
-          
+
           {/* Badge 1: 100% Natural */}
           <div className="group flex items-center gap-3.5 p-3.5 rounded-2xl hover:bg-emerald-50/60 hover:shadow-xs transition-all duration-300 cursor-pointer lg:px-4">
             <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/25 ring-4 ring-emerald-500/10 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300">
@@ -328,7 +329,7 @@ export const Home = () => {
 
       {/* 3. Shop by Category Section with High-End Glass Cards */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        
+
         {/* Section Heading */}
         <SectionHeader title="Shop by Category" />
 
@@ -383,7 +384,7 @@ export const Home = () => {
 
       {/* 4. Best Sellers Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        
+
         <SectionHeader title="Best Sellers" />
         <div className="flex justify-end -mt-4 mb-2 pr-4 relative z-10">
           <Link
@@ -409,7 +410,7 @@ export const Home = () => {
       {/* 5. Three Promo Banners Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
+
           {/* Banner 1: Flat 10% OFF */}
           <div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] border border-blue-100 flex flex-col items-center justify-center text-center shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
             <Sparkles className="w-10 h-10 text-blue-500 mb-4 opacity-80 group-hover:scale-110 transition-transform" />
@@ -479,7 +480,7 @@ export const Home = () => {
       {/* 6. About Dr. Bharathi & Quick Consultation Box (With Real Photo assets.bharathi) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white rounded-3xl border border-slate-100 p-6 sm:p-10 shadow-sm">
-          
+
           {/* Doctor Real Photo */}
           <div className="lg:col-span-4 rounded-2xl overflow-hidden aspect-[4/5] bg-slate-100 shadow-md border-2 border-white">
             <img
@@ -560,7 +561,7 @@ export const Home = () => {
 
       {/* 7. Patient Testimonials Carousel with Prev / Next Arrows */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 relative">
-        
+
         {/* Section Title Centered */}
         <div className="w-full flex justify-center">
           <SectionHeader title="What Our Patients Say" />
@@ -568,7 +569,7 @@ export const Home = () => {
 
         {/* Testimonials Container with Side Floating Arrows */}
         <div className="relative group/carousel px-1 sm:px-2">
-          
+
           {/* Side Floating Left Arrow */}
           <button
             type="button"
@@ -598,8 +599,8 @@ export const Home = () => {
               const initials = t.name ? t.name.split(' ').map(n => n[0]).join('') : 'P';
 
               return (
-                <div 
-                  key={`mobile-${testimonialIndex}`} 
+                <div
+                  key={`mobile-${testimonialIndex}`}
                   className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-[0_10px_35px_rgba(15,23,42,0.06)] hover:border-brandOrange-400/60 transition-all duration-300 relative overflow-hidden flex flex-col justify-between"
                 >
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d]" />
@@ -617,7 +618,7 @@ export const Home = () => {
                           </span>
                         )}
                       </div>
-                      
+
                       <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200/60 flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
                         <span>Verified</span>
@@ -668,8 +669,8 @@ export const Home = () => {
               const initials = t.name ? t.name.split(' ').map(n => n[0]).join('') : 'P';
 
               return (
-                <div 
-                  key={`desktop-card-${itemIdx}`} 
+                <div
+                  key={`desktop-card-${itemIdx}`}
                   className="bg-white/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 p-6 shadow-[0_10px_35px_rgba(15,23,42,0.06)] hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1 hover:border-brandOrange-400/60 transition-all duration-300 group relative overflow-hidden flex flex-col justify-between"
                 >
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brandOrange-500 via-amber-400 to-[#0b344d] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
