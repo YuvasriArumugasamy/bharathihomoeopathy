@@ -6,6 +6,7 @@ const dataDir = __dirname;
 const files = [
   { name: 'adminAppointmentsData.js', content: 'export const initialAdminAppointments = [];\n' },
   { name: 'adminBlogData.js', content: 'export const initialAdminBlogs = [];\n' },
+  { name: 'adminBrandsData.js', content: 'export const initialAdminBrands = [];\n' },
   { name: 'adminCategoriesData.js', content: 'export const initialAdminCategories = [];\n' },
   { name: 'adminCustomersData.js', content: 'export const initialAdminCustomers = [];\n' },
   { name: 'adminDashboardData.js', content: `export const adminDashboardData = {

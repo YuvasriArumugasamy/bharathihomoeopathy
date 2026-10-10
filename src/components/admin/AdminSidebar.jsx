@@ -4,6 +4,7 @@ import {
   LayoutDashboard, 
   Package, 
   Layers, 
+  Award,
   ShoppingBag, 
   Users, 
   Calendar, 
@@ -34,6 +35,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
       items: [
         { name: 'Products', path: '/admin/products', icon: Package },
         { name: 'Categories', path: '/admin/categories', icon: Layers },
+        { name: 'Brands', path: '/admin/brands', icon: Award },
         { name: 'Orders', path: '/admin/orders', icon: ShoppingBag },
         { name: 'Customers', path: '/admin/customers', icon: Users },
         { name: 'Inventory', path: '/admin/inventory', icon: Boxes },

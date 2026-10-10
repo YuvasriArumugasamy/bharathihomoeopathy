@@ -21,6 +21,7 @@ import enquiryRoutes from './routes/enquiryRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import brandRoutes from './routes/brandRoutes.js';
 
 dotenv.config();
 
@@ -64,6 +65,7 @@ app.use('/api/enquiries', enquiryRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/brands', brandRoutes);
 
 // Temp: update user to admin role (secret-protected)
 app.post('/api/make-admin', async (req, res) => {

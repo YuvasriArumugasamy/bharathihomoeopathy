@@ -3,7 +3,8 @@ import {
   Calendar, Clock, Video, Building2, Check, X, Search, Filter, 
   User, Phone, Mail, FileText, ChevronRight, AlertCircle, 
   CalendarCheck, CalendarClock, UserCheck, Stethoscope, Sparkles,
-  Download, MessageSquare, Paperclip, Eye, ExternalLink, RotateCcw
+  Download, MessageSquare, Paperclip, Eye, ExternalLink, RotateCcw,
+  CheckCircle2
 } from 'lucide-react';
 import { appointmentService, getStoredAppointments } from '../../services/appointmentService';
 import { cloudSyncService } from '../../services/cloudSyncService';
@@ -465,72 +466,91 @@ export const AdminAppointments = () => {
               </div>
 
               {/* Card Actions Footer */}
-              <div className="p-4 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between gap-2 text-xs">
-                <div className="flex items-center gap-1">
+              <div className="p-4 bg-slate-50/70 border-t border-slate-100 flex flex-col gap-2.5">
+                {/* Communication & Tools Action Bar */}
+                <div className="flex items-center gap-1.5 flex-wrap">
                   <button
                     onClick={() => {
                       setRescheduleModalApt(apt);
                       setRescheduleDate(apt.date || '');
                       setRescheduleTime(apt.time || '11:00 AM');
                     }}
-                    className="px-3 py-1.5 font-bold text-brandOrange-600 hover:text-brandOrange-700 hover:bg-brandOrange-50 rounded-xl transition-all"
+                    className="flex-1 min-w-[85px] py-1.5 px-2.5 bg-white hover:bg-orange-50 text-brandOrange-600 font-bold rounded-xl border border-slate-200/90 hover:border-orange-200 shadow-2xs flex items-center justify-center gap-1 transition-all cursor-pointer text-[11px]"
+                    title="Reschedule Appointment"
                   >
-                    Reschedule
+                    <Calendar className="w-3 h-3 text-brandOrange-500 shrink-0" />
+                    <span>Reschedule</span>
                   </button>
+
                   <button
                     onClick={() => sendAppointmentWhatsApp(apt)}
-                    className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl transition-all border border-emerald-200/80 flex items-center gap-1"
+                    className="flex-1 min-w-[85px] py-1.5 px-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl border border-emerald-200/80 shadow-2xs flex items-center justify-center gap-1 transition-all cursor-pointer text-[11px]"
                     title="Send WhatsApp Confirmation"
                   >
-                    <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
-                    <span className="text-[10px] hidden sm:inline">WhatsApp</span>
+                    <MessageSquare className="w-3 h-3 text-emerald-600 shrink-0" />
+                    <span>WhatsApp</span>
                   </button>
+
                   <button
                     onClick={() => setRxModalApt(apt)}
-                    className="p-1.5 bg-orange-50 hover:bg-orange-100 text-brandOrange-700 font-bold rounded-xl transition-all border border-orange-200/80 flex items-center gap-1 cursor-pointer"
+                    className="flex-1 min-w-[75px] py-1.5 px-2 bg-orange-50 hover:bg-orange-100 text-brandOrange-700 font-bold rounded-xl border border-orange-200/80 shadow-2xs flex items-center justify-center gap-1 transition-all cursor-pointer text-[11px]"
                     title="Write Digital Prescription (Rx)"
                   >
-                    <Stethoscope className="w-3.5 h-3.5 text-brandOrange-600" />
-                    <span className="text-[10px] hidden sm:inline font-black">Write Rx</span>
+                    <Stethoscope className="w-3 h-3 text-brandOrange-600 shrink-0" />
+                    <span className="font-black">Write Rx</span>
                   </button>
 
                   {apt.consultationMode === 'Online' && (
                     <a
-                      href={`https://wa.me/${(apt.patient?.phone || '').replace(/\D/g, '')}?text=${encodeURIComponent(`Hello ${apt.patient?.name || 'Patient'}, Dr. Bharathi is ready for your scheduled homeopathic video consultation on ${apt.date} at ${apt.time}. Please connect here on WhatsApp Video Call.`)}`}
+                      href={`https://api.whatsapp.com/send?phone=${((apt.patient?.phone || '').replace(/\D/g, '').length === 10 ? '91' + (apt.patient?.phone || '').replace(/\D/g, '') : (apt.patient?.phone || '').replace(/\D/g, ''))}&text=${encodeURIComponent(`Hello ${apt.patient?.name || 'Patient'}, Dr. Bharathi is ready for your scheduled homeopathic video consultation on ${apt.date} at ${apt.time}. Please connect here on WhatsApp Video Call.`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold rounded-xl transition-all border border-sky-200/80 flex items-center gap-1 cursor-pointer"
+                      className="flex-1 min-w-[85px] py-1.5 px-2 bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold rounded-xl border border-sky-200/80 shadow-2xs flex items-center justify-center gap-1 transition-all cursor-pointer text-[11px]"
                       title="Launch WhatsApp Video Call Consultation"
                     >
-                      <Video className="w-3.5 h-3.5 text-sky-600" />
-                      <span className="text-[10px] hidden sm:inline font-black">Video Call</span>
+                      <Video className="w-3 h-3 text-sky-600 shrink-0" />
+                      <span className="font-black">Video Call</span>
                     </a>
                   )}
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                {/* Status Decision Action Bar */}
+                <div className="flex items-center gap-2 pt-2 border-t border-slate-200/70">
                   {apt.status === 'Pending' && (
                     <button
                       onClick={() => handleUpdateStatus(apt.id, 'Confirmed')}
-                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
+                      className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer text-xs"
                     >
-                      <Check className="w-3.5 h-3.5" />
-                      Confirm
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <span>Confirm Appointment</span>
                     </button>
                   )}
                   {apt.status === 'Confirmed' && (
                     <button
                       onClick={() => handleUpdateStatus(apt.id, 'Completed')}
-                      className="px-3.5 py-1.5 bg-navy-950 hover:bg-navy-900 text-white font-bold rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer"
+                      className="flex-1 py-2 px-3 bg-navy-950 hover:bg-navy-900 text-white font-extrabold rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer text-xs"
                     >
-                      <Check className="w-3.5 h-3.5" />
-                      Mark Done
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Mark Completed</span>
                     </button>
                   )}
+                  {apt.status === 'Completed' && (
+                    <div className="flex-1 py-2 text-center text-[11px] font-bold text-emerald-700 bg-emerald-50 rounded-xl border border-emerald-200/60 flex items-center justify-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Consultation Completed</span>
+                    </div>
+                  )}
+                  {apt.status === 'Cancelled' && (
+                    <div className="flex-1 py-2 text-center text-[11px] font-bold text-rose-600 bg-rose-50 rounded-xl border border-rose-200/60">
+                      Cancelled Appointment
+                    </div>
+                  )}
+
                   {apt.status !== 'Cancelled' && apt.status !== 'Completed' && (
                     <button
                       onClick={() => handleUpdateStatus(apt.id, 'Cancelled')}
-                      className="px-2.5 py-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 font-bold rounded-xl transition-all text-[11px] cursor-pointer"
+                      className="py-2 px-3 text-rose-600 hover:text-rose-700 hover:bg-rose-50 font-bold rounded-xl transition-all text-xs border border-slate-200/80 hover:border-rose-200 cursor-pointer shrink-0"
+                      title="Cancel Appointment"
                     >
                       Cancel
                     </button>

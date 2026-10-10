@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { 
   ShoppingBag, 
@@ -35,13 +36,22 @@ import { OrderInvoiceModal } from '../../components/admin/OrderInvoiceModal';
 
 export const AdminOrders = () => {
   const { showToast } = useToast();
+  const [searchParams] = useSearchParams();
+  const urlStatus = searchParams.get('status');
   const [orders, setOrders] = useState(() => (typeof getStoredOrders === 'function' ? getStoredOrders() : []));
   const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [search, setSearch] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('All');
+  const [selectedStatus, setSelectedStatus] = useState(urlStatus || 'All');
   const [selectedOrderDrawer, setSelectedOrderDrawer] = useState(null);
   const [invoiceModalOrder, setInvoiceModalOrder] = useState(null);
+
+  useEffect(() => {
+    const s = searchParams.get('status');
+    if (s) {
+      setSelectedStatus(s);
+    }
+  }, [searchParams]);
 
   // Lock background scroll and add Escape key listener when drawer is open
   useEffect(() => {

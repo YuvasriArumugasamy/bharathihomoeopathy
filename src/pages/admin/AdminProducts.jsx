@@ -19,9 +19,12 @@ import {
   ExternalLink, 
   Upload,
   Loader2,
-  RotateCcw
+  RotateCcw,
+  Award
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { productService } from '../../services/productService';
+import { brandService } from '../../services/brandService';
 import { useToast } from '../../context/ToastContext';
 import { slugify } from '../../utils/slugify';
 import { demoProducts } from '../../data/products';
@@ -72,7 +75,7 @@ export const AdminProducts = () => {
     name: '',
     sku: '',
     category: 'Homeopathic Medicines',
-    brand: 'SBL',
+    brand: '',
     regularPrice: 399,
     offerPrice: 349,
     stock: 25,
@@ -84,8 +87,31 @@ export const AdminProducts = () => {
     isFeatured: false
   });
 
-  const BRANDS_LIST = ['SBL', 'Willmar Schwabe', 'BJain', 'Wheezal', 'Dr. Reckeweg', "Bakson's", "Dr. Bharathi's Standard"];
+  const [brandsList, setBrandsList] = useState([]);
+  const [selectedBrandFilter, setSelectedBrandFilter] = useState('All');
+  const [quickBrandModalOpen, setQuickBrandModalOpen] = useState(false);
+  const [newBrandInput, setNewBrandInput] = useState('');
+  const [newBrandDesc, setNewBrandDesc] = useState('');
   const [categoriesList, setCategoriesList] = useState(['All', 'Homeopathic Medicines', 'Mother Tinctures', 'Biochemic Medicines', 'Wellness Products', 'Personal Care', 'Combo Products']);
+
+  // Load brands dynamically from admin brands store
+  useEffect(() => {
+    const loadBrands = async () => {
+      try {
+        const data = await brandService.getAdminBrands();
+        if (Array.isArray(data)) {
+          setBrandsList(data);
+        }
+      } catch {}
+    };
+    loadBrands();
+    window.addEventListener('drBharathiBrandsUpdated', loadBrands);
+    window.addEventListener('storage', loadBrands);
+    return () => {
+      window.removeEventListener('drBharathiBrandsUpdated', loadBrands);
+      window.removeEventListener('storage', loadBrands);
+    };
+  }, []);
 
   useEffect(() => {
     const loadCategories = () => {
@@ -113,6 +139,7 @@ export const AdminProducts = () => {
     if (!p) return false;
     if (filterBestSellerOnly && !p.isBestSeller) return false;
     if (selectedCategory !== 'All' && p.category !== selectedCategory) return false;
+    if (selectedBrandFilter !== 'All' && (p.brand || '') !== selectedBrandFilter) return false;
     if (selectedStatus !== 'All' && p.status !== selectedStatus) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -145,8 +172,8 @@ export const AdminProducts = () => {
     setFormData({
       name: '',
       sku: `HOM-${Math.floor(100 + Math.random() * 900)}`,
-      category: 'Homeopathic Medicines',
-    brand: 'SBL',
+      category: categoriesList.find(c => c !== 'All') || 'Homeopathic Medicines',
+      brand: '',
       regularPrice: 399,
       offerPrice: 349,
       stock: 25,
@@ -162,7 +189,7 @@ export const AdminProducts = () => {
 
   const handleOpenEdit = (product) => {
     setEditingProduct(product);
-    setFormData({ brand: 'SBL', ...product });
+    setFormData({ ...product, brand: product.brand || '' });
     setModalOpen(true);
   };
 
@@ -195,6 +222,11 @@ export const AdminProducts = () => {
     e.preventDefault();
     if (!formData.name || !formData.sku) {
       showToast('Product name and SKU are required', 'warning');
+      return;
+    }
+
+    if (!formData.brand || !formData.brand.trim()) {
+      showToast('Please select a Brand / Manufacturer', 'warning');
       return;
     }
 
@@ -321,6 +353,18 @@ export const AdminProducts = () => {
           </select>
 
           <select
+            value={selectedBrandFilter}
+            onChange={(e) => setSelectedBrandFilter(e.target.value)}
+            className="flex-1 sm:flex-initial p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:outline-none focus:border-brandOrange-500 transition-all cursor-pointer shadow-2xs text-xs truncate min-w-0"
+          >
+            <option value="All">All Brands</option>
+            {brandsList.map(b => {
+              const bName = typeof b === 'string' ? b : b.name;
+              return <option key={bName} value={bName}>{bName}</option>;
+            })}
+          </select>
+
+          <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
             className="flex-1 sm:flex-initial p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:outline-none focus:border-brandOrange-500 transition-all cursor-pointer shadow-2xs text-xs truncate min-w-0"
@@ -375,7 +419,7 @@ export const AdminProducts = () => {
                               Best Seller
                             </span>
                           )}
-                          <span className="inline-flex items-center text-[9.5px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">🏷️ {prod.brand || 'SBL'}</span>
+                          <span className="inline-flex items-center text-[9.5px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">🏷️ {prod.brand || 'No Brand'}</span>
                           {prod.isFeatured && (
                             <span className="text-[9px] font-black text-purple-600 bg-purple-50 px-1.5 py-0.2 rounded border border-purple-200">
                               Featured
@@ -517,7 +561,7 @@ export const AdminProducts = () => {
                       <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" /> Best Seller
                     </span>
                   )}
-                  <span className="inline-flex items-center text-[9.5px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">🏷️ {prod.brand || 'SBL'}</span>
+                  <span className="inline-flex items-center text-[9.5px] font-black text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">🏷️ {prod.brand || 'No Brand'}</span>
                           {prod.isFeatured && (
                     <span className="text-[9px] font-black text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded-lg border border-purple-200">Featured</span>
                   )}
@@ -608,14 +652,53 @@ export const AdminProducts = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Brand / Manufacturer *</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block font-bold text-slate-700">Brand / Manufacturer *</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewBrandInput('');
+                        setNewBrandDesc('');
+                        setQuickBrandModalOpen(true);
+                      }}
+                      className="text-[11px] font-bold text-brandOrange-600 hover:text-brandOrange-700 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                      title="Add a new brand without leaving"
+                    >
+                      <Plus className="w-3 h-3 stroke-[3]" /> Add Brand
+                    </button>
+                  </div>
                   <select
-                    value={formData.brand || 'SBL'}
+                    required
+                    value={formData.brand || ''}
                     onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner cursor-pointer"
                   >
-                    {BRANDS_LIST.map(b => <option key={b} value={b}>{b}</option>)}
+                    <option value="">-- Select Brand / Manufacturer --</option>
+                    {/* If editing and the product has a brand not in the current list, show it */}
+                    {formData.brand && !brandsList.some(b => (typeof b === 'string' ? b : b.name) === formData.brand) && (
+                      <option value={formData.brand}>{formData.brand} (Existing)</option>
+                    )}
+                    {brandsList.filter(b => b.status !== 'Inactive').map(b => {
+                      const bName = typeof b === 'string' ? b : b.name;
+                      return <option key={bName} value={bName}>{bName}</option>;
+                    })}
                   </select>
+                  {brandsList.length === 0 && (
+                    <div className="mt-1.5 p-2 bg-amber-50 rounded-xl border border-amber-200/80 text-[11px] text-amber-800 flex items-center justify-between">
+                      <span>No brands added yet.</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewBrandInput('');
+                          setNewBrandDesc('');
+                          setQuickBrandModalOpen(true);
+                        }}
+                        className="font-bold underline text-brandOrange-600 hover:text-brandOrange-700 cursor-pointer ml-1"
+                      >
+                        + Add Brand
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -791,6 +874,91 @@ export const AdminProducts = () => {
               >
                 Confirm Delete
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. Quick Add Brand Modal */}
+      {quickBrandModalOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-navy-950/70 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="bg-white rounded-[2rem] max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-brandOrange-50 text-brandOrange-600">
+                  <Award className="w-5 h-5" />
+                </div>
+                <h4 className="font-black text-slate-900 text-sm sm:text-base font-display">
+                  Add Brand / Manufacturer
+                </h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setQuickBrandModalOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5">Brand / Manufacturer Name *</label>
+                <input
+                  type="text"
+                  placeholder="e.g. SBL, Willmar Schwabe, BJain"
+                  value={newBrandInput}
+                  onChange={(e) => setNewBrandInput(e.target.value)}
+                  autoFocus
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5">Description (Optional)</label>
+                <textarea
+                  rows={2}
+                  placeholder="Pharmacy notes, manufacturing origin..."
+                  value={newBrandDesc}
+                  onChange={(e) => setNewBrandDesc(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner resize-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setQuickBrandModalOpen(false)}
+                  className="px-4 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const cleanName = newBrandInput.trim();
+                    if (!cleanName) {
+                      showToast('Please enter brand name', 'warning');
+                      return;
+                    }
+                    const newBrandObj = {
+                      name: cleanName,
+                      description: newBrandDesc.trim(),
+                      status: 'Active',
+                      createdAt: new Date().toISOString().slice(0, 10)
+                    };
+                    await brandService.createAdminBrand(newBrandObj);
+                    setBrandsList(prev => [...prev, newBrandObj]);
+                    setFormData(prev => ({ ...prev, brand: cleanName }));
+                    setQuickBrandModalOpen(false);
+                    showToast(`Brand "${cleanName}" added and selected!`, 'success');
+                  }}
+                  className="px-5 py-2.5 bg-brandOrange-500 hover:bg-brandOrange-600 text-white font-black rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Save & Select Brand</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

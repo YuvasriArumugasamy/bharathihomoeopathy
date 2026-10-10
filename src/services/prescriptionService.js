@@ -168,7 +168,7 @@ export const prescriptionService = {
       `📞 Helpline: +91 90258 54711\n` +
       `_Take remedies as advised. Keep medicines away from strong sunlight & fragrances._`;
 
-    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    return `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
   }
 };
 

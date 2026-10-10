@@ -33,6 +33,7 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminLogin } from './pages/admin/AdminLogin';
 import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminCategories } from './pages/admin/AdminCategories';
+import { AdminBrands } from './pages/admin/AdminBrands';
 import { AdminOrders } from './pages/admin/AdminOrders';
 import { AdminCustomers } from './pages/admin/AdminCustomers';
 import { AdminAppointments } from './pages/admin/AdminAppointments';
@@ -142,6 +143,7 @@ export default function App() {
         <Route index element={<AdminDashboard />} />
         <Route path="products" element={<AdminProducts />} />
         <Route path="categories" element={<AdminCategories />} />
+        <Route path="brands" element={<AdminBrands />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="appointments" element={<AdminAppointments />} />

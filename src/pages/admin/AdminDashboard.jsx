@@ -501,6 +501,7 @@ export const AdminDashboard = () => {
   const pipelineStatuses = [
     { 
       label: 'Pending Confirmation', 
+      statusKey: 'Pending',
       count: orders.filter(o => o.orderStatus === 'Pending').length, 
       color: 'from-amber-400 to-orange-500', 
       barBg: 'bg-amber-500', 
@@ -508,6 +509,7 @@ export const AdminDashboard = () => {
     },
     { 
       label: 'Confirmed / Paid', 
+      statusKey: 'Confirmed',
       count: orders.filter(o => o.orderStatus === 'Confirmed' || (o.paymentStatus === 'Paid' && o.orderStatus !== 'Delivered' && o.orderStatus !== 'Cancelled')).length, 
       color: 'from-sky-400 to-blue-500', 
       barBg: 'bg-sky-500', 
@@ -515,6 +517,7 @@ export const AdminDashboard = () => {
     },
     { 
       label: 'Dispensary Packing', 
+      statusKey: 'Processing',
       count: orders.filter(o => o.orderStatus === 'Processing').length, 
       color: 'from-purple-400 to-violet-500', 
       barBg: 'bg-purple-500', 
@@ -522,6 +525,7 @@ export const AdminDashboard = () => {
     },
     { 
       label: 'Out with Courier', 
+      statusKey: 'Shipped',
       count: orders.filter(o => o.orderStatus === 'Shipped').length, 
       color: 'from-indigo-400 to-blue-600', 
       barBg: 'bg-indigo-500', 
@@ -529,6 +533,7 @@ export const AdminDashboard = () => {
     },
     { 
       label: 'Delivered to Patient', 
+      statusKey: 'Delivered',
       count: orders.filter(o => o.orderStatus === 'Delivered').length, 
       color: 'from-emerald-400 to-teal-500', 
       barBg: 'bg-emerald-500', 
@@ -536,6 +541,7 @@ export const AdminDashboard = () => {
     },
     { 
       label: 'Cancelled / Refunded', 
+      statusKey: 'Cancelled',
       count: orders.filter(o => o.orderStatus === 'Cancelled').length, 
       color: 'from-rose-400 to-red-500', 
       barBg: 'bg-rose-500', 
@@ -676,6 +682,17 @@ export const AdminDashboard = () => {
     }
   };
 
+  const kpiLinks = {
+    'rev': '/admin/payments',
+    'orders': '/admin/orders',
+    'cust': '/admin/customers',
+    'apt': '/admin/appointments',
+    'pending_ord': '/admin/orders?status=Pending',
+    'low_stock': '/admin/inventory',
+    'enq': '/admin/enquiries',
+    'rev_rate': '/admin/reviews'
+  };
+
   return (
     <div className="space-y-8 animate-fade-in font-serif">
 
@@ -736,24 +753,30 @@ export const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* 2. Bespoke KPI Grid: 8 Dynamic KPI Cards */}
+      {/* 2. Bespoke KPI Grid: 8 Dynamic KPI Cards (Clickable Links) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {dynamicKpiStats.map((kpi) => {
           const IconComponent = iconMap[kpi.icon] || ShoppingBag;
           const style = kpiCardStyles[kpi.id] || kpiCardStyles['orders'];
+          const targetPath = kpiLinks[kpi.id] || '/admin';
 
           return (
-            <div 
+            <Link 
               key={kpi.id} 
-              className={`relative bg-gradient-to-br ${style.gradient} bg-white/95 backdrop-blur-sm p-5 sm:p-6 rounded-[2rem] border ${style.border} shadow-[0_4px_20px_-4px_rgba(15,36,56,0.06)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group overflow-hidden flex flex-col justify-between`}
+              to={targetPath}
+              title={`View ${kpi.title} page`}
+              className={`relative bg-gradient-to-br ${style.gradient} bg-white/95 backdrop-blur-sm p-5 sm:p-6 rounded-[2rem] border ${style.border} shadow-[0_4px_20px_-4px_rgba(15,36,56,0.06)] hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group overflow-hidden flex flex-col justify-between cursor-pointer block no-underline`}
             >
               <div className={`absolute top-0 left-0 right-0 h-1.5 ${style.topLine}`} />
 
               <div className="flex justify-between items-start mb-4">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors">
-                  {kpi.title}
-                </span>
-                <div className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${style.iconGradient} text-white flex items-center justify-center shadow-lg ${style.iconShadow} group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 group-hover:text-slate-900 transition-colors truncate">
+                    {kpi.title}
+                  </span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
+                </div>
+                <div className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${style.iconGradient} text-white flex items-center justify-center shadow-lg ${style.iconShadow} group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shrink-0`}>
                   <IconComponent className="w-5 h-5" />
                 </div>
               </div>
@@ -772,7 +795,7 @@ export const AdminDashboard = () => {
                   </span>
                 </div>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>
@@ -951,23 +974,28 @@ export const AdminDashboard = () => {
             <p className="text-xs text-slate-500 font-medium mt-1">Live order status distribution across dispensary</p>
           </div>
 
-          <div className="space-y-4 flex-1 justify-center flex flex-col">
+          <div className="space-y-3 flex-1 justify-center flex flex-col">
             {pipelineStatuses.map((st, i) => (
-              <div key={i} className="space-y-1.5">
+              <Link
+                key={i}
+                to={`/admin/orders?status=${st.statusKey || 'All'}`}
+                title={`View ${st.label} orders`}
+                className="space-y-1.5 p-2 -mx-2 rounded-xl hover:bg-slate-50 transition-colors block cursor-pointer group/pipe no-underline"
+              >
                 <div className="flex justify-between items-center text-xs font-bold text-slate-700">
                   <span className="flex items-center gap-2">
                     <span className={`w-2 h-2 rounded-full ${st.dot} shrink-0`} />
-                    <span className="text-slate-700 font-bold">{st.label}</span>
+                    <span className="text-slate-700 group-hover/pipe:text-brandOrange-600 font-bold transition-colors">{st.label}</span>
                   </span>
-                  <span className="font-black text-slate-900 px-2 py-0.5 rounded-md bg-slate-100 text-[11.5px] shrink-0 border border-slate-200/50">{st.count}</span>
+                  <span className="font-black text-slate-900 px-2 py-0.5 rounded-md bg-slate-100 text-[11.5px] shrink-0 border border-slate-200/50 group-hover/pipe:border-orange-200 group-hover/pipe:bg-orange-50 group-hover/pipe:text-orange-700 transition-colors">{st.count}</span>
                 </div>
                 <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
                   <div 
-                    className={`bg-gradient-to-r ${st.color} h-full rounded-full transition-all duration-700 shadow-2xs`} 
+                    className={`bg-gradient-to-r ${st.color} h-full rounded-full transition-all duration-700 shadow-2xs group-hover/pipe:brightness-110`} 
                     style={{ width: `${totalOrdersCount > 0 ? Math.max(4, Math.round((st.count / totalOrdersCount) * 100)) : 0}%` }} 
                   />
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
 
