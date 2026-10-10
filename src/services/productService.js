@@ -205,6 +205,9 @@ export const productService = {
   // ADMIN PORTAL CRUD OPERATIONS
   // ----------------------------------------------------
   getAdminProducts: async () => {
+    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/admin')) {
+      return getStoredProducts();
+    }
     if (authStorage.isDemoMode()) {
       return getStoredProducts();
     }
@@ -214,8 +217,8 @@ export const productService = {
         saveStoredProducts(res.data);
         return res.data;
       }
-    } catch (err) {
-      if (!err?.isDemoMode) console.warn("Backend admin products unavailable, loading persistent store:", err.message);
+    } catch {
+      // Backend offline or sleeping, silently use persistent local store
     }
     return getStoredProducts();
   },

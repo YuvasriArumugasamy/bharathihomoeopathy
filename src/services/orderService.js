@@ -55,7 +55,11 @@ export const getStoredOrders = () => {
           !['ord-1001', 'ord-1002', 'ord-1003'].includes(o.id) && 
           !['894123', '894256', '894389'].includes(o.orderId) && 
           !['894123', '894256', '894389'].includes(o.orderNumber)
-        ).map(o => {
+        );
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(cleaned));
+        }
+        return cleaned.map(o => {
           const num = formatOrderNumber(o.orderNumber || o.orderId || o.id);
           return {
             ...o,
@@ -64,8 +68,6 @@ export const getStoredOrders = () => {
             orderNumber: num
           };
         });
-        localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(cleaned));
-        return cleaned;
       }
     }
   } catch (err) {
@@ -74,10 +76,10 @@ export const getStoredOrders = () => {
   return [];
 };
 
-export const saveStoredOrders = (orders) => {
+export const saveStoredOrders = (orders, emitEvents = true) => {
   try {
     localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
-    if (typeof window !== 'undefined') {
+    if (emitEvents && typeof window !== 'undefined') {
       window.dispatchEvent(new Event('orders_updated'));
       window.dispatchEvent(new Event('admin_notifications_updated'));
     }
@@ -276,6 +278,9 @@ export const orderService = {
   // ----------------------------------------------------
   getAdminOrders: async () => {
     const localOrders = getStoredOrders();
+    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/admin')) {
+      return localOrders;
+    }
     try {
       const res = await api.get('/orders/admin/all');
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
@@ -299,11 +304,11 @@ export const orderService = {
         const remoteIds = new Set(remoteOrders.map(o => o.id || o.originalOrderId || o.orderId || o.orderNumber || o._id));
         const unSyncedLocal = localOrders.filter(l => !remoteIds.has(l.id) && !remoteIds.has(l.originalOrderId) && !remoteIds.has(l.orderId) && !remoteIds.has(l.orderNumber) && !remoteIds.has(l._id));
         const merged = [...remoteOrders, ...unSyncedLocal];
-        saveStoredOrders(merged);
+        saveStoredOrders(merged, false);
         return merged;
       }
-    } catch (err) {
-      console.warn("Could not fetch remote admin orders, using local storage", err.message);
+    } catch {
+      // Backend offline or sleeping, silently use local storage
     }
     return localOrders;
   },

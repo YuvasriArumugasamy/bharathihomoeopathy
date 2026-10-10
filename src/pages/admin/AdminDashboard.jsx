@@ -131,18 +131,26 @@ export const AdminDashboard = () => {
     }
   };
 
-  const loadDashboardData = async () => {
+  const isFetchingRef = useRef(false);
+
+  const syncFromLocalStorage = () => {
+    if (typeof getStoredOrders === 'function') setOrders(getStoredOrders());
+    if (typeof getStoredAppointments === 'function') setAppointments(getStoredAppointments());
+    if (typeof getStoredCustomers === 'function') setCustomers(getStoredCustomers());
+    if (typeof getStoredEnquiries === 'function') setEnquiries(getStoredEnquiries());
+
     try {
-      if (typeof getStoredOrders === 'function') setOrders(getStoredOrders());
-      if (typeof getStoredAppointments === 'function') setAppointments(getStoredAppointments());
-      if (typeof getStoredCustomers === 'function') setCustomers(getStoredCustomers());
-      if (typeof getStoredEnquiries === 'function') setEnquiries(getStoredEnquiries());
+      const rawReviews = localStorage.getItem('admin_reviews_store');
+      if (rawReviews) setReviews(JSON.parse(rawReviews));
+    } catch {}
+  };
 
-      try {
-        const rawReviews = localStorage.getItem('admin_reviews_store');
-        if (rawReviews) setReviews(JSON.parse(rawReviews));
-      } catch {}
+  const loadDashboardData = async () => {
+    syncFromLocalStorage();
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
 
+    try {
       const [liveOrders, liveProducts, liveApts] = await Promise.all([
         orderService.getAdminOrders().catch(() => []),
         productService.getAdminProducts().catch(() => []),
@@ -153,6 +161,8 @@ export const AdminDashboard = () => {
       if (Array.isArray(liveApts) && liveApts.length > 0) setAppointments(liveApts);
     } catch (err) {
       console.warn("Failed to load dashboard dynamic data:", err.message);
+    } finally {
+      isFetchingRef.current = false;
     }
   };
 
@@ -174,7 +184,7 @@ export const AdminDashboard = () => {
     });
 
     const handleSync = () => {
-      loadDashboardData();
+      syncFromLocalStorage();
     };
 
     window.addEventListener('storage', handleSync);
@@ -186,13 +196,7 @@ export const AdminDashboard = () => {
     window.addEventListener('focus', handleSync);
     document.addEventListener('visibilitychange', handleSync);
 
-    // Periodic live cloud polling every 10s to guarantee cross-device real-time sync
-    const pollInterval = setInterval(() => {
-      loadDashboardData();
-    }, 10000);
-
     return () => {
-      clearInterval(pollInterval);
       if (typeof unsubscribeCloudOrders === 'function') unsubscribeCloudOrders();
       if (typeof unsubscribeCloudApts === 'function') unsubscribeCloudApts();
       window.removeEventListener('storage', handleSync);

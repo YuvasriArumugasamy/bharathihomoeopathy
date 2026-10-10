@@ -29,10 +29,10 @@ export const getStoredAppointments = () => {
   return [];
 };
 
-export const saveStoredAppointments = (appointments) => {
+export const saveStoredAppointments = (appointments, emitEvents = true) => {
   try {
     localStorage.setItem(APPOINTMENTS_STORAGE_KEY, JSON.stringify(appointments));
-    if (typeof window !== 'undefined') {
+    if (emitEvents && typeof window !== 'undefined') {
       window.dispatchEvent(new Event('appointments_updated'));
       window.dispatchEvent(new Event('admin_notifications_updated'));
     }
@@ -146,7 +146,7 @@ export const appointmentService = {
         const remoteIds = new Set(remoteApts.map(a => a.id || a.appointmentId || a._id));
         const unSyncedLocal = localApts.filter(l => !remoteIds.has(l.id) && !remoteIds.has(l.appointmentId) && !remoteIds.has(l._id));
         const merged = [...unSyncedLocal, ...remoteApts];
-        saveStoredAppointments(merged);
+        saveStoredAppointments(merged, false);
         return merged;
       }
     } catch {

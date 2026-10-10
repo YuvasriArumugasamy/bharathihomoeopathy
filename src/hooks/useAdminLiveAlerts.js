@@ -18,9 +18,12 @@ import { cloudSyncService } from '../services/cloudSyncService';
  */
 export function useAdminLiveAlerts() {
   const { showToast } = useToast();
+  const showToastRef = useRef(showToast);
+  showToastRef.current = showToast;
   const knownOrderIdsRef = useRef(new Set());
   const knownAppointmentIdsRef = useRef(new Set());
   const initialLoadDoneRef = useRef(false);
+  const isCheckingRef = useRef(false);
 
   useEffect(() => {
     const isPathAdmin = typeof window !== 'undefined' && window.location.pathname.toLowerCase().startsWith('/admin');
@@ -55,7 +58,7 @@ export function useAdminLiveAlerts() {
           playNotificationSound();
 
           // 2. Show in-app Toast
-          showToast(`🛍️ New Order Received! #${orderNum} from ${customerName} (₹${total})`, 'success');
+          showToastRef.current?.(`🛍️ New Order Received! #${orderNum} from ${customerName} (₹${total})`, 'success');
 
           // 3. Fire Desktop OS Native Notification
           if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
@@ -102,7 +105,7 @@ export function useAdminLiveAlerts() {
           playNotificationSound();
 
           // 2. Show toast
-          showToast(`📅 New Appointment Booked: ${patientName} (${concern})`, 'info');
+          showToastRef.current?.(`📅 New Appointment Booked: ${patientName} (${concern})`, 'info');
 
           // 3. Native desktop notification
           if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
@@ -144,33 +147,36 @@ export function useAdminLiveAlerts() {
 
     // 4. Background verification (only if authenticated with a valid admin token)
     const checkLiveUpdates = async () => {
-      const adminToken = authStorage.getAdminToken();
-      const adminUser = authStorage.getAdminUser();
+      if (isCheckingRef.current) return;
+      isCheckingRef.current = true;
 
-      if (!adminToken || adminToken.startsWith('demo_') || adminUser?.role !== 'admin') {
-        // Demo or unauthenticated admin session: rely on Firebase & local storage without polling Render
-        processOrders(getStoredOrders());
-        processAppointments(getStoredAppointments());
-        return;
-      }
-
-      // Check Orders via official admin route
       try {
+        const adminToken = authStorage.getAdminToken();
+        const adminUser = authStorage.getAdminUser();
+
+        if (!adminToken || adminToken.startsWith('demo_') || adminUser?.role !== 'admin') {
+          // Demo or unauthenticated admin session: rely on Firebase & local storage without polling Render
+          processOrders(getStoredOrders());
+          processAppointments(getStoredAppointments());
+          return;
+        }
+
+        // Check Orders via official admin route
         const res = await api.get('/orders/admin/all').catch(() => null);
         const orders = res?.data?.data || res?.data || (Array.isArray(res) ? res : []);
         if (isMounted && Array.isArray(orders)) {
           processOrders(orders);
         }
-      } catch {}
 
-      // Check Appointments via official admin route
-      try {
+        // Check Appointments via official admin route
         const aptRes = await api.get('/appointments').catch(() => null);
         const apts = aptRes?.data?.data || aptRes?.data || (Array.isArray(aptRes) ? aptRes : []);
         if (isMounted && Array.isArray(apts)) {
           processAppointments(apts);
         }
-      } catch {}
+      } catch {} finally {
+        isCheckingRef.current = false;
+      }
     };
 
     // Background polling every 30 seconds
@@ -186,7 +192,7 @@ export function useAdminLiveAlerts() {
       unsubOrders?.();
       unsubAppointments?.();
     };
-  }, [showToast]);
+  }, []);
 }
 
 export default useAdminLiveAlerts;
