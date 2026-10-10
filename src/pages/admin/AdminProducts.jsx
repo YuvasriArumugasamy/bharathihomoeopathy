@@ -630,7 +630,7 @@ export const AdminProducts = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1.5">SKU / Code *</label>
                   <input
@@ -651,55 +651,41 @@ export const AdminProducts = () => {
                     {categoriesList.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block font-bold text-slate-700">Brand / Manufacturer *</label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setNewBrandInput('');
-                        setNewBrandDesc('');
-                        setQuickBrandModalOpen(true);
-                      }}
-                      className="text-[11px] font-bold text-brandOrange-600 hover:text-brandOrange-700 hover:underline inline-flex items-center gap-1 cursor-pointer"
-                      title="Add a new brand without leaving"
-                    >
-                      <Plus className="w-3 h-3 stroke-[3]" /> Add Brand
-                    </button>
-                  </div>
-                  <select
-                    required
-                    value={formData.brand || ''}
-                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner cursor-pointer"
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block font-bold text-slate-700">Brand / Manufacturer *</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewBrandInput('');
+                      setNewBrandDesc('');
+                      setQuickBrandModalOpen(true);
+                    }}
+                    className="px-2.5 py-1 bg-orange-50 hover:bg-orange-100 text-brandOrange-600 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer border border-orange-200/60"
+                    title="Add a new brand without leaving"
                   >
-                    <option value="">-- Select Brand / Manufacturer --</option>
-                    {/* If editing and the product has a brand not in the current list, show it */}
-                    {formData.brand && !brandsList.some(b => (typeof b === 'string' ? b : b.name) === formData.brand) && (
-                      <option value={formData.brand}>{formData.brand} (Existing)</option>
-                    )}
-                    {brandsList.filter(b => b.status !== 'Inactive').map(b => {
-                      const bName = typeof b === 'string' ? b : b.name;
-                      return <option key={bName} value={bName}>{bName}</option>;
-                    })}
-                  </select>
-                  {brandsList.length === 0 && (
-                    <div className="mt-1.5 p-2 bg-amber-50 rounded-xl border border-amber-200/80 text-[11px] text-amber-800 flex items-center justify-between">
-                      <span>No brands added yet.</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setNewBrandInput('');
-                          setNewBrandDesc('');
-                          setQuickBrandModalOpen(true);
-                        }}
-                        className="font-bold underline text-brandOrange-600 hover:text-brandOrange-700 cursor-pointer ml-1"
-                      >
-                        + Add Brand
-                      </button>
-                    </div>
-                  )}
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Add Brand</span>
+                  </button>
                 </div>
+                <select
+                  required
+                  value={formData.brand || ''}
+                  onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner cursor-pointer"
+                >
+                  <option value="">-- Select Brand / Manufacturer --</option>
+                  {/* If editing and the product has a brand not in the current list, show it */}
+                  {formData.brand && !brandsList.some(b => (typeof b === 'string' ? b : b.name) === formData.brand) && (
+                    <option value={formData.brand}>{formData.brand}</option>
+                  )}
+                  {brandsList.filter(b => b.status !== 'Inactive').map(b => {
+                    const bName = typeof b === 'string' ? b : b.name;
+                    return <option key={bName} value={bName}>{bName}</option>;
+                  })}
+                </select>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
