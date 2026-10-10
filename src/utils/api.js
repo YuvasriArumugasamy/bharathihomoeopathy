@@ -16,10 +16,13 @@ class ApiClient {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-    let token = authStorage.getToken();
+    const isCurrentAdminPath = typeof window !== 'undefined' && window.location.pathname.toLowerCase().startsWith('/admin');
+    const isAdminProtectedEndpoint = endpoint.includes('/admin') || endpoint === '/appointments' || (endpoint.startsWith('/appointments/') && !endpoint.includes('/appointments/my'));
 
-    if (endpoint.includes('/admin') && (!token || token.startsWith('demo_'))) {
-      token = ADMIN_JWT_TOKEN;
+    let token = isCurrentAdminPath ? (authStorage.getAdminToken() || authStorage.getToken()) : authStorage.getToken();
+
+    if (isAdminProtectedEndpoint && (!token || token.startsWith('demo_') || token.startsWith('patient_'))) {
+      token = authStorage.getAdminToken() || ADMIN_JWT_TOKEN;
     }
 
     const headers = {

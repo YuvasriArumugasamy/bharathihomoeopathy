@@ -2,10 +2,14 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { AdminSidebar } from '../components/admin/AdminSidebar';
 import { AdminTopbar } from '../components/admin/AdminTopbar';
+import { useAdminLiveAlerts } from '../hooks/useAdminLiveAlerts';
 import assets from '../assets';
 
 export const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Initialize Guaranteed Live Alerts for new orders & appointments inside Admin portal only
+  useAdminLiveAlerts();
 
   return (
     <div 

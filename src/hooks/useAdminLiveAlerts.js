@@ -23,6 +23,11 @@ export function useAdminLiveAlerts() {
   const initialLoadDoneRef = useRef(false);
 
   useEffect(() => {
+    const isPathAdmin = typeof window !== 'undefined' && window.location.pathname.toLowerCase().startsWith('/admin');
+    if (!isPathAdmin) {
+      return;
+    }
+
     let isMounted = true;
 
     // Helper to process incoming orders and alert on new ones
@@ -137,11 +142,13 @@ export function useAdminLiveAlerts() {
     // 3. Initial load completed
     initialLoadDoneRef.current = true;
 
-    // 4. Background verification (only if authenticated with a real non-demo token)
+    // 4. Background verification (only if authenticated with a valid admin token)
     const checkLiveUpdates = async () => {
-      const token = authStorage.getToken();
-      if (!token || token.startsWith('demo_')) {
-        // Demo session: rely on Firebase & local storage without polling Render
+      const adminToken = authStorage.getAdminToken();
+      const adminUser = authStorage.getAdminUser();
+
+      if (!adminToken || adminToken.startsWith('demo_') || adminUser?.role !== 'admin') {
+        // Demo or unauthenticated admin session: rely on Firebase & local storage without polling Render
         processOrders(getStoredOrders());
         processAppointments(getStoredAppointments());
         return;

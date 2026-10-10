@@ -137,6 +137,9 @@ export const appointmentService = {
   getAdminAppointments: async () => {
     const localApts = getStoredAppointments();
     try {
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/admin')) {
+        return localApts;
+      }
       const res = await api.get('/appointments');
       if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
         const remoteApts = res.data.filter(Boolean);
