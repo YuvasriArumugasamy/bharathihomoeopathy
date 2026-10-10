@@ -104,51 +104,40 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
   return (
     <header 
       ref={topbarRef}
-      style={{ top: 0 }}
-      className="h-20 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 flex items-center justify-between fixed top-0 right-0 left-0 lg:left-64 z-30 shadow-[0_4px_25px_-4px_rgba(15,36,56,0.06)] transition-all font-serif"
+      className="h-20 bg-white border-b border-slate-200/90 px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30 shadow-xs transition-all font-serif"
     >
       
-      {/* Left: Mobile Hamburger & Clinic Brand Breadcrumb */}
-      <div className="flex items-center gap-3 sm:gap-4">
+      {/* Left: Mobile Hamburger & Clinic Brand */}
+      <div className="flex items-center gap-3 sm:gap-4 shrink-0">
         <button
           onClick={onToggleSidebar}
-          className="lg:hidden w-10 h-10 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 hover:text-navy-950 border border-slate-200/90 flex items-center justify-center shadow-2xs hover:shadow-sm transition-all active:scale-95 cursor-pointer"
+          className="lg:hidden w-10 h-10 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-navy-950 border border-slate-200/90 flex items-center justify-center shadow-2xs hover:shadow-sm transition-all active:scale-95 cursor-pointer shrink-0"
           aria-label="Open sidebar"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center gap-2">
-            {/* Desktop Text */}
-            <span className="hidden lg:inline-block font-serif font-bold sm:text-base tracking-tight text-slate-900">
-              Dr. Bharathi's <span className="text-brandOrange-600 font-black">Homeo Care</span>
+        <Link to="/admin" className="flex items-center gap-2 group">
+          <div className="flex flex-col leading-none">
+            <span className="font-serif font-black text-sm sm:text-base tracking-tight text-slate-900 whitespace-nowrap">
+              <span className="text-amber-500 italic">Dr. </span>Bharathi's
             </span>
-            {/* Mobile/Tablet Stylized Text */}
-            <div className="flex flex-col items-center justify-center leading-none lg:hidden">
-              <div className="font-serif font-black tracking-wide text-[15px]">
-                <span className="text-amber-500 italic">Dr. </span>
-                <span className="text-slate-900">Bharathi's</span>
-              </div>
-              <div className="text-[9px] font-serif tracking-[0.15em] text-amber-600 font-bold flex items-center gap-1 mt-0.5">
-                <span className="w-2 h-[1px] bg-amber-600/50"></span>
-                HOMEO CARE
-                <span className="w-2 h-[1px] bg-amber-600/50"></span>
-              </div>
-            </div>
+            <span className="text-[8.5px] sm:text-[9.5px] font-serif tracking-[0.18em] text-brandOrange-600 font-extrabold uppercase mt-0.5 whitespace-nowrap">
+              HOMEO CARE
+            </span>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Center: Global Clinic Spotlight Search Button */}
       <button
         type="button"
         onClick={() => setSpotlightOpen(true)}
-        className="hidden md:flex items-center gap-2.5 px-4 py-2 bg-slate-100 hover:bg-orange-50/70 text-slate-500 hover:text-brandOrange-700 rounded-2xl border border-slate-200/90 hover:border-orange-300 text-xs font-bold transition-all shadow-2xs cursor-pointer group"
+        className="hidden md:flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-orange-50/70 text-slate-500 hover:text-brandOrange-700 rounded-xl border border-slate-200/90 hover:border-orange-300 text-xs font-semibold transition-all shadow-2xs cursor-pointer group max-w-xs lg:max-w-md w-full mx-4"
         title="Search Patients, Remedies, Orders"
       >
-        <Search className="w-4 h-4 text-slate-400 group-hover:text-brandOrange-500 transition-colors" />
-        <span className="text-slate-500 group-hover:text-slate-800">Search patients, slots, remedies...</span>
+        <Search className="w-4 h-4 text-slate-400 group-hover:text-brandOrange-500 transition-colors shrink-0" />
+        <span className="text-slate-500 group-hover:text-slate-800 text-xs truncate whitespace-nowrap">Search patients, slots, remedies...</span>
       </button>
 
       {/* Right: Notifications & Profile */}
@@ -316,7 +305,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] text-white font-black text-sm flex items-center justify-center shadow-md border-2 border-orange-200 group-hover:border-orange-300 group-hover:scale-105 transition-all">
               {currentAdmin?.name ? currentAdmin.name.charAt(0).toUpperCase() : 'C'}
             </div>
-            <div className="hidden md:flex flex-col text-left">
+            <div className="hidden lg:flex flex-col text-left">
               <span className="text-xs font-black text-slate-900 group-hover:text-brandOrange-600 transition-colors leading-tight">
                 {currentAdmin?.name || 'Clinic Administrator'}
               </span>
@@ -325,12 +314,12 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
                 Active Session
               </span>
             </div>
-            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-transform duration-200 hidden md:block ${profileOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-transform duration-200 hidden lg:block ${profileOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {/* Interactive Profile Dropdown Menu */}
           {profileOpen && (
-            <div className="fixed top-20 right-3 left-auto sm:absolute sm:top-full sm:right-0 sm:mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-2">
+            <div className="absolute top-full right-0 mt-2 w-64 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-2">
               <div className="px-3 py-2.5 bg-gradient-to-br from-slate-50 to-orange-50/50 rounded-xl border border-slate-100">
                 <div className="text-xs font-black text-slate-900">{currentAdmin?.name || 'Clinic Administrator'}</div>
                 <div className="text-[11px] text-slate-500 truncate">{currentAdmin?.email || 'admin@drbharathi.com'}</div>
