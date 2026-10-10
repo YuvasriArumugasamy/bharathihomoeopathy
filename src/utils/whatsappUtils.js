@@ -17,7 +17,12 @@ export const sendAppointmentWhatsApp = (apt) => {
   const date = apt.date || 'upcoming date';
   const time = apt.time || 'scheduled time';
   const mode = apt.consultationMode || 'In-Clinic';
-  const doctor = apt.doctor || 'Dr. Bharathi';
+
+  // Clean doctor name to prevent duplicate "(Homeopathic Doctor)"
+  let doctorDisplay = (apt.doctor || 'Dr. Bharathi').trim();
+  doctorDisplay = doctorDisplay.replace(/(\s*\(Homeopathic Doctor\))+/gi, '').trim();
+  if (!doctorDisplay) doctorDisplay = 'Dr. Bharathi';
+  const doctor = `${doctorDisplay} (Homeopathic Doctor)`;
 
   // Explicit Unicode characters to ensure 100% clean rendering across all platforms and encodings
   const leaf = '\u{1F33F}';       // 🌿
@@ -35,11 +40,11 @@ Dear *${patientName}*,
 Your medical consultation appointment has been *CONFIRMED*!
 
 ${clipboard} *Appointment ID:* ${apt.appointmentId || apt.id}
-${stethoscope} *Doctor:* ${doctor} (Homeopathic Doctor)
+${stethoscope} *Doctor:* ${doctor}
 ${calendar} *Date:* ${date}
 ${clock} *Time:* ${time}
 ${pin} *Mode:* ${mode}
-${hospital} *Clinic:* Dr. Bharathi's Homeopathic Care & Research Clinic
+${hospital} *Clinic Location:* Municipality complex, 143, Nethaji Rd, Melapalayam, Tirunelveli, Tamil Nadu 627005
 
 Kindly arrive 10 minutes prior to your slot. If you need to reschedule, please inform us in advance.
 
