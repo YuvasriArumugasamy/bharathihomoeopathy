@@ -340,7 +340,7 @@ export const AdminCategories = () => {
                 <input
                   type="text"
                   required
-                  placeholder="e.g., Mother Tinctures"
+                  placeholder="Enter the category"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
