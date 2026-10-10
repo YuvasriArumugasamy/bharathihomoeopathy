@@ -1,4 +1,3 @@
-import { api } from '../utils/api';
 import { initialAdminBrands } from '../data/adminBrandsData';
 import { cloudSyncService } from './cloudSyncService';
 
@@ -49,32 +48,10 @@ export const saveStoredBrands = (brands) => {
 
 export const brandService = {
   getBrands: async () => {
-    try {
-      const res = await api.get('/brands');
-      const list = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : null);
-      if (list) {
-        const sanitized = sanitizeBrands(list);
-        saveStoredBrands(sanitized);
-        return sanitized;
-      }
-    } catch {
-      // Backend offline, fallback to local storage
-    }
     return getStoredBrands();
   },
 
   getAdminBrands: async () => {
-    try {
-      const res = await api.get('/brands/admin/all');
-      const list = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : null);
-      if (list) {
-        const sanitized = sanitizeBrands(list);
-        saveStoredBrands(sanitized);
-        return sanitized;
-      }
-    } catch {
-      // Backend offline
-    }
     return getStoredBrands();
   },
 
@@ -94,13 +71,6 @@ export const brandService = {
     };
     const updated = [...brands, newBrand];
     saveStoredBrands(updated);
-
-    try {
-      await api.post('/brands', newBrand);
-    } catch (err) {
-      if (!err?.isDemoMode) console.warn("Brand saved locally (backend offline):", err.message);
-    }
-
     return { success: true, data: newBrand };
   },
 
@@ -112,13 +82,6 @@ export const brandService = {
       return match ? { ...b, ...brandData, id: b.id || id, _id: b._id || id } : b;
     });
     saveStoredBrands(updated);
-
-    try {
-      await api.put(`/brands/${id}`, brandData);
-    } catch (err) {
-      console.warn("Brand updated locally (backend offline):", err.message);
-    }
-
     return { success: true, data: brandData };
   },
 
@@ -130,13 +93,6 @@ export const brandService = {
       return !match;
     });
     saveStoredBrands(updated);
-
-    try {
-      await api.delete(`/brands/${id}`);
-    } catch (err) {
-      console.warn("Brand deleted locally (backend offline):", err.message);
-    }
-
     return { success: true };
   },
 
