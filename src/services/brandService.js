@@ -1,5 +1,6 @@
 import { api } from '../utils/api';
 import { initialAdminBrands } from '../data/adminBrandsData';
+import { cloudSyncService } from './cloudSyncService';
 
 const BRANDS_STORAGE_KEY = 'admin_brands_store';
 
@@ -40,6 +41,7 @@ export const saveStoredBrands = (brands) => {
     localStorage.setItem(BRANDS_STORAGE_KEY, JSON.stringify(sanitized));
     window.dispatchEvent(new CustomEvent('drBharathiBrandsUpdated', { detail: sanitized }));
     window.dispatchEvent(new Event('storage'));
+    cloudSyncService.syncBrandsToCloud(sanitized);
   } catch (err) {
     console.warn("Could not save brands to storage:", err.message);
   }
@@ -49,8 +51,9 @@ export const brandService = {
   getBrands: async () => {
     try {
       const res = await api.get('/brands');
-      if (res && res.data && Array.isArray(res.data)) {
-        const sanitized = sanitizeBrands(res.data);
+      const list = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : null);
+      if (list) {
+        const sanitized = sanitizeBrands(list);
         saveStoredBrands(sanitized);
         return sanitized;
       }
@@ -63,8 +66,9 @@ export const brandService = {
   getAdminBrands: async () => {
     try {
       const res = await api.get('/brands/admin/all');
-      if (res && res.data && Array.isArray(res.data)) {
-        const sanitized = sanitizeBrands(res.data);
+      const list = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : null);
+      if (list) {
+        const sanitized = sanitizeBrands(list);
         saveStoredBrands(sanitized);
         return sanitized;
       }

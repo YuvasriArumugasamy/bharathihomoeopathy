@@ -26,6 +26,7 @@ import { ScrollReveal } from '../components/common/ScrollReveal';
 import { demoProducts } from '../data/products';
 import { getStoredProducts, isMatchingCategory } from '../utils/productStorage';
 import { cloudSyncService } from '../services/cloudSyncService';
+import { brandService } from '../services/brandService';
 
 export const Shop = () => {
   const [allProducts, setAllProducts] = useState(() => getStoredProducts());
@@ -168,14 +169,94 @@ export const Shop = () => {
     { name: "Syrup", count: allProducts.filter(p => p.form === "Syrup").length },
   ];
 
+  // Admin Brands catalog state (synced with /admin/brands)
+  const [adminBrands, setAdminBrands] = useState(() => {
+    try {
+      const raw = localStorage.getItem('admin_brands_store');
+      if (raw !== null) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
+  });
+
+  useEffect(() => {
+    const handleBrandSync = () => {
+      try {
+        const raw = localStorage.getItem('admin_brands_store');
+        if (raw !== null) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            setAdminBrands(parsed);
+            return;
+          }
+        }
+      } catch {}
+      setAdminBrands([]);
+    };
+
+    window.addEventListener('drBharathiBrandsUpdated', handleBrandSync);
+    window.addEventListener('storage', handleBrandSync);
+
+    // Initial load from brandService
+    if (typeof brandService?.getBrands === 'function') {
+      brandService.getBrands().then((bData) => {
+        if (Array.isArray(bData) && bData.length > 0) {
+          setAdminBrands(bData);
+        }
+      }).catch(() => {});
+    }
+
+    const unsubCloud = typeof cloudSyncService?.listenToBrands === 'function'
+      ? cloudSyncService.listenToBrands((cloudBrands) => {
+          if (Array.isArray(cloudBrands)) {
+            setAdminBrands(cloudBrands);
+          }
+        })
+      : null;
+
+    return () => {
+      window.removeEventListener('drBharathiBrandsUpdated', handleBrandSync);
+      window.removeEventListener('storage', handleBrandSync);
+      if (typeof unsubCloud === 'function') unsubCloud();
+    };
+  }, []);
+
+  // ONLY brands from the Admin page (active ones)
   const brands = useMemo(() => {
-    const productBrands = Array.from(new Set((allProducts || []).map(p => p.brand).filter(Boolean)));
-    
-    return productBrands.map(name => ({
-      name,
-      count: allProducts.filter(p => p.brand === name).length
-    }));
-  }, [allProducts]);
+    const activeAdminBrands = (adminBrands || []).filter(
+      b => b && b.name && (b.status === 'Active' || !b.status)
+    );
+
+    return activeAdminBrands.map(b => {
+      const brandName = b.name.trim();
+      const count = (allProducts || []).filter(p => {
+        const prodBrand = (p.brand || '').trim().toLowerCase();
+        const bLower = brandName.toLowerCase();
+        return prodBrand === bLower || prodBrand.startsWith(bLower) || bLower.startsWith(prodBrand);
+      }).length;
+
+      return {
+        id: b.id || b._id || brandName,
+        name: brandName,
+        count
+      };
+    });
+  }, [adminBrands, allProducts]);
+
+  // Clean up any selected brands that are no longer active in admin
+  useEffect(() => {
+    if (selectedBrand.length > 0 && brands.length > 0) {
+      const activeBrandNames = new Set(brands.map(b => b.name.toLowerCase()));
+      const validSelected = selectedBrand.filter(b => activeBrandNames.has(b.toLowerCase()));
+      if (validSelected.length !== selectedBrand.length) {
+        setSelectedBrand(validSelected);
+      }
+    } else if (selectedBrand.length > 0 && brands.length === 0) {
+      setSelectedBrand([]);
+    }
+  }, [brands]);
 
   const handleCategorySelect = (catValue) => {
     setSelectedCategory(catValue);
@@ -231,7 +312,12 @@ export const Shop = () => {
 
       // 5. Brand Filter
       if (selectedBrand.length > 0) {
-        if (!selectedBrand.includes(prod.brand)) return false;
+        const prodBrand = (prod.brand || '').trim().toLowerCase();
+        const matchesBrand = selectedBrand.some(b => {
+          const bLower = (b || '').trim().toLowerCase();
+          return prodBrand === bLower || prodBrand.startsWith(bLower) || bLower.startsWith(prodBrand);
+        });
+        if (!matchesBrand) return false;
       }
 
       return true;
@@ -446,29 +532,31 @@ export const Shop = () => {
             </div>
 
             {/* Brand Filter Section */}
-            <div className="space-y-2 pt-3.5 border-t border-slate-100">
-              <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-                Brand
-              </span>
-              <div className="space-y-1 text-xs">
-                {brands.map((b) => (
-                  <label key={b.name} className="flex items-center justify-between cursor-pointer group py-1 px-1.5 rounded-md hover:bg-slate-50 transition-colors">
-                    <span className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedBrand.includes(b.name)}
-                        onChange={() => toggleFilter(selectedBrand, setSelectedBrand, b.name)}
-                        className="rounded border-slate-300 text-orange-500 focus:ring-orange-400 w-3.5 h-3.5 cursor-pointer"
-                      />
-                      <span className={`font-medium transition-colors ${
-                        selectedBrand.includes(b.name) ? 'text-orange-600 font-extrabold' : 'text-slate-700 group-hover:text-slate-900'
-                      }`}>{b.name}</span>
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-bold bg-slate-100 px-1.5 py-0.2 rounded">({b.count})</span>
-                  </label>
-                ))}
+            {brands.length > 0 && (
+              <div className="space-y-2 pt-3.5 border-t border-slate-100">
+                <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
+                  Brand
+                </span>
+                <div className="space-y-1 text-xs max-h-56 overflow-y-auto pr-1">
+                  {brands.map((b) => (
+                    <label key={b.name} className="flex items-center justify-between cursor-pointer group py-1 px-1.5 rounded-md hover:bg-slate-50 transition-colors">
+                      <span className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedBrand.includes(b.name)}
+                          onChange={() => toggleFilter(selectedBrand, setSelectedBrand, b.name)}
+                          className="rounded border-slate-300 text-orange-500 focus:ring-orange-400 w-3.5 h-3.5 cursor-pointer"
+                        />
+                        <span className={`font-medium transition-colors ${
+                          selectedBrand.includes(b.name) ? 'text-orange-600 font-extrabold' : 'text-slate-700 group-hover:text-slate-900'
+                        }`}>{b.name}</span>
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-bold bg-slate-100 px-1.5 py-0.2 rounded">({b.count})</span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
           </aside>
 
@@ -760,22 +848,26 @@ export const Shop = () => {
                     <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2">
                       Select Brands
                     </h4>
-                    <div className="space-y-2 text-xs sm:text-sm">
-                      {brands.map((b) => (
-                        <label key={b.name} className="flex items-center justify-between cursor-pointer group py-1">
-                          <span className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              checked={selectedBrand.includes(b.name)}
-                              onChange={() => toggleFilter(selectedBrand, setSelectedBrand, b.name)}
-                              className="rounded border-slate-300 text-[#00a699] focus:ring-[#00a699] w-4 h-4"
-                            />
-                            <span className="group-hover:text-[#00a699] font-medium text-slate-800">{b.name}</span>
-                          </span>
-                          <span className="text-[11px] text-slate-400 font-bold">({b.count})</span>
-                        </label>
-                      ))}
-                    </div>
+                    {brands.length === 0 ? (
+                      <p className="text-xs text-slate-400 italic py-2">No active brands available</p>
+                    ) : (
+                      <div className="space-y-2 text-xs sm:text-sm">
+                        {brands.map((b) => (
+                          <label key={b.name} className="flex items-center justify-between cursor-pointer group py-1">
+                            <span className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedBrand.includes(b.name)}
+                                onChange={() => toggleFilter(selectedBrand, setSelectedBrand, b.name)}
+                                className="rounded border-slate-300 text-[#00a699] focus:ring-[#00a699] w-4 h-4"
+                              />
+                              <span className="group-hover:text-[#00a699] font-medium text-slate-800">{b.name}</span>
+                            </span>
+                            <span className="text-[11px] text-slate-400 font-bold">({b.count})</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

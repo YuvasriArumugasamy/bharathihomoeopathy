@@ -446,6 +446,59 @@ export const cloudSyncService = {
       console.warn("[CloudSync] Failed to initialize cloud categories listener:", err.message);
       return () => {};
     }
+  },
+
+  /**
+   * Sync brands catalog to Cloud Firestore across all devices
+   */
+  syncBrandsToCloud: async (brands) => {
+    if (!Array.isArray(brands)) return false;
+    try {
+      const brandRef = doc(db, "settings", "admin_brands");
+      await setDoc(brandRef, {
+        brands: brands.map(b => JSON.parse(JSON.stringify(b))),
+        updatedAt: new Date().toISOString(),
+        cloudTimestamp: serverTimestamp()
+      }, { merge: true });
+      console.log("[CloudSync] Brands catalog synced to Cloud Firestore.");
+      return true;
+    } catch (err) {
+      console.warn("[CloudSync] Could not sync brands to Cloud:", err.message);
+      return false;
+    }
+  },
+
+  /**
+   * Real-time listener for remedy brands from Cloud Firestore
+   */
+  listenToBrands: (callback) => {
+    try {
+      const brandRef = doc(db, "settings", "admin_brands");
+      const unsubscribe = onSnapshot(
+        brandRef,
+        (snap) => {
+          if (snap.exists()) {
+            const data = snap.data();
+            const cloudBrands = Array.isArray(data?.brands) ? data.brands : [];
+            try {
+              localStorage.setItem('admin_brands_store', JSON.stringify(cloudBrands));
+              window.dispatchEvent(new CustomEvent('drBharathiBrandsUpdated', { detail: cloudBrands }));
+              window.dispatchEvent(new Event('storage'));
+            } catch {}
+            if (typeof callback === 'function') {
+              callback(cloudBrands);
+            }
+          }
+        },
+        (error) => {
+          console.warn("[CloudSync] Live brands snapshot error:", error.message);
+        }
+      );
+      return unsubscribe;
+    } catch (err) {
+      console.warn("[CloudSync] Failed to initialize cloud brands listener:", err.message);
+      return () => {};
+    }
   }
 };
 
