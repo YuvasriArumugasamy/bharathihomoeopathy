@@ -207,7 +207,7 @@ export const AdminCategories = () => {
                 className="group relative bg-white rounded-[2rem] border border-slate-200/90 shadow-[0_4px_20px_-4px_rgba(15,36,56,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden"
               >
                 {/* Image Preview with Floating Badges */}
-                <div className="relative aspect-[16/9] overflow-hidden bg-slate-100">
+                <div className="relative aspect-[16/9] overflow-hidden bg-slate-100 -m-px">
                   <img 
                     src={cat.image || fallbackImg} 
                     alt="" 
