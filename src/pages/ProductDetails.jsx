@@ -340,11 +340,6 @@ export const ProductDetails = () => {
           <div className="flex flex-wrap items-baseline gap-3 bg-slate-50/70 p-4 rounded-2xl border border-slate-100">
             <div className="flex flex-wrap items-baseline gap-2.5">
               <span className="text-3xl sm:text-4xl font-black text-slate-900">{priceDisplay.primary}</span>
-              {priceDisplay.secondary && (
-                <span className="text-xs sm:text-sm font-extrabold text-[#00a699] bg-teal-50 px-2.5 py-1 rounded-xl border border-teal-200" title={`Equivalent in ${priceDisplay.code}`}>
-                  {priceDisplay.secondary}
-                </span>
-              )}
             </div>
             {hasDiscount && (
               <span className="text-lg text-slate-400 line-through font-bold">₹{originalPrice}</span>

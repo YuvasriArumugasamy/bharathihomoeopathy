@@ -218,13 +218,6 @@ export const ProductCard = ({ product }) => {
             <span className="font-extrabold text-sm sm:text-base text-slate-900">
               {priceDisplay.primary}
             </span>
-            {priceDisplay.secondary ? (
-              <span className="text-[9px] font-extrabold text-[#00a699] mt-0.5 tracking-tight">
-                {priceDisplay.secondary}
-              </span>
-            ) : (
-              <span className="text-[9px] opacity-0 mt-0.5 select-none">secondary</span>
-            )}
           </div>
 
           {/* Add Button / Counter Stepper */}
