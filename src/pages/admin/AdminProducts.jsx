@@ -393,7 +393,7 @@ export const AdminProducts = () => {
             <option value="All">All Statuses</option>
             <option value="Active">✓ Active</option>
             <option value="Draft">✎ Draft</option>
-            <option value="Out of Stock">✗ Out of Stock (stock = 0)</option>
+            <option value="Out of Stock">✗ Out of Stock</option>
           </select>
 
           {/* Clear Filters Button - shows when any filter is active */}
