@@ -76,6 +76,9 @@ export const isMatchingCategory = (prodCategory, selected) => {
   if (sCat.includes('tincture') && pCat.includes('tincture')) return true;
   if (sCat.includes('biochemic') && pCat.includes('biochemic')) return true;
   if (sCat.includes('combo') && pCat.includes('combo')) return true;
+  if (sCat.includes('kid') && pCat.includes('kid')) return true;
+  if (sCat.includes('child') && pCat.includes('child')) return true;
+  if (sCat.includes('mother') && pCat.includes('mother')) return true;
 
   if (cleanP.includes(cleanS) || cleanS.includes(cleanP)) return true;
   return false;
