@@ -30,7 +30,7 @@ import { orderService, getStoredOrders } from '../../services/orderService';
 import { cloudSyncService } from '../../services/cloudSyncService';
 import { useToast } from '../../context/ToastContext';
 import { dismissNotification } from '../../services/adminNotificationService';
-import { exportToCsv } from '../../utils/exportUtils';
+import { exportToCsv, exportToExcel } from '../../utils/exportUtils';
 import { sendOrderWhatsApp } from '../../utils/whatsappUtils';
 import { OrderInvoiceModal } from '../../components/admin/OrderInvoiceModal';
 
@@ -229,9 +229,9 @@ export const AdminOrders = () => {
       { label: 'Courier Partner', accessor: (o) => o.courierPartner || '' },
       { label: 'Tracking Number', accessor: (o) => o.trackingNumber || '' }
     ];
-    const ok = exportToCsv('Dispensary_Orders', columns, filteredOrders);
+    const ok = exportToExcel('Dispensary_Orders', columns, filteredOrders);
     if (ok) {
-      showToast('Dispensary orders exported to Excel / CSV!', 'success');
+      showToast('Dispensary orders exported to Excel successfully!', 'success');
     } else {
       showToast('No orders available to export', 'warning');
     }
@@ -364,7 +364,7 @@ export const AdminOrders = () => {
             title="Export orders to Excel / CSV"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Export CSV</span>
+            <span>Export Excel</span>
           </button>
         </div>
       </div>
