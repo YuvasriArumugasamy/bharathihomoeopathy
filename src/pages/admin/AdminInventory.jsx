@@ -37,6 +37,18 @@ export const AdminInventory = () => {
     return initialAdminInventory;
   });
 
+  // Also load products for accurate out-of-stock counting
+  const [products, setProducts] = useState(() => {
+    try {
+      const saved = localStorage.getItem('admin_products_store');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
+  });
+
   const [history, setHistory] = useState(() => {
     try {
       const saved = localStorage.getItem('admin_inventory_history_store');
@@ -64,7 +76,11 @@ export const AdminInventory = () => {
 
   const totalStockUnits = inventory.reduce((a, b) => a + b.currentStock, 0);
   const lowStockCount = inventory.filter(i => i.currentStock > 0 && i.currentStock <= i.lowStockThreshold).length;
-  const outOfStockCount = inventory.filter(i => i.currentStock === 0).length;
+  
+  // Out of stock count from both inventory AND products systems
+  const inventoryOutOfStock = inventory.filter(i => i.currentStock === 0).length;
+  const productsOutOfStock = products.filter(p => Number(p.stock) === 0).length;
+  const outOfStockCount = Math.max(inventoryOutOfStock, productsOutOfStock);
 
   const filteredInventory = inventory.filter(inv => 
     inv.productName.toLowerCase().includes(search.toLowerCase()) || 
