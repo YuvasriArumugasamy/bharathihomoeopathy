@@ -376,7 +376,7 @@ export const Shop = () => {
                   <div className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-sm sm:text-base ${cat.bg} ${cat.text} shrink-0`}>
                     {cat.icon}
                   </div>
-                  <div className="px-2.5 py-1 text-[10.5px] sm:text-xs font-bold text-slate-800 whitespace-nowrap uppercase tracking-tight">
+                  <div className="px-2.5 sm:px-3 py-1 text-[10.5px] sm:text-xs font-bold text-slate-800 whitespace-nowrap uppercase tracking-tight max-w-[120px] sm:max-w-none overflow-hidden text-ellipsis">
                     {cat.name}
                   </div>
                 </button>
@@ -389,22 +389,27 @@ export const Shop = () => {
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
               <button
                 onClick={() => setShowSortModal(true)}
-                className="px-3 py-1 bg-white border border-slate-300 rounded text-[11.5px] font-bold text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-2.5 sm:px-3 py-1.5 sm:py-1 bg-white border border-slate-300 rounded text-[10.5px] sm:text-[11.5px] font-bold text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1 sm:gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap"
               >
-                <ArrowUpDown className="w-3.5 h-3.5 text-slate-600" />
-                <span>Sort</span>
+                <ArrowUpDown className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                <span className="hidden xs:inline">Sort</span>
               </button>
 
               <button
                 onClick={() => setShowFilterModal(true)}
-                className={`px-3 py-1 rounded border text-[11.5px] font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs ${
+                className={`px-2.5 sm:px-3 py-1.5 sm:py-1 rounded border text-[10.5px] sm:text-[11.5px] font-bold inline-flex items-center gap-1 sm:gap-1.5 transition-colors cursor-pointer shadow-2xs whitespace-nowrap ${
                   selectedForm.length > 0 || selectedBrand.length > 0 || maxPrice < 5000
                     ? 'bg-[#00a699] text-white border-[#00a699]'
                     : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                <Filter className="w-3.5 h-3.5" />
-                <span>Filter</span>
+                <Filter className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden xs:inline">Filter</span>
+                {(selectedForm.length > 0 || selectedBrand.length > 0) && (
+                  <span className="inline-flex items-center justify-center w-4 h-4 text-[9px] font-black bg-white text-[#00a699] rounded-full">
+                    {selectedForm.length + selectedBrand.length}
+                  </span>
+                )}
               </button>
 
 
