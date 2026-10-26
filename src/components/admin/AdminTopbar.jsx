@@ -104,7 +104,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
   return (
     <header 
       ref={topbarRef}
-      className="h-20 bg-white border-b border-slate-200/90 px-4 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30 shadow-xs transition-all font-serif"
+      className="h-20 bg-white border-b border-slate-200/90 px-4 sm:px-6 lg:px-8 flex items-center justify-between fixed top-0 left-0 right-0 lg:left-64 z-30 shadow-xs transition-all font-serif"
     >
       
       {/* Left: Mobile Hamburger & Clinic Brand */}
