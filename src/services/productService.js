@@ -22,13 +22,8 @@ const getStoredProducts = () => {
   } catch (err) {
     console.warn("Failed to load products from storage:", err.message);
   }
-  // Initialize with initial catalogue
-  try {
-    localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(initialAdminProducts));
-  } catch {
-    // Ignore storage quota errors
-  }
-  return initialAdminProducts;
+  // Return empty array instead of seed data - admin will create real products
+  return [];
 };
 
 const saveStoredProducts = (products) => {
