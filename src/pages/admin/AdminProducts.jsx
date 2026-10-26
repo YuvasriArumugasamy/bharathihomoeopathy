@@ -140,7 +140,19 @@ export const AdminProducts = () => {
     if (filterBestSellerOnly && !p.isBestSeller) return false;
     if (selectedCategory !== 'All' && p.category !== selectedCategory) return false;
     if (selectedBrandFilter !== 'All' && (p.brand || '') !== selectedBrandFilter) return false;
-    if (selectedStatus !== 'All' && p.status !== selectedStatus) return false;
+    
+    // Status filter with stock-based "Out of Stock" detection
+    if (selectedStatus !== 'All') {
+      if (selectedStatus === 'Out of Stock') {
+        // Show products where status is "Out of Stock" OR stock is 0 or negative
+        const isOutOfStock = p.status === 'Out of Stock' || (p.stock !== undefined && Number(p.stock) <= 0);
+        if (!isOutOfStock) return false;
+      } else {
+        // For other statuses (Active, Draft), do exact match
+        if (p.status !== selectedStatus) return false;
+      }
+    }
+    
     if (search.trim()) {
       const q = search.toLowerCase();
       return (p.name || '').toLowerCase().includes(q) || (p.sku || '').toLowerCase().includes(q);
@@ -381,7 +393,7 @@ export const AdminProducts = () => {
             <option value="All">All Statuses</option>
             <option value="Active">✓ Active</option>
             <option value="Draft">✎ Draft</option>
-            <option value="Out of Stock">✗ Out of Stock</option>
+            <option value="Out of Stock">✗ Out of Stock (stock = 0)</option>
           </select>
 
           {/* Clear Filters Button - shows when any filter is active */}
