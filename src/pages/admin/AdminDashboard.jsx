@@ -414,7 +414,13 @@ export const AdminDashboard = () => {
     if (kpi.id === 'orders') return { ...kpi, value: totalOrdersCount.toString() };
     if (kpi.id === 'pending_ord') return { ...kpi, value: pendingOrders.toString() };
     if (kpi.id === 'low_stock') return { ...kpi, value: lowStockCount.toString() };
-    if (kpi.id === 'apt') return { ...kpi, value: appointments.length.toString() };
+    if (kpi.id === 'apt') {
+      // Only count active appointments (exclude Completed and Cancelled)
+      const activeAppointments = appointments.filter(apt => 
+        apt.status !== 'Completed' && apt.status !== 'Cancelled'
+      );
+      return { ...kpi, value: activeAppointments.length.toString() };
+    }
     if (kpi.id === 'cust') return { ...kpi, value: customers.length.toString() };
     if (kpi.id === 'enq') return { ...kpi, value: newEnquiriesCount.toString() };
     if (kpi.id === 'rev_rate') return { ...kpi, value: averageRating };
