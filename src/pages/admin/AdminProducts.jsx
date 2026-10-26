@@ -372,13 +372,36 @@ export const AdminProducts = () => {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="flex-1 sm:flex-initial p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:outline-none focus:border-brandOrange-500 transition-all cursor-pointer shadow-2xs text-xs truncate min-w-0"
+            className={`flex-1 sm:flex-initial p-2.5 border border-slate-200 rounded-xl font-bold focus:outline-none focus:border-brandOrange-500 transition-all cursor-pointer shadow-2xs text-xs truncate min-w-0 ${
+              selectedStatus === 'All' 
+                ? 'bg-slate-50 text-slate-700' 
+                : 'bg-blue-50 text-blue-900 border-blue-300 font-black'
+            }`}
           >
             <option value="All">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="Draft">Draft</option>
-            <option value="Out of Stock">Out of Stock</option>
+            <option value="Active">✓ Active</option>
+            <option value="Draft">✎ Draft</option>
+            <option value="Out of Stock">✗ Out of Stock</option>
           </select>
+
+          {/* Clear Filters Button - shows when any filter is active */}
+          {(search || selectedCategory !== 'All' || selectedBrandFilter !== 'All' || selectedStatus !== 'All' || filterBestSellerOnly) && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearch('');
+                setSelectedCategory('All');
+                setSelectedBrandFilter('All');
+                setSelectedStatus('All');
+                setFilterBestSellerOnly(false);
+              }}
+              className="p-2.5 rounded-xl font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs text-xs whitespace-nowrap bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300"
+              title="Clear all filters"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Clear Filters</span>
+            </button>
+          )}
 
           <span className="text-xs text-slate-500 font-bold hidden lg:inline shrink-0">
             <span className="text-slate-900 font-black">{filteredProducts.length}</span> items
