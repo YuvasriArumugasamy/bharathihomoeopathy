@@ -230,6 +230,11 @@ export const AdminProducts = () => {
       return;
     }
 
+    if (!formData.image || !formData.image.trim()) {
+      showToast('Product image is required - Please upload an image', 'warning');
+      return;
+    }
+
     if (editingProduct) {
       const targetId = editingProduct.id || editingProduct._id;
       const updatedData = { ...formData, slug: slugify(formData.name) };
@@ -719,7 +724,10 @@ export const AdminProducts = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">Product Image</label>
+                <label className="block font-bold text-slate-700 mb-1.5">
+                  Product Image *
+                  <span className="text-brandOrange-600 ml-1 text-xs">(Required)</span>
+                </label>
 
                 {/* File Upload Trigger Box & Preview */}
                 <div className="flex items-center gap-3.5">
