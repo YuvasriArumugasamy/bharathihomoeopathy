@@ -148,7 +148,7 @@ export const orderService = {
       items: payload.items || [],
       total: payload.totalAmount || payload.total || 0,
       paymentMethod: payload.paymentMethod || 'ONLINE',
-      paymentStatus: payload.paymentMethod === 'COD' ? 'Pending' : 'Paid',
+      paymentStatus: payload.paymentStatus || 'Pending',
       orderStatus: 'Pending',
       shippingAddress: payload.shippingAddress || {}
     };

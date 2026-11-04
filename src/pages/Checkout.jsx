@@ -51,6 +51,7 @@ import {
   ShoppingBag
 } from 'lucide-react';
 import { cloudSyncService } from '../services/cloudSyncService';
+import { openRazorpayCheckout } from '../services/razorpayService';
 
 export const Checkout = () => {
   const navigate = useNavigate();
@@ -119,6 +120,9 @@ export const Checkout = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [upiTransactionId, setUpiTransactionId] = useState('');
   const [isVerifyingUpi, setIsVerifyingUpi] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState('');
 
   // Location-based dynamic shipping fee
   const locationShippingFee = useMemo(() => {
@@ -136,11 +140,6 @@ export const Checkout = () => {
     const gst = subtotal * 0.05;
     return Math.max(0, subtotal - disc + locationShippingFee + gst).toFixed(2);
   }, [subtotal, appliedCoupon, locationShippingFee]);
-
-  // Coupon state
-  const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [couponError, setCouponError] = useState('');
 
   // Sync latest coupons from Cloud Firestore
   useEffect(() => {
@@ -304,9 +303,9 @@ export const Checkout = () => {
   const gstAmount = Number((subtotal * 0.05).toFixed(2));
   const couponDiscountAmount = appliedCoupon ? appliedCoupon.discount : 0;
   const payableAmount = Math.max(0, subtotal + gstAmount - couponDiscountAmount).toFixed(2);
-  const upiPaymentUrl = `upi://pay?pa=q826461256@ybl&pn=BARATHI%20HOMEOPATHY%20CLINIC&am=${payableAmount}&cu=INR&tn=Order%20Payment`;
+  const upiPaymentUrl = `upi://pay?pa=q826461256@ybl&pn=BARATHI%20HOMEOPATHY%20CLINIC&am=${checkoutPayableTotal}&cu=INR&tn=Order%20Payment`;
 
-  const handlePlaceOrder = async (method = 'COD', utr = '') => {
+  const handlePlaceOrder = async (method = 'COD', transactionId = '', isPaymentVerified = false) => {
     if (!selectedCourier) {
       showToast('Please select a shipping partner to continue', 'warning');
       return;
@@ -348,11 +347,11 @@ export const Checkout = () => {
         })),
         courier: selectedCourier,
         paymentMethod: method,
-        paymentStatus: method === 'UPI' ? 'Paid' : 'Pending',
-        transactionId: utr || '',
+        paymentStatus: isPaymentVerified ? 'Paid' : 'Pending',
+        transactionId,
         appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
         discountAmount: couponDiscountAmount,
-        totalAmount: Number(payableAmount)
+        totalAmount: Number(checkoutPayableTotal)
       };
 
       const res = await orderService.createOrder(payload);
@@ -1011,6 +1010,39 @@ export const Checkout = () => {
             {/* Method Selector - shown when no method selected */}
             {!selectedPaymentMethod && (
               <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  disabled={isPlacingOrder}
+                  onClick={async () => {
+                    setIsPlacingOrder(true);
+                    try {
+                      const result = await openRazorpayCheckout({
+                        amount: Math.round(Number(checkoutPayableTotal) * 100),
+                        currency: 'INR',
+                        customer: {
+                          name: `${formData.firstName} ${formData.lastName}`.trim(),
+                          email: formData.email,
+                          contact: formData.phone
+                        },
+                        items: items.map((item) => ({ id: item.id || item.productId, quantity: Number(item.quantity || 1) })),
+                        country: formData.country,
+                        state: formData.state,
+                        couponCode: appliedCoupon?.code || ''
+                      });
+                      setShowPaymentModal(false);
+                      setSelectedPaymentMethod(null);
+                      await handlePlaceOrder('RAZORPAY', result.paymentId, true);
+                    } catch (error) {
+                      if (error?.message) showToast(error.message, 'error');
+                    } finally {
+                      setIsPlacingOrder(false);
+                    }
+                  }}
+                  className="col-span-2 flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-blue-200 bg-blue-50 hover:border-blue-500 hover:bg-blue-100 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  <span className="text-sm font-black text-slate-900">Pay securely with Razorpay</span>
+                  <span className="text-[10px] text-blue-700 font-bold">UPI, cards, netbanking & wallets · ₹{checkoutPayableTotal}</span>
+                </button>
                 {/* PhonePe / UPI Option */}
                 <button
                   onClick={() => setSelectedPaymentMethod('UPI')}

@@ -1,5 +1,30 @@
 ﻿services:
   - type: web
+    name: bharathihomoeopathy-razorpay
+    env: node
+    rootDir: payment-api
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: PRODUCT_API_URL
+        value: https://bharathihomoeopathy.onrender.com/api
+      - key: SHIPPING_LOCAL_FEE
+        value: "22"
+      - key: SHIPPING_DOMESTIC_FEE
+        value: "50"
+      - key: SHIPPING_INTERNATIONAL_FEE
+        value: "250"
+      - key: FREE_SHIPPING_THRESHOLD
+        value: "1000"
+      - key: CLIENT_URL
+        value: https://bharathihomoeopathy.vercel.app
+  - type: web
     name: bharathihomoeopathy-backend
     env: node
     rootDir: backend

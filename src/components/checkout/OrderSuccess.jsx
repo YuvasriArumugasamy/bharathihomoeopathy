@@ -26,8 +26,12 @@ export const OrderSuccess = ({ order }) => {
 
   const orderNumber = order?.orderNumber || Math.floor(100000 + Math.random() * 900000).toString();
   const totalAmount = Number(order?.totalAmount || order?.total || 0);
-  const paymentMode = order?.paymentMethod === 'ONLINE' || order?.paymentMethod === 'UPI' ? 'Online UPI' : 'Cash on Delivery (COD)';
-  const isPaid = order?.paymentMethod === 'ONLINE' || order?.paymentMethod === 'UPI';
+  const paymentMode = order?.paymentMethod === 'RAZORPAY'
+    ? 'Razorpay'
+    : order?.paymentMethod === 'UPI'
+      ? 'UPI (manual verification pending)'
+      : 'Cash on Delivery (COD)';
+  const isPaid = order?.paymentStatus === 'Paid';
   const courierPartner = order?.courier || 'ST COURIER';
   const shippingAddress = order?.shippingAddress || {};
   const orderItems = Array.isArray(order?.items)
