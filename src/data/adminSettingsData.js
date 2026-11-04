@@ -58,7 +58,7 @@ export const initialAdminSettings = {
   payments: {
     enableCOD: true,
     enableRazorpay: true,
-    razorpayKeyId: "",
+    razorpayKeyId: "rzp_live_Tw8hB0htwnbX8p",
     razorpayKeySecret: "",
     testMode: false
   },

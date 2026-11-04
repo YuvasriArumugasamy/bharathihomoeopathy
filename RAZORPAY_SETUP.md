@@ -1,17 +1,28 @@
-# Razorpay live checkout setup
+# Razorpay Payment Gateway Setup Guide
 
-The checkout creates Razorpay orders through the separate `payment-api` service. The Key Secret stays on that server. The server fetches each product price from the existing product API, then calculates shipping, 5% tax, and the supported default coupon before creating the Razorpay order. The browser compares that trusted quote to the total shown at checkout and stops if they differ. An order is marked paid only after the server verifies Razorpay's signature and confirms the payment is captured for the same amount.
+## Overview
+Dr. Bharathi’s Homeo Care uses official Razorpay Checkout for accepting payments via UPI (Google Pay, PhonePe, Paytm), Credit/Debit Cards, and NetBanking.
 
-## Local configuration
+## How to Configure Your Razorpay Key
 
-1. In the project root `.env`, set `VITE_RAZORPAY_API_URL=http://localhost:5001`.
-2. In `payment-api`, copy `.env.example` to `.env`, then set a newly generated live key pair. Keep the other example values unless the product API or shipping settings differ.
-3. Start the payment API from `payment-api` with `npm install` then `npm start`; run the frontend separately with `npm run dev`.
+You have two easy ways to add your Razorpay Key ID:
 
-## Production configuration
+### Option 1: Via Admin Panel (Easiest & Instant)
+1. Go to the Admin Dashboard (`/admin/settings`).
+2. Click on **Payment Gateways** tab.
+3. Enter your **Razorpay Key ID** (e.g., `rzp_live_...` for live payments or `rzp_test_...` for testing).
+4. Click **Save Changes**.
+5. Razorpay is now live on your checkout immediately!
 
-Deploy `payment-api` as a separate Render web service using its folder as the root directory. Add `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` as Render secret environment variables, and set `CLIENT_URL` to the exact public website origin. Confirm `PRODUCT_API_URL` is the live product catalogue API and shipping environment values match the website's current shipping policy. The frontend has a production fallback to the deployed payment API; set `VITE_RAZORPAY_API_URL` only if the service URL changes.
+### Option 2: Via Environment Variables (.env / Vercel)
+1. In your local `.env` file or on your **Vercel Project Settings > Environment Variables**:
+   ```env
+   VITE_RAZORPAY_KEY_ID=your_razorpay_key_id_here
+   ```
+2. Redeploy or restart the app.
 
-Use a newly generated live key pair after revoking the pair shared in chat. Never put the Key Secret in a `VITE_` variable or frontend code. The payment service rejects non-live key IDs.
-
-The payment API uses the three built-in default coupons (`HOMECARE10`, `WELLNESS20`, and `FLAT150`). If the admin changes coupon rules in the browser-managed coupon list, update server coupon rules before advertising those changes. Razorpay activation/KYC and a newly rotated live key pair are required before live transactions can be accepted.
+### Optional: Backend Secret (for Server Verification)
+If you wish to enable server-side signature verification on your Render backend:
+1. In Render dashboard for your backend service, add:
+   - `RAZORPAY_KEY_ID=your_razorpay_key_id`
+   - `RAZORPAY_KEY_SECRET=your_razorpay_key_secret`

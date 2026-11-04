@@ -350,11 +350,27 @@ export const AdminSettings = () => {
                 <div className="space-y-4">
                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3">
                     <label className="flex items-center gap-3 font-bold text-navy-950 cursor-pointer">
-                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded text-brandOrange-500" />
+                      <input
+                        type="checkbox"
+                        checked={settings.payments?.enableCOD ?? true}
+                        onChange={(e) => setSettings({
+                          ...settings,
+                          payments: { ...settings.payments, enableCOD: e.target.checked }
+                        })}
+                        className="w-4 h-4 rounded text-brandOrange-500"
+                      />
                       <span>Accept Cash on Delivery (COD)</span>
                     </label>
                     <label className="flex items-center gap-3 font-bold text-navy-950 cursor-pointer">
-                      <input type="checkbox" defaultChecked className="w-4 h-4 rounded text-brandOrange-500" />
+                      <input
+                        type="checkbox"
+                        checked={settings.payments?.enableRazorpay ?? true}
+                        onChange={(e) => setSettings({
+                          ...settings,
+                          payments: { ...settings.payments, enableRazorpay: e.target.checked }
+                        })}
+                        className="w-4 h-4 rounded text-brandOrange-500"
+                      />
                       <span>Accept Razorpay Online Payments (UPI, Cards, NetBanking)</span>
                     </label>
                   </div>
@@ -363,9 +379,20 @@ export const AdminSettings = () => {
                     <label className="block font-bold text-slate-700 mb-1.5">Razorpay Key ID (Live / Test)</label>
                     <input
                       type="text"
-                      value={settings.payments.razorpayKeyId}
-                      className="w-full p-3 font-mono bg-slate-50/80 border border-slate-200 rounded-xl font-bold text-slate-800"
+                      placeholder="e.g. rzp_live_xxxxxxxx or rzp_test_xxxxxxxx"
+                      value={settings.payments?.razorpayKeyId || ''}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        payments: {
+                          ...settings.payments,
+                          razorpayKeyId: e.target.value.trim()
+                        }
+                      })}
+                      className="w-full p-3 font-mono bg-white border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Add your Razorpay Key ID here. Real payments use keys starting with <code className="text-emerald-600 font-bold">rzp_live_</code>.
+                    </p>
                   </div>
                 </div>
               </div>

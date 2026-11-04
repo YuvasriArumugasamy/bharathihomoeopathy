@@ -112,7 +112,6 @@ export const Checkout = () => {
   const [errors, setErrors] = useState({});
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [placedOrder, setPlacedOrder] = useState(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
@@ -294,6 +293,51 @@ export const Checkout = () => {
   };
 
   const couponDiscountAmount = appliedCoupon ? appliedCoupon.discount : 0;
+
+  const handlePayWithRazorpay = async () => {
+    if (!validateAddressStep()) {
+      showToast('Please fill in all required shipping address fields', 'warning');
+      return;
+    }
+
+    if (!selectedCourier) {
+      showToast('Please select a shipping partner to continue', 'warning');
+      return;
+    }
+
+    setIsPlacingOrder(true);
+    try {
+      const result = await openRazorpayCheckout({
+        amount: Math.round(Number(checkoutPayableTotal) * 100),
+        currency: 'INR',
+        customer: {
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
+          email: formData.email,
+          contact: formData.phone
+        },
+        notes: {
+          courier: typeof selectedCourier === 'object' ? selectedCourier?.name : selectedCourier,
+          customer_name: `${formData.firstName} ${formData.lastName}`.trim(),
+          phone: formData.phone,
+          city: formData.city,
+          state: formData.state
+        }
+      });
+
+      if (result?.paymentId) {
+        await handlePlaceOrder(result.paymentId);
+      }
+    } catch (error) {
+      const msg = error?.message || 'Payment could not be completed.';
+      if (msg.toLowerCase().includes('cancel')) {
+        showToast('Payment was cancelled.', 'info');
+      } else {
+        showToast(msg, 'error');
+      }
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
 
   const handlePlaceOrder = async (transactionId) => {
     if (!transactionId) {
@@ -930,20 +974,15 @@ export const Checkout = () => {
                     <button
                       type="button"
                       disabled={isPlacingOrder}
-                      onClick={() => {
-                        if (!selectedCourier) {
-                          showToast('Please select a shipping partner to continue', 'warning');
-                          return;
-                        }
-                        setShowPaymentModal(true);
-                      }}
+                      onClick={handlePayWithRazorpay}
                       className="w-full py-4 px-6 text-xs sm:text-sm font-black text-white bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] hover:scale-[1.02] active:scale-95 rounded-2xl shadow-lg shadow-orange-500/25 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {isPlacingOrder ? (
                         <span>Processing Payment...</span>
                       ) : (
                         <>
-                          <span>PROCEED TO PAYMENT</span>
+                          <Lock className="w-4 h-4" />
+                          <span>PAY ₹{checkoutPayableTotal} VIA RAZORPAY</span>
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
@@ -959,7 +998,7 @@ export const Checkout = () => {
                     {/* Security Guarantee Footer */}
                     <p className="text-[10px] text-slate-500 font-bold flex items-center justify-center gap-1.5 pt-1">
                       <Lock className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>Your payment information is secure and protected</span>
+                      <span>UPI, Cards & NetBanking processed securely by Razorpay</span>
                     </p>
 
                   </div>
@@ -976,84 +1015,6 @@ export const Checkout = () => {
         )}
 
       </div>
-
-
-      {/* Razorpay-only payment confirmation */}
-      {showPaymentModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          onClick={() => setShowPaymentModal(false)}
-        >
-          <div
-            className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 space-y-6"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              type="button"
-              aria-label="Close payment window"
-              onClick={() => setShowPaymentModal(false)}
-              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-all font-black text-sm"
-            >
-              X
-            </button>
-
-            <div className="text-center space-y-2 pt-2">
-              <h2 className="text-base font-black text-slate-900 uppercase tracking-wider">Pay with Razorpay</h2>
-              <p className="text-[11px] text-slate-500 font-medium">Secure checkout for your order</p>
-              <p className="text-2xl font-black text-[#f97316]">₹{checkoutPayableTotal}</p>
-            </div>
-
-            <button
-              type="button"
-              disabled={isPlacingOrder}
-              onClick={async () => {
-                setIsPlacingOrder(true);
-                try {
-                  const result = await openRazorpayCheckout({
-                    amount: Math.round(Number(checkoutPayableTotal) * 100),
-                    currency: 'INR',
-                    customer: {
-                      name: `${formData.firstName} ${formData.lastName}`.trim(),
-                      email: formData.email,
-                      contact: formData.phone
-                    },
-                    items: items.map((item) => ({
-                      id: item.id || item.productId,
-                      quantity: Number(item.quantity || 1)
-                    })),
-                    country: formData.country,
-                    state: formData.state,
-                    couponCode: appliedCoupon?.code || ''
-                  });
-                  setShowPaymentModal(false);
-                  await handlePlaceOrder(result.paymentId);
-                } catch (error) {
-                  if (error?.message) showToast(error.message, 'error');
-                } finally {
-                  setIsPlacingOrder(false);
-                }
-              }}
-              className="w-full py-3.5 px-6 text-sm font-black text-white bg-blue-600 hover:bg-blue-700 rounded-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isPlacingOrder ? 'Processing payment…' : `Continue to Razorpay · ₹${checkoutPayableTotal}`}
-            </button>
-
-            <button
-              type="button"
-              disabled={isPlacingOrder}
-              onClick={() => setShowPaymentModal(false)}
-              className="w-full py-2 text-xs font-bold text-slate-500 hover:text-slate-800 disabled:opacity-50"
-            >
-              Cancel
-            </button>
-
-            <p className="text-[10px] text-slate-400 font-bold text-center flex items-center justify-center gap-1.5">
-              <Lock className="w-3 h-3 text-emerald-500" />
-              <span>Payments are processed securely by Razorpay</span>
-            </p>
-          </div>
-        </div>
-      )}
 
     </div>
   );
