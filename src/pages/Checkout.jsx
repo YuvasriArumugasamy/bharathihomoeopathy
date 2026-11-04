@@ -37,6 +37,7 @@ import {
   ChevronRight, 
   Truck, 
   Lock, 
+  ShieldCheck,
   Sparkles, 
   CheckCircle2,
   ArrowLeft,
@@ -872,14 +873,14 @@ export const Checkout = () => {
                       type="button"
                       disabled={isPlacingOrder}
                       onClick={handlePayWithRazorpay}
-                      className="w-full py-4 px-6 text-xs sm:text-sm font-black text-white bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] hover:scale-[1.02] active:scale-95 rounded-2xl shadow-lg shadow-orange-500/25 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full py-4 px-6 text-xs sm:text-sm font-black text-white bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] hover:scale-[1.02] active:scale-95 rounded-2xl shadow-lg shadow-orange-500/25 transition-all cursor-pointer flex items-center justify-center gap-2.5 disabled:opacity-50 tracking-wider uppercase"
                     >
                       {isPlacingOrder ? (
                         <span>Processing Payment...</span>
                       ) : (
                         <>
                           <Lock className="w-4 h-4" />
-                          <span>PAY ₹{checkoutPayableTotal} VIA RAZORPAY</span>
+                          <span>PLACE ORDER &bull; ₹{checkoutPayableTotal}</span>
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
@@ -887,8 +888,8 @@ export const Checkout = () => {
 
                     {/* Security Guarantee Footer */}
                     <p className="text-[10px] text-slate-500 font-bold flex items-center justify-center gap-1.5 pt-1">
-                      <Lock className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>UPI, Cards & NetBanking processed securely by Razorpay</span>
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>100% Safe & Secure Checkout &bull; UPI &bull; Cards &bull; NetBanking</span>
                     </p>
 
                   </div>
