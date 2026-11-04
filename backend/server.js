@@ -42,9 +42,13 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// The Render hostname serves the API; send visitors to the actual website.
+// Render hosts the backend API; the frontend is deployed separately on Vercel.
 app.get('/', (_req, res) => {
-  res.redirect(302, process.env.WEBSITE_URL || 'https://bharathihomoeopathy.vercel.app/');
+  res.status(200).json({
+    success: true,
+    message: "Dr. Bharathi's Homeo Care backend API is running.",
+    health: '/api/health'
+  });
 });
 
 // Health Check API
