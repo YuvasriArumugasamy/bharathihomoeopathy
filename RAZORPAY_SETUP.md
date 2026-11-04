@@ -10,7 +10,7 @@ The checkout creates Razorpay orders through the separate `payment-api` service.
 
 ## Production configuration
 
-Deploy `payment-api` as a separate Render web service using its folder as the root directory. Add `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` as Render secret environment variables, and set `CLIENT_URL` to the exact public website origin. Confirm `PRODUCT_API_URL` is the live product catalogue API and shipping environment values match the website's current shipping policy. Set `VITE_RAZORPAY_API_URL` in the frontend hosting provider to the payment API base URL (for example `https://your-payment-service.onrender.com`), then rebuild/redeploy the frontend.
+Deploy `payment-api` as a separate Render web service using its folder as the root directory. Add `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` as Render secret environment variables, and set `CLIENT_URL` to the exact public website origin. Confirm `PRODUCT_API_URL` is the live product catalogue API and shipping environment values match the website's current shipping policy. The frontend has a production fallback to the deployed payment API; set `VITE_RAZORPAY_API_URL` only if the service URL changes.
 
 Use a newly generated live key pair after revoking the pair shared in chat. Never put the Key Secret in a `VITE_` variable or frontend code. The payment service rejects non-live key IDs.
 

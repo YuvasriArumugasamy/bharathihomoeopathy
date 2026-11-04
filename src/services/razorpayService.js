@@ -1,4 +1,4 @@
-const API_BASE = (import.meta.env.VITE_RAZORPAY_API_URL || '').replace(/\/$/, '');
+const API_BASE = (import.meta.env.VITE_RAZORPAY_API_URL || 'https://bharathihomoeopathy-razorpay.onrender.com').replace(/\/$/, '');
 
 const loadCheckout = () => new Promise((resolve, reject) => {
   if (window.Razorpay) return resolve();
@@ -10,7 +10,6 @@ const loadCheckout = () => new Promise((resolve, reject) => {
 });
 
 const post = async (path, body) => {
-  if (!API_BASE) throw new Error('Razorpay payment backend is not configured yet.');
   const response = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
