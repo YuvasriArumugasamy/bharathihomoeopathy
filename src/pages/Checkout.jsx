@@ -38,6 +38,7 @@ import {
   Truck, 
   Lock, 
   Sparkles, 
+  CheckCircle2,
   ArrowLeft,
   ArrowRight,
   Package,
