@@ -26,8 +26,6 @@ export const ShippingAddressForm = ({
   formData,
   onChange,
   errors = {},
-  paymentMethod,
-  onPaymentMethodChange,
   orderNotes,
   onOrderNotesChange
 }) => {
@@ -234,51 +232,9 @@ export const ShippingAddressForm = ({
         </div>
       </div>
 
-      {/* Payment Method Selector */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-4">
-        <h3 className="text-sm font-bold text-navy-900 uppercase tracking-wider pb-3 border-b border-slate-100">
-          2. Payment Method
-        </h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          
-          {/* COD Option */}
-          <label className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-smooth ${
-            paymentMethod === 'COD' ? 'border-brandOrange-500 bg-brandOrange-50/40 ring-1 ring-brandOrange-500' : 'border-slate-200 hover:border-slate-300'
-          }`}>
-            <input
-              type="radio"
-              name="paymentMethod"
-              value="COD"
-              checked={paymentMethod === 'COD'}
-              onChange={() => onPaymentMethodChange('COD')}
-              className="mt-0.5 text-brandOrange-500 focus:ring-brandOrange-500"
-            />
-            <div className="flex flex-col">
-              <span className="text-xs font-bold text-navy-900">Cash on Delivery (COD)</span>
-              <span className="text-[11px] text-slate-500">Pay cash/UPI directly at the time of delivery.</span>
-            </div>
-          </label>
-
-          {/* ONLINE Option */}
-          <label className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-smooth ${
-            paymentMethod === 'ONLINE' ? 'border-brandOrange-500 bg-brandOrange-50/40 ring-1 ring-brandOrange-500' : 'border-slate-200 hover:border-slate-300'
-          }`}>
-            <input
-              type="radio"
-              name="paymentMethod"
-              value="ONLINE"
-              checked={paymentMethod === 'ONLINE'}
-              onChange={() => onPaymentMethodChange('ONLINE')}
-              className="mt-0.5 text-brandOrange-500 focus:ring-brandOrange-500"
-            />
-            <div className="flex flex-col">
-              <span className="text-xs font-bold text-navy-900">Online Payment</span>
-              <span className="text-[11px] text-slate-500">Instant UPI, Cards & Netbanking via Razorpay.</span>
-            </div>
-          </label>
-
-        </div>
+      <div className="bg-blue-50 rounded-2xl p-5 border border-blue-100">
+        <h3 className="text-sm font-bold text-navy-900 uppercase tracking-wider">Payment</h3>
+        <p className="text-xs text-slate-600 mt-2">All orders are paid securely through Razorpay at checkout.</p>
       </div>
 
       {/* Order Notes */}

@@ -1,6 +1,4 @@
-import { QRCodeSVG } from 'qrcode.react';
 import React, { useState, useEffect, useMemo } from 'react';
-import phonepeQRImage from '../assets/WhatsApp Image 2026-09-10 at 10.05.20.webp';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -30,7 +28,6 @@ const countrySelectOptions = [
     }))
 ];
 import { 
-  ShieldCheck, 
   MapPin, 
   Phone, 
   Mail, 
@@ -41,13 +38,11 @@ import {
   Truck, 
   Lock, 
   Sparkles, 
-  CheckCircle2, 
   ArrowLeft,
   ArrowRight,
   Package,
   Calendar,
   AlertCircle,
-  ExternalLink,
   ShoppingBag
 } from 'lucide-react';
 import { cloudSyncService } from '../services/cloudSyncService';
@@ -117,9 +112,6 @@ export const Checkout = () => {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [placedOrder, setPlacedOrder] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
-  const [upiTransactionId, setUpiTransactionId] = useState('');
-  const [isVerifyingUpi, setIsVerifyingUpi] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
@@ -300,12 +292,14 @@ export const Checkout = () => {
     }
   };
 
-  const gstAmount = Number((subtotal * 0.05).toFixed(2));
   const couponDiscountAmount = appliedCoupon ? appliedCoupon.discount : 0;
-  const payableAmount = Math.max(0, subtotal + gstAmount - couponDiscountAmount).toFixed(2);
-  const upiPaymentUrl = `upi://pay?pa=q826461256@ybl&pn=BARATHI%20HOMEOPATHY%20CLINIC&am=${checkoutPayableTotal}&cu=INR&tn=Order%20Payment`;
 
-  const handlePlaceOrder = async (method = 'COD', transactionId = '', isPaymentVerified = false) => {
+  const handlePlaceOrder = async (transactionId) => {
+    if (!transactionId) {
+      showToast('Razorpay payment could not be verified. Please try again.', 'error');
+      return;
+    }
+
     if (!selectedCourier) {
       showToast('Please select a shipping partner to continue', 'warning');
       return;
@@ -346,8 +340,8 @@ export const Checkout = () => {
           category: item.category || 'Remedy'
         })),
         courier: selectedCourier,
-        paymentMethod: method,
-        paymentStatus: isPaymentVerified ? 'Paid' : 'Pending',
+        paymentMethod: 'RAZORPAY',
+        paymentStatus: 'Paid',
         transactionId,
         appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
         discountAmount: couponDiscountAmount,
@@ -983,237 +977,78 @@ export const Checkout = () => {
       </div>
 
 
-      {/* PhonePe / UPI Payment Modal */}
+      {/* Razorpay-only payment confirmation */}
       {showPaymentModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-          onClick={() => { setShowPaymentModal(false); setSelectedPaymentMethod(null); }}
+          onClick={() => setShowPaymentModal(false)}
         >
           <div
             className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 space-y-6"
-            onClick={e => e.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
           >
-            {/* Close Button */}
             <button
-              onClick={() => { setShowPaymentModal(false); setSelectedPaymentMethod(null); }}
+              type="button"
+              aria-label="Close payment window"
+              onClick={() => setShowPaymentModal(false)}
               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-all font-black text-sm"
             >
               X
             </button>
 
-            {/* Header */}
-            <div className="text-center space-y-1 pt-1">
-              <h2 className="text-base font-black text-slate-900 uppercase tracking-wider">Choose Payment Method</h2>
-              <p className="text-[11px] text-slate-500 font-medium">Select how you would like to pay</p>
+            <div className="text-center space-y-2 pt-2">
+              <h2 className="text-base font-black text-slate-900 uppercase tracking-wider">Pay with Razorpay</h2>
+              <p className="text-[11px] text-slate-500 font-medium">Secure checkout for your order</p>
+              <p className="text-2xl font-black text-[#f97316]">₹{checkoutPayableTotal}</p>
             </div>
 
-            {/* Method Selector - shown when no method selected */}
-            {!selectedPaymentMethod && (
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  disabled={isPlacingOrder}
-                  onClick={async () => {
-                    setIsPlacingOrder(true);
-                    try {
-                      const result = await openRazorpayCheckout({
-                        amount: Math.round(Number(checkoutPayableTotal) * 100),
-                        currency: 'INR',
-                        customer: {
-                          name: `${formData.firstName} ${formData.lastName}`.trim(),
-                          email: formData.email,
-                          contact: formData.phone
-                        },
-                        items: items.map((item) => ({ id: item.id || item.productId, quantity: Number(item.quantity || 1) })),
-                        country: formData.country,
-                        state: formData.state,
-                        couponCode: appliedCoupon?.code || ''
-                      });
-                      setShowPaymentModal(false);
-                      setSelectedPaymentMethod(null);
-                      await handlePlaceOrder('RAZORPAY', result.paymentId, true);
-                    } catch (error) {
-                      if (error?.message) showToast(error.message, 'error');
-                    } finally {
-                      setIsPlacingOrder(false);
-                    }
-                  }}
-                  className="col-span-2 flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-blue-200 bg-blue-50 hover:border-blue-500 hover:bg-blue-100 transition-all cursor-pointer disabled:opacity-50"
-                >
-                  <span className="text-sm font-black text-slate-900">Pay securely with Razorpay</span>
-                  <span className="text-[10px] text-blue-700 font-bold">UPI, cards, netbanking & wallets · ₹{checkoutPayableTotal}</span>
-                </button>
-                {/* PhonePe / UPI Option */}
-                <button
-                  onClick={() => setSelectedPaymentMethod('UPI')}
-                  className="flex flex-col items-center gap-3 p-5 rounded-2xl border-2 border-purple-200 bg-purple-50/60 hover:border-purple-500 hover:bg-purple-100/70 hover:scale-[1.03] transition-all duration-200 cursor-pointer"
-                >
-                  <div className="w-12 h-12 rounded-full bg-[#5f259f] flex items-center justify-center shadow-lg shadow-purple-300">
-                    <span className="text-white text-xl font-black">Pe</span>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs font-black text-slate-900">PhonePe / UPI</p>
-                    <p className="text-[10px] text-purple-600 font-bold mt-0.5">Scan QR &amp; Pay Instantly</p>
-                  </div>
-                </button>
+            <button
+              type="button"
+              disabled={isPlacingOrder}
+              onClick={async () => {
+                setIsPlacingOrder(true);
+                try {
+                  const result = await openRazorpayCheckout({
+                    amount: Math.round(Number(checkoutPayableTotal) * 100),
+                    currency: 'INR',
+                    customer: {
+                      name: `${formData.firstName} ${formData.lastName}`.trim(),
+                      email: formData.email,
+                      contact: formData.phone
+                    },
+                    items: items.map((item) => ({
+                      id: item.id || item.productId,
+                      quantity: Number(item.quantity || 1)
+                    })),
+                    country: formData.country,
+                    state: formData.state,
+                    couponCode: appliedCoupon?.code || ''
+                  });
+                  setShowPaymentModal(false);
+                  await handlePlaceOrder(result.paymentId);
+                } catch (error) {
+                  if (error?.message) showToast(error.message, 'error');
+                } finally {
+                  setIsPlacingOrder(false);
+                }
+              }}
+              className="w-full py-3.5 px-6 text-sm font-black text-white bg-blue-600 hover:bg-blue-700 rounded-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isPlacingOrder ? 'Processing payment…' : `Continue to Razorpay · ₹${checkoutPayableTotal}`}
+            </button>
 
-                {/* Cash on Delivery Option */}
-                <button
-                  onClick={async () => {
-                    setShowPaymentModal(false);
-                    setSelectedPaymentMethod(null);
-                    await handlePlaceOrder();
-                  }}
-                  className="flex flex-col items-center gap-3 p-5 rounded-2xl border-2 border-emerald-200 bg-emerald-50/60 hover:border-emerald-500 hover:bg-emerald-100/70 hover:scale-[1.03] transition-all duration-200 cursor-pointer"
-                >
-                  <div className="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-300">
-                    <span className="text-white text-xl font-black">COD</span>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs font-black text-slate-900">Cash on Delivery</p>
-                    <p className="text-[10px] text-emerald-600 font-bold mt-0.5">Pay at your doorstep</p>
-                  </div>
-                </button>
-              </div>
-            )}
+            <button
+              type="button"
+              disabled={isPlacingOrder}
+              onClick={() => setShowPaymentModal(false)}
+              className="w-full py-2 text-xs font-bold text-slate-500 hover:text-slate-800 disabled:opacity-50"
+            >
+              Cancel
+            </button>
 
-            {/* UPI / QR Section with Strict UTR Verification */}
-            {selectedPaymentMethod === 'UPI' && (
-              <div className="space-y-5">
-                <div className="flex flex-col items-center gap-4">
-                  {/* Dynamic Amount-Embedded UPI QR Code */}
-                  <div className="bg-white rounded-3xl p-5 shadow-xl border border-purple-200 ring-4 ring-purple-100 flex flex-col items-center">
-                    {/* PhonePe / BHIM Brand Header */}
-                    <div className="flex items-center gap-2 pb-3 text-[#5f259f] font-black text-xs">
-                      <div className="w-6 h-6 rounded-full bg-[#5f259f] text-white flex items-center justify-center text-xs font-black shadow-sm">
-                        Pe
-                      </div>
-                      <span>BARATHI HOMEOPATHY CLINIC</span>
-                    </div>
-
-                    {/* Dynamic Razor-Sharp QR Code (NPCI UPI Standard with exact amount) */}
-                    <div className="p-3 bg-white rounded-2xl border border-slate-100 shadow-inner flex items-center justify-center">
-                      <QRCodeSVG
-                        value={upiPaymentUrl}
-                        size={210}
-                        level="M"
-                        includeMargin={false}
-                      />
-                    </div>
-
-                    <div className="pt-3 text-center">
-                      <p className="text-[11px] font-mono font-bold text-slate-500">
-                        UPI ID: <strong className="text-purple-700">q826461256@ybl</strong>
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Direct Mobile UPI App Button (for mobile phones) */}
-                  <a
-                    href={upiPaymentUrl}
-                    className="w-full py-3 px-4 text-xs font-black text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-sm sm:hidden"
-                  >
-                    <span>Tap to Pay with Google Pay / PhonePe / Paytm</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-
-                  <div className="text-center space-y-1.5">
-                    <p className="text-xs font-black text-purple-700">Scan with any UPI App</p>
-                    <p className="text-[10px] text-slate-400 font-bold">PhonePe | Google Pay | Paytm | BHIM</p>
-                    <div className="mt-2 px-5 py-2.5 bg-purple-50 rounded-2xl border border-purple-200">
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Amount to Pay</p>
-                      <p className="text-2xl font-black text-purple-700">
-                        <span className="text-lg mr-0.5">&#8377;</span>
-                        {(subtotal + (subtotal * 0.05)).toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* MANDATORY 12-DIGIT UPI REFERENCE / UTR NUMBER VERIFICATION FIELD */}
-                <div className="space-y-2 text-left pt-1">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
-                      <span>12-Digit UPI Ref / UTR No <span className="text-rose-500">*</span></span>
-                    </label>
-                    <span className="text-[10px] font-bold text-purple-600">Required</span>
-                  </div>
-
-                  <div className="relative">
-                    <input
-                      type="text"
-                      maxLength={16}
-                      value={upiTransactionId}
-                      onChange={(e) => setUpiTransactionId(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
-                      placeholder="Enter 12-digit UTR (e.g. 425612849012)"
-                      className="w-full px-4 py-3.5 bg-slate-50 focus:bg-white border-2 border-purple-200 focus:border-purple-500 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/10 text-xs font-mono font-bold text-slate-900 placeholder:text-slate-400 transition-all shadow-inner tracking-widest"
-                    />
-                    {upiTransactionId.trim().length >= 12 && (
-                      <div className="absolute right-3.5 top-3.5 flex items-center gap-1 text-[11px] font-black text-emerald-600">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                        <span>Valid</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
-                    Google Pay / PhonePe-ல் பணம் செலுத்திய பிறகு காட்டும் <strong>12-digit UPI Ref / UTR No</strong>-ஐ இங்கு பதிவிடவும். இந்த எண் இல்லாமல் ஆர்டர் கன்ஃபார்ம் ஆகாது.
-                  </p>
-                </div>
-
-                <div className="space-y-3 pt-2">
-                  <button
-                    disabled={isPlacingOrder || isVerifyingUpi || upiTransactionId.trim().length < 12}
-                    onClick={async () => {
-                      if (upiTransactionId.trim().length < 12) {
-                        showToast('Please enter the 12-digit UPI Reference / UTR Number from your payment app', 'warning');
-                        return;
-                      }
-                      setIsVerifyingUpi(true);
-                      setTimeout(async () => {
-                        setIsVerifyingUpi(false);
-                        setShowPaymentModal(false);
-                        setSelectedPaymentMethod(null);
-                        await handlePlaceOrder('UPI', upiTransactionId.trim());
-                      }, 1200);
-                    }}
-                    className={`w-full py-3.5 px-6 text-sm font-black text-white rounded-2xl transition-all flex items-center justify-center gap-2 ${
-                      upiTransactionId.trim().length >= 12 && !isPlacingOrder && !isVerifyingUpi
-                        ? 'bg-gradient-to-r from-[#5f259f] to-[#8b2fc9] hover:scale-[1.02] active:scale-95 shadow-lg shadow-purple-500/30 cursor-pointer'
-                        : 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed opacity-60 shadow-none'
-                    }`}
-                  >
-                    {isVerifyingUpi ? (
-                      <span>Verifying Transaction Reference...</span>
-                    ) : isPlacingOrder ? (
-                      <span>Confirming Order...</span>
-                    ) : upiTransactionId.trim().length < 12 ? (
-                      <span>Enter 12-Digit UTR to Confirm</span>
-                    ) : (
-                      <span>Verify & Confirm Order</span>
-                    )}
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={isPlacingOrder || isVerifyingUpi}
-                    onClick={() => {
-                      setSelectedPaymentMethod(null);
-                      setUpiTransactionId('');
-                    }}
-                    className="w-full py-2.5 text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
-                  >
-                    &larr; Back to payment options
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Security Footer */}
             <p className="text-[10px] text-slate-400 font-bold text-center flex items-center justify-center gap-1.5">
               <Lock className="w-3 h-3 text-emerald-500" />
-              <span>100% Secure Payment &mdash; Powered by BHIM UPI</span>
+              <span>Payments are processed securely by Razorpay</span>
             </p>
           </div>
         </div>
