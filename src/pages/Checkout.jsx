@@ -300,11 +300,6 @@ export const Checkout = () => {
       return;
     }
 
-    if (!selectedCourier) {
-      showToast('Please select a shipping partner to continue', 'warning');
-      return;
-    }
-
     setIsPlacingOrder(true);
     try {
       const result = await openRazorpayCheckout({
@@ -316,7 +311,7 @@ export const Checkout = () => {
           contact: formData.phone
         },
         notes: {
-          courier: typeof selectedCourier === 'object' ? selectedCourier?.name : selectedCourier,
+          courier: 'Standard Delivery',
           customer_name: `${formData.firstName} ${formData.lastName}`.trim(),
           phone: formData.phone,
           city: formData.city,
@@ -342,11 +337,6 @@ export const Checkout = () => {
   const handlePlaceOrder = async (transactionId) => {
     if (!transactionId) {
       showToast('Razorpay payment could not be verified. Please try again.', 'error');
-      return;
-    }
-
-    if (!selectedCourier) {
-      showToast('Please select a shipping partner to continue', 'warning');
       return;
     }
 
@@ -833,101 +823,8 @@ export const Checkout = () => {
 
                 </div>
 
-                {/* Right Side: Select Preferred Shipping Partner + Price Details */}
+                {/* Right Side: Price Details */}
                 <div className="lg:col-span-5 space-y-6">
-                  
-                  {/* Select Your Preferred Shipping Partner Card */}
-                  <div className="bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] space-y-4">
-                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                      <Truck className="w-4 h-4 text-[#f97316]" />
-                      <span>Select Your Preferred Shipping Partner</span>
-                    </h3>
-
-                    <div className="space-y-3">
-                      {courierOptions.map((courier) => (
-                        <label
-                          key={courier.id}
-                          onClick={() => setSelectedCourier(courier.id)}
-                          className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all duration-200 ${
-                            selectedCourier === courier.id
-                              ? 'border-[#f97316] bg-orange-50/70 ring-4 ring-orange-500/10 shadow-sm'
-                              : 'border-slate-200/90 hover:border-slate-300 bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <input
-                              type="radio"
-                              name="courier"
-                              checked={selectedCourier === courier.id}
-                              onChange={() => setSelectedCourier(courier.id)}
-                              className="w-4 h-4 text-[#f97316] focus:ring-[#f97316]"
-                            />
-                            <div>
-                              <span className="font-black text-xs text-slate-900 block">{courier.name}</span>
-                              <span className="text-[10px] text-slate-500 font-medium">{courier.tag}</span>
-                            </div>
-                          </div>
-                          
-                          <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase border ${courier.color}`}>
-                            {courier.badge || 'EXPRESS'}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Have a Promo Code / Coupon Card */}
-                  <div className="bg-white/95 backdrop-blur-2xl rounded-3xl p-5 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.06)] space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                        <span>Have a Promo Code or Coupon?</span>
-                      </span>
-                    </div>
-
-                    {!appliedCoupon ? (
-                      <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="e.g. HOMECARE10 or WELLNESS20"
-                          value={couponCode}
-                          onChange={(e) => {
-                            setCouponCode(e.target.value.toUpperCase());
-                            setCouponError('');
-                          }}
-                          className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-mono font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#f97316] uppercase"
-                        />
-                        <button
-                          type="submit"
-                          disabled={!couponCode.trim()}
-                          className="px-4 py-2.5 bg-[#0b344d] hover:bg-[#154e73] text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all disabled:opacity-40 cursor-pointer"
-                        >
-                          Apply
-                        </button>
-                      </form>
-                    ) : (
-                      <div className="p-3 bg-emerald-50 border border-emerald-200/80 rounded-2xl flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                          <div>
-                            <span className="text-xs font-mono font-black text-emerald-900">{appliedCoupon.code}</span>
-                            <span className="text-[11px] text-emerald-700 block">₹{appliedCoupon.discount} discount applied!</span>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleRemoveCoupon}
-                          className="text-[10px] text-rose-500 hover:text-rose-700 font-black uppercase px-2 py-1 bg-white rounded-lg border border-rose-200 cursor-pointer"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    )}
-
-                    {couponError && (
-                      <p className="text-[10px] text-rose-500 font-bold">{couponError}</p>
-                    )}
-                  </div>
 
                   {/* Price Details Card */}
                   <div className="bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] space-y-5 relative overflow-hidden">
@@ -987,13 +884,6 @@ export const Checkout = () => {
                         </>
                       )}
                     </button>
-
-                    {/* Courier selection hint */}
-                    {!selectedCourier && (
-                      <p className="text-[10px] text-rose-500 font-bold text-center">
-                        Please select a shipping method to continue
-                      </p>
-                    )}
 
                     {/* Security Guarantee Footer */}
                     <p className="text-[10px] text-slate-500 font-bold flex items-center justify-center gap-1.5 pt-1">
