@@ -42,6 +42,11 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// The Render hostname serves the API; send visitors to the actual website.
+app.get('/', (_req, res) => {
+  res.redirect(302, process.env.WEBSITE_URL || 'https://bharathihomoeopathy.vercel.app/');
+});
+
 // Health Check API
 app.get('/api/health', (req, res) => {
   res.status(200).json({
