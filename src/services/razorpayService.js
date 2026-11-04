@@ -4,6 +4,10 @@
  * and seamless fallback to client-side standard checkout.
  */
 import { api } from '../utils/api';
+import { initialAdminSettings } from '../data/adminSettingsData';
+
+// Default clinic Live Razorpay Key
+const DEFAULT_RAZORPAY_KEY = 'rzp_live_Tw8hB0htwnbX8p';
 
 /**
  * Loads Razorpay Standard Checkout SDK dynamically
@@ -45,7 +49,13 @@ export const getRazorpayKey = () => {
     }
   } catch {}
 
-  return '';
+  // 3. Check Initial Admin Settings
+  if (initialAdminSettings?.payments?.razorpayKeyId?.trim()) {
+    return initialAdminSettings.payments.razorpayKeyId.trim();
+  }
+
+  // 4. Default Live Clinic Key
+  return DEFAULT_RAZORPAY_KEY;
 };
 
 /**
