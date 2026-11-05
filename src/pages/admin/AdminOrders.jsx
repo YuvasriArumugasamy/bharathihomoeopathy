@@ -157,6 +157,11 @@ export const AdminOrders = () => {
              (o.customer?.phone || o.shippingAddress?.phone || '').toLowerCase().includes(q);
     }
     return true;
+  }).sort((a, b) => {
+    // Latest orders first
+    const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return dateB - dateA;
   });
 
   const handleOpenOrderDetails = (ord) => {
