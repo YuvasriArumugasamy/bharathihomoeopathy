@@ -382,6 +382,7 @@ export const AdminOrders = () => {
               <tr className="bg-slate-50/90 text-slate-400 uppercase tracking-wider text-[10px] font-black border-b border-slate-100">
                 <th className="py-3.5 px-5">Order ID</th>
                 <th className="py-3.5 px-4">Patient Details</th>
+                <th className="py-3.5 px-4">Ordered Remedies</th>
                 <th className="py-3.5 px-4">Date</th>
                 <th className="py-3.5 px-4">Total Amount</th>
                 <th className="py-3.5 px-4">Payment Method</th>
@@ -412,6 +413,33 @@ export const AdminOrders = () => {
                         {ord.customer?.phone || ord.shippingAddress?.phone || ord.guestPhone || ''}
                       </p>
                     </div>
+                  </td>
+                  <td className="py-3.5 px-4 min-w-[180px] max-w-[240px]">
+                    {Array.isArray(ord.items) && ord.items.length > 0 ? (
+                      <div className="space-y-1">
+                        {ord.items.slice(0, 2).map((it, idx) => (
+                          <div key={idx} className="flex items-center gap-1.5 leading-tight">
+                            <span className="shrink-0 text-[10px] font-black px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200/60">
+                              {it.quantity || 1}x
+                            </span>
+                            <span className="font-bold text-slate-800 text-[11px] truncate" title={it.name || it.title}>
+                              {it.name || it.title || 'Remedy'}
+                            </span>
+                          </div>
+                        ))}
+                        {ord.items.length > 2 && (
+                          <p className="text-[10px] text-slate-400 font-semibold pl-1">
+                            +{ord.items.length - 2} more item(s)
+                          </p>
+                        )}
+                      </div>
+                    ) : typeof ord.items === 'string' && ord.items.trim() ? (
+                      <p className="font-bold text-slate-800 text-[11px] truncate">{ord.items}</p>
+                    ) : (
+                      <span className="text-[11px] font-medium text-slate-400 italic">
+                        Homeopathic Formulation
+                      </span>
+                    )}
                   </td>
                   <td className="py-3.5 px-4 text-slate-500 font-medium whitespace-nowrap text-xs">
                     {ord.createdAt ? new Date(ord.createdAt).toLocaleDateString() : 'Today'}
@@ -525,8 +553,29 @@ export const AdminOrders = () => {
                 </div>
               </div>
 
+              {/* Remedies preview in mobile card */}
+              <div className="bg-slate-50/90 rounded-xl p-2.5 border border-slate-100/90 text-xs space-y-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                  Ordered Remedies:
+                </span>
+                {Array.isArray(ord.items) && ord.items.length > 0 ? (
+                  ord.items.map((it, idx) => (
+                    <div key={idx} className="flex items-center justify-between text-[11px]">
+                      <span className="font-bold text-slate-800 truncate mr-2">
+                        {it.name || it.title || 'Classical Homeopathic Remedy'}
+                      </span>
+                      <span className="font-mono text-slate-500 font-bold shrink-0">
+                        x{it.quantity || 1}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="font-medium text-slate-500 text-[11px] italic">Homeopathic Remedy</p>
+                )}
+              </div>
+
               <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-brandOrange-600 font-bold">
-                <span className="text-slate-400 text-[11px]">{Array.isArray(ord.items) ? ord.items.length : 1} item(s)</span>
+                <span className="text-slate-400 text-[11px]">{Array.isArray(ord.items) && ord.items.length > 0 ? ord.items.length : 1} item(s)</span>
                 <span className="inline-flex items-center gap-1">
                   View Full Details <Eye className="w-3.5 h-3.5" />
                 </span>
@@ -664,11 +713,11 @@ export const AdminOrders = () => {
                   Prescription Formulations ({Array.isArray(selectedOrderDrawer.items) ? selectedOrderDrawer.items.length : (selectedOrderDrawer.items ? 1 : 0)})
                 </h4>
                 <div className="divide-y divide-slate-100 border border-slate-200/80 rounded-2xl p-3 bg-white space-y-1">
-                  {(Array.isArray(selectedOrderDrawer.items)
+                  {(Array.isArray(selectedOrderDrawer.items) && selectedOrderDrawer.items.length > 0
                     ? selectedOrderDrawer.items
                     : typeof selectedOrderDrawer.items === 'string' && selectedOrderDrawer.items.trim()
                     ? [{ name: selectedOrderDrawer.items, quantity: 1, price: Number(selectedOrderDrawer.total || 0) }]
-                    : [{ name: 'Classical Homeopathic Remedy', quantity: 1, price: Number(selectedOrderDrawer.total || 0) }]
+                    : [{ name: 'Homeopathic Remedy Order', quantity: 1, price: Number(selectedOrderDrawer.total || 0) }]
                   ).map((it, idx) => {
                     const itemPrice = Number(it.subtotal ?? it.itemSubtotal ?? (Number(it.price || 0) * Number(it.quantity || 1)) ?? it.price ?? 0);
                     return (
