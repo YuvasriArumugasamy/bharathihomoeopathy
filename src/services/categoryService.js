@@ -5,18 +5,29 @@ import { cloudSyncService } from './cloudSyncService';
 const CATEGORIES_STORAGE_KEY = 'admin_categories_store';
 
 const sanitizeCategories = (cats) => {
-  if (!Array.isArray(cats)) return cats;
-  return cats.map((c, idx) => {
+  if (!Array.isArray(cats) || cats.length === 0) return initialAdminCategories;
+
+  // Filter out dummy/test junk categories like "kjds"
+  const cleaned = cats.filter(c => {
+    if (!c || typeof c !== 'object') return false;
+    const name = String(c.name || '').trim().toLowerCase();
+    return name && name !== 'kjds' && name !== 'test' && name !== 'demo';
+  });
+
+  if (cleaned.length === 0) return initialAdminCategories;
+
+  return cleaned.map((c, idx) => {
     const id = c.id || c._id || `cat-${idx + 1}`;
     let image = c.image;
-    if (image && image.includes('1608248597359-0091807cf7c9')) {
-      image = 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=600&q=80';
+    // Strip unwanted legacy yoga silhouette unsplash link
+    if (image && typeof image === 'string' && (image.includes('1544367567-0f2fcb009e0b') || image.includes('1608248597359'))) {
+      image = '';
     }
     return {
       ...c,
       id,
       _id: c._id || id,
-      image
+      image: image || ''
     };
   });
 };
@@ -26,32 +37,41 @@ export const getStoredCategories = () => {
     const raw = localStorage.getItem(CATEGORIES_STORAGE_KEY);
     if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        return sanitizeCategories(parsed);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const sanitized = sanitizeCategories(parsed);
+        if (sanitized.length !== parsed.length) {
+          localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(sanitized));
+          cloudSyncService.syncCategoriesToCloud(sanitized);
+        }
+        return sanitized;
       }
     }
   } catch (err) {
     console.warn("Could not read categories from storage:", err.message);
   }
-  return [];
+  return initialAdminCategories;
 };
 
 export const saveStoredCategories = (categories) => {
   try {
-    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
-    window.dispatchEvent(new CustomEvent('drBharathiCategoriesUpdated', { detail: categories }));
+    const sanitized = sanitizeCategories(categories);
+    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(sanitized));
+    window.dispatchEvent(new CustomEvent('drBharathiCategoriesUpdated', { detail: sanitized }));
     window.dispatchEvent(new Event('storage'));
-    cloudSyncService.syncCategoriesToCloud(categories);
+    cloudSyncService.syncCategoriesToCloud(sanitized);
   } catch (err) {
     console.warn("Could not save categories to storage:", err.message);
   }
 };
 
 export const categoryService = {
+  getStoredCategories,
+  saveStoredCategories,
+
   getCategories: async () => {
     try {
       const res = await api.get('/categories');
-      if (res && res.data && Array.isArray(res.data)) {
+      if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
         const sanitized = sanitizeCategories(res.data);
         saveStoredCategories(sanitized);
         return sanitized;
@@ -99,63 +119,41 @@ export const categoryService = {
     return { success: true, data: newCategory };
   },
 
-  updateAdminCategory: async (id, categoryData) => {
-    if (!id) return { success: false };
+  updateAdminCategory: async (id, updatedData) => {
     const categories = getStoredCategories();
-    const updated = categories.map(c => {
-      const match = (c.id && c.id === id) || (c._id && c._id === id) || (c.slug && c.slug === id) || (c.name && c.name === id);
-      return match ? { ...c, ...categoryData, id: c.id || id, _id: c._id || id } : c;
-    });
-    saveStoredCategories(updated);
+    const index = categories.findIndex(c => (c.id || c._id) === id);
+    if (index === -1) return { success: false, message: 'Category not found' };
+
+    const updatedCat = {
+      ...categories[index],
+      ...updatedData,
+      id,
+      _id: updatedData._id || categories[index]._id || id,
+      updatedAt: new Date().toISOString().slice(0, 10)
+    };
+    categories[index] = updatedCat;
+    saveStoredCategories(categories);
 
     try {
-      await api.put(`/categories/${id}`, categoryData);
+      await api.put(`/categories/${id}`, updatedData);
     } catch (err) {
-      console.warn("Category updated locally (backend offline):", err.message);
+      if (!err?.isDemoMode) console.warn("Category updated locally (backend offline):", err.message);
     }
 
-    return { success: true, data: categoryData };
+    return { success: true, data: updatedCat };
   },
 
   deleteAdminCategory: async (id) => {
-    if (!id) return { success: false };
     const categories = getStoredCategories();
-    const updated = categories.filter(c => {
-      const match = (c.id && c.id === id) || (c._id && c._id === id) || (c.slug && c.slug === id) || (c.name && c.name === id);
-      return !match;
-    });
-    saveStoredCategories(updated);
+    const filtered = categories.filter(c => (c.id || c._id) !== id);
+    saveStoredCategories(filtered);
 
     try {
       await api.delete(`/categories/${id}`);
     } catch (err) {
-      console.warn("Category deleted locally (backend offline):", err.message);
+      if (!err?.isDemoMode) console.warn("Category deleted locally (backend offline):", err.message);
     }
 
     return { success: true };
-  },
-
-  resetToDefaultCategories: () => {
-    saveStoredCategories([]);
-    return [];
   }
 };
-
-// Initialize cloud synchronization for categories across all devices
-try {
-  cloudSyncService.listenToCategories((cloudCats) => {
-    if (Array.isArray(cloudCats)) {
-      try {
-        localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(cloudCats));
-        window.dispatchEvent(new CustomEvent('drBharathiCategoriesUpdated', { detail: cloudCats }));
-        window.dispatchEvent(new Event('storage'));
-      } catch {}
-    }
-  });
-} catch (e) {
-  console.warn("Could not start cloud categories listener:", e);
-}
-
-export default categoryService;
-
-

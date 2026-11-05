@@ -23,6 +23,7 @@ import { assets } from '../assets';
 import { getStoredProducts } from '../utils/productStorage';
 import { cloudSyncService } from '../services/cloudSyncService';
 import { useCart } from '../context/CartContext';
+import { getCategoryDisplayImage } from '../utils/categoryImages';
 import { useToast } from '../context/ToastContext';
 import { ProductCard } from '../components/shop/ProductCard';
 import { SectionHeader } from '../components/common/SectionHeader';
@@ -49,7 +50,7 @@ export const Home = () => {
       if (raw !== null) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
-          return parsed.filter(c => c && c.name && (c.status === 'Active' || !c.status));
+          return parsed.filter(c => c && c.name && (c.status === 'Active' || !c.status) && c.name.toLowerCase() !== 'kjds');
         }
       }
     } catch {}
@@ -63,7 +64,7 @@ export const Home = () => {
         if (raw !== null) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
-            setAdminCategories(parsed.filter(c => c && c.name && (c.status === 'Active' || !c.status)));
+            setAdminCategories(parsed.filter(c => c && c.name && (c.status === 'Active' || !c.status) && c.name.toLowerCase() !== 'kjds'));
             return;
           }
         }
@@ -76,7 +77,7 @@ export const Home = () => {
 
     const unsubCloud = cloudSyncService.listenToCategories((cloudCats) => {
       if (Array.isArray(cloudCats)) {
-        setAdminCategories(cloudCats.filter(c => c && c.name && (c.status === 'Active' || !c.status)));
+        setAdminCategories(cloudCats.filter(c => c && c.name && (c.status === 'Active' || !c.status) && c.name.toLowerCase() !== 'kjds'));
       }
     });
 
@@ -102,21 +103,6 @@ export const Home = () => {
   const bestSellerProducts = useMemo(() => {
     return (products || []).filter(p => Boolean(p.isBestSeller) && p.status !== 'Draft');
   }, [products]);
-
-  const getCategoryImage = (cat, idx) => {
-    if (cat.image && typeof cat.image === 'string' && (cat.image.startsWith('data:') || cat.image.startsWith('http') || cat.image.startsWith('/'))) {
-      return cat.image;
-    }
-    const name = (cat.name || '').toLowerCase();
-    if (name.includes('homeo')) return assets.p1;
-    if (name.includes('tincture')) return assets.p2;
-    if (name.includes('biochemic')) return assets.p3;
-    if (name.includes('wellness') || name.includes('herbal')) return assets.p4;
-    if (name.includes('personal')) return assets.p5;
-    if (name.includes('combo')) return assets.p6;
-    const fallbackList = [assets.p1, assets.p2, assets.p3, assets.p4, assets.p5, assets.p6, assets.p7];
-    return fallbackList[idx % fallbackList.length];
-  };
 
   const testimonials = [
     {
@@ -397,7 +383,7 @@ export const Home = () => {
 
                     {/* Category Remedy Image */}
                     <img
-                      src={getCategoryImage(cat, idx)}
+                      src={getCategoryDisplayImage(cat, idx)}
                       alt={cat.name}
                       className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-500 ease-out drop-shadow-sm"
                     />

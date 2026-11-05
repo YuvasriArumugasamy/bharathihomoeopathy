@@ -4,6 +4,7 @@ import { categoryService } from '../../services/categoryService';
 import { useToast } from '../../context/ToastContext';
 import { slugify } from '../../utils/slugify';
 import { getStoredProducts, isMatchingCategory } from '../../utils/productStorage';
+import { getCategoryDisplayImage } from '../../utils/categoryImages';
 
 export const AdminCategories = () => {
   const { showToast } = useToast();
@@ -197,9 +198,9 @@ export const AdminCategories = () => {
       {/* 3. Luxury Category Cards Grid or Empty State */}
       {filtered.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((cat) => {
+          {filtered.map((cat, idx) => {
             const remediesCount = allProducts.filter(p => isMatchingCategory(p.category, cat.name)).length;
-            const fallbackImg = 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=600&q=80';
+            const catImg = getCategoryDisplayImage(cat, idx);
             const catKey = getCatId(cat);
             return (
               <div 
@@ -207,17 +208,13 @@ export const AdminCategories = () => {
                 className="group relative bg-white rounded-[2rem] border border-slate-200/90 shadow-[0_4px_20px_-4px_rgba(15,36,56,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden"
               >
                 {/* Image Preview with Floating Badges */}
-                <div className="relative aspect-[16/9] overflow-hidden bg-slate-100 -m-px">
+                <div className="relative aspect-[16/9] overflow-hidden bg-slate-50 -m-px flex items-center justify-center p-3">
                   <img 
-                    src={cat.image || fallbackImg} 
-                    alt="" 
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = fallbackImg;
-                    }}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                    src={catImg} 
+                    alt={cat.name} 
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-sm" 
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
                   
                   {/* Product Count Pill */}
                   <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-black text-slate-800 shadow-sm border border-white/40">
