@@ -5,7 +5,7 @@ import { cloudSyncService } from './cloudSyncService';
 const CATEGORIES_STORAGE_KEY = 'admin_categories_store';
 
 const sanitizeCategories = (cats) => {
-  if (!Array.isArray(cats) || cats.length === 0) return initialAdminCategories;
+  if (!Array.isArray(cats) || cats.length === 0) return [];
 
   // Filter out dummy/test junk categories like "kjds"
   const cleaned = cats.filter(c => {
@@ -14,7 +14,7 @@ const sanitizeCategories = (cats) => {
     return name && name !== 'kjds' && name !== 'test' && name !== 'demo';
   });
 
-  if (cleaned.length === 0) return initialAdminCategories;
+  if (cleaned.length === 0) return [];
 
   return cleaned.map((c, idx) => {
     const id = c.id || c._id || `cat-${idx + 1}`;
@@ -49,7 +49,7 @@ export const getStoredCategories = () => {
   } catch (err) {
     console.warn("Could not read categories from storage:", err.message);
   }
-  return initialAdminCategories;
+  return [];
 };
 
 export const saveStoredCategories = (categories) => {
