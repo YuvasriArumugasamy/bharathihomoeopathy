@@ -104,7 +104,7 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
   return (
     <header 
       ref={topbarRef}
-      className="h-20 bg-white border-b border-slate-200/90 px-4 sm:px-6 lg:px-8 flex items-center justify-between fixed top-0 left-0 right-0 lg:left-64 z-30 shadow-xs transition-all font-serif"
+      className="h-20 bg-white border-b border-slate-200/90 px-4 sm:px-6 lg:px-8 flex items-center justify-between fixed top-0 left-0 right-0 lg:left-64 z-30 shadow-xs transition-all font-sans"
     >
       
       {/* Left: Mobile Hamburger & Clinic Brand */}
@@ -119,10 +119,10 @@ export const AdminTopbar = ({ onToggleSidebar }) => {
 
         <Link to="/admin" className="flex items-center gap-2 group">
           <div className="flex flex-col leading-none">
-            <span className="font-serif font-black text-sm sm:text-base tracking-tight text-slate-900 whitespace-nowrap">
+            <span className="font-sans font-black text-sm sm:text-base tracking-tight text-slate-900 whitespace-nowrap">
               <span className="text-amber-500 italic">Dr. </span>Bharathi's
             </span>
-            <span className="text-[8.5px] sm:text-[9.5px] font-serif tracking-[0.18em] text-brandOrange-600 font-extrabold uppercase mt-0.5 whitespace-nowrap">
+            <span className="text-[8.5px] sm:text-[9.5px] font-sans tracking-[0.18em] text-brandOrange-600 font-extrabold uppercase mt-0.5 whitespace-nowrap">
               HOMEO CARE
             </span>
           </div>

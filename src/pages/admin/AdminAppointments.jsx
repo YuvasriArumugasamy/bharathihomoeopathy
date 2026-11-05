@@ -172,7 +172,7 @@ export const AdminAppointments = () => {
         
         <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
           <div>
-            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-sans italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
               Clinical Consultations & Appointments
             </h1>
             <div className="flex items-center gap-2 mt-1.5 justify-center sm:justify-start">

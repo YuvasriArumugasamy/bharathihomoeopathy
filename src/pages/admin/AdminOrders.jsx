@@ -243,7 +243,7 @@ export const AdminOrders = () => {
   };
 
   return (
-    <div className={`space-y-6 pb-12 font-serif ${invoiceModalOrder ? 'print:hidden' : ''}`}>
+    <div className={`space-y-6 pb-12 font-sans ${invoiceModalOrder ? 'print:hidden' : ''}`}>
       
       {/* 1. Hero Header Banner */}
       <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
@@ -252,7 +252,7 @@ export const AdminOrders = () => {
         
         <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left w-full">
           <div>
-            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-sans italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
               Orders & Prescription Fulfillment
             </h1>
             <div className="flex items-center gap-2 mt-1.5 justify-center sm:justify-start">

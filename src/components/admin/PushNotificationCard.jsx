@@ -183,7 +183,7 @@ export default function PushNotificationCard() {
   };
 
   return (
-    <div className="bg-gradient-to-r from-orange-50 via-amber-50 to-orange-100/60 border border-brandOrange-200/90 rounded-[2rem] p-4 sm:p-7 shadow-[0_4px_25px_-4px_rgba(234,88,12,0.10)] flex flex-col md:flex-row items-start md:items-center justify-between gap-5 sm:gap-6 font-serif">
+    <div className="bg-gradient-to-r from-orange-50 via-amber-50 to-orange-100/60 border border-brandOrange-200/90 rounded-[2rem] p-4 sm:p-7 shadow-[0_4px_25px_-4px_rgba(234,88,12,0.10)] flex flex-col md:flex-row items-start md:items-center justify-between gap-5 sm:gap-6 font-sans">
       <div className="flex-1 space-y-3 sm:space-y-2 w-full">
         <div className="flex items-start sm:items-center gap-3">
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl shrink-0 bg-gradient-to-tr from-brandOrange-500 to-amber-500 text-white flex items-center justify-center shadow-lg shadow-orange-500/25">

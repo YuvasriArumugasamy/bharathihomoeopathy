@@ -704,7 +704,7 @@ export const AdminDashboard = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in font-serif">
+    <div className="space-y-8 animate-fade-in font-sans">
 
       {/* Push Notification Banner */}
       {showNotificationBanner && (
@@ -739,7 +739,7 @@ export const AdminDashboard = () => {
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight font-display">
               {getGreeting()}, Dr. Bharathi
             </h1>
-            <p className="text-slate-600 text-sm sm:text-base max-w-2xl font-serif">
+            <p className="text-slate-600 text-sm sm:text-base max-w-2xl font-sans">
               Live operational dispensary metrics, consultations, and patient order flow across Tamil Nadu.
             </p>
           </div>

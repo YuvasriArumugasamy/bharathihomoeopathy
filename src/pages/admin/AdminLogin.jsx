@@ -89,7 +89,7 @@ export const AdminLogin = () => {
 
   return (
     <div 
-      className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 overflow-x-hidden bg-cover bg-center font-serif"
+      className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 overflow-x-hidden bg-cover bg-center font-sans"
       style={{ backgroundImage: `url(${assets.paperBg})` }}
     >
 
@@ -110,7 +110,7 @@ export const AdminLogin = () => {
           
           {/* Header Titles on top of white space */}
           <div className="text-center mb-4">
-            <h1 className="text-slate-900 font-serif text-2xl sm:text-3xl font-extrabold tracking-wide mb-1">
+            <h1 className="text-slate-900 font-sans text-2xl sm:text-3xl font-extrabold tracking-wide mb-1">
               Admin Portal
             </h1>
             <p className="text-slate-600 text-xs sm:text-sm font-medium">

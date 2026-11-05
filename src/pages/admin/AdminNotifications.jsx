@@ -127,7 +127,7 @@ export const AdminNotifications = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12 font-serif">
+    <div className="space-y-6 pb-12 font-sans">
       
       {/* Clear Confirmation Modal */}
       {showClearConfirmModal && (
@@ -179,7 +179,7 @@ export const AdminNotifications = () => {
         
         <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-5 text-center sm:text-left">
           <div>
-            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-sans italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
               Dispensary & Clinic Alerts
             </h1>
             <p className="text-white/90 text-xs sm:text-sm font-sans mt-1">

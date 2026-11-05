@@ -251,7 +251,7 @@ export const AdminBrands = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12 font-serif">
+    <div className="space-y-6 pb-12 font-sans">
       
       {/* 1. Hero Header Banner */}
       <div className="relative overflow-hidden bg-gradient-to-r from-[#ff4e50] via-[#f97316] to-[#f9d423] p-6 sm:p-8 lg:p-9 rounded-[2.25rem] border border-white/30 shadow-2xl shadow-orange-500/20 text-white mb-8">
@@ -264,7 +264,7 @@ export const AdminBrands = () => {
               <Award className="w-3.5 h-3.5 text-amber-200" />
               <span>Manufacturer Directory</span>
             </div>
-            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+            <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-wide font-sans italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
               Brand / Manufacturer Management
             </h1>
             <p className="text-white/90 text-xs sm:text-sm mt-1 max-w-xl">
@@ -422,7 +422,7 @@ export const AdminBrands = () => {
           <div className="w-16 h-16 rounded-3xl bg-brandOrange-50 text-brandOrange-600 flex items-center justify-center mx-auto shadow-inner">
             <Award className="w-8 h-8" />
           </div>
-          <h3 className="font-extrabold text-slate-900 text-lg font-serif">
+          <h3 className="font-extrabold text-slate-900 text-lg font-sans">
             {search ? 'No matching brands found' : 'No Brands Added Yet'}
           </h3>
           <p className="text-xs text-slate-500 max-w-md mx-auto">

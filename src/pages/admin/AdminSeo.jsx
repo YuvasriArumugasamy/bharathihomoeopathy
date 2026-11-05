@@ -86,7 +86,7 @@ export const AdminSeo = () => {
               <Sparkles className="w-3.5 h-3.5 text-amber-200" />
               <span>100% Search Engine Optimization Suite</span>
             </div>
-            <h1 className="font-heading text-xl sm:text-3xl lg:text-4xl font-black tracking-wide font-serif italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+            <h1 className="font-heading text-xl sm:text-3xl lg:text-4xl font-black tracking-wide font-sans italic text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
               SEO & Indexing Management
             </h1>
           </div>
