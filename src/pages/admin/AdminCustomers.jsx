@@ -397,10 +397,16 @@ export const AdminCustomers = () => {
         </div>
       </div>
 
-      {/* Patient Profile Drawer */}
+      {/* Patient Profile Centered Modal */}
       {selectedCustomer && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-end bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-md h-full overflow-y-auto p-7 sm:p-9 space-y-6 shadow-2xl flex flex-col justify-between border-l border-slate-100">
+        <div 
+          onClick={() => setSelectedCustomer(null)}
+          className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6 bg-navy-950/60 backdrop-blur-sm animate-in fade-in duration-200"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-md max-h-[90vh] overflow-y-auto rounded-[2.5rem] p-6 sm:p-8 space-y-6 shadow-2xl shadow-navy-950/30 border border-slate-200/90 animate-in zoom-in-95 duration-200 flex flex-col justify-between"
+          >
             
             <div className="space-y-6">
               
