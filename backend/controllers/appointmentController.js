@@ -142,3 +142,29 @@ export const updateAppointmentStatus = async (req, res, next) => {
     next(error);
   }
 };
+
+export const clearAllAppointments = async (req, res, next) => {
+  try {
+    const result = await Appointment.deleteMany({});
+    res.status(200).json({
+      success: true,
+      message: 'All appointments cleared from Cloud database',
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteAppointment = async (req, res, next) => {
+  try {
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const apt = await Appointment.findOneAndDelete(isMongoId ? { _id: req.params.id } : { appointmentId: req.params.id });
+    if (!apt) {
+      return res.status(404).json({ success: false, message: 'Appointment not found' });
+    }
+    res.status(200).json({ success: true, message: 'Appointment deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};

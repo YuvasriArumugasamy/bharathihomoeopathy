@@ -287,3 +287,29 @@ export const updatePaymentStatus = async (req, res, next) => {
     next(error);
   }
 };
+
+export const clearAllOrders = async (req, res, next) => {
+  try {
+    const result = await Order.deleteMany({});
+    res.status(200).json({
+      success: true,
+      message: 'All orders cleared from Cloud database',
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteOrder = async (req, res, next) => {
+  try {
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const order = await Order.findOneAndDelete(isMongoId ? { _id: req.params.id } : { $or: [{ orderNumber: req.params.id }, { id: req.params.id }] });
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+    res.status(200).json({ success: true, message: 'Order deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};

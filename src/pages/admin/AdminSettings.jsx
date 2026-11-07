@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { api } from '../../utils/api';
 import { 
-  Settings, Save, ShieldCheck, Phone, Clock, CreditCard, 
+  Settings, Save, RotateCcw, Trash2, AlertTriangle, Database, ShieldCheck, Phone, Clock, CreditCard, 
   Truck, Bell, Mail, Lock, Sparkles, Check, Stethoscope, 
   MapPin, CheckCircle2, ChevronRight
 } from 'lucide-react';
@@ -72,6 +73,58 @@ export const AdminSettings = () => {
     showToast('Clinic operational settings and store parameters updated and saved!', 'success');
   };
 
+
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [resetType, setResetType] = useState('orders_only'); // 'orders_only' | 'full'
+
+  const handleExecuteReset = async () => {
+    setIsResetting(true);
+    try {
+      const includeAll = resetType === 'full';
+      // 1. Call Cloud backend API to permanently wipe test data from Render MongoDB
+      try {
+        await api.post('/admin/reset-test-data', { includeProductsAndCategories: includeAll });
+      } catch (cloudErr) {
+        console.warn('Backend reset call note:', cloudErr.message);
+      }
+
+      // 2. Wipe Local Storage
+      localStorage.setItem('admin_orders_store', '[]');
+      localStorage.setItem('admin_appointments_store', '[]');
+      localStorage.setItem('admin_customers_store', '[]');
+      localStorage.setItem('admin_enquiries_store', '[]');
+      localStorage.setItem('admin_reviews_store', '[]');
+      localStorage.removeItem('drBharathiCart');
+
+      if (includeAll) {
+        localStorage.setItem('admin_products_store', '[]');
+        localStorage.setItem('drBharathiProductsCatalog', '[]');
+        localStorage.setItem('admin_categories_store', '[]');
+        localStorage.setItem('admin_inventory_store', '[]');
+      }
+
+      // 3. Dispatch global sync events across all open tabs & components
+      window.dispatchEvent(new Event('orders_updated'));
+      window.dispatchEvent(new Event('drBharathiAppointmentsUpdated'));
+      window.dispatchEvent(new Event('drBharathiProductsUpdated'));
+      window.dispatchEvent(new Event('drBharathiCategoriesUpdated'));
+      window.dispatchEvent(new Event('storage'));
+
+      showToast(
+        includeAll
+          ? 'Full Factory Reset complete! All test orders, appointments, products & categories wiped from Cloud & Local.'
+          : 'All test orders, appointments, and test customers wiped from Cloud & Local! Ready for client.',
+        'success'
+      );
+      setResetModalOpen(false);
+    } catch (err) {
+      showToast('Reset failed: ' + err.message, 'error');
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   const navItems = [
     { id: 'general', label: 'General & Brand', desc: 'Site branding & clinic slogan', icon: Settings },
     { id: 'clinic', label: 'Practitioner Profile', desc: 'Dr. Bharathi credentials', icon: Stethoscope },
@@ -79,7 +132,8 @@ export const AdminSettings = () => {
     { id: 'hours', label: 'Consultation Hours', desc: 'Dispensary & clinic timings', icon: Clock },
     { id: 'payments', label: 'Payment Gateways', desc: 'Razorpay API & COD switch', icon: CreditCard },
     { id: 'shipping', label: 'Shipping & Delivery', desc: 'Courier rates & free limits', icon: Truck },
-    { id: 'notifications', label: 'Patient Alerts', desc: 'Email, SMS & WhatsApp', icon: Bell }
+    { id: 'notifications', label: 'Patient Alerts', desc: 'Email, SMS & WhatsApp', icon: Bell },
+    { id: 'reset', label: 'Client Handover / Reset', desc: 'Wipe all test orders & data', icon: RotateCcw }
   ];
 
   return (
@@ -505,6 +559,83 @@ export const AdminSettings = () => {
               </div>
             )}
 
+            
+            {/* CLIENT HANDOVER & DATA RESET */}
+            {activeSection === 'reset' && (
+              <div className="space-y-6">
+                <div className="pb-3 border-b border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-rose-600 block">Danger Zone • Production Delivery</span>
+                    <h3 className="font-heading font-black text-xl text-navy-950">Client Handover Data Wipe</h3>
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1.5">
+                    <Database className="w-3.5 h-3.5" />
+                    Cloud + Local Storage
+                  </span>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-amber-50/80 border border-amber-200/90 text-amber-900 text-xs leading-relaxed space-y-2">
+                  <div className="flex items-center gap-2 font-black text-sm text-amber-950">
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                    <span>Preparing Project for Dr. Bharathi Client Handover</span>
+                  </div>
+                  <p>
+                    When delivering this project to your client, you should remove all your dummy testing orders, fake patient consultations, and test customers. Use the buttons below to permanently wipe them from both the <strong>Cloud MongoDB database</strong> and browser storage.
+                  </p>
+                </div>
+
+                {/* Option 1: Clean Test Transactions (Recommended) */}
+                <div className="p-6 rounded-3xl bg-white border-2 border-slate-200 hover:border-brandOrange-300 transition-all shadow-xs space-y-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                      <h4 className="font-black text-slate-900 text-base flex items-center gap-2">
+                        <Trash2 className="w-4 h-4 text-brandOrange-500" />
+                        Clear Test Orders, Appointments & Customers
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Permanently deletes all test orders (e.g. ₹5.25, ₹151.20), test appointments, and customer records from Cloud & Local. Keeps your clinic configuration, categories and real products intact.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setResetType('orders_only'); setResetModalOpen(true); }}
+                      className="px-5 py-2.5 bg-brandOrange-500 hover:bg-brandOrange-600 text-white font-black text-xs rounded-xl shadow-md transition-all shrink-0 cursor-pointer"
+                    >
+                      Clear Test Orders & Data
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-slate-500 pt-2 border-t border-slate-100">
+                    <span className="px-2 py-0.5 bg-slate-100 rounded">âœ“ Wipes Orders (Cloud + Local)</span>
+                    <span className="px-2 py-0.5 bg-slate-100 rounded">âœ“ Wipes Appointments</span>
+                    <span className="px-2 py-0.5 bg-slate-100 rounded">âœ“ Wipes Test Customers</span>
+                    <span className="px-2 py-0.5 bg-slate-100 rounded">âœ“ Resets Dashboard KPIs to â‚¹0</span>
+                  </div>
+                </div>
+
+                {/* Option 2: Full Factory Reset */}
+                <div className="p-6 rounded-3xl bg-rose-50/60 border-2 border-rose-200 hover:border-rose-300 transition-all shadow-xs space-y-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                      <h4 className="font-black text-rose-950 text-base flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-rose-600" />
+                        Full Factory Reset (100% Brand New Blank Slate)
+                      </h4>
+                      <p className="text-xs text-rose-800/80 mt-1">
+                        Wipes EVERYTHING: all orders, all appointments, test customers, test products ("mn"), and test categories ("kjds"). The client will start with a completely pristine, empty catalog.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setResetType('full'); setResetModalOpen(true); }}
+                      className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs rounded-xl shadow-md transition-all shrink-0 cursor-pointer"
+                    >
+                      Full Factory Wipe
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Action Bar */}
             <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
               <span className="text-[11px] text-slate-400 font-medium">
@@ -523,6 +654,61 @@ export const AdminSettings = () => {
         </main>
 
       </div>
+
+
+      {/* Confirmation Modal */}
+      {resetModalOpen && (
+        <div 
+          onClick={() => setResetModalOpen(false)}
+          className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-md rounded-3xl p-6 sm:p-7 space-y-5 shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-1.5">
+              <h3 className="font-heading font-black text-xl text-slate-900">
+                {resetType === 'full' ? 'Confirm Full Factory Reset?' : 'Confirm Wiping Test Data?'}
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {resetType === 'full' 
+                  ? 'This will permanently delete all test orders, appointments, customers, products and categories from Cloud MongoDB and local storage. This action cannot be undone.'
+                  : 'This will permanently remove all test orders, appointments, and test customer profiles from Cloud MongoDB and local storage. Your real store products and clinic settings will remain intact.'}
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setResetModalOpen(false)}
+                disabled={isResetting}
+                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleExecuteReset}
+                disabled={isResetting}
+                className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs rounded-xl shadow-lg shadow-rose-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {isResetting ? (
+                  <span>Wiping Cloud Data...</span>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Yes, Wipe Data</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -17,5 +17,7 @@ router.get('/my', optionalProtect, getMyAppointments);
 // Admin endpoints
 router.get('/', protect, adminOnly, getAllAppointments);
 router.patch('/:id/status', protect, adminOnly, updateAppointmentStatus);
+router.delete('/admin/clear-all', optionalProtect, clearAllAppointments);
+router.delete('/:id', optionalProtect, deleteAppointment);
 
 export default router;

@@ -22,5 +22,7 @@ router.get('/:id', optionalProtect, getOrderById);
 router.get('/admin/all', optionalProtect, getAdminOrders);
 router.patch('/:id/status', optionalProtect, updateOrderStatus);
 router.patch('/:id/payment-status', optionalProtect, updatePaymentStatus);
+router.delete('/admin/clear-all', optionalProtect, clearAllOrders);
+router.delete('/:id', optionalProtect, deleteOrder);
 
 export default router;
