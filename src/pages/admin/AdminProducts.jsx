@@ -42,6 +42,17 @@ const handleProductImageError = (event, product) => {
   }
 };
 
+
+const getProductSize = (p) => {
+  if (!p) return '30 ml';
+  if (p.size && String(p.size).trim()) return String(p.size).trim();
+  if (p.volume && String(p.volume).trim()) return String(p.volume).trim();
+  if (p.weight && String(p.weight).trim()) return `${p.weight}${p.unit || 'g'}`;
+  const match = (p.name || '').match(/\(([^)]+ml|[^)]+g|[^)]+mg|[^)]+CH|[^)]+X)\)/i);
+  if (match && match[1]) return match[1];
+  return '30 ml';
+};
+
 export const AdminProducts = () => {
   const { showToast } = useToast();
   const [products, setProducts] = useState([]);
@@ -49,6 +60,50 @@ export const AdminProducts = () => {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');
+
+  const [stockOutModalOpen, setStockOutModalOpen] = useState(false);
+  const [quickRestockMap, setQuickRestockMap] = useState({});
+
+  const outOfStockProducts = (products || []).filter(p => {
+    const s = Number(p.stock);
+    return isNaN(s) || s <= 0 || p.status === 'Out of Stock';
+  });
+
+  const handleQuickRestock = async (productId, newStockValue) => {
+    const qty = Number(newStockValue);
+    if (isNaN(qty) || qty <= 0) {
+      showToast('Please enter a valid stock quantity greater than 0', 'warning');
+      return;
+    }
+
+    try {
+      const prod = products.find(p => (p.id && p.id === productId) || (p._id && p._id === productId));
+      if (!prod) return;
+
+      const updated = {
+        ...prod,
+        stock: qty,
+        status: 'Active'
+      };
+
+      await productService.updateAdminProduct(productId, updated);
+      setProducts(prev => prev.map(p => {
+        const isMatch = (p.id && p.id === productId) || (p._id && p._id === productId);
+        return isMatch ? updated : p;
+      }));
+
+      setQuickRestockMap(prev => {
+        const copy = { ...prev };
+        delete copy[productId];
+        return copy;
+      });
+
+      showToast(`Restocked "${prod.name}" with ${qty} units and marked Active!`, 'success');
+    } catch (err) {
+      showToast('Failed to update stock: ' + err.message, 'error');
+    }
+  };
+
   const [filterBestSellerOnly, setFilterBestSellerOnly] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -328,6 +383,124 @@ export const AdminProducts = () => {
           </div>
         </div>
       </div>
+
+      
+      {/* ⚠️ Urgent Stock Out Alert Banner (Directly Above Search Bar) */}
+      {outOfStockProducts.length > 0 && (
+        <div className="bg-gradient-to-r from-rose-500/10 via-amber-500/10 to-orange-500/10 border-2 border-rose-300/80 rounded-[2rem] p-5 sm:p-6 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-rose-500 text-white flex items-center justify-center font-black shadow-md shadow-rose-500/30 shrink-0">
+                <AlertTriangle className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-heading font-black text-slate-900 text-base">
+                    Stock Out Alerts
+                  </h3>
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-rose-600 text-white shadow-2xs">
+                    {outOfStockProducts.length} Sold Out
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 font-medium mt-0.5">
+                  These remedies have 0 inventory. Update stock and bottle size so patients can order online.
+                </p>
+              </div>
+            </div>
+
+            {outOfStockProducts.length > 5 && (
+              <button
+                type="button"
+                onClick={() => setStockOutModalOpen(true)}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs rounded-xl shadow-md shadow-rose-600/25 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+              >
+                <span>View All & Restock ({outOfStockProducts.length})</span>
+                <ArrowUpRight className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Up to 5 Items Display */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            {outOfStockProducts.slice(0, 5).map((prod) => {
+              const pId = prod.id || prod._id;
+              const prodSize = getProductSize(prod);
+              const currentVal = quickRestockMap[pId] !== undefined ? quickRestockMap[pId] : 20;
+
+              return (
+                <div 
+                  key={pId} 
+                  className="bg-white rounded-2xl border border-rose-200/90 p-3.5 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-rose-300 transition-all space-y-2.5"
+                >
+                  <div className="flex items-start gap-2.5">
+                    <img
+                      src={prod.image || getProductImageFallback(prod)}
+                      alt={prod.name}
+                      onError={(event) => handleProductImageError(event, prod)}
+                      className="w-11 h-11 rounded-xl object-cover bg-slate-50 border border-slate-200 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-bold text-slate-900 text-xs truncate" title={prod.name}>
+                        {prod.name}
+                      </h4>
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-black text-[10px] tracking-wide">
+                          Size: {prodSize}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 space-y-2">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="font-black text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">
+                        0 Units Left
+                      </span>
+                      <span className="font-mono text-slate-400">
+                        {prod.sku || ''}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="number"
+                        min="1"
+                        value={currentVal}
+                        onChange={(e) => setQuickRestockMap(prev => ({ ...prev, [pId]: e.target.value }))}
+                        className="w-14 p-1.5 bg-slate-50 border border-slate-300 rounded-lg font-black text-center text-xs focus:outline-none focus:border-brandOrange-500"
+                        title="Enter units to add"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleQuickRestock(pId, currentVal)}
+                        className="flex-1 py-1.5 bg-slate-900 hover:bg-emerald-600 text-white text-[11px] font-bold rounded-lg transition-colors cursor-pointer text-center"
+                      >
+                        + Restock
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* If more than 5, 5th slot or card opens popup */}
+            {outOfStockProducts.length > 5 && (
+              <div 
+                onClick={() => setStockOutModalOpen(true)}
+                className="bg-rose-50/80 hover:bg-rose-100/80 border-2 border-dashed border-rose-300 rounded-2xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition-all group min-h-[140px]"
+              >
+                <Boxes className="w-6 h-6 text-rose-500 mb-1 group-hover:scale-110 transition-transform" />
+                <span className="font-black text-rose-900 text-xs">
+                  +{outOfStockProducts.length - 5} More Sold Out
+                </span>
+                <span className="text-[10px] text-rose-600 font-bold mt-1 underline">
+                  Open Restock Popup â†’
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 2. Filter & Command Bar */}
       <div className="bg-white/95 backdrop-blur-sm p-4 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
@@ -728,7 +901,7 @@ export const AdminProducts = () => {
                 </select>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1.5">Regular Price (₹)</label>
                   <input
