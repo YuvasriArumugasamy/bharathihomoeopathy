@@ -3,7 +3,9 @@ import {
   createAppointment,
   getMyAppointments,
   getAllAppointments,
-  updateAppointmentStatus
+  updateAppointmentStatus,
+  clearAllAppointments,
+  deleteAppointment
 } from '../controllers/appointmentController.js';
 import { protect, optionalProtect } from '../middleware/authMiddleware.js';
 import { adminOnly } from '../middleware/adminMiddleware.js';
