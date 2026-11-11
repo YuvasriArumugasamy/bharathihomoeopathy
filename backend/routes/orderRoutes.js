@@ -5,7 +5,9 @@ import {
   getOrderById,
   getAdminOrders,
   updateOrderStatus,
-  updatePaymentStatus
+  updatePaymentStatus,
+  clearAllOrders,
+  deleteOrder
 } from '../controllers/orderController.js';
 import { protect, optionalProtect } from '../middleware/authMiddleware.js';
 import { adminOnly } from '../middleware/adminMiddleware.js';
