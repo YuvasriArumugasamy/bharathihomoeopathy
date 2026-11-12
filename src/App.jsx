@@ -45,6 +45,8 @@ import { AdminEnquiries } from './pages/admin/AdminEnquiries';
 import { AdminSeo } from './pages/admin/AdminSeo';
 import { AdminSettings } from './pages/admin/AdminSettings';
 import { AdminNotifications } from './pages/admin/AdminNotifications';
+import { AdminVisitors } from './pages/admin/AdminVisitors';
+import { useVisitorTracker } from './hooks/useVisitorTracker';
 import { useFCM } from './hooks/useFCM';
 
 export default function App() {
@@ -52,6 +54,9 @@ export default function App() {
 
   // Initialize Firebase Cloud Messaging Push Notifications
   useFCM();
+
+  // Automatic Anonymous Visitor Tracking on public pages
+  useVisitorTracker();
 
   React.useEffect(() => {
     const isPathAdmin = location.pathname.toLowerCase().startsWith('/admin');
@@ -151,6 +156,7 @@ export default function App() {
         <Route path="seo" element={<Navigate to="/admin" replace />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="notifications" element={<AdminNotifications />} />
+        <Route path="visitors" element={<AdminVisitors />} />
       </Route>
 
       {/* 404 Fallback */}

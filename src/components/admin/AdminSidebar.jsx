@@ -15,7 +15,8 @@ import {
   Settings,
   Bell, 
   X, 
-  LogOut
+  LogOut,
+  Globe
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import assets from '../../assets';
@@ -28,6 +29,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
       title: 'Overview',
       items: [
         { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, end: true },
+        { name: 'Website Visitors', path: '/admin/visitors', icon: Globe },
       ]
     },
     {

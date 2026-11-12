@@ -22,6 +22,7 @@ import blogRoutes from './routes/blogRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import brandRoutes from './routes/brandRoutes.js';
+import visitorRoutes from './routes/visitorRoutes.js';
 import { resetTestData } from './controllers/adminController.js';
 import { optionalProtect } from './middleware/authMiddleware.js';
 
@@ -77,6 +78,7 @@ app.use('/api/blogs', blogRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/brands', brandRoutes);
+app.use('/api/visitors', visitorRoutes);
 app.post('/api/admin/reset-test-data', optionalProtect, resetTestData);
 
 // Error Handling Middlewares
