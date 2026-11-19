@@ -26,10 +26,21 @@ export const visitorService = {
         localStorage.setItem('dr_bharathi_vid', visitorKey);
       }
 
-      // Store visitor session in Firebase Firestore
+      // Get visitor IP address
+      let ipAddress = 'unknown';
+      try {
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        ipAddress = ipData.ip;
+      } catch (err) {
+        console.warn('Could not fetch IP:', err);
+      }
+
+      // Store visitor session in Firebase Firestore with IP
       const visitorsRef = collection(db, 'visitors');
       await addDoc(visitorsRef, {
         visitorKey,
+        ipAddress, // Real IP address
         path: pathname,
         timestamp: Timestamp.now(),
         date: new Date().toISOString().split('T')[0], // YYYY-MM-DD for easy filtering
@@ -74,47 +85,56 @@ export const visitorService = {
       const snapshot = await getDocs(q);
       const allVisits = [];
       const uniqueVisitorsByDate = {};
+      const uniqueIPsByDate = {};
 
       snapshot.forEach((doc) => {
         const data = doc.data();
         const date = data.date || data.timestamp.toDate().toISOString().split('T')[0];
         allVisits.push({ ...data, date });
 
-        // Track unique visitors per day
+        // Track unique visitor keys per day
         if (!uniqueVisitorsByDate[date]) {
           uniqueVisitorsByDate[date] = new Set();
         }
         uniqueVisitorsByDate[date].add(data.visitorKey);
+
+        // Track unique IPs per day (for accurate visitor count)
+        if (!uniqueIPsByDate[date]) {
+          uniqueIPsByDate[date] = new Set();
+        }
+        if (data.ipAddress && data.ipAddress !== 'unknown') {
+          uniqueIPsByDate[date].add(data.ipAddress);
+        }
       });
 
-      // Calculate summary cards
+      // Calculate summary cards using unique IPs
       const todayStr = today.toISOString().split('T')[0];
-      const visitorsToday = uniqueVisitorsByDate[todayStr]?.size || 0;
+      const visitorsToday = uniqueIPsByDate[todayStr]?.size || 0;
 
-      const visitorsThisWeek = Object.entries(uniqueVisitorsByDate)
+      const visitorsThisWeek = Object.entries(uniqueIPsByDate)
         .filter(([date]) => new Date(date) >= weekAgo)
-        .reduce((sum, [, visitors]) => sum + visitors.size, 0);
+        .reduce((sum, [, ips]) => sum + ips.size, 0);
 
-      const visitorsThisMonth = Object.entries(uniqueVisitorsByDate)
+      const visitorsThisMonth = Object.entries(uniqueIPsByDate)
         .filter(([date]) => new Date(date) >= monthStart)
-        .reduce((sum, [, visitors]) => sum + visitors.size, 0);
+        .reduce((sum, [, ips]) => sum + ips.size, 0);
 
-      const visitorsLastMonth = Object.entries(uniqueVisitorsByDate)
+      const visitorsLastMonth = Object.entries(uniqueIPsByDate)
         .filter(([date]) => {
           const d = new Date(date);
           return d >= lastMonthStart && d <= lastMonthEnd;
         })
-        .reduce((sum, [, visitors]) => sum + visitors.size, 0);
+        .reduce((sum, [, ips]) => sum + ips.size, 0);
 
-      const visitorsLast6Months = Object.entries(uniqueVisitorsByDate)
+      const visitorsLast6Months = Object.entries(uniqueIPsByDate)
         .filter(([date]) => new Date(date) >= sixMonthsAgo)
-        .reduce((sum, [, visitors]) => sum + visitors.size, 0);
+        .reduce((sum, [, ips]) => sum + ips.size, 0);
 
-      // Generate period chart data
-      const days = generatePeriodData(period, year, uniqueVisitorsByDate);
+      // Generate period chart data (using unique IPs)
+      const days = generatePeriodData(period, year, uniqueIPsByDate);
       
-      // Generate year chart data (12 months)
-      const yearDays = generateYearData(year, uniqueVisitorsByDate);
+      // Generate year chart data (12 months using unique IPs)
+      const yearDays = generateYearData(year, uniqueIPsByDate);
 
       return {
         success: true,
@@ -151,7 +171,7 @@ export const visitorService = {
 };
 
 // Helper: Generate chart data for selected period
-function generatePeriodData(period, year, uniqueVisitorsByDate) {
+function generatePeriodData(period, year, uniqueIPsByDate) {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
@@ -169,7 +189,7 @@ function generatePeriodData(period, year, uniqueVisitorsByDate) {
     for (let i = 6; i >= 0; i--) {
       const date = new Date(currentYear, currentMonth, now.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
-      const visitors = uniqueVisitorsByDate[dateStr]?.size || 0;
+      const visitors = uniqueIPsByDate[dateStr]?.size || 0;
       days.push({ 
         label: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }), 
         visitors 
@@ -181,19 +201,19 @@ function generatePeriodData(period, year, uniqueVisitorsByDate) {
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentYear, currentMonth, day);
       const dateStr = date.toISOString().split('T')[0];
-      const visitors = uniqueVisitorsByDate[dateStr]?.size || 0;
+      const visitors = uniqueIPsByDate[dateStr]?.size || 0;
       days.push({ label: `${day}`, visitors });
     }
   } else if (period === 'year') {
     // 12 months of selected year
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     for (let month = 0; month < 12; month++) {
-      const visitors = Object.entries(uniqueVisitorsByDate)
+      const visitors = Object.entries(uniqueIPsByDate)
         .filter(([date]) => {
           const d = new Date(date);
           return d.getFullYear() === year && d.getMonth() === month;
         })
-        .reduce((sum, [, visitors]) => sum + visitors.size, 0);
+        .reduce((sum, [, ips]) => sum + ips.size, 0);
       
       days.push({ label: monthNames[month], visitors });
     }
@@ -203,17 +223,17 @@ function generatePeriodData(period, year, uniqueVisitorsByDate) {
 }
 
 // Helper: Generate year overview (12 months)
-function generateYearData(year, uniqueVisitorsByDate) {
+function generateYearData(year, uniqueIPsByDate) {
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const yearDays = [];
 
   for (let month = 0; month < 12; month++) {
-    const visitors = Object.entries(uniqueVisitorsByDate)
+    const visitors = Object.entries(uniqueIPsByDate)
       .filter(([date]) => {
         const d = new Date(date);
         return d.getFullYear() === year && d.getMonth() === month;
       })
-      .reduce((sum, [, visitors]) => sum + visitors.size, 0);
+      .reduce((sum, [, ips]) => sum + ips.size, 0);
     
     yearDays.push({ label: monthNames[month], visitors });
   }

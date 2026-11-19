@@ -129,11 +129,12 @@ Firebase requires a composite index for the visitor queries.
 
 ### Collection: `visitors`
 
-Each document represents one page view:
+Each document represents one page view with real IP address:
 
 ```javascript
 {
   visitorKey: "vid_abc123xyz_1a2b3c4d5",
+  ipAddress: "103.156.19.45", // Real visitor IP address
   path: "/",
   timestamp: Timestamp(2026-11-19 10:30:45),
   date: "2026-11-19",
@@ -142,7 +143,8 @@ Each document represents one page view:
 ```
 
 **Fields:**
-- `visitorKey` - Unique localStorage ID (privacy-safe, no PII)
+- `visitorKey` - Unique localStorage ID (backup identification)
+- `ipAddress` - **Real IP address of visitor** (primary tracking)
 - `path` - Page visited (e.g., "/", "/shop", "/about")
 - `timestamp` - Firestore timestamp (for real-time queries)
 - `date` - YYYY-MM-DD format (for easy daily grouping)
@@ -150,28 +152,41 @@ Each document represents one page view:
 
 ---
 
+## 📊 IP-Based Visitor Counting
+
+**Unique Visitors = Unique IP Addresses per Day**
+
+- Same IP multiple times = 1 visitor
+- Different IPs = Multiple visitors
+- Accurate count even with VPN changes
+- Real-time IP tracking via ipify.org API
+
+**Example:**
+- User visits from IP `103.156.19.45` at 10 AM → Count: 1
+- Same user visits again from same IP at 2 PM → Count: Still 1
+- Different user from IP `103.156.19.46` at 3 PM → Count: 2
+
+---
+
 ## 🔐 Privacy & GDPR Compliance
 
-### ✅ Privacy-Safe Design
+### ⚠️ IP Address Tracking Note
 
 **What We Track:**
-- Random visitor ID (localStorage)
-- Page path visited
-- Date/time of visit
+- ✅ Real IP addresses (for accurate visitor counting)
+- ✅ Page path visited
+- ✅ Date/time of visit
+- ✅ localStorage visitor ID (backup)
 
-**What We DON'T Track:**
-- ❌ No IP addresses
-- ❌ No personal information
-- ❌ No cookies
-- ❌ No cross-site tracking
-- ❌ No user agent details
-- ❌ No location data
+**Privacy Considerations:**
+- IP addresses are considered **Personal Data** under GDPR
+- Stored securely in Firebase Firestore
+- Used only for analytics (visitor counting)
+- Not shared with third parties
+- Retained for analytics purposes
 
-**Why It's Safe:**
-- Visitor ID is random and meaningless
-- Cannot be linked to real identity
-- localStorage-based (client-side only)
-- GDPR compliant (anonymous analytics)
+**Recommendation:**
+Add privacy policy notice: "We collect IP addresses for visitor analytics"
 
 ---
 
