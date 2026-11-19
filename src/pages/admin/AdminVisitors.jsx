@@ -13,6 +13,8 @@ import {
   Sparkles
 } from 'lucide-react';
 import { visitorService } from '../../services/visitorService';
+import { db } from '../../services/firebase';
+import { collection, onSnapshot, query, where, Timestamp } from 'firebase/firestore';
 
 // Period definitions matching the analytics schema
 const PERIODS = [
@@ -185,6 +187,25 @@ export const AdminVisitors = () => {
       setLoading(false);
     }
   };
+
+  // Real-time listener for today's visitors
+  useEffect(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const visitorsRef = collection(db, 'visitors');
+    const todayQuery = query(
+      visitorsRef,
+      where('timestamp', '>=', Timestamp.fromDate(today))
+    );
+
+    const unsubscribe = onSnapshot(todayQuery, () => {
+      // Refresh stats when new visitor tracked
+      fetchStats();
+    });
+
+    return () => unsubscribe();
+  }, [period, selectedYear]);
 
   useEffect(() => {
     fetchStats();
