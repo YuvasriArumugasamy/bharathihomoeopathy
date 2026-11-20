@@ -87,6 +87,7 @@ export const AdminVisitors = () => {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [stats, setStats] = useState({
     summaryCards: [
       { label: 'Visitors today', count: 0 },
@@ -100,14 +101,29 @@ export const AdminVisitors = () => {
 
   const fetchStats = async () => {
     setLoading(true);
+    setError(null);
+    
+    // Timeout after 10 seconds
+    const timeoutId = setTimeout(() => {
+      setError('Request timeout - Firebase may not be configured. Please check setup guide.');
+      setLoading(false);
+    }, 10000);
+    
     try {
       const data = await visitorService.getStats('year', selectedYear);
+      clearTimeout(timeoutId);
+      
       if (data && data.success) {
         setStats(data);
+      } else {
+        setError('No data available - Firebase Firestore may not be set up');
       }
     } catch (err) {
+      clearTimeout(timeoutId);
       console.error('Fetch stats failed:', err);
+      setError(err.message || 'Failed to load visitor stats');
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
@@ -224,8 +240,23 @@ export const AdminVisitors = () => {
 
         {/* Year Chart */}
         {loading ? (
-          <div className="h-64 flex items-center justify-center">
+          <div className="h-64 flex flex-col items-center justify-center gap-3">
             <RefreshCw className="w-6 h-6 animate-spin text-amber-600" />
+            <p className="text-sm text-slate-500">Loading visitor data...</p>
+          </div>
+        ) : error ? (
+          <div className="h-64 flex flex-col items-center justify-center gap-3">
+            <div className="text-red-500 text-center">
+              <p className="font-semibold">Error loading data</p>
+              <p className="text-sm mt-2">{error}</p>
+              <p className="text-xs mt-2 text-slate-500">Check browser console (F12) for details</p>
+              <button
+                onClick={fetchStats}
+                className="mt-4 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
         ) : (
           <BarChartComponent data={stats.yearDays} />
