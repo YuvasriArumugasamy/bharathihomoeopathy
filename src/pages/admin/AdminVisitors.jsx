@@ -301,10 +301,10 @@ export const AdminVisitors = () => {
             </p>
           </div>
 
-          {/* Year Display (No Dropdown) */}
-          <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl">
-            <span className="text-lg font-bold text-slate-800">{selectedYear}</span>
-            <Calendar className="w-5 h-5 text-slate-400" />
+          {/* Year Display with Calendar Icon */}
+          <div className="flex items-center gap-3 px-5 py-3 bg-white border-2 border-slate-300 rounded-2xl shadow-sm">
+            <span className="text-2xl font-bold text-slate-900">{selectedYear}</span>
+            <Calendar className="w-6 h-6 text-slate-500" />
           </div>
         </div>
 
