@@ -122,7 +122,7 @@ const BarChartComponent = ({ data = [] }) => {
   }
 
   return (
-    <div className="relative w-full h-64">
+    <div className="relative w-full h-64 overflow-hidden">
       {/* Tooltip */}
       {hoveredItem && (
         <div 
@@ -135,7 +135,7 @@ const BarChartComponent = ({ data = [] }) => {
       )}
 
       {/* Chart */}
-      <div className="h-full flex items-end justify-between gap-2 px-4">
+      <div className="h-full flex items-end justify-between gap-1.5 px-2 pb-6">
         {data.map((item, index) => {
           const heightPercent = maxValue > 0 ? (item.visitors / maxValue) * 100 : 0;
           const isHovered = hoveredItem?.index === index;
@@ -161,7 +161,7 @@ const BarChartComponent = ({ data = [] }) => {
                 }}
               />
               {/* Label */}
-              <span className={`mt-2 text-[10px] font-medium ${isHovered ? 'text-amber-600 font-bold' : 'text-slate-500'}`}>
+              <span className={`mt-2 text-[10px] font-medium whitespace-nowrap ${isHovered ? 'text-amber-600 font-bold' : 'text-slate-500'}`}>
                 {item.label}
               </span>
             </div>
