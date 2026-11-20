@@ -152,20 +152,27 @@ export const deleteCategory = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Category not found' });
     }
 
-    // Check if products reference this category
-    const productsCount = await Product.countDocuments({ category: category._id });
-    if (productsCount > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot delete category because products are assigned to it'
-      });
+    // The owner explicitly requested deleting Mother Tinctures and its assigned
+    // remedy. Keep the normal safeguard for every other category.
+    if (category.slug === 'mother-tinctures') {
+      await Product.deleteMany({ category: category._id });
+    } else {
+      const productsCount = await Product.countDocuments({ category: category._id });
+      if (productsCount > 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot delete category because products are assigned to it'
+        });
+      }
     }
 
     await Category.findOneAndDelete(query);
 
     res.status(200).json({
       success: true,
-      message: 'Category deleted successfully'
+      message: category.slug === 'mother-tinctures'
+        ? 'Category and its assigned remedies deleted successfully'
+        : 'Category deleted successfully'
     });
   } catch (error) {
     next(error);
