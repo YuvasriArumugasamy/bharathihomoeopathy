@@ -173,6 +173,8 @@ const BarChartComponent = ({ data = [] }) => {
 };
 
 export const AdminVisitors = () => {
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [stats, setStats] = useState({
@@ -215,7 +217,7 @@ export const AdminVisitors = () => {
     }, 30000); // Refresh every 30 seconds
 
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedYear]);
 
   // Total visitors in year
   const yearChartTotal = useMemo(() => {
@@ -288,7 +290,7 @@ export const AdminVisitors = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              Visitor sessions · Year 2026
+              Visitor sessions · Year {selectedYear}
               <span className="text-xs font-normal text-slate-500">
                 ({yearChartTotal} total sessions)
               </span>
@@ -296,6 +298,18 @@ export const AdminVisitors = () => {
             <p className="text-xs text-slate-400 mt-0.5">
               Monthly visitor trends comparison across all 12 months
             </p>
+          </div>
+
+          {/* Year Picker - Number Input with Up/Down Arrows */}
+          <div className="flex items-center">
+            <input
+              type="number"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              min="2020"
+              max="2030"
+              className="w-32 px-4 py-2 text-xl font-bold text-slate-900 bg-white border-2 border-slate-300 rounded-2xl text-center focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
           </div>
         </div>
 
