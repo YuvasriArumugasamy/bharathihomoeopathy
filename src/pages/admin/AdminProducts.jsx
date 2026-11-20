@@ -864,7 +864,7 @@ export const AdminProducts = () => {
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block font-bold text-slate-700">Therapeutic Category *</label>
+                    <label className="block text-xs font-bold text-slate-700">Category *</label>
                     <button
                       type="button"
                       onClick={() => {
@@ -872,20 +872,20 @@ export const AdminProducts = () => {
                         setNewCategoryImage('');
                         setQuickCategoryModalOpen(true);
                       }}
-                      className="px-2.5 py-1 bg-orange-50 hover:bg-orange-100 text-brandOrange-600 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer border border-orange-200/60"
+                      className="px-2 py-1 bg-orange-50 hover:bg-orange-100 text-brandOrange-600 rounded-lg text-[11px] font-bold transition-colors inline-flex items-center gap-1 cursor-pointer border border-orange-200/60"
                       title="Add a new category without leaving"
                     >
                       <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                      <span>Add Category</span>
+                      <span>Add</span>
                     </button>
                   </div>
                   <select
                     required
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner cursor-pointer"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner cursor-pointer"
                   >
-                    <option value="" disabled>Select a category created in Admin Categories</option>
+                    <option value="" disabled>Select category</option>
                     {categoriesList.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
