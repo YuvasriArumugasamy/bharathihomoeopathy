@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import User from '../models/User.js';
 import Category from '../models/Category.js';
+import Product from '../models/Product.js';
 
 dotenv.config();
 
@@ -39,8 +40,10 @@ export const seedInitialData = async () => {
       }
     }
 
-    // Default Categories
-    const defaultCategories = [
+    // Remove categories that older releases inserted automatically. Keep an
+    // inactive marker when products still reference one, so those products are
+    // preserved and an admin can explicitly recreate the category later.
+    const legacySeedCategories = [
       { name: 'Homeopathic Medicines', slug: 'homeopathic-medicines', description: 'Classical homeopathic dilutions, pellets, and bio-combination remedies' },
       { name: 'Mother Tinctures', slug: 'mother-tinctures', description: 'Pure concentrated botanical extract mother tinctures' },
       { name: 'Biochemic Medicines', slug: 'biochemic-medicines', description: 'Schuessler tissue cell salts and bio-combinations' },
@@ -49,13 +52,20 @@ export const seedInitialData = async () => {
       { name: 'Combo Products', slug: 'combo-products', description: 'Curated wellness remedy value packs and family wellness kits' }
     ];
 
-    for (const cat of defaultCategories) {
-      const exists = await Category.findOne({ slug: cat.slug });
-      if (!exists) {
-        await Category.create(cat);
+    for (const cat of legacySeedCategories) {
+      const seededCategory = await Category.findOne({ slug: cat.slug, description: cat.description });
+      if (!seededCategory) continue;
+
+      const productCount = await Product.countDocuments({ category: seededCategory._id });
+      if (productCount > 0) {
+        seededCategory.isActive = false;
+        seededCategory.isSeedDefault = true;
+        await seededCategory.save();
+      } else {
+        await Category.deleteOne({ _id: seededCategory._id });
       }
     }
-    console.log('[Seed] Database initial seeding verified successfully');
+    console.log('[Seed] Default category seeds removed; admin-created categories preserved.');
   } catch (err) {
     console.warn('[Seed Warning] Could not complete database seeding:', err.message);
   }

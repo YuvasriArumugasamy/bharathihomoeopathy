@@ -1,5 +1,5 @@
 import { api } from '../utils/api';
-import { initialAdminCategories } from '../data/adminCategoriesData';
+import { filterLegacySeedCategories } from '../utils/categoryDefaults';
 import { cloudSyncService } from './cloudSyncService';
 
 const CATEGORIES_STORAGE_KEY = 'admin_categories_store';
@@ -8,7 +8,7 @@ const sanitizeCategories = (cats) => {
   if (!Array.isArray(cats) || cats.length === 0) return [];
 
   // Filter out dummy/test junk categories like "kjds"
-  const cleaned = cats.filter(c => {
+  const cleaned = filterLegacySeedCategories(cats).filter(c => {
     if (!c || typeof c !== 'object') return false;
     const name = String(c.name || '').trim().toLowerCase();
     return name && name !== 'kjds' && name !== 'test' && name !== 'demo';

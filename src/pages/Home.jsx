@@ -28,6 +28,7 @@ import { useToast } from '../context/ToastContext';
 import { ProductCard } from '../components/shop/ProductCard';
 import { SectionHeader } from '../components/common/SectionHeader';
 import { ScrollReveal } from '../components/common/ScrollReveal';
+import { filterLegacySeedCategories } from '../utils/categoryDefaults';
 
 export const Home = () => {
   const { addToCart } = useCart();
@@ -50,7 +51,7 @@ export const Home = () => {
       if (raw !== null) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
-          return parsed.filter(c => c && c.name && (c.status === 'Active' || !c.status) && c.name.toLowerCase() !== 'kjds');
+          return filterLegacySeedCategories(parsed).filter(c => c && c.name && (c.status === 'Active' || !c.status) && c.name.toLowerCase() !== 'kjds');
         }
       }
     } catch {}
@@ -64,7 +65,7 @@ export const Home = () => {
         if (raw !== null) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
-            setAdminCategories(parsed.filter(c => c && c.name && (c.status === 'Active' || !c.status) && c.name.toLowerCase() !== 'kjds'));
+            setAdminCategories(filterLegacySeedCategories(parsed).filter(c => c && c.name && (c.status === 'Active' || !c.status) && c.name.toLowerCase() !== 'kjds'));
             return;
           }
         }
@@ -77,7 +78,7 @@ export const Home = () => {
 
     const unsubCloud = cloudSyncService.listenToCategories((cloudCats) => {
       if (Array.isArray(cloudCats)) {
-        setAdminCategories(cloudCats.filter(c => c && c.name && (c.status === 'Active' || !c.status) && c.name.toLowerCase() !== 'kjds'));
+        setAdminCategories(filterLegacySeedCategories(cloudCats).filter(c => c && c.name && (c.status === 'Active' || !c.status) && c.name.toLowerCase() !== 'kjds'));
       }
     });
 

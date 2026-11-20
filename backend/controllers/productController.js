@@ -18,21 +18,22 @@ const normalizeProductPayload = async (body) => {
 
   // If category is a name string instead of ObjectId
   if (payload.category && typeof payload.category === 'string') {
-    if (!mongoose.Types.ObjectId.isValid(payload.category)) {
-      let cat = await Category.findOne({
-        $or: [
-          { name: { $regex: new RegExp(`^${payload.category.trim()}$`, 'i') } },
-          { slug: payload.category.toLowerCase().replace(/[\s\W-]+/g, '-') }
-        ]
-      });
-      if (!cat) {
-        cat = await Category.create({
-          name: payload.category.trim(),
-          slug: payload.category.toLowerCase().replace(/[\s\W-]+/g, '-')
-        });
-      }
-      payload.category = cat._id;
+    const categoryQuery = mongoose.Types.ObjectId.isValid(payload.category)
+      ? { _id: payload.category, isActive: true }
+      : {
+          isActive: true,
+          $or: [
+            { name: { $regex: new RegExp(`^${payload.category.trim()}$`, 'i') } },
+            { slug: payload.category.toLowerCase().replace(/[\s\W-]+/g, '-') }
+          ]
+        };
+    const category = await Category.findOne(categoryQuery);
+    if (!category) {
+      const error = new Error('Please select an active category created in Admin Categories');
+      error.statusCode = 400;
+      throw error;
     }
+    payload.category = category._id;
   }
   return payload;
 };

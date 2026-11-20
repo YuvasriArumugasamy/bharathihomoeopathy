@@ -27,6 +27,10 @@ const categorySchema = new mongoose.Schema({
     default: true,
     index: true
   },
+  isSeedDefault: {
+    type: Boolean,
+    default: false
+  },
   sortOrder: {
     type: Number,
     default: 0

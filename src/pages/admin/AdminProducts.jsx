@@ -26,6 +26,7 @@ import { Link } from 'react-router-dom';
 import { productService } from '../../services/productService';
 import { brandService } from '../../services/brandService';
 import { useToast } from '../../context/ToastContext';
+import { filterLegacySeedCategories } from '../../utils/categoryDefaults';
 import { slugify } from '../../utils/slugify';
 import { demoProducts } from '../../data/products';
 import { resolveProductImage } from '../../utils/productStorage';
@@ -129,7 +130,7 @@ export const AdminProducts = () => {
   const [formData, setFormData] = useState({
     name: '',
     sku: '',
-    category: 'Homeopathic Medicines',
+    category: '',
     brand: '',
     regularPrice: 399,
     offerPrice: 349,
@@ -147,7 +148,7 @@ export const AdminProducts = () => {
   const [quickBrandModalOpen, setQuickBrandModalOpen] = useState(false);
   const [newBrandInput, setNewBrandInput] = useState('');
   const [newBrandDesc, setNewBrandDesc] = useState('');
-  const [categoriesList, setCategoriesList] = useState(['All', 'Homeopathic Medicines', 'Mother Tinctures', 'Biochemic Medicines', 'Wellness Products', 'Personal Care', 'Combo Products']);
+  const [categoriesList, setCategoriesList] = useState(['All']);
 
   // Load brands dynamically from admin brands store
   useEffect(() => {
@@ -175,11 +176,13 @@ export const AdminProducts = () => {
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
-            const names = parsed.map(c => c.name).filter(Boolean);
+            const names = filterLegacySeedCategories(parsed).map(c => c.name).filter(Boolean);
             setCategoriesList(['All', ...new Set(names)]);
+            return;
           }
         }
       } catch {}
+      setCategoriesList(['All']);
     };
     loadCategories();
     window.addEventListener('drBharathiCategoriesUpdated', loadCategories);
@@ -239,7 +242,7 @@ export const AdminProducts = () => {
     setFormData({
       name: '',
       sku: `HOM-${Math.floor(100 + Math.random() * 900)}`,
-      category: categoriesList.find(c => c !== 'All') || 'Homeopathic Medicines',
+      category: categoriesList.find(c => c !== 'All') || '',
       brand: '',
       regularPrice: 399,
       offerPrice: 349,
@@ -857,10 +860,12 @@ export const AdminProducts = () => {
                 <div>
                   <label className="block font-bold text-slate-700 mb-1.5">Therapeutic Category</label>
                   <select
+                    required
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner cursor-pointer"
                   >
+                    <option value="" disabled>Select a category created in Admin Categories</option>
                     {categoriesList.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>

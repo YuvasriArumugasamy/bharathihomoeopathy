@@ -6,6 +6,7 @@ import { slugify } from '../../utils/slugify';
 import { getStoredProducts, isMatchingCategory } from '../../utils/productStorage';
 import { getCategoryDisplayImage } from '../../utils/categoryImages';
 import { cloudSyncService } from '../../services/cloudSyncService';
+import { filterLegacySeedCategories } from '../../utils/categoryDefaults';
 
 export const AdminCategories = () => {
   const { showToast } = useToast();
@@ -29,7 +30,7 @@ export const AdminCategories = () => {
       if (saved !== null) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          return parsed.map((c, idx) => {
+          return filterLegacySeedCategories(parsed).map((c, idx) => {
             const id = c.id || c._id || `cat-${idx + 1}`;
             return { ...c, id, _id: c._id || id };
           });
@@ -59,7 +60,7 @@ export const AdminCategories = () => {
     const unsubscribe = cloudSyncService.listenToCategories((cloudCategories) => {
       if (!Array.isArray(cloudCategories)) return;
       cloudCategoriesReceived = true;
-      setCategories(cloudCategories.map((category, index) => {
+      setCategories(filterLegacySeedCategories(cloudCategories).map((category, index) => {
         const id = category.id || category._id || `cat-${index + 1}`;
         return { ...category, id, _id: category._id || id };
       }));

@@ -10,6 +10,7 @@ import {
   serverTimestamp 
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { filterLegacySeedCategories } from '../utils/categoryDefaults';
 import { getStoredOrders, saveStoredOrders } from "./orderService";
 import { getStoredAppointments, saveStoredAppointments } from "./appointmentService";
 
@@ -426,7 +427,11 @@ export const cloudSyncService = {
         (snap) => {
           if (snap.exists()) {
             const data = snap.data();
-            const cloudCats = Array.isArray(data?.categories) ? data.categories : [];
+            const storedCloudCats = Array.isArray(data?.categories) ? data.categories : [];
+            const cloudCats = filterLegacySeedCategories(storedCloudCats);
+            if (cloudCats.length !== storedCloudCats.length) {
+              cloudSyncService.syncCategoriesToCloud(cloudCats);
+            }
             try {
               localStorage.setItem('admin_categories_store', JSON.stringify(cloudCats));
               window.dispatchEvent(new CustomEvent('drBharathiCategoriesUpdated', { detail: cloudCats }));

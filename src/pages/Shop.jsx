@@ -27,6 +27,7 @@ import { demoProducts } from '../data/products';
 import { getStoredProducts, isMatchingCategory } from '../utils/productStorage';
 import { cloudSyncService } from '../services/cloudSyncService';
 import { brandService } from '../services/brandService';
+import { filterLegacySeedCategories } from '../utils/categoryDefaults';
 
 export const Shop = () => {
   const [allProducts, setAllProducts] = useState(() => getStoredProducts());
@@ -75,7 +76,7 @@ export const Shop = () => {
       const raw = localStorage.getItem('admin_categories_store');
       if (raw !== null) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) return filterLegacySeedCategories(parsed);
       }
     } catch {}
     return [];
@@ -88,7 +89,7 @@ export const Shop = () => {
         if (raw !== null) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) {
-            setAdminCategories(parsed);
+            setAdminCategories(filterLegacySeedCategories(parsed));
             return;
           }
         }
@@ -100,7 +101,7 @@ export const Shop = () => {
 
     const unsubCloud = cloudSyncService.listenToCategories((cloudCats) => {
       if (Array.isArray(cloudCats)) {
-        setAdminCategories(cloudCats);
+        setAdminCategories(filterLegacySeedCategories(cloudCats));
       }
     });
 

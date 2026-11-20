@@ -79,16 +79,6 @@ export const Navbar = () => {
     };
   }, []);
 
-  const categories = [
-    'Homeopathy Medicines',
-    'Mother Tinctures',
-    'Biochemic Medicines',
-    'Herbal Products',
-    'Personal Care',
-    'Combo Offers',
-    'Health Conditions'
-  ];
-
   // Real-time live suggestions
   const searchSuggestions = React.useMemo(() => {
     const q = searchQuery.trim().toLowerCase();

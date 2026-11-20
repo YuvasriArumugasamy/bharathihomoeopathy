@@ -12,6 +12,20 @@ export const createCategory = async (req, res, next) => {
 
     const existing = await Category.findOne({ slug: categorySlug });
     if (existing) {
+      if (existing.isSeedDefault) {
+        existing.name = name;
+        existing.description = description || '';
+        existing.image = image || '';
+        existing.sortOrder = sortOrder || 0;
+        existing.isActive = true;
+        existing.isSeedDefault = false;
+        await existing.save();
+        return res.status(201).json({
+          success: true,
+          message: 'Category created successfully',
+          data: existing
+        });
+      }
       return res.status(400).json({ success: false, message: 'Category slug already exists' });
     }
 
