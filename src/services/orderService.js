@@ -5,8 +5,6 @@ import { authStorage } from '../utils/authStorage';
 
 const ORDERS_STORAGE_KEY = 'admin_orders_store';
 
-const initialDemoOrders = [];
-
 /**
  * Normalizes any order ID to a clean, reliable 6-digit number like "842005"
  */

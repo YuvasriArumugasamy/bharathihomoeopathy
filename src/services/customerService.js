@@ -2,8 +2,6 @@ import { api } from '../utils/api';
 
 const CUSTOMERS_STORAGE_KEY = 'admin_customers_store';
 
-const initialDemoCustomers = [];
-
 export const getStoredCustomers = () => {
   try {
     const raw = localStorage.getItem(CUSTOMERS_STORAGE_KEY);

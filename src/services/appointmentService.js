@@ -4,8 +4,6 @@ import { cloudSyncService } from './cloudSyncService';
 
 const APPOINTMENTS_STORAGE_KEY = 'admin_appointments_store';
 
-const initialDemoAppointments = [];
-
 export const getStoredAppointments = () => {
   try {
     const raw = localStorage.getItem(APPOINTMENTS_STORAGE_KEY);

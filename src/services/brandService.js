@@ -1,4 +1,3 @@
-import { initialAdminBrands } from '../data/adminBrandsData';
 import { cloudSyncService } from './cloudSyncService';
 
 const BRANDS_STORAGE_KEY = 'admin_brands_store';
@@ -31,7 +30,7 @@ export const getStoredBrands = () => {
   } catch (err) {
     console.warn("Could not read brands from storage:", err.message);
   }
-  return initialAdminBrands || [];
+  return [];
 };
 
 export const saveStoredBrands = (brands) => {

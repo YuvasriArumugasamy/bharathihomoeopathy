@@ -1,5 +1,4 @@
 import { api } from '../utils/api';
-import { initialAdminProducts } from '../data/adminProductsData';
 import { authStorage } from '../utils/authStorage';
 
 const PRODUCTS_STORAGE_KEY = 'admin_products_store';
@@ -10,12 +9,6 @@ const getStoredProducts = () => {
     if (raw !== null) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        // Auto-heal if all products were accidentally overwritten with the same name
-        const uniqueNames = new Set(parsed.map(p => p.name));
-        if (parsed.length > 3 && uniqueNames.size === 1) {
-          localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(initialAdminProducts));
-          return initialAdminProducts;
-        }
         return parsed;
       }
     }
@@ -284,11 +277,11 @@ export const productService = {
 
   resetProducts: () => {
     try {
-      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(initialAdminProducts));
+      localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify([]));
     } catch {
       // ignore
     }
-    return initialAdminProducts;
+    return [];
   }
 };
 
