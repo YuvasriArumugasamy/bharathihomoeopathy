@@ -8,8 +8,98 @@ import {
   CalendarDays
 } from 'lucide-react';
 import { visitorService } from '../../services/visitorService';
-import { db } from '../../services/firebase';
-import { collection, onSnapshot, query, where, Timestamp } from 'firebase/firestore';
+
+// Simple localStorage-based visitor service (no Firebase needed)
+const simpleVisitorService = {
+  getStats: async () => {
+    try {
+      // Get visitor records from localStorage
+      const records = JSON.parse(localStorage.getItem('visitor_records') || '[]');
+      
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+      const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+
+      // Group by date and count unique IPs
+      const uniqueIPsByDate = {};
+      records.forEach(record => {
+        const date = record.date;
+        if (!uniqueIPsByDate[date]) {
+          uniqueIPsByDate[date] = new Set();
+        }
+        uniqueIPsByDate[date].add(record.ip);
+      });
+
+      // Calculate counts
+      const todayStr = today.toISOString().split('T')[0];
+      const visitorsToday = uniqueIPsByDate[todayStr]?.size || 0;
+
+      const visitorsThisWeek = Object.entries(uniqueIPsByDate)
+        .filter(([date]) => new Date(date) >= weekAgo)
+        .reduce((sum, [, ips]) => sum + ips.size, 0);
+
+      const visitorsThisMonth = Object.entries(uniqueIPsByDate)
+        .filter(([date]) => new Date(date) >= monthStart)
+        .reduce((sum, [, ips]) => sum + ips.size, 0);
+
+      const visitorsLastMonth = Object.entries(uniqueIPsByDate)
+        .filter(([date]) => {
+          const d = new Date(date);
+          return d >= lastMonthStart && d <= lastMonthEnd;
+        })
+        .reduce((sum, [, ips]) => sum + ips.size, 0);
+
+      const visitorsLast6Months = Object.entries(uniqueIPsByDate)
+        .filter(([date]) => new Date(date) >= sixMonthsAgo)
+        .reduce((sum, [, ips]) => sum + ips.size, 0);
+
+      // Generate year chart data (12 months)
+      const currentYear = now.getFullYear();
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const yearDays = [];
+
+      for (let month = 0; month < 12; month++) {
+        const visitors = Object.entries(uniqueIPsByDate)
+          .filter(([date]) => {
+            const d = new Date(date);
+            return d.getFullYear() === currentYear && d.getMonth() === month;
+          })
+          .reduce((sum, [, ips]) => sum + ips.size, 0);
+        
+        yearDays.push({ label: monthNames[month], visitors });
+      }
+
+      return {
+        success: true,
+        summaryCards: [
+          { label: 'Visitors today', count: visitorsToday },
+          { label: 'Visitors this week', count: visitorsThisWeek },
+          { label: 'Visitors this month', count: visitorsThisMonth },
+          { label: 'Visitors last month', count: visitorsLastMonth },
+          { label: 'Visitors last 6 months', count: visitorsLast6Months },
+        ],
+        yearDays
+      };
+    } catch (err) {
+      console.error('Failed to load stats:', err);
+      return {
+        success: false,
+        summaryCards: [
+          { label: 'Visitors today', count: 0 },
+          { label: 'Visitors this week', count: 0 },
+          { label: 'Visitors this month', count: 0 },
+          { label: 'Visitors last month', count: 0 },
+          { label: 'Visitors last 6 months', count: 0 },
+        ],
+        yearDays: []
+      };
+    }
+  }
+};
 
 /**
  * Simple Bar Chart Component
@@ -103,51 +193,31 @@ export const AdminVisitors = () => {
     setLoading(true);
     setError(null);
     
-    // Timeout after 10 seconds
-    const timeoutId = setTimeout(() => {
-      setError('Request timeout - Firebase may not be configured. Please check setup guide.');
-      setLoading(false);
-    }, 10000);
-    
     try {
-      const data = await visitorService.getStats('year', selectedYear);
-      clearTimeout(timeoutId);
+      const data = await simpleVisitorService.getStats();
       
       if (data && data.success) {
         setStats(data);
       } else {
-        setError('No data available - Firebase Firestore may not be set up');
+        setError('No data available');
       }
     } catch (err) {
-      clearTimeout(timeoutId);
       console.error('Fetch stats failed:', err);
       setError(err.message || 'Failed to load visitor stats');
     } finally {
-      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
 
-  // Real-time listener for today's visitors
-  useEffect(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const visitorsRef = collection(db, 'visitors');
-    const todayQuery = query(
-      visitorsRef,
-      where('timestamp', '>=', Timestamp.fromDate(today))
-    );
-
-    const unsubscribe = onSnapshot(todayQuery, () => {
-      fetchStats();
-    });
-
-    return () => unsubscribe();
-  }, [selectedYear]);
-
+  // No Firebase listener - just refresh every 30 seconds
   useEffect(() => {
     fetchStats();
+    
+    const interval = setInterval(() => {
+      fetchStats();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
   }, [selectedYear]);
 
   // Total visitors in year
