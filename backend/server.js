@@ -37,8 +37,20 @@ initFirebase();
 const app = express();
 
 // Middlewares
+// CLIENT_URL accepts a comma-separated list for local and deployed frontends.
+const allowedOrigins = new Set([
+  ...(process.env.CLIENT_URL || '').split(',').map((origin) => origin.trim()).filter(Boolean),
+  'http://localhost:5173',
+  'https://bharathihomoeopathy.vercel.app',
+  'https://bharathihomeopathy.vercel.app'
+]);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Requests without Origin are server-to-server or same-origin requests.
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    return callback(new Error(`Origin ${origin} is not allowed by CORS`));
+  },
   credentials: true
 }));
 
