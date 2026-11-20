@@ -310,7 +310,7 @@ export const AdminVisitors = () => {
               onChange={(e) => setSelectedYear(Number(e.target.value))}
               min="2020"
               max="2030"
-              className="w-32 px-4 py-2 text-xl font-bold text-slate-900 bg-white border-2 border-slate-300 rounded-2xl text-center focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              className="w-24 px-3 py-1.5 text-base font-bold text-slate-900 bg-white border-2 border-slate-300 rounded-xl text-center focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             />
           </div>
         </div>
