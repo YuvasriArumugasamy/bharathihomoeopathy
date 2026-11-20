@@ -9,21 +9,27 @@ const getIstDate = () => DateTime.now().setZone('Asia/Kolkata');
 /**
  * POST /api/visitors/track
  * Record a page view for an anonymous visitor.
- * If a visitor_key is supplied (>=8 chars) it is used, otherwise a fallback
- * hash of the client IP + User‑Agent is generated.
+ * A browser session ID identifies a visitor for the day. Store only its hash.
  */
 export const trackVisit = async (req, res) => {
   try {
-    // Count unique client IPs per day; the browser-provided key is ignored.
+    const suppliedSessionId = req.body?.visitor_key;
+    let sessionId = typeof suppliedSessionId === 'string' && suppliedSessionId.length >= 8
+      ? suppliedSessionId
+      : null;
 
-    // Use the original client IP forwarded by the hosting proxy when available.
-    const forwardedFor = req.headers['x-forwarded-for'];
-    const ip = (typeof forwardedFor === 'string' ? forwardedFor.split(',')[0].trim() : '')
-      || req.ip
-      || req.socket?.remoteAddress
-      || 'unknown';
-    // Hash before storage so the database does not retain raw IP addresses.
-    const visitor_key = crypto.createHash('sha256').update(ip).digest('hex');
+    // Fallback for clients that cannot provide a browser session ID.
+    if (!sessionId) {
+      const forwardedFor = req.headers['x-forwarded-for'];
+      const ip = (typeof forwardedFor === 'string' ? forwardedFor.split(',')[0].trim() : '')
+        || req.ip
+        || req.socket?.remoteAddress
+        || 'unknown';
+      sessionId = `ip:${ip}`;
+    }
+
+    // Store a hash, never the raw browser session ID or fallback IP.
+    const visitor_key = crypto.createHash('sha256').update(sessionId).digest('hex');
 
     const todayStr = getIstDate().toFormat('yyyy-LL-dd');
 

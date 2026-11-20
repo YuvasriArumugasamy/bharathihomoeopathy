@@ -1,4 +1,5 @@
 // Visitor tracking with backend API integration
+let memoryVisitorSessionId = null;
 
 export const visitorService = {
   /**
@@ -10,17 +11,20 @@ export const visitorService = {
         return;
       }
 
-      // 15 seconds throttle
-      const now = Date.now();
-      const lastTrack = parseInt(sessionStorage.getItem('dr_bharathi_last_track') || '0', 10);
-      if (now - lastTrack < 15000) {
-        return;
-      }
-      sessionStorage.setItem('dr_bharathi_last_track', String(now));
-
-      // Use a stable, anonymous browser ID. Avoid an external IP lookup because
-      // mobile networks and privacy settings can block it and delay tracking.
       const visitorKey = getVisitorKey();
+
+      // React StrictMode can run an effect twice on initial render. Ignore only
+      // the immediate duplicate for the same page; other pages count as views.
+      const now = Date.now();
+      try {
+        const lastPage = sessionStorage.getItem('dr_bharathi_last_tracked_page');
+        const lastPageAt = Number(sessionStorage.getItem('dr_bharathi_last_tracked_page_at') || 0);
+        if (lastPage === pathname && now - lastPageAt < 1500) return;
+        sessionStorage.setItem('dr_bharathi_last_tracked_page', pathname);
+        sessionStorage.setItem('dr_bharathi_last_tracked_page_at', String(now));
+      } catch {
+        // Continue tracking if browser storage is disabled.
+      }
 
       // Send to backend API
       try {
@@ -33,6 +37,7 @@ export const visitorService = {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
+            visitor_key: visitorKey,
             path: pathname,
             timestamp: new Date().toISOString()
           })
@@ -71,21 +76,22 @@ export const visitorService = {
 };
 
 /**
- * Keep one anonymous visitor ID per browser so repeat visits count consistently.
+ * Keep an anonymous visitor ID for this browser tab's session.
  */
 function getVisitorKey() {
-  const storageKey = 'dr_bharathi_visitor_key';
+  const storageKey = 'dr_bharathi_visitor_session';
   try {
-    let visitorKey = localStorage.getItem(storageKey);
+    let visitorKey = sessionStorage.getItem(storageKey);
     if (!visitorKey) {
       visitorKey = globalThis.crypto?.randomUUID?.()
         || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-      localStorage.setItem(storageKey, visitorKey);
+      sessionStorage.setItem(storageKey, visitorKey);
     }
     return visitorKey;
   } catch (err) {
     console.warn('Visitor ID storage unavailable:', err);
-    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    memoryVisitorSessionId ||= `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    return memoryVisitorSessionId;
   }
 }
 
