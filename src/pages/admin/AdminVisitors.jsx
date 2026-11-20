@@ -267,12 +267,8 @@ export const AdminVisitors = () => {
             <Globe className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
               Website Visitors
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Live Analytics
-              </span>
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
               Anonymous website traffic tracking, daily visitor sessions & annual trends
