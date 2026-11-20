@@ -462,26 +462,26 @@ export const AdminProducts = () => {
                   </span>
                 </div>
                 <p className="text-xs text-slate-600 font-medium mt-0.5">
-                  These remedies have 0 inventory. Update stock and bottle size so patients can order online.
+                  These products are out of stock. Update their inventory to make them available again.
                 </p>
               </div>
             </div>
 
-            {outOfStockProducts.length > 5 && (
+            {outOfStockProducts.length > 3 && (
               <button
                 type="button"
                 onClick={() => setStockOutModalOpen(true)}
                 className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs rounded-xl shadow-md shadow-rose-600/25 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
               >
-                <span>View All & Restock ({outOfStockProducts.length})</span>
+                <span>View {outOfStockProducts.length - 3} More Sold Out</span>
                 <ArrowUpRight className="w-4 h-4" />
               </button>
             )}
           </div>
 
-          {/* Up to 5 Items Display */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            {outOfStockProducts.slice(0, 5).map((prod) => {
+          {/* Show up to 3 sold-out products */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {outOfStockProducts.slice(0, 3).map((prod) => {
               const pId = prod.id || prod._id;
               const prodSize = getProductSize(prod);
               const currentVal = quickRestockMap[pId] !== undefined ? quickRestockMap[pId] : 20;
@@ -542,21 +542,78 @@ export const AdminProducts = () => {
               );
             })}
 
-            {/* If more than 5, 5th slot or card opens popup */}
-            {outOfStockProducts.length > 5 && (
-              <div 
-                onClick={() => setStockOutModalOpen(true)}
-                className="bg-rose-50/80 hover:bg-rose-100/80 border-2 border-dashed border-rose-300 rounded-2xl p-3.5 flex flex-col items-center justify-center text-center cursor-pointer transition-all group min-h-[140px]"
-              >
-                <Boxes className="w-6 h-6 text-rose-500 mb-1 group-hover:scale-110 transition-transform" />
-                <span className="font-black text-rose-900 text-xs">
-                  +{outOfStockProducts.length - 5} More Sold Out
-                </span>
-                <span className="text-[10px] text-rose-600 font-bold mt-1 underline">
-                  Open Restock Popup â†’
-                </span>
+          </div>
+        </div>
+      )}
+
+      {stockOutModalOpen && outOfStockProducts.length > 3 && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-navy-950/60 p-4 backdrop-blur-sm"
+          onClick={() => setStockOutModalOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="more-sold-out-title"
+            className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4 shadow-2xl sm:rounded-3xl sm:p-6"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-100 bg-white pb-3">
+              <div>
+                <h2 id="more-sold-out-title" className="flex items-center gap-2 text-base font-black text-slate-900 sm:text-lg">
+                  <Boxes className="h-4 w-4 text-rose-600" />
+                  More Sold Out Products
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500">{outOfStockProducts.length - 3} more products need restocking</p>
               </div>
-            )}
+              <button
+                type="button"
+                onClick={() => setStockOutModalOpen(false)}
+                aria-label="Close sold-out products"
+                className="shrink-0 rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="mt-4 space-y-3">
+              {outOfStockProducts.slice(3).map((prod) => {
+                const pId = prod.id || prod._id;
+                const currentVal = quickRestockMap[pId] !== undefined ? quickRestockMap[pId] : 20;
+                return (
+                  <div key={pId} className="flex flex-col gap-3 rounded-xl border border-rose-100 bg-rose-50/40 p-3 sm:flex-row sm:items-center">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <img
+                        src={prod.image || getProductImageFallback(prod)}
+                        alt={prod.name}
+                        onError={(event) => handleProductImageError(event, prod)}
+                        className="h-12 w-12 shrink-0 rounded-lg border border-slate-200 bg-white object-cover"
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-slate-900" title={prod.name}>{prod.name}</p>
+                        <p className="truncate text-xs text-slate-500">{prod.sku || 'No SKU'} · {getProductSize(prod)} · 0 in stock</p>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <input
+                        type="number"
+                        min="1"
+                        value={currentVal}
+                        onChange={(event) => setQuickRestockMap(prev => ({ ...prev, [pId]: event.target.value }))}
+                        aria-label={`Restock quantity for ${prod.name}`}
+                        className="w-20 rounded-lg border border-slate-300 bg-white p-2 text-center text-sm font-bold focus:border-brandOrange-500 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleQuickRestock(pId, currentVal)}
+                        className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-600"
+                      >
+                        Restock
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
