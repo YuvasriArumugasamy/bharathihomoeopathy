@@ -147,9 +147,9 @@ const BarChartComponent = ({ data = [] }) => {
       {/* Chart with Y-Axis */}
       <div className="h-full flex gap-3 min-w-[800px]">
         {/* Y-Axis */}
-        <div className="flex flex-col justify-between py-2 pb-8 w-12 text-right">
+        <div className="flex flex-col justify-between pb-12 w-12 text-right">
           {yTicks.map((tick, idx) => (
-            <div key={idx} className="text-xs font-medium text-slate-500">
+            <div key={idx} className="text-xs font-medium text-slate-500 -mt-2">
               {tick}
             </div>
           ))}
@@ -158,14 +158,14 @@ const BarChartComponent = ({ data = [] }) => {
         {/* Chart Area */}
         <div className="flex-1 relative">
           {/* Gridlines */}
-          <div className="absolute inset-0 flex flex-col justify-between py-2 pb-8 pointer-events-none">
+          <div className="absolute inset-0 flex flex-col justify-between pb-12 pointer-events-none">
             {yTicks.map((_, idx) => (
               <div key={idx} className="border-b border-slate-200"></div>
             ))}
           </div>
 
           {/* Bars */}
-          <div className="h-full flex items-end justify-between gap-2 px-4 pb-8 pt-2 relative min-w-[720px]">
+          <div className="h-full flex items-end justify-between gap-2 px-4 pb-12 pt-2 relative min-w-[720px]">
             {data.map((item, index) => {
               const heightPercent = maxValue > 0 ? (item.visitors / maxValue) * 100 : 0;
               const isHovered = hoveredItem?.index === index;
