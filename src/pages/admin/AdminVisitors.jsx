@@ -170,11 +170,11 @@ const BarChartComponent = ({ data = [] }) => {
   }
 
   return (
-    <div className="relative w-full h-80 pb-2 overflow-hidden">
+    <div className="visitor-chart relative w-full h-80 pb-2 overflow-hidden">
       {/* Tooltip */}
       {hoveredItem && (
         <div 
-          className="absolute -top-12 z-20 bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg shadow-xl whitespace-nowrap flex items-center gap-1.5"
+          className="absolute top-2 z-20 bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg shadow-xl whitespace-nowrap flex items-center gap-1.5"
           style={{ left: `${hoveredItem.xPercent}%`, transform: 'translateX(-50%)' }}
         >
           <span className="font-semibold">{hoveredItem.label}:</span>
@@ -215,8 +215,8 @@ const BarChartComponent = ({ data = [] }) => {
                   style={{ flex: '1 1 0', minWidth: 0 }}
                   onMouseEnter={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
-                    const parentRect = e.currentTarget.parentElement.getBoundingClientRect();
-                    const xPercent = ((rect.left + rect.width / 2 - parentRect.left) / parentRect.width) * 100;
+                    const chartRect = e.currentTarget.closest('.visitor-chart').getBoundingClientRect();
+                    const xPercent = ((rect.left + rect.width / 2 - chartRect.left) / chartRect.width) * 100;
                     setHoveredItem({ ...item, index, xPercent });
                   }}
                   onMouseLeave={() => setHoveredItem(null)}
