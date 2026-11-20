@@ -7,20 +7,21 @@ import {
   CalendarDays
 } from 'lucide-react';
 import { visitorService } from '../../services/visitorService';
+import { authStorage } from '../../utils/authStorage';
 
 // Backend API-based visitor service
 const simpleVisitorService = {
-  getStats: async () => {
+  getStats: async (year = new Date().getFullYear()) => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || '';
       // Remove /api suffix if it exists since we'll add it
       const baseUrl = apiUrl.replace(/\/api$/, '');
-      const currentYear = new Date().getFullYear();
-      
-      console.log('[VisitorStats] Fetching from:', `${baseUrl}/api/visitors/stats`);
+      const adminToken = authStorage.getAdminToken();
       
       // Fetch from backend API
-      const response = await fetch(`${baseUrl}/api/visitors/stats?period=year&year=${currentYear}`);
+      const response = await fetch(`${baseUrl}/api/visitors/stats?period=year&year=${year}`, {
+        headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {}
+      });
       
       if (!response.ok) {
         throw new Error(`API returned ${response.status}`);
@@ -263,7 +264,7 @@ export const AdminVisitors = () => {
     setError(null);
     
     try {
-      const data = await simpleVisitorService.getStats();
+      const data = await simpleVisitorService.getStats(selectedYear);
       
       if (data && data.success) {
         setStats(data);

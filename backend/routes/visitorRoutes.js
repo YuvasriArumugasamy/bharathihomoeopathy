@@ -1,6 +1,7 @@
 import express from 'express';
 import { trackVisit, getVisitorStats } from '../controllers/visitorController.js';
-import { optionalProtect } from '../middleware/authMiddleware.js';
+import { protect } from '../middleware/authMiddleware.js';
+import { adminOnly } from '../middleware/adminMiddleware.js';
 
 const router = express.Router();
 
@@ -8,7 +9,7 @@ const router = express.Router();
 router.post('/track', trackVisit);
 
 // Admin analytics endpoint
-router.get('/stats', optionalProtect, getVisitorStats);
+router.get('/stats', protect, adminOnly, getVisitorStats);
 
 export default router;
 
