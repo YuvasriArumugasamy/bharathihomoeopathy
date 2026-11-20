@@ -38,7 +38,7 @@ export const visitorService = {
 
       // Store visitor session in Firebase Firestore with IP
       const visitorsRef = collection(db, 'visitors');
-      await addDoc(visitorsRef, {
+      const docRef = await addDoc(visitorsRef, {
         visitorKey,
         ipAddress, // Real IP address
         path: pathname,
@@ -46,9 +46,10 @@ export const visitorService = {
         date: new Date().toISOString().split('T')[0], // YYYY-MM-DD for easy filtering
         createdAt: Timestamp.now()
       });
+      console.log('[VisitorService] Tracked successfully:', docRef.id);
     } catch (err) {
       // Fail silently without disrupting user browsing experience
-      console.warn('[VisitorService] Track failed:', err);
+      console.error('[VisitorService] Track failed:', err.message, err.code);
     }
   },
 
@@ -57,6 +58,7 @@ export const visitorService = {
    */
   getStats: async (period = 'month', year = new Date().getFullYear()) => {
     try {
+      console.log('[VisitorService] Fetching stats:', { period, year });
       const visitorsRef = collection(db, 'visitors');
       const now = new Date();
       const currentYear = now.getFullYear();
@@ -151,7 +153,8 @@ export const visitorService = {
         yearDays
       };
     } catch (err) {
-      console.warn('[VisitorService] Failed to load visitor stats:', err);
+      console.error('[VisitorService] Failed to load visitor stats:', err.message, err.code);
+      console.error('Full error:', err);
       return {
         success: false,
         period,
