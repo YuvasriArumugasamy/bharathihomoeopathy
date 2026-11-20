@@ -477,15 +477,11 @@ export const Shop = () => {
                     <span className="text-xs">📂</span>
                     <span>ALL CATEGORIES</span>
                   </span>
-                  <span className={`text-[10px] font-bold ${selectedCategory === 'All Categories' ? 'text-white bg-black/15 px-2 py-0.5 rounded-full' : 'text-slate-400'}`}>
-                    ({categories.filter(c => c.value !== 'All Categories').length})
-                  </span>
                 </button>
 
                 <div className="pl-1 pt-1 space-y-1">
-                  {categories.filter(c => c.value !== 'All Categories').map((cat, idx) => {
+                  {categories.filter(c => c.value !== 'All Categories').map((cat) => {
                     const isSelected = selectedCategory === cat.value;
-                    const catCount = allProducts.filter(p => isMatchingCategory(p.category, cat.value) || p.category === cat.value || (p.name && p.name.toLowerCase().includes(cat.name.toLowerCase()))).length;
                     return (
                       <button
                         key={cat.name}
@@ -499,11 +495,6 @@ export const Shop = () => {
                         <span className="flex items-center gap-2 truncate">
                           <span className="text-xs shrink-0">{cat.icon}</span>
                           <span className="truncate">{cat.name}</span>
-                        </span>
-                        <span className={`text-[10px] font-semibold px-1.5 py-0.2 rounded transition-colors ${
-                          isSelected ? 'bg-orange-200/70 text-orange-900' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200/70 group-hover:text-slate-600'
-                        }`}>
-                          {catCount}
                         </span>
                       </button>
                     );
