@@ -361,27 +361,31 @@ export const AdminProducts = () => {
       return;
     }
 
-    if (editingProduct) {
-      const targetId = editingProduct.id || editingProduct._id;
-      const updatedData = { ...formData, slug: slugify(formData.name) };
-      await productService.updateAdminProduct(targetId, updatedData);
-      setProducts(prev => prev.map(p => {
-        const isMatch = targetId && ((p.id && p.id === targetId) || (p._id && p._id === targetId));
-        return isMatch ? { ...p, ...updatedData } : p;
-      }));
-      showToast('Product updated successfully and saved!', 'success');
-    } else {
-      const newProd = {
-        ...formData,
-        id: 'prod-' + Date.now(),
-        slug: slugify(formData.name),
-        createdAt: new Date().toISOString().slice(0, 10)
-      };
-      await productService.createAdminProduct(newProd);
-      setProducts(prev => [newProd, ...prev]);
-      showToast('New product added to catalogue and saved!', 'success');
-    }
     setModalOpen(false);
+    try {
+      if (editingProduct) {
+        const targetId = editingProduct.id || editingProduct._id;
+        const updatedData = { ...formData, slug: slugify(formData.name) };
+        await productService.updateAdminProduct(targetId, updatedData);
+        setProducts(prev => prev.map(p => {
+          const isMatch = targetId && ((p.id && p.id === targetId) || (p._id && p._id === targetId));
+          return isMatch ? { ...p, ...updatedData } : p;
+        }));
+        showToast('Product updated successfully and saved!', 'success');
+      } else {
+        const newProd = {
+          ...formData,
+          id: 'prod-' + Date.now(),
+          slug: slugify(formData.name),
+          createdAt: new Date().toISOString().slice(0, 10)
+        };
+        await productService.createAdminProduct(newProd);
+        setProducts(prev => [newProd, ...prev]);
+        showToast('New product added to catalogue and saved!', 'success');
+      }
+    } catch (err) {
+      showToast(`Product could not be saved: ${err.message}`, 'error');
+    }
   };
 
   const handleDuplicate = async (product) => {
