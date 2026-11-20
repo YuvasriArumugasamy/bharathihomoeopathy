@@ -132,7 +132,7 @@ const BarChartComponent = ({ data = [] }) => {
   }
 
   return (
-    <div className="relative w-full h-80 pb-2">
+    <div className="relative w-full h-80 pb-2 overflow-x-auto">
       {/* Tooltip */}
       {hoveredItem && (
         <div 
@@ -145,7 +145,7 @@ const BarChartComponent = ({ data = [] }) => {
       )}
 
       {/* Chart with Y-Axis */}
-      <div className="h-full flex gap-3">
+      <div className="h-full flex gap-3 min-w-[800px]">
         {/* Y-Axis */}
         <div className="flex flex-col justify-between py-2 pb-8 w-12 text-right">
           {yTicks.map((tick, idx) => (
@@ -165,7 +165,7 @@ const BarChartComponent = ({ data = [] }) => {
           </div>
 
           {/* Bars */}
-          <div className="h-full flex items-end justify-around gap-3 px-4 pb-8 pt-2 relative">
+          <div className="h-full flex items-end justify-between gap-2 px-4 pb-8 pt-2 relative min-w-[720px]">
             {data.map((item, index) => {
               const heightPercent = maxValue > 0 ? (item.visitors / maxValue) * 100 : 0;
               const isHovered = hoveredItem?.index === index;
@@ -174,7 +174,7 @@ const BarChartComponent = ({ data = [] }) => {
                 <div
                   key={index}
                   className="flex flex-col items-center justify-end h-full group cursor-pointer"
-                  style={{ flex: '1 1 0', minWidth: '40px', maxWidth: '70px' }}
+                  style={{ flex: '1 1 0', minWidth: '50px' }}
                   onMouseEnter={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
                     const parentRect = e.currentTarget.parentElement.getBoundingClientRect();
