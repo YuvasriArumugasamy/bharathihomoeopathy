@@ -35,7 +35,9 @@ export const visitorService = {
       // Send to backend API
       try {
         const apiUrl = import.meta.env.VITE_API_URL || '';
-        const response = await fetch(`${apiUrl}/api/visitors/track`, {
+        // Remove /api suffix if it exists since we'll add it
+        const baseUrl = apiUrl.replace(/\/api$/, '');
+        const response = await fetch(`${baseUrl}/api/visitors/track`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -49,12 +51,12 @@ export const visitorService = {
 
         if (response.ok) {
           const data = await response.json();
-          console.log('[VisitorService] Tracked successfully:', data);
+          console.log('[VisitorService] ✅ Tracked successfully:', data);
         } else {
-          console.warn('[VisitorService] Backend track failed:', response.status);
+          console.warn('[VisitorService] ⚠️ Backend track failed:', response.status, response.statusText);
         }
       } catch (apiErr) {
-        console.error('[VisitorService] API call failed:', apiErr.message);
+        console.error('[VisitorService] ❌ API call failed:', apiErr.message);
       }
 
       // Also store in localStorage as backup

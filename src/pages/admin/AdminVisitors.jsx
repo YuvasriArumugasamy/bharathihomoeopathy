@@ -13,16 +13,21 @@ const simpleVisitorService = {
   getStats: async () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || '';
+      // Remove /api suffix if it exists since we'll add it
+      const baseUrl = apiUrl.replace(/\/api$/, '');
       const currentYear = new Date().getFullYear();
       
+      console.log('[VisitorStats] Fetching from:', `${baseUrl}/api/visitors/stats`);
+      
       // Fetch from backend API
-      const response = await fetch(`${apiUrl}/api/visitors/stats?period=year&year=${currentYear}`);
+      const response = await fetch(`${baseUrl}/api/visitors/stats?period=year&year=${currentYear}`);
       
       if (!response.ok) {
         throw new Error(`API returned ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('[VisitorStats] ✅ Data received:', data);
       
       if (data && data.success) {
         return {
