@@ -145,15 +145,28 @@ export const categoryService = {
 
   deleteAdminCategory: async (id) => {
     const categories = getStoredCategories();
-    const filtered = categories.filter(c => (c.id || c._id) !== id);
-    saveStoredCategories(filtered);
+    const category = categories.find(c => (c.id || c._id || c.slug) === id || c.slug === id);
+    const backendId = category?.slug || id;
 
+    // Delete from MongoDB first. Using the slug also works for older local
+    // records whose UI ID is not the Mongo ObjectId.
     try {
-      await api.delete(`/categories/${id}`);
+      await api.delete(`/categories/${encodeURIComponent(backendId)}`);
     } catch (err) {
-      if (!err?.isDemoMode) console.warn("Category deleted locally (backend offline):", err.message);
+      // A local/Firestore-only category has no Mongo row to delete.
+      if (err?.status !== 404) throw err;
     }
 
+    const filtered = categories.filter(c =>
+      c !== category
+      && ![c.id, c._id, c.slug].includes(id)
+      && !(category?.slug && c.slug === category.slug)
+    );
+    saveStoredCategories(filtered);
+    const cloudSynced = await cloudSyncService.syncCategoriesToCloud(filtered);
+    if (!cloudSynced) {
+      throw new Error('Category was removed from the database, but cloud sync failed. Please retry.');
+    }
     return { success: true };
   }
 };

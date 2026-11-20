@@ -161,9 +161,13 @@ export const AdminCategories = () => {
     if (!isConfirmed) return;
 
     const targetId = getCatId(cat);
-    setCategories(prev => prev.filter(c => getCatId(c) !== targetId));
-    await categoryService.deleteAdminCategory(targetId);
-    showToast(`Category "${cat.name}" deleted successfully`, 'info');
+    try {
+      await categoryService.deleteAdminCategory(targetId);
+      setCategories(prev => prev.filter(c => getCatId(c) !== targetId));
+      showToast(`Category "${cat.name}" deleted successfully`, 'info');
+    } catch (error) {
+      showToast(error.message || `Could not delete "${cat.name}"`, 'error');
+    }
   };
 
   return (
