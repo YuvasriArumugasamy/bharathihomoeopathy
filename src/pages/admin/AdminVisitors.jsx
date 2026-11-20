@@ -132,7 +132,7 @@ const BarChartComponent = ({ data = [] }) => {
   }
 
   return (
-    <div className="relative w-full h-80 overflow-x-auto overflow-y-visible pb-2">
+    <div className="relative w-full h-80 pb-2">
       {/* Tooltip */}
       {hoveredItem && (
         <div 
@@ -145,7 +145,7 @@ const BarChartComponent = ({ data = [] }) => {
       )}
 
       {/* Chart with Y-Axis */}
-      <div className="h-full flex gap-3 min-w-full">
+      <div className="h-full flex gap-3">
         {/* Y-Axis */}
         <div className="flex flex-col justify-between py-2 pb-8 w-12 text-right">
           {yTicks.map((tick, idx) => (
@@ -165,7 +165,7 @@ const BarChartComponent = ({ data = [] }) => {
           </div>
 
           {/* Bars */}
-          <div className="h-full flex items-end justify-between gap-1 px-1 pb-8 pt-2 relative overflow-visible">
+          <div className="h-full flex items-end justify-around gap-3 px-4 pb-8 pt-2 relative">
             {data.map((item, index) => {
               const heightPercent = maxValue > 0 ? (item.visitors / maxValue) * 100 : 0;
               const isHovered = hoveredItem?.index === index;
@@ -173,7 +173,8 @@ const BarChartComponent = ({ data = [] }) => {
               return (
                 <div
                   key={index}
-                  className="flex-1 flex flex-col items-center justify-end h-full group cursor-pointer min-w-0"
+                  className="flex flex-col items-center justify-end h-full group cursor-pointer"
+                  style={{ flex: '1 1 0', minWidth: '40px', maxWidth: '70px' }}
                   onMouseEnter={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
                     const parentRect = e.currentTarget.parentElement.getBoundingClientRect();
@@ -191,7 +192,7 @@ const BarChartComponent = ({ data = [] }) => {
                     }}
                   />
                   {/* Label */}
-                  <span className={`mt-2 text-[10px] font-medium whitespace-nowrap overflow-visible ${isHovered ? 'text-amber-600 font-bold' : 'text-slate-500'}`}>
+                  <span className={`mt-2 text-[11px] font-medium whitespace-nowrap ${isHovered ? 'text-amber-600 font-bold' : 'text-slate-500'}`}>
                     {item.label}
                   </span>
                 </div>
