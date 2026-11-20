@@ -14,16 +14,16 @@ const getIstDate = () => DateTime.now().setZone('Asia/Kolkata');
  */
 export const trackVisit = async (req, res) => {
   try {
-    let { visitor_key } = req.body ?? {};
+    // Count unique client IPs per day; the browser-provided key is ignored.
 
-    // Fallback: hash of IP + User‑Agent if key missing/invalid
-    if (!visitor_key || typeof visitor_key !== 'string' || visitor_key.length < 8) {
-      const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim()
-               ?? req.socket?.remoteAddress
-               ?? '127.0.0.1';
-      const ua = req.headers['user-agent'] ?? 'unknown';
-      visitor_key = crypto.createHash('sha256').update(`${ip}-${ua}`).digest('hex');
-    }
+    // Use the original client IP forwarded by the hosting proxy when available.
+    const forwardedFor = req.headers['x-forwarded-for'];
+    const ip = (typeof forwardedFor === 'string' ? forwardedFor.split(',')[0].trim() : '')
+      || req.ip
+      || req.socket?.remoteAddress
+      || 'unknown';
+    // Hash before storage so the database does not retain raw IP addresses.
+    const visitor_key = crypto.createHash('sha256').update(ip).digest('hex');
 
     const todayStr = getIstDate().toFormat('yyyy-LL-dd');
 

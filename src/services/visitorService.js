@@ -18,19 +18,9 @@ export const visitorService = {
       }
       sessionStorage.setItem('dr_bharathi_last_track', String(now));
 
-      // Get visitor IP address
-      let ipAddress = 'unknown';
-      try {
-        const ipResponse = await fetch('https://api.ipify.org?format=json');
-        const ipData = await ipResponse.json();
-        ipAddress = ipData.ip;
-      } catch (err) {
-        console.warn('Could not fetch IP:', err);
-        // Continue even if IP fetch fails
-      }
-
-      // Generate visitor key (for unique visitor identification)
-      const visitorKey = await getVisitorKey(ipAddress);
+      // Use a stable, anonymous browser ID. Avoid an external IP lookup because
+      // mobile networks and privacy settings can block it and delay tracking.
+      const visitorKey = getVisitorKey();
 
       // Send to backend API
       try {
@@ -43,7 +33,6 @@ export const visitorService = {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            visitor_key: visitorKey,
             path: pathname,
             timestamp: new Date().toISOString()
           })
@@ -62,7 +51,8 @@ export const visitorService = {
       // Also store in localStorage as backup
       const records = JSON.parse(localStorage.getItem('visitor_records') || '[]');
       records.push({
-        ip: ipAddress,
+        // The fallback stats group by this field; use the same anonymous ID.
+        ip: visitorKey,
         path: pathname,
         date: new Date().toISOString().split('T')[0],
         timestamp: new Date().toISOString()
@@ -81,29 +71,21 @@ export const visitorService = {
 };
 
 /**
- * Generate a unique visitor key based on IP and browser fingerprint
+ * Keep one anonymous visitor ID per browser so repeat visits count consistently.
  */
-async function getVisitorKey(ipAddress) {
+function getVisitorKey() {
+  const storageKey = 'dr_bharathi_visitor_key';
   try {
-    const ua = navigator.userAgent || 'unknown';
-    const lang = navigator.language || 'en';
-    const screen = `${window.screen.width}x${window.screen.height}`;
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-    
-    const fingerprint = `${ipAddress}-${ua}-${lang}-${screen}-${timezone}`;
-    
-    // Create a hash using Web Crypto API
-    const encoder = new TextEncoder();
-    const data = encoder.encode(fingerprint);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    
-    return hashHex;
+    let visitorKey = localStorage.getItem(storageKey);
+    if (!visitorKey) {
+      visitorKey = globalThis.crypto?.randomUUID?.()
+        || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem(storageKey, visitorKey);
+    }
+    return visitorKey;
   } catch (err) {
-    console.warn('Fingerprint generation failed:', err);
-    // Fallback to simple hash
-    return btoa(`${ipAddress}-${Date.now()}`).substring(0, 32);
+    console.warn('Visitor ID storage unavailable:', err);
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
   }
 }
 
