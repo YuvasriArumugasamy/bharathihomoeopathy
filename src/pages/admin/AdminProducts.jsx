@@ -898,7 +898,7 @@ export const AdminProducts = () => {
                 <input
                   type="text"
                   required
-                  placeholder="e.g., Arnica Montana 30C Dilution"
+                  placeholder="Enter product name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
@@ -1056,7 +1056,7 @@ export const AdminProducts = () => {
                 <label className="block font-bold text-slate-700 mb-1.5">Short Description</label>
                 <textarea
                   rows={2}
-                  placeholder="Indication, key therapeutic uses, and dosage guidance..."
+                  placeholder="Enter a short description"
                   value={formData.shortDescription}
                   onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
@@ -1181,7 +1181,7 @@ export const AdminProducts = () => {
                 <label className="block font-bold text-slate-700 mb-1.5">Brand / Manufacturer Name *</label>
                 <input
                   type="text"
-                  placeholder="e.g. SBL, Willmar Schwabe, BJain"
+                  placeholder="Enter brand name"
                   value={newBrandInput}
                   onChange={(e) => setNewBrandInput(e.target.value)}
                   autoFocus
@@ -1193,7 +1193,7 @@ export const AdminProducts = () => {
                 <label className="block font-bold text-slate-700 mb-1.5">Description (Optional)</label>
                 <textarea
                   rows={2}
-                  placeholder="Pharmacy notes, manufacturing origin..."
+                  placeholder="Enter description (optional)"
                   value={newBrandDesc}
                   onChange={(e) => setNewBrandDesc(e.target.value)}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner resize-none"
