@@ -153,6 +153,9 @@ export const categoryService = {
     try {
       await api.delete(`/categories/${encodeURIComponent(backendId)}`);
     } catch (err) {
+      if (err?.status === 401) {
+        throw new Error('Admin session is invalid or expired. Sign in again, then retry deleting the category.');
+      }
       // A local/Firestore-only category has no Mongo row to delete.
       if (err?.status !== 404) throw err;
     }

@@ -7,8 +7,6 @@ const ADMIN_USER_KEY = 'dr_bharathi_admin_user';
 const LEGACY_TOKEN_KEY = 'dr_bharathi_auth_token';
 const LEGACY_USER_KEY = 'dr_bharathi_auth_user';
 
-export const ADMIN_JWT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhYWFjZTZhYzllYTI2ZTBiNDdmOTAzZSIsImlhdCI6MTc4OTY2MjgwMSwiZXhwIjoxODIxMTk4ODAxfQ.rB4BHwQHzPl9RVo_QuF6wBp1nCbN0r6-gb4bRxhfUGg';
-
 const isCurrentPathAdmin = () => {
   if (typeof window === 'undefined') return false;
   return window.location.pathname.toLowerCase().startsWith('/admin');
@@ -93,14 +91,15 @@ export const authStorage = {
   getAdminToken: () => {
     try {
       const tok = localStorage.getItem(ADMIN_TOKEN_KEY);
-      if (tok) return tok;
+      if (tok && !tok.startsWith('admin_session_token_')) return tok;
       const legacyUser = authStorage.getLegacyUser();
       if (legacyUser && (legacyUser.role === 'admin' || legacyUser.name?.includes('Administrator') || legacyUser.email === 'admin@drbharathi.com')) {
-        return localStorage.getItem(LEGACY_TOKEN_KEY) || ADMIN_JWT_TOKEN;
+        const legacyToken = localStorage.getItem(LEGACY_TOKEN_KEY);
+        return legacyToken && !legacyToken.startsWith('admin_session_token_') ? legacyToken : null;
       }
-      return ADMIN_JWT_TOKEN;
+      return null;
     } catch {
-      return ADMIN_JWT_TOKEN;
+      return null;
     }
   },
   setAdminToken: (token) => {

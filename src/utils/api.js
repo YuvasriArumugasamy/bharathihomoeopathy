@@ -1,4 +1,4 @@
-import { authStorage, ADMIN_JWT_TOKEN } from './authStorage';
+import { authStorage } from './authStorage';
 
 const isLocalhost = typeof window !== 'undefined' && (
   window.location.hostname === 'localhost' || 
@@ -19,10 +19,10 @@ class ApiClient {
     const isCurrentAdminPath = typeof window !== 'undefined' && window.location.pathname.toLowerCase().startsWith('/admin');
     const isAdminProtectedEndpoint = endpoint.includes('/admin') || endpoint === '/appointments' || (endpoint.startsWith('/appointments/') && !endpoint.includes('/appointments/my'));
 
-    let token = isCurrentAdminPath ? (authStorage.getAdminToken() || authStorage.getToken()) : authStorage.getToken();
+    let token = isCurrentAdminPath ? authStorage.getAdminToken() : authStorage.getToken();
 
     if (isAdminProtectedEndpoint && (!token || token.startsWith('demo_') || token.startsWith('patient_'))) {
-      token = authStorage.getAdminToken() || ADMIN_JWT_TOKEN;
+      token = authStorage.getAdminToken();
     }
 
     const headers = {
@@ -40,6 +40,9 @@ class ApiClient {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
+        if (isCurrentAdminPath && response.status === 401 && endpoint !== '/auth/login') {
+          authStorage.clearAdminAuth();
+        }
         const error = new Error(data.message || `Request failed with status ${response.status}`);
         error.status = response.status;
         error.data = data;

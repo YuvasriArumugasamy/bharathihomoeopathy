@@ -46,14 +46,24 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const isTryingAdmin = options.isAdminLogin || email.toLowerCase().includes('admin') || isCurrentPathAdmin();
+      let adminBackendError = null;
 
       // Check if backend API is reachable
       try {
-        const res = await api.post('/auth/login', { email, password });
+        const backendEmail = isTryingAdmin && email.trim().toLowerCase() === 'admin'
+          ? 'admin@drbharathi.com'
+          : email;
+        const res = await api.post('/auth/login', { email: backendEmail, password });
         const loginUser = res?.data?.data?.user || res?.data?.user;
         const loginToken = res?.data?.data?.token || res?.data?.token;
         if (loginUser && loginToken) {
-          if (loginUser.role === 'admin' || isTryingAdmin) {
+          if (isTryingAdmin && loginUser.role !== 'admin') {
+            authStorage.clearAdminAuth();
+            setAdminUser(null);
+            setLoading(false);
+            return { success: false, message: 'This account does not have administrator access.' };
+          }
+          if (loginUser.role === 'admin') {
             authStorage.setAdminToken(loginToken);
             authStorage.setAdminUser(loginUser);
             setAdminUser(loginUser);
@@ -66,31 +76,23 @@ export const AuthProvider = ({ children }) => {
           return { success: true, user: loginUser };
         }
       } catch (backendErr) {
-        console.warn("Backend login unavailable, proceeding with verified local session:", backendErr.message);
+        adminBackendError = backendErr;
+        console.warn("Backend login unavailable:", backendErr.message);
+      }
+
+      // Admin mutations require a server-verified JWT. Do not create a local
+      // demo token that the protected Express routes will reject.
+      if (isTryingAdmin) {
+        authStorage.clearAdminAuth();
+        setAdminUser(null);
+        setLoading(false);
+        return {
+          success: false,
+          message: adminBackendError?.message || 'The backend did not return a valid administrator session.'
+        };
       }
 
       // Demo/local session fallback
-      if (isTryingAdmin) {
-        if (password !== 'admin123') {
-          setLoading(false);
-          return { success: false, message: 'Invalid Admin credentials. Incorrect password.' };
-        }
-
-        const adminAccount = {
-          _id: 'usr-admin-01',
-          name: 'Clinic Administrator',
-          email: email || 'admin@drbharathi.com',
-          role: 'admin',
-          phone: '+91 90258 54711'
-        };
-
-        authStorage.setAdminToken('admin_session_token_' + Date.now());
-        authStorage.setAdminUser(adminAccount);
-        setAdminUser(adminAccount);
-        setLoading(false);
-        return { success: true, user: adminAccount };
-      }
-
       // Patient / Customer Session
       const formattedName = email
         ? email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
