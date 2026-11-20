@@ -240,7 +240,7 @@ const BarChartComponent = ({ data = [] }) => {
 export const AdminVisitors = () => {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [stats, setStats] = useState({
     summaryCards: [
@@ -368,12 +368,7 @@ export const AdminVisitors = () => {
         </div>
 
         {/* Year Chart */}
-        {loading ? (
-          <div className="h-64 flex flex-col items-center justify-center gap-3">
-            <RefreshCw className="w-6 h-6 animate-spin text-amber-600" />
-            <p className="text-sm text-slate-500">Loading visitor data...</p>
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="h-64 flex flex-col items-center justify-center gap-3">
             <div className="text-red-500 text-center">
               <p className="font-semibold">Error loading data</p>
