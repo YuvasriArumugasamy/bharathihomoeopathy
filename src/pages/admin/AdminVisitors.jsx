@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Users, 
-  Calendar, 
   RefreshCw, 
   Globe, 
   BarChart3,
@@ -174,8 +173,6 @@ const BarChartComponent = ({ data = [] }) => {
 };
 
 export const AdminVisitors = () => {
-  const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [stats, setStats] = useState({
@@ -218,7 +215,7 @@ export const AdminVisitors = () => {
     }, 30000); // Refresh every 30 seconds
 
     return () => clearInterval(interval);
-  }, [selectedYear]);
+  }, []);
 
   // Total visitors in year
   const yearChartTotal = useMemo(() => {
@@ -291,7 +288,7 @@ export const AdminVisitors = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              Visitor sessions · Year {selectedYear}
+              Visitor sessions · Year 2026
               <span className="text-xs font-normal text-slate-500">
                 ({yearChartTotal} total sessions)
               </span>
@@ -299,12 +296,6 @@ export const AdminVisitors = () => {
             <p className="text-xs text-slate-400 mt-0.5">
               Monthly visitor trends comparison across all 12 months
             </p>
-          </div>
-
-          {/* Year Display with Calendar Icon */}
-          <div className="flex items-center gap-3 px-5 py-3 bg-white border-2 border-slate-300 rounded-2xl shadow-sm">
-            <span className="text-2xl font-bold text-slate-900">{selectedYear}</span>
-            <Calendar className="w-6 h-6 text-slate-500" />
           </div>
         </div>
 
