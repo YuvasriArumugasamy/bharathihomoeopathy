@@ -21,7 +21,8 @@ import {
   Loader2,
   RotateCcw,
   Award,
-  FolderPlus
+  FolderPlus,
+  ChevronDown
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { productService } from '../../services/productService';
@@ -43,6 +44,51 @@ const handleProductImageError = (event, product) => {
     event.currentTarget.onerror = null;
     event.currentTarget.src = fallback;
   }
+};
+
+const ModalSelect = ({ value, onChange, options, placeholder, label }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="w-full min-w-0" onKeyDown={(event) => {
+      if (event.key === 'Escape') setIsOpen(false);
+    }}>
+      <button
+        type="button"
+        role="combobox"
+        aria-label={label}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-required="true"
+        onClick={() => setIsOpen((open) => !open)}
+        className="w-full min-w-0 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-left text-sm font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner cursor-pointer flex items-center justify-between gap-2"
+      >
+        <span className={`min-w-0 truncate ${value ? '' : 'text-slate-400'}`}>{value || placeholder}</span>
+        <ChevronDown className={`w-4 h-4 shrink-0 text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      {isOpen && (
+        <div role="listbox" aria-label={label} className="mt-1 w-full max-h-40 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
+          {options.length > 0 ? options.map((option) => (
+            <button
+              key={option}
+              type="button"
+              role="option"
+              aria-selected={value === option}
+              onClick={() => {
+                onChange(option);
+                setIsOpen(false);
+              }}
+              className={`w-full px-3 py-2 text-left text-xs font-semibold whitespace-normal break-words hover:bg-orange-50 hover:text-brandOrange-700 ${value === option ? 'bg-orange-50 text-brandOrange-700' : 'text-slate-700'}`}
+            >
+              {option}
+            </button>
+          )) : (
+            <p className="px-3 py-2 text-xs text-slate-500">No options available</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
 };
 
 
@@ -297,6 +343,11 @@ export const AdminProducts = () => {
     e.preventDefault();
     if (!formData.name || !formData.sku) {
       showToast('Product name and SKU are required', 'warning');
+      return;
+    }
+
+    if (!formData.category || !formData.category.trim()) {
+      showToast('Please select a Category', 'warning');
       return;
     }
 
@@ -882,15 +933,13 @@ export const AdminProducts = () => {
                       <span>Add</span>
                     </button>
                   </div>
-                  <select
-                    required
+                  <ModalSelect
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner cursor-pointer"
-                  >
-                    <option value="" disabled>Select category</option>
-                    {categoriesList.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
+                    onChange={(category) => setFormData({ ...formData, category })}
+                    options={categoriesList.filter(c => c !== 'All')}
+                    placeholder="Select category"
+                    label="Category"
+                  />
                 </div>
               </div>
 
@@ -911,22 +960,16 @@ export const AdminProducts = () => {
                     <span>Add Brand</span>
                   </button>
                 </div>
-                <select
-                  required
+                <ModalSelect
                   value={formData.brand || ''}
-                  onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner cursor-pointer"
-                >
-                  <option value="">-- Select Brand / Manufacturer --</option>
-                  {/* If editing and the product has a brand not in the current list, show it */}
-                  {formData.brand && !brandsList.some(b => (typeof b === 'string' ? b : b.name) === formData.brand) && (
-                    <option value={formData.brand}>{formData.brand}</option>
-                  )}
-                  {brandsList.filter(b => b.status !== 'Inactive').map(b => {
-                    const bName = typeof b === 'string' ? b : b.name;
-                    return <option key={bName} value={bName}>{bName}</option>;
-                  })}
-                </select>
+                  onChange={(brand) => setFormData({ ...formData, brand })}
+                  options={[
+                    ...(formData.brand && !brandsList.some(b => (typeof b === 'string' ? b : b.name) === formData.brand) ? [formData.brand] : []),
+                    ...brandsList.filter(b => b.status !== 'Inactive').map(b => typeof b === 'string' ? b : b.name)
+                  ]}
+                  placeholder="-- Select Brand / Manufacturer --"
+                  label="Brand / Manufacturer"
+                />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
