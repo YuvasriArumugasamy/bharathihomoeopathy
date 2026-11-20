@@ -215,20 +215,10 @@ export const AdminVisitors = () => {
             </p>
           </div>
 
-          {/* Year Picker Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="appearance-none px-4 py-2 pr-10 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500"
-            >
-              {Array.from({ length: 5 }, (_, i) => currentYear - i).map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-            <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          {/* Year Display (No Dropdown) */}
+          <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl">
+            <span className="text-lg font-bold text-slate-800">{selectedYear}</span>
+            <Calendar className="w-5 h-5 text-slate-400" />
           </div>
         </div>
 
