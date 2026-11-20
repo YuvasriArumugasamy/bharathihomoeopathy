@@ -132,8 +132,8 @@ export const AdminProducts = () => {
     sku: '',
     category: '',
     brand: '',
-    regularPrice: 399,
-    offerPrice: 349,
+    regularPrice: 0,
+    offerPrice: 0,
     stock: 25,
     shortDescription: '',
     description: '',
@@ -244,8 +244,8 @@ export const AdminProducts = () => {
       sku: `HOM-${Math.floor(100 + Math.random() * 900)}`,
       category: categoriesList.find(c => c !== 'All') || '',
       brand: '',
-      regularPrice: 399,
-      offerPrice: 349,
+      regularPrice: 0,
+      offerPrice: 0,
       stock: 25,
       shortDescription: '',
       description: '',
@@ -911,6 +911,7 @@ export const AdminProducts = () => {
                   <label className="block font-bold text-slate-700 mb-1.5">Regular Price (₹)</label>
                   <input
                     type="number"
+                    min="0"
                     value={formData.regularPrice}
                     onChange={(e) => setFormData({ ...formData, regularPrice: Number(e.target.value) })}
                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
@@ -920,6 +921,7 @@ export const AdminProducts = () => {
                   <label className="block font-bold text-slate-700 mb-1.5">Offer Price (₹)</label>
                   <input
                     type="number"
+                    min="0"
                     value={formData.offerPrice}
                     onChange={(e) => setFormData({ ...formData, offerPrice: Number(e.target.value) })}
                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
