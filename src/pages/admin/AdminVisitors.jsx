@@ -101,7 +101,7 @@ const simpleVisitorService = {
 };
 
 /**
- * Simple Bar Chart Component
+ * Simple Bar Chart Component with Y-Axis
  */
 const BarChartComponent = ({ data = [] }) => {
   const [hoveredItem, setHoveredItem] = useState(null);
@@ -111,6 +111,16 @@ const BarChartComponent = ({ data = [] }) => {
     const max = Math.max(...data.map((d) => d.visitors || 0));
     return max > 0 ? Math.ceil(max * 1.15) : 5;
   }, [data]);
+
+  // Generate Y-axis ticks (5 levels)
+  const yTicks = useMemo(() => {
+    const ticks = [];
+    const step = Math.ceil(maxValue / 4);
+    for (let i = 0; i <= 4; i++) {
+      ticks.push(i * step);
+    }
+    return ticks.reverse(); // Top to bottom
+  }, [maxValue]);
 
   if (!data.length) {
     return (
@@ -122,7 +132,7 @@ const BarChartComponent = ({ data = [] }) => {
   }
 
   return (
-    <div className="relative w-full h-64 overflow-hidden">
+    <div className="relative w-full h-80 overflow-hidden">
       {/* Tooltip */}
       {hoveredItem && (
         <div 
@@ -134,39 +144,61 @@ const BarChartComponent = ({ data = [] }) => {
         </div>
       )}
 
-      {/* Chart */}
-      <div className="h-full flex items-end justify-between gap-1.5 px-2 pb-6">
-        {data.map((item, index) => {
-          const heightPercent = maxValue > 0 ? (item.visitors / maxValue) * 100 : 0;
-          const isHovered = hoveredItem?.index === index;
-
-          return (
-            <div
-              key={index}
-              className="flex-1 flex flex-col items-center justify-end h-full group cursor-pointer"
-              onMouseEnter={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const parentRect = e.currentTarget.parentElement.getBoundingClientRect();
-                const xPercent = ((rect.left + rect.width / 2 - parentRect.left) / parentRect.width) * 100;
-                setHoveredItem({ ...item, index, xPercent });
-              }}
-              onMouseLeave={() => setHoveredItem(null)}
-            >
-              {/* Bar */}
-              <div 
-                className="w-full rounded-t-md transition-all duration-300"
-                style={{
-                  height: `${Math.max(2, heightPercent)}%`,
-                  backgroundColor: isHovered ? '#f59e0b' : '#d97706'
-                }}
-              />
-              {/* Label */}
-              <span className={`mt-2 text-[10px] font-medium whitespace-nowrap ${isHovered ? 'text-amber-600 font-bold' : 'text-slate-500'}`}>
-                {item.label}
-              </span>
+      {/* Chart with Y-Axis */}
+      <div className="h-full flex gap-3">
+        {/* Y-Axis */}
+        <div className="flex flex-col justify-between py-2 pb-8 w-12 text-right">
+          {yTicks.map((tick, idx) => (
+            <div key={idx} className="text-xs font-medium text-slate-500">
+              {tick}
             </div>
-          );
-        })}
+          ))}
+        </div>
+
+        {/* Chart Area */}
+        <div className="flex-1 relative">
+          {/* Gridlines */}
+          <div className="absolute inset-0 flex flex-col justify-between py-2 pb-8 pointer-events-none">
+            {yTicks.map((_, idx) => (
+              <div key={idx} className="border-b border-slate-200"></div>
+            ))}
+          </div>
+
+          {/* Bars */}
+          <div className="h-full flex items-end justify-between gap-1.5 px-2 pb-8 pt-2 relative">
+            {data.map((item, index) => {
+              const heightPercent = maxValue > 0 ? (item.visitors / maxValue) * 100 : 0;
+              const isHovered = hoveredItem?.index === index;
+
+              return (
+                <div
+                  key={index}
+                  className="flex-1 flex flex-col items-center justify-end h-full group cursor-pointer"
+                  onMouseEnter={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const parentRect = e.currentTarget.parentElement.getBoundingClientRect();
+                    const xPercent = ((rect.left + rect.width / 2 - parentRect.left) / parentRect.width) * 100;
+                    setHoveredItem({ ...item, index, xPercent });
+                  }}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
+                  {/* Bar */}
+                  <div 
+                    className="w-full rounded-t-md transition-all duration-300"
+                    style={{
+                      height: `${Math.max(2, heightPercent)}%`,
+                      backgroundColor: isHovered ? '#f59e0b' : '#d97706'
+                    }}
+                  />
+                  {/* Label */}
+                  <span className={`mt-2 text-[10px] font-medium whitespace-nowrap ${isHovered ? 'text-amber-600 font-bold' : 'text-slate-500'}`}>
+                    {item.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
