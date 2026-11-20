@@ -152,6 +152,7 @@ export const AdminProducts = () => {
   const [newBrandDesc, setNewBrandDesc] = useState('');
   const [quickCategoryModalOpen, setQuickCategoryModalOpen] = useState(false);
   const [newCategoryInput, setNewCategoryInput] = useState('');
+  const [newCategoryImage, setNewCategoryImage] = useState('');
   const [categoriesList, setCategoriesList] = useState(['All']);
 
   // Load brands dynamically from admin brands store
@@ -868,6 +869,7 @@ export const AdminProducts = () => {
                       type="button"
                       onClick={() => {
                         setNewCategoryInput('');
+                        setNewCategoryImage('');
                         setQuickCategoryModalOpen(true);
                       }}
                       className="px-2.5 py-1 bg-orange-50 hover:bg-orange-100 text-brandOrange-600 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer border border-orange-200/60"
@@ -1224,6 +1226,55 @@ export const AdminProducts = () => {
                 />
               </div>
 
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5">Category Image</label>
+                <div className="flex items-center gap-3.5">
+                  <label className="flex-1 border-2 border-dashed border-slate-200 hover:border-brandOrange-400 bg-slate-50 hover:bg-orange-50/40 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all group">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (!file) return;
+                        if (!file.type.startsWith('image/')) {
+                          showToast('Please select a valid image file', 'error');
+                          event.target.value = '';
+                          return;
+                        }
+                        if (file.size > 5 * 1024 * 1024) {
+                          showToast('Image must be smaller than 5MB', 'error');
+                          event.target.value = '';
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = () => setNewCategoryImage(String(reader.result || ''));
+                        reader.onerror = () => showToast('Could not read the selected image', 'error');
+                        reader.readAsDataURL(file);
+                      }}
+                      className="hidden"
+                    />
+                    <div className="w-9 h-9 rounded-xl bg-brandOrange-100 text-brandOrange-600 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                      <Upload className="w-4 h-4" />
+                    </div>
+                    <span className="text-xs font-black text-slate-700">Upload category image</span>
+                    <span className="text-[10px] text-slate-400 mt-0.5">PNG, JPG or WEBP · Max 5MB</span>
+                  </label>
+                  {newCategoryImage && (
+                    <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-orange-200 shrink-0">
+                      <img src={newCategoryImage} alt="Category preview" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setNewCategoryImage('')}
+                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center"
+                        aria-label="Remove category image"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
                 <button
                   type="button"
@@ -1253,6 +1304,7 @@ export const AdminProducts = () => {
                     const newCategory = {
                       name: cleanName,
                       slug: slugify(cleanName),
+                      image: newCategoryImage,
                       status: 'Active',
                       description: '',
                       isFeatured: false
