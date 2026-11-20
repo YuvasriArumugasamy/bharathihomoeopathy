@@ -170,7 +170,7 @@ const BarChartComponent = ({ data = [] }) => {
   }
 
   return (
-    <div className="relative w-full h-80 pb-2 overflow-x-auto">
+    <div className="relative w-full h-80 pb-2 overflow-hidden">
       {/* Tooltip */}
       {hoveredItem && (
         <div 
@@ -183,18 +183,18 @@ const BarChartComponent = ({ data = [] }) => {
       )}
 
       {/* Chart with Y-Axis */}
-      <div className="h-full flex gap-3 min-w-[800px]">
+      <div className="h-full flex gap-2 sm:gap-3 min-w-0 w-full">
         {/* Y-Axis */}
-        <div className="flex flex-col justify-between pb-12 w-12 text-right">
+        <div className="flex flex-col justify-between pb-12 w-7 sm:w-12 shrink-0 text-right">
           {yTicks.map((tick, idx) => (
-            <div key={idx} className="text-xs font-medium text-slate-500 -mt-2">
+            <div key={idx} className="text-[10px] sm:text-xs font-medium text-slate-500 -mt-2">
               {tick}
             </div>
           ))}
         </div>
 
         {/* Chart Area */}
-        <div className="flex-1 relative">
+        <div className="flex-1 min-w-0 relative">
           {/* Gridlines */}
           <div className="absolute inset-0 flex flex-col justify-between pb-12 pointer-events-none">
             {yTicks.map((_, idx) => (
@@ -203,7 +203,7 @@ const BarChartComponent = ({ data = [] }) => {
           </div>
 
           {/* Bars */}
-          <div className="h-full flex items-end justify-between gap-2 px-4 pb-12 pt-2 relative min-w-[720px]">
+          <div className="h-full flex items-end justify-between gap-1 sm:gap-2 px-1 sm:px-4 pb-12 pt-2 relative min-w-0">
             {data.map((item, index) => {
               const heightPercent = maxValue > 0 ? (item.visitors / maxValue) * 100 : 0;
               const isHovered = hoveredItem?.index === index;
@@ -212,7 +212,7 @@ const BarChartComponent = ({ data = [] }) => {
                 <div
                   key={index}
                   className="flex flex-col items-center justify-end h-full group cursor-pointer"
-                  style={{ flex: '1 1 0', minWidth: '50px' }}
+                  style={{ flex: '1 1 0', minWidth: 0 }}
                   onMouseEnter={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
                     const parentRect = e.currentTarget.parentElement.getBoundingClientRect();
@@ -230,7 +230,7 @@ const BarChartComponent = ({ data = [] }) => {
                     }}
                   />
                   {/* Label */}
-                  <span className={`mt-2 text-[11px] font-medium whitespace-nowrap ${isHovered ? 'text-amber-600 font-bold' : 'text-slate-500'}`}>
+                  <span className={`mt-2 text-[8px] sm:text-[11px] font-medium whitespace-nowrap ${isHovered ? 'text-amber-600 font-bold' : 'text-slate-500'}`}>
                     {item.label}
                   </span>
                 </div>
