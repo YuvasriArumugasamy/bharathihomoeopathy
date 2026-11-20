@@ -5,6 +5,7 @@ import { useToast } from '../../context/ToastContext';
 import { slugify } from '../../utils/slugify';
 import { getStoredProducts, isMatchingCategory } from '../../utils/productStorage';
 import { getCategoryDisplayImage } from '../../utils/categoryImages';
+import { cloudSyncService } from '../../services/cloudSyncService';
 
 export const AdminCategories = () => {
   const { showToast } = useToast();
@@ -44,13 +45,29 @@ export const AdminCategories = () => {
   const [editingCategory, setEditingCategory] = useState(null);
 
   useEffect(() => {
+    let cloudCategoriesReceived = false;
     const fetchCats = async () => {
       const data = await categoryService.getAdminCategories();
-      if (data && Array.isArray(data)) {
+      if (!cloudCategoriesReceived && data && Array.isArray(data)) {
         setCategories(data);
       }
     };
     fetchCats();
+
+    // Keep the admin list in sync with categories shown on the storefront,
+    // including when the admin opens the dashboard on another device.
+    const unsubscribe = cloudSyncService.listenToCategories((cloudCategories) => {
+      if (!Array.isArray(cloudCategories)) return;
+      cloudCategoriesReceived = true;
+      setCategories(cloudCategories.map((category, index) => {
+        const id = category.id || category._id || `cat-${index + 1}`;
+        return { ...category, id, _id: category._id || id };
+      }));
+    });
+
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
+    };
   }, []);
 
   const [formData, setFormData] = useState({
