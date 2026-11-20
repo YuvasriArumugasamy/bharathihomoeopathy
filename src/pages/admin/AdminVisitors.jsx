@@ -228,7 +228,7 @@ export const AdminVisitors = () => {
     <div className="space-y-6">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
             <Globe className="w-5 h-5" />
@@ -246,15 +246,6 @@ export const AdminVisitors = () => {
             </p>
           </div>
         </div>
-
-        <button
-          onClick={fetchStats}
-          disabled={loading}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-all disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-amber-600' : ''}`} />
-          <span>Refresh</span>
-        </button>
       </div>
 
       {/* 5 Summary Cards - Responsive Grid */}
