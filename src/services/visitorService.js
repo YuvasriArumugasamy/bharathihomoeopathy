@@ -79,13 +79,24 @@ export const visitorService = {
  * Keep an anonymous visitor ID for this browser tab's session.
  */
 function getVisitorKey() {
-  const storageKey = 'dr_bharathi_visitor_session';
+  const cookieName = 'dr_bharathi_visitor_session';
   try {
-    let visitorKey = sessionStorage.getItem(storageKey);
-    if (!visitorKey) {
-      visitorKey = globalThis.crypto?.randomUUID?.()
-        || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-      sessionStorage.setItem(storageKey, visitorKey);
+    const existingCookie = document.cookie
+      .split('; ')
+      .find((cookie) => cookie.startsWith(`${cookieName}=`));
+    if (existingCookie) return decodeURIComponent(existingCookie.slice(cookieName.length + 1));
+    const tabSessionId = sessionStorage.getItem(cookieName);
+    if (tabSessionId) return tabSessionId;
+
+    const visitorKey = globalThis.crypto?.randomUUID?.()
+      || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+    // No expiry makes this a browser-session cookie, shared across tabs.
+    document.cookie = `${cookieName}=${encodeURIComponent(visitorKey)}; Path=/; SameSite=Lax${secure}`;
+    const cookieWasSaved = document.cookie.split('; ').some((cookie) => cookie.startsWith(`${cookieName}=`));
+    if (!cookieWasSaved) {
+      // Privacy settings can disable cookies; retain a same-tab session as fallback.
+      sessionStorage.setItem(cookieName, visitorKey);
     }
     return visitorKey;
   } catch (err) {
