@@ -9,34 +9,36 @@ dotenv.config();
 export const seedInitialData = async () => {
   try {
     const adminEmail = 'admin@drbharathi.com';
-    let admin = await User.findOne({ email: adminEmail });
+    const adminSeedPassword = process.env.ADMIN_SEED_PASSWORD?.trim();
+    // Password is select:false in the schema; select it only for an explicitly
+    // configured secret-based password reset.
+    let admin = await User.findOne({ email: adminEmail }).select('+password');
 
     if (!admin) {
-      // Let the User model's pre('save') hook handle password hashing
-      admin = await User.create({
-        name: 'Clinic Administrator',
-        email: adminEmail,
-        password: 'admin123',
-        role: 'admin',
-        phone: '+91 90258 54711'
-      });
-      console.log(`[Seed] Created default admin user: ${adminEmail}`);
+      if (adminSeedPassword) {
+        // Let the User model's pre('save') hook handle password hashing.
+        admin = await User.create({
+          name: 'Clinic Administrator',
+          email: adminEmail,
+          password: adminSeedPassword,
+          role: 'admin',
+          phone: '+91 90258 54711'
+        });
+        console.log(`[Seed] Created administrator account: ${adminEmail}`);
+      } else {
+        console.warn('[Seed] ADMIN_SEED_PASSWORD is unset; skipped admin account creation.');
+      }
     } else {
-      // Fix existing admin: if password is double-hashed or role is wrong, recreate
       if (admin.role !== 'admin') {
         admin.role = 'admin';
         await admin.save();
         console.log(`[Seed] Updated ${adminEmail} to admin role`);
       }
-      // Verify password works; if not, reset it
-      const isMatch = await admin.matchPassword('admin123');
-      if (!isMatch) {
-        // Password is corrupted (double-hashed) - reset it via direct field update
-        // We must use save() so the pre-save hook re-hashes correctly
-        admin.password = 'admin123';
+      if (adminSeedPassword && !(await admin.matchPassword(adminSeedPassword))) {
+        admin.password = adminSeedPassword;
         admin.role = 'admin';
         await admin.save();
-        console.log(`[Seed] Reset admin password (was double-hashed)`);
+        console.log('[Seed] Admin password reset from ADMIN_SEED_PASSWORD.');
       }
     }
 
