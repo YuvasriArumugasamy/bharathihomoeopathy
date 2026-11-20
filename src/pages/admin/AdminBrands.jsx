@@ -7,7 +7,6 @@ import {
   Search, 
   Check, 
   X, 
-  Upload, 
   Package, 
   Sparkles,
   Building2,
@@ -119,31 +118,6 @@ export const AdminBrands = () => {
       originCountry: brand.originCountry || 'India'
     });
     setModalOpen(true);
-  };
-
-  const handleLogoUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      showToast('Please select a valid image file (PNG, JPG, WEBP)', 'error');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('Image file size should be less than 5MB', 'error');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setFormData(prev => ({ ...prev, image: reader.result }));
-      showToast('Brand logo uploaded successfully!', 'success');
-    };
-    reader.onerror = () => {
-      showToast('Failed to read image file', 'error');
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleSave = async (e) => {
@@ -476,7 +450,7 @@ export const AdminBrands = () => {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. SBL, Willmar Schwabe, Dr. Reckeweg, BJain"
+                  placeholder="Enter brand name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
@@ -487,7 +461,7 @@ export const AdminBrands = () => {
                 <label className="block font-bold text-slate-700 mb-1.5">Origin / Country (Optional)</label>
                 <input
                   type="text"
-                  placeholder="e.g. India, Germany, Switzerland"
+                  placeholder="Enter country"
                   value={formData.originCountry}
                   onChange={(e) => setFormData({ ...formData, originCountry: e.target.value })}
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
@@ -498,55 +472,11 @@ export const AdminBrands = () => {
                 <label className="block font-bold text-slate-700 mb-1.5">Description / About Brand</label>
                 <textarea
                   rows={3}
-                  placeholder="Short note about the brand, pharmacy standards, or specialties..."
+                  placeholder="Enter brand description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner resize-none"
                 />
-              </div>
-
-              {/* Logo Upload & URL */}
-              <div>
-                <label className="block font-bold text-slate-700 mb-1.5">Brand Logo (Optional)</label>
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    placeholder="Paste image URL (https://...)"
-                    value={formData.image}
-                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                    className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono text-[11px] text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
-                  />
-                  <label className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold flex items-center gap-1.5 cursor-pointer transition-colors shrink-0">
-                    <Upload className="w-4 h-4 text-slate-500" />
-                    <span>Upload</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-
-                {formData.image && (
-                  <div className="mt-3 flex items-center gap-3 p-2 bg-slate-50 rounded-xl border border-slate-200">
-                    <img 
-                      src={formData.image} 
-                      alt="Logo preview" 
-                      className="w-12 h-12 object-contain bg-white rounded-lg border border-slate-200 p-1" 
-                    />
-                    <div className="flex-1 text-[11px] font-bold text-slate-600 truncate">
-                      Logo preview
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, image: '' }))}
-                      className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
               </div>
 
               <div>
