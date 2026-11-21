@@ -13,7 +13,10 @@ export const ProductCard = ({ product }) => {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { showToast } = useToast();
   const { format: formatPrice } = useCurrency();
-  const [selectedSize, setSelectedSize] = useState(() => product?.size || "30 ml");
+  const sizeOptions = Array.isArray(product?.sizes)
+    ? [...new Set(product.sizes.map(size => String(size).trim()).filter(Boolean))]
+    : (product?.size ? [String(product.size).trim()] : []);
+  const [selectedSize, setSelectedSize] = useState(() => product?.size || sizeOptions[0] || '');
 
   if (!product) return null;
 
@@ -33,14 +36,6 @@ export const ProductCard = ({ product }) => {
   const isOutOfStock = product.stock !== undefined && Number(product.stock) <= 0;
   const isLowStock = product.stock !== undefined && Number(product.stock) > 0 && Number(product.stock) <= 5;
 
-  // Size options
-  const defaultSize = product.size || "30 ml";
-
-  const sizeOptions = [
-    defaultSize,
-    ...(defaultSize.includes("30") ? ["100 ml"] : defaultSize.includes("100") ? ["30 ml"] : ["60 ml", "100 ml"])
-  ].filter((v, i, a) => a.indexOf(v) === i);
-
   const handleAddToCart = (e) => {
     e?.preventDefault?.();
     e?.stopPropagation?.();
@@ -50,7 +45,7 @@ export const ProductCard = ({ product }) => {
       return;
     }
 
-    addToCart(product, 1);
+    addToCart({ ...product, ...(selectedSize ? { size: selectedSize } : {}) }, 1);
   };
 
   const handleIncrement = (e) => {
@@ -181,20 +176,20 @@ export const ProductCard = ({ product }) => {
           {/* Size Selector & BULK % Badge Row */}
           <div className="flex items-center justify-between gap-1.5 mt-2">
             {/* Size Dropdown Box */}
-            <div className="relative inline-flex items-center min-w-0">
-              <select
-                value={selectedSize}
-                onChange={(e) => setSelectedSize(e.target.value)}
-                className="text-[11px] font-semibold text-slate-700 bg-white border border-slate-300 rounded px-2 py-0.5 pr-5 appearance-none focus:outline-none focus:border-[#00a699] cursor-pointer truncate"
-              >
-                {sizeOptions.map((opt, idx) => (
-                  <option key={idx} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-3 h-3 text-slate-400 absolute right-1.5 pointer-events-none" />
-            </div>
+            {sizeOptions.length > 1 ? (
+              <div className="relative inline-flex items-center min-w-0">
+                <select
+                  value={sizeOptions.includes(selectedSize) ? selectedSize : sizeOptions[0]}
+                  onChange={(e) => setSelectedSize(e.target.value)}
+                  className="text-[11px] font-semibold text-slate-700 bg-white border border-slate-300 rounded px-2 py-0.5 pr-5 appearance-none focus:outline-none focus:border-[#00a699] cursor-pointer truncate"
+                >
+                  {sizeOptions.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+                <ChevronDown className="w-3 h-3 text-slate-400 absolute right-1.5 pointer-events-none" />
+              </div>
+            ) : sizeOptions.length === 1 ? (
+              <span className="text-[11px] font-semibold text-slate-700">{sizeOptions[0]}</span>
+            ) : <span />}
 
             {/* BULK % Tag */}
             <div className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 text-[10px] font-black italic border border-amber-200 shrink-0">

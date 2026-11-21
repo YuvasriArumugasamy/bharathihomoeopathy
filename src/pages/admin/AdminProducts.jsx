@@ -94,6 +94,7 @@ const ModalSelect = ({ value, onChange, options, placeholder, label }) => {
 
 const getProductSize = (p) => {
   if (!p) return '30 ml';
+  if (Array.isArray(p.sizes) && p.sizes.length) return p.sizes.join(', ');
   if (p.size && String(p.size).trim()) return String(p.size).trim();
   if (p.volume && String(p.volume).trim()) return String(p.volume).trim();
   if (p.weight && String(p.weight).trim()) return `${p.weight}${p.unit || 'g'}`;
@@ -186,6 +187,7 @@ export const AdminProducts = () => {
     shortDescription: '',
     description: '',
     image: '',
+    sizeOptions: '',
     status: 'Active',
     isBestSeller: false,
     isFeatured: false
@@ -301,6 +303,7 @@ export const AdminProducts = () => {
       shortDescription: '',
       description: '',
       image: '',
+      sizeOptions: '',
       status: 'Active',
       isBestSeller: false,
       isFeatured: false
@@ -310,7 +313,13 @@ export const AdminProducts = () => {
 
   const handleOpenEdit = (product) => {
     setEditingProduct(product);
-    setFormData({ ...product, brand: product.brand || '' });
+    setFormData({
+      ...product,
+      brand: product.brand || '',
+      sizeOptions: (Array.isArray(product.sizes) && product.sizes.length
+        ? product.sizes
+        : (product.size ? [product.size] : [])).join(', ')
+    });
     setModalOpen(true);
   };
 
@@ -362,9 +371,11 @@ export const AdminProducts = () => {
     }
 
     try {
+      const sizes = [...new Set(String(formData.sizeOptions || '').split(',').map(size => size.trim()).filter(Boolean))];
+      const productData = { ...formData, sizes, size: sizes[0] || '' };
       if (editingProduct) {
         const targetId = editingProduct.id || editingProduct._id;
-        const updatedData = { ...formData, slug: slugify(formData.name) };
+        const updatedData = { ...productData, slug: slugify(formData.name) };
         const savedProduct = await productService.updateAdminProduct(targetId, updatedData);
         setProducts(prev => prev.map(p => {
           const isMatch = targetId && ((p.id && p.id === targetId) || (p._id && p._id === targetId));
@@ -373,7 +384,7 @@ export const AdminProducts = () => {
         showToast('Product updated successfully and saved!', 'success');
       } else {
         const newProd = {
-          ...formData,
+          ...productData,
           id: 'prod-' + Date.now(),
           slug: slugify(formData.name),
           createdAt: new Date().toISOString().slice(0, 10)
@@ -1063,6 +1074,18 @@ export const AdminProducts = () => {
                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5">Available Sizes</label>
+                <input
+                  type="text"
+                  placeholder="Example: 30 ml, 100 ml"
+                  value={formData.sizeOptions || ''}
+                  onChange={(e) => setFormData({ ...formData, sizeOptions: e.target.value })}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
+                />
+                <p className="mt-1 text-[10px] text-slate-500">Separate each size with a comma. These options appear in the customer shop.</p>
               </div>
 
               <div>

@@ -53,6 +53,8 @@ export const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
             </h4>
           </Link>
 
+          {item.size && <span className="text-xs text-slate-500">Size: {item.size}</span>}
+
           <div className="text-xs text-slate-500 font-medium">
             <span className="text-slate-900 font-bold text-sm">₹{unitPrice}</span> <span className="text-slate-400">each</span>
           </div>
@@ -65,7 +67,7 @@ export const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
         {/* Quantity Stepper */}
         <div className="flex items-center border border-slate-200 rounded-xl p-0.5 bg-slate-50">
           <button
-            onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+            onClick={() => onUpdateQuantity(item.id, item.quantity - 1, item.size)}
             disabled={item.quantity <= 1}
             className="w-7 h-7 flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 rounded-lg transition-all disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer active:scale-95"
             aria-label="Decrease quantity"
@@ -74,7 +76,7 @@ export const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
           </button>
           <span className="w-8 text-center text-sm font-bold text-slate-900">{item.quantity}</span>
           <button
-            onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+            onClick={() => onUpdateQuantity(item.id, item.quantity + 1, item.size)}
             className="w-7 h-7 flex items-center justify-center text-slate-700 hover:bg-white hover:text-slate-900 rounded-lg transition-all cursor-pointer active:scale-95"
             aria-label="Increase quantity"
           >
@@ -91,7 +93,7 @@ export const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
 
         {/* Remove Button */}
         <button
-          onClick={() => onRemove(item.id)}
+          onClick={() => onRemove(item.id, item.size)}
           className="w-9 h-9 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all cursor-pointer"
           title="Remove item"
           aria-label="Remove item"

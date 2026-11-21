@@ -80,6 +80,7 @@ export const createOrder = async (req, res, next) => {
         product: productId,
         name,
         sku,
+        size: item.size || '',
         image,
         quantity,
         price,

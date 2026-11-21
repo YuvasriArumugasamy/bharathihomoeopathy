@@ -322,6 +322,7 @@ export const Checkout = () => {
         items: (Array.isArray(items) ? items : []).map(item => ({
           id: item.id || item.productId,
           name: item.name || item.title || 'Classical Homeopathic Remedy',
+          size: item.size || '',
           quantity: item.quantity || 1,
           price: item.price || 0,
           image: item.image || '/logo.png'
@@ -794,7 +795,7 @@ export const Checkout = () => {
                             />
                             <div className="space-y-1">
                               <h4 className="text-sm font-black text-slate-900">{item.name}</h4>
-                              <p className="text-xs text-slate-500 font-bold">Quantity: {item.quantity} • Total: ₹{(item.price * item.quantity).toFixed(2)}</p>
+                              <p className="text-xs text-slate-500 font-bold">{item.size ? `Size: ${item.size} • ` : ''}Quantity: {item.quantity} • Total: ₹{(item.price * item.quantity).toFixed(2)}</p>
                             </div>
                           </div>
 

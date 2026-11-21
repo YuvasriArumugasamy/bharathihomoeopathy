@@ -183,7 +183,10 @@ export const CartProvider = ({ children }) => {
     if (!product || quantity <= 0) return;
 
     setItems(prevItems => {
-      const existingIndex = prevItems.findIndex(i => i.id === product.id || i._id === product.id);
+      const productId = product.id || product._id;
+      const existingIndex = prevItems.findIndex(i =>
+        (i.id === productId || i._id === productId) && (i.size || '') === (product.size || '')
+      );
       if (existingIndex > -1) {
         const updated = [...prevItems];
         const newQty = updated[existingIndex].quantity + quantity;
@@ -201,6 +204,7 @@ export const CartProvider = ({ children }) => {
           price: product.salePrice || product.price,
           originalPrice: product.price,
           image: product.image || (product.images && product.images[0]) || '',
+          size: product.size || '',
           quantity
         });
         return [...prevItems, newItem];
@@ -210,17 +214,19 @@ export const CartProvider = ({ children }) => {
     showToast(`${product.name} added to cart!`, 'success');
   };
 
-  const updateQuantity = (productId, quantity) => {
+  const updateQuantity = (productId, quantity, size) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(productId, size);
       return;
     }
-    setItems(prev => prev.map(item => item.id === productId ? { ...item, quantity } : item));
+    setItems(prev => prev.map(item => item.id === productId && (size === undefined || (item.size || '') === size)
+      ? { ...item, quantity }
+      : item));
   };
 
-  const removeFromCart = (productId) => {
-    const item = items.find(i => i.id === productId);
-    setItems(prev => prev.filter(item => item.id !== productId));
+  const removeFromCart = (productId, size) => {
+    const item = items.find(i => i.id === productId && (size === undefined || (i.size || '') === size));
+    setItems(prev => prev.filter(item => item.id !== productId || (size !== undefined && (item.size || '') !== size)));
     if (item) {
       showToast(`${item.name} removed from cart`, 'info');
     }
