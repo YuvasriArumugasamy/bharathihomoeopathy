@@ -39,8 +39,17 @@ const app = express();
 
 // Middlewares
 // CLIENT_URL accepts a comma-separated list for local and deployed frontends.
+// Normalize configured URLs so a trailing slash cannot accidentally block CORS.
+const normalizeOrigin = (value) => {
+  try {
+    return new URL(value.trim()).origin;
+  } catch {
+    return null;
+  }
+};
+
 const allowedOrigins = new Set([
-  ...(process.env.CLIENT_URL || '').split(',').map((origin) => origin.trim()).filter(Boolean),
+  ...(process.env.CLIENT_URL || '').split(',').map(normalizeOrigin).filter(Boolean),
   'http://localhost:5173',
   'https://bharathihomoeopathy.vercel.app',
   'https://bharathihomeopathy.vercel.app',
@@ -48,16 +57,20 @@ const allowedOrigins = new Set([
   'https://www.bharathihomoeopathy.com',
   'http://bharathihomoeopathy.com',
   'http://www.bharathihomoeopathy.com'
-]);
+].map(normalizeOrigin).filter(Boolean));
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, callback) => {
     // Requests without Origin are server-to-server or same-origin requests.
-    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    if (!origin || allowedOrigins.has(normalizeOrigin(origin))) return callback(null, true);
     return callback(new Error(`Origin ${origin} is not allowed by CORS`));
   },
   credentials: true
-}));
+};
+
+// Explicitly answer browser preflight requests before they reach API routes.
+app.options('*', cors(corsOptions));
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
