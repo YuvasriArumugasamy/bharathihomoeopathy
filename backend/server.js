@@ -53,6 +53,8 @@ const allowedOrigins = new Set([
   'http://localhost:5173',
   'https://bharathihomoeopathy.vercel.app',
   'https://bharathihomeopathy.vercel.app',
+  'https://bharathihomeopathy.com',
+  'https://www.bharathihomeopathy.com',
   'https://bharathihomoeopathy.com',
   'https://www.bharathihomoeopathy.com',
   'http://bharathihomoeopathy.com',
