@@ -3,7 +3,7 @@ import Cart from '../models/Cart.js';
 import Product from '../models/Product.js';
 import { validateOrderInput } from '../validators/orderValidator.js';
 import { getEffectivePrice } from '../utils/productUtils.js';
-import { generateOrderNumber, calculateShippingCharge, calculateOrderTotal, validateStatusTransition } from '../utils/orderUtils.js';
+import { generateOrderNumber, calculateOrderTotal } from '../utils/orderUtils.js';
 import { sendEventNotification } from './notificationController.js';
 
 export const createOrder = async (req, res, next) => {
@@ -49,18 +49,27 @@ export const createOrder = async (req, res, next) => {
       let price = Number(item.price || item.salePrice || item.effectivePrice || 0);
       const quantity = Number(item.quantity || 1);
 
+      if (!Number.isInteger(quantity) || quantity < 1 || !Number.isFinite(price) || price < 0) {
+        return res.status(400).json({ success: false, message: 'Order items must have a valid quantity and price.' });
+      }
+
       // Attempt DB lookup if productId is a valid 24-char hex mongo ObjectId
       if (productId && typeof productId === 'string' && /^[0-9a-fA-F]{24}$/.test(productId)) {
-        const product = await Product.findOne({ _id: productId });
+        const product = await Product.findOne({ _id: productId, isActive: true });
         if (product) {
           name = product.name;
           sku = product.sku || sku;
           image = (product.images && product.images[0]) || image;
           price = getEffectivePrice(product);
-          if (product.stock >= quantity) {
-            product.stock -= quantity;
-            await product.save().catch(() => {});
+          if (product.stock < quantity) {
+            return res.status(400).json({ success: false, message: `Only ${product.stock} units of ${product.name} are available.` });
           }
+          const stockUpdate = await Product.updateOne({ _id: product._id, stock: { $gte: quantity } }, { $inc: { stock: -quantity } });
+          if (stockUpdate.modifiedCount !== 1) {
+            return res.status(409).json({ success: false, message: `${product.name} stock changed. Please refresh your cart.` });
+          }
+        } else {
+          return res.status(400).json({ success: false, message: 'A product in your cart is no longer available.' });
         }
       }
 
@@ -78,13 +87,16 @@ export const createOrder = async (req, res, next) => {
       });
     }
 
-    const shippingCharge = req.body.shippingCharge !== undefined
-      ? Number(req.body.shippingCharge)
-      : calculateShippingCharge(calculatedSubtotal);
-    const subtotal = req.body.subtotal !== undefined ? Number(req.body.subtotal) : calculatedSubtotal;
-    const totalAmount = req.body.totalAmount !== undefined
-      ? Number(req.body.totalAmount)
-      : calculateOrderTotal(subtotal, shippingCharge, Number(discount) || 0);
+    const country = (shippingAddress.country || 'India').trim().toLowerCase();
+    const state = (shippingAddress.state || '').trim().toLowerCase();
+    const freeShippingThreshold = 1000;
+    const shippingCharge = calculatedSubtotal >= freeShippingThreshold ? 0
+      : country !== 'india' ? 250
+      : state.includes('tamil nadu') || state === 'tn' ? 22 : 50;
+    const subtotal = calculatedSubtotal;
+    const safeDiscount = Math.min(calculatedSubtotal, Math.max(0, Number(discount) || Number(req.body.discountAmount) || 0));
+    const taxAmount = Math.round(subtotal * 0.05 * 100) / 100;
+    const totalAmount = Math.round((subtotal + shippingCharge + taxAmount - safeDiscount) * 100) / 100;
 
     const order = await Order.create({
       user: req.user ? req.user._id : null,
@@ -97,11 +109,12 @@ export const createOrder = async (req, res, next) => {
       shippingAddress,
       subtotal,
       shippingCharge,
-      discount: Number(discount) || 0,
+      taxAmount,
+      discount: safeDiscount,
       totalAmount,
       paymentMethod,
-      paymentStatus: paymentMethod === 'COD' ? 'pending' : (req.body.paymentStatus || 'pending'),
-      orderStatus: req.body.orderStatus || 'pending',
+      paymentStatus: 'pending',
+      orderStatus: 'pending',
       notes
     });
 
@@ -176,7 +189,11 @@ export const getOrderById = async (req, res, next) => {
     }
 
     // Security check: only the owner or an admin can view the order
-    if (order.user && req.user && order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    const isAdmin = req.user?.role === 'admin';
+    const isOwner = order.user && req.user && order.user.toString() === req.user._id.toString();
+    const email = String(req.query.email || '').trim().toLowerCase();
+    const isGuestOwner = !order.user && email && email === String(order.guestEmail || order.shippingAddress?.email || '').trim().toLowerCase();
+    if (!isAdmin && !isOwner && !isGuestOwner) {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
 
@@ -184,6 +201,25 @@ export const getOrderById = async (req, res, next) => {
       success: true,
       data: order
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const cancelMyOrder = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const order = await Order.findOne(/^[0-9a-fA-F]{24}$/.test(id) ? { _id: id } : { orderNumber: id });
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    if (!order.user || order.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+    if (!['pending', 'confirmed'].includes(String(order.orderStatus).toLowerCase())) {
+      return res.status(400).json({ success: false, message: 'This order can no longer be cancelled.' });
+    }
+    order.orderStatus = 'cancelled';
+    await order.save();
+    res.status(200).json({ success: true, message: 'Order cancelled successfully', data: order });
   } catch (error) {
     next(error);
   }

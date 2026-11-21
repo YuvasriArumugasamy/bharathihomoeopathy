@@ -3,6 +3,7 @@ import Product from '../models/Product.js';
 import Category from '../models/Category.js';
 import { validateProductInput } from '../validators/productValidator.js';
 import { getEffectivePrice, getStockStatus } from '../utils/productUtils.js';
+import { isLegacyTestProduct } from '../utils/testCatalogCleanup.js';
 
 const normalizeProductPayload = async (body) => {
   const payload = { ...body };
@@ -41,6 +42,9 @@ const normalizeProductPayload = async (body) => {
 export const createProduct = async (req, res, next) => {
   try {
     const normalized = await normalizeProductPayload(req.body);
+    if (isLegacyTestProduct(normalized)) {
+      return res.status(400).json({ success: false, message: 'Test and demo products cannot be added to the catalog.' });
+    }
     const { isValid, errors } = validateProductInput(normalized);
     if (!isValid) return res.status(400).json({ success: false, message: errors.join(', ') });
 
@@ -209,7 +213,7 @@ export const getAdminProducts = async (req, res, next) => {
     const limit = Number(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    const query = {};
+    const query = { name: { $not: /^(?:mn|test(?:\b|[-_\s])|demo(?:\b|[-_\s])|sample(?:\b|[-_\s])|dummy(?:\b|[-_\s]))/i }, slug: { $not: /^(?:mn|test(?:\b|[-_\s])|demo(?:\b|[-_\s])|sample(?:\b|[-_\s])|dummy(?:\b|[-_\s]))/i } };
     if (req.query.status === 'active') query.isActive = true;
     if (req.query.status === 'inactive') query.isActive = false;
 

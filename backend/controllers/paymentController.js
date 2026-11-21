@@ -48,7 +48,7 @@ export const createRazorpayOrder = async (req, res, next) => {
     if (existingOrder) {
       await Payment.create({
         order: existingOrder._id,
-        user: req.user ? req.user._id : existingOrder.user || null,
+        user: req.user ? req.user._id : existingOrder.user || undefined,
         razorpayOrderId: rzpOrder.id,
         amount: existingOrder.totalAmount,
         currency: currency || 'INR',
@@ -94,6 +94,9 @@ export const verifyPayment = async (req, res, next) => {
         .createHmac('sha256', secret)
         .update(body.toString())
         .digest();
+      if (!/^[0-9a-f]{128}$/i.test(razorpay_signature)) {
+        return res.status(400).json({ success: false, message: 'Payment verification failed: Invalid signature format' });
+      }
       const suppliedSignature = Buffer.from(razorpay_signature, 'hex');
       const isAuthentic = expectedSignature.length === suppliedSignature.length &&
         crypto.timingSafeEqual(expectedSignature, suppliedSignature);
@@ -101,30 +104,25 @@ export const verifyPayment = async (req, res, next) => {
       if (!isAuthentic) {
         return res.status(400).json({ success: false, message: 'Payment verification failed: Signature mismatch' });
       }
+    } else {
+      return res.status(400).json({ success: false, message: 'Razorpay signature is required' });
     }
 
-    // Update records if found in DB
-    try {
-      if (razorpay_order_id) {
-        const payment = await Payment.findOne({ razorpayOrderId: razorpay_order_id });
-        if (payment) {
-          payment.razorpayPaymentId = razorpay_payment_id;
-          payment.razorpaySignature = razorpay_signature || '';
-          payment.status = 'captured';
-          await payment.save();
-        }
-
-        const order = await Order.findOne({ razorpayOrderId: razorpay_order_id });
-        if (order) {
-          order.paymentStatus = 'paid';
-          order.orderStatus = 'confirmed';
-          order.razorpayPaymentId = razorpay_payment_id;
-          await order.save();
-        }
-      }
-    } catch (dbErr) {
-      console.warn('DB record update notice on payment verify:', dbErr.message);
+    const payment = await Payment.findOne({ razorpayOrderId: razorpay_order_id });
+    if (!payment) return res.status(404).json({ success: false, message: 'Payment order not found.' });
+    const order = await Order.findById(payment.order);
+    if (!order) return res.status(404).json({ success: false, message: 'Associated order not found.' });
+    if (payment.status === 'captured' && payment.razorpayPaymentId !== razorpay_payment_id) {
+      return res.status(409).json({ success: false, message: 'Payment order has already been used.' });
     }
+    payment.razorpayPaymentId = razorpay_payment_id;
+    payment.razorpaySignature = razorpay_signature;
+    payment.status = 'captured';
+    await payment.save();
+    order.paymentStatus = 'paid';
+    order.orderStatus = 'confirmed';
+    order.razorpayPaymentId = razorpay_payment_id;
+    await order.save();
 
     res.status(200).json({
       success: true,

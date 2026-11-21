@@ -23,8 +23,9 @@ import reviewRoutes from './routes/reviewRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import brandRoutes from './routes/brandRoutes.js';
 import visitorRoutes from './routes/visitorRoutes.js';
-import { resetTestData } from './controllers/adminController.js';
-import { optionalProtect } from './middleware/authMiddleware.js';
+import { cleanupTestCatalog, resetTestData } from './controllers/adminController.js';
+import { protect } from './middleware/authMiddleware.js';
+import { adminOnly } from './middleware/adminMiddleware.js';
 
 dotenv.config();
 
@@ -91,7 +92,8 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/brands', brandRoutes);
 app.use('/api/visitors', visitorRoutes);
-app.post('/api/admin/reset-test-data', optionalProtect, resetTestData);
+app.post('/api/admin/reset-test-data', protect, adminOnly, resetTestData);
+app.post('/api/admin/cleanup-test-catalog', protect, adminOnly, cleanupTestCatalog);
 
 // Error Handling Middlewares
 app.use(notFound);

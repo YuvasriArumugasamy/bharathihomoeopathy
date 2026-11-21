@@ -11,8 +11,8 @@ import { adminOnly } from '../middleware/adminMiddleware.js';
 const router = express.Router();
 
 // Patient endpoints
-router.get('/my', optionalProtect, getMyPrescriptions);
-router.get('/:id', optionalProtect, getPrescriptionById);
+router.get('/my', protect, getMyPrescriptions);
+router.get('/:id', protect, getPrescriptionById);
 
 // Admin / Clinic Doctor endpoints
 router.get('/', protect, adminOnly, getAllPrescriptions);

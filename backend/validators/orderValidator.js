@@ -13,7 +13,7 @@ export const validateOrderInput = (data) => {
   if (!addr.state || !addr.state.trim()) errors.push('State is required');
   if (!addr.postalCode || !addr.postalCode.trim()) errors.push('Postal code is required');
 
-  const validMethods = ['COD', 'ONLINE', 'UPI', 'CARD', 'NETBANKING', 'QR'];
+  const validMethods = ['COD', 'ONLINE', 'UPI', 'CARD', 'NETBANKING', 'QR', 'RAZORPAY'];
   if (data.paymentMethod && !validMethods.includes(data.paymentMethod.toUpperCase())) {
     errors.push('Payment method must be one of ' + validMethods.join(', '));
   }

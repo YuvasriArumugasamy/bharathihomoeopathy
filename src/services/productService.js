@@ -1,5 +1,6 @@
 import { api } from '../utils/api';
 import { authStorage } from '../utils/authStorage';
+import { isLegacyTestProduct } from '../utils/catalogCleanup';
 
 const PRODUCTS_STORAGE_KEY = 'admin_products_store';
 
@@ -9,7 +10,9 @@ const getStoredProducts = () => {
     if (raw !== null) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        return parsed;
+        const cleaned = parsed.filter(product => !isLegacyTestProduct(product));
+        if (cleaned.length !== parsed.length) saveStoredProducts(cleaned);
+        return cleaned;
       }
     }
   } catch (err) {
@@ -66,7 +69,10 @@ export const productService = {
       if (params.maxPrice) queryParams.append('maxPrice', params.maxPrice);
 
       const res = await api.get(`/products?${queryParams.toString()}`);
-      if (res && res.data && res.data.length > 0) return res;
+      if (res && Array.isArray(res.data) && res.data.length > 0) {
+        const cleaned = res.data.filter(product => !isLegacyTestProduct(product));
+        return { ...res, data: cleaned };
+      }
     } catch (err) {
       // Backend unavailable, seamless local storage fallback
     }
@@ -193,17 +199,20 @@ export const productService = {
   // ADMIN PORTAL CRUD OPERATIONS
   // ----------------------------------------------------
   getAdminProducts: async () => {
+    const localProducts = getStoredProducts();
     if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/admin')) {
-      return getStoredProducts();
+      return localProducts;
     }
     if (authStorage.isDemoMode()) {
-      return getStoredProducts();
+      return localProducts;
     }
     try {
+      await api.post('/admin/cleanup-test-catalog', {});
       const res = await api.get('/products/admin/all?limit=1000');
-      if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-        saveStoredProducts(res.data);
-        return res.data;
+      if (res && Array.isArray(res.data)) {
+        const cleaned = res.data.filter(product => !isLegacyTestProduct(product));
+        saveStoredProducts(cleaned);
+        return cleaned.length > 0 || localProducts.length === 0 ? cleaned : localProducts;
       }
     } catch {
       // Backend offline or sleeping, silently use persistent local store
@@ -212,6 +221,9 @@ export const productService = {
   },
 
   createAdminProduct: async (productData) => {
+    if (isLegacyTestProduct(productData)) {
+      throw new Error('Test and demo products cannot be added to the catalog.');
+    }
     const current = getStoredProducts();
     const newProduct = {
       ...productData,

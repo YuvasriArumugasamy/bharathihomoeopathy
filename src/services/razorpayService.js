@@ -70,6 +70,7 @@ export const getRazorpayKey = () => {
 export const openRazorpayCheckout = async ({
   amount,
   currency = 'INR',
+  orderId,
   customer = {},
   notes = {}
 }) => {
@@ -84,24 +85,12 @@ export const openRazorpayCheckout = async ({
   let keyId = getRazorpayKey();
   let backendOrderId = null;
 
-  // Attempt backend order generation if backend is reachable
-  try {
-    const res = await api.post('/payments/razorpay/order', {
-      amount: amountInPaise,
-      currency,
-      receipt: `dhc_${Date.now()}`
-    });
-    if (res?.data?.id) {
-      backendOrderId = res.data.id;
-    }
-    if (res?.data?.key && !keyId) {
-      keyId = res.data.key;
-    }
-  } catch (err) {
-    // If backend endpoint is offline or credentials not set on server,
-    // gracefully fall back to direct standard checkout with frontend key
-    console.warn('Backend Razorpay order creation skipped, using direct checkout:', err?.message || err);
-  }
+  const res = await api.post('/payments/razorpay/order', orderId
+    ? { orderId, currency }
+    : { amount: amountInPaise, currency, receipt: `dhc_${Date.now()}` });
+  if (res?.data?.id) backendOrderId = res.data.id;
+  if (res?.data?.key) keyId = res.data.key;
+  if (!backendOrderId) throw new Error('Payment gateway did not create a secure payment order.');
 
   if (!keyId) {
     throw new Error(
@@ -138,17 +127,12 @@ export const openRazorpayCheckout = async ({
       handler: async (response) => {
         try {
           // If a backend order exists, notify backend verification
-          if (backendOrderId && response?.razorpay_signature) {
-            try {
-              await api.post('/payments/razorpay/verify', {
-                razorpay_order_id: response.razorpay_order_id || backendOrderId,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature
-              });
-            } catch (vErr) {
-              console.warn('Backend payment verification log:', vErr?.message || vErr);
-            }
-          }
+          if (!response?.razorpay_signature) throw new Error('Payment signature is missing.');
+          await api.post('/payments/razorpay/verify', {
+            razorpay_order_id: response.razorpay_order_id || backendOrderId,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature
+          });
 
           resolve({
             paymentId: response.razorpay_payment_id,

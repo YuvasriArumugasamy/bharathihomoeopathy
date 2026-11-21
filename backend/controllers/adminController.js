@@ -7,6 +7,16 @@ import Review from '../models/Review.js';
 import Product from '../models/Product.js';
 import Category from '../models/Category.js';
 import User from '../models/User.js';
+import { removeLegacyTestCatalog } from '../utils/testCatalogCleanup.js';
+
+export const cleanupTestCatalog = async (_req, res, next) => {
+  try {
+    const data = await removeLegacyTestCatalog();
+    res.status(200).json({ success: true, message: 'Legacy test catalog records removed.', data });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const resetTestData = async (req, res, next) => {
   try {
@@ -35,20 +45,9 @@ export const resetTestData = async (req, res, next) => {
       categoriesCount = catRes.deletedCount || 0;
     } else {
       // Clean up known junk test categories like 'kjds' and test product 'mn'
-      await Category.deleteMany({
-        $or: [
-          { name: { $regex: /^kjds/i } },
-          { slug: { $regex: /^kjds/i } },
-          { name: { $regex: /^test/i } }
-        ]
-      });
-      await Product.deleteMany({
-        $or: [
-          { name: { $regex: /^mn$/i } },
-          { slug: { $regex: /^mn$/i } },
-          { name: { $regex: /^test/i } }
-        ]
-      });
+      const removedCatalog = await removeLegacyTestCatalog();
+      productsCount = removedCatalog.deletedProducts;
+      categoriesCount = removedCatalog.deletedCategories;
     }
 
     res.status(200).json({

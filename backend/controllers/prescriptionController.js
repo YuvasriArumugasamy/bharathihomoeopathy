@@ -107,6 +107,11 @@ export const getPrescriptionById = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Prescription record not found' });
     }
 
+    const isOwner = prescription.user && prescription.user.toString() === req.user._id.toString();
+    if (!isOwner && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+
     res.status(200).json({
       success: true,
       data: prescription

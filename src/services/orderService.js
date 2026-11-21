@@ -250,7 +250,8 @@ export const orderService = {
 
   getMyOrderById: async (id) => {
     try {
-      const res = await api.get(`/orders/my-orders/${id}`);
+      const email = localStorage.getItem('last_checkout_email') || '';
+      const res = await api.get(`/orders/${encodeURIComponent(id)}${email ? `?email=${encodeURIComponent(email)}` : ''}`);
       if (res && res.data) return res;
     } catch {
       // Fallback
@@ -262,7 +263,7 @@ export const orderService = {
 
   cancelMyOrder: async (id) => {
     try {
-      const res = await api.put(`/orders/my-orders/${id}/cancel`);
+      const res = await api.patch(`/orders/my-orders/${encodeURIComponent(id)}/cancel`, {});
       return res;
     } catch {
       const orders = getStoredOrders().map(o => (o.id === id || o.orderId === id) ? { ...o, orderStatus: 'Cancelled' } : o);

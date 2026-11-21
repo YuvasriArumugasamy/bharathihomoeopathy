@@ -303,8 +303,39 @@ export const Checkout = () => {
 
     setIsPlacingOrder(true);
     try {
+      const orderPayload = {
+        userId: user?._id || null,
+        userEmail: user?.email || formData.email,
+        guestEmail: formData.email,
+        guestName: `${formData.firstName} ${formData.lastName}`.trim(),
+        guestPhone: formData.phone,
+        shippingAddress: {
+          fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+          phone: formData.phone,
+          email: formData.email,
+          addressLine1: formData.address,
+          city: formData.city,
+          state: formData.state,
+          postalCode: formData.postalCode,
+          country: formData.country
+        },
+        items: (Array.isArray(items) ? items : []).map(item => ({
+          id: item.id || item.productId,
+          name: item.name || item.title || 'Classical Homeopathic Remedy',
+          quantity: item.quantity || 1,
+          price: item.price || 0,
+          image: item.image || '/logo.png'
+        })),
+        paymentMethod: 'RAZORPAY',
+        discount: couponDiscountAmount
+      };
+      const createdOrder = await orderService.createOrder(orderPayload);
+      const backendOrderId = createdOrder?.data?._id;
+      if (!backendOrderId) throw new Error('Could not save your order securely. Please try again.');
+
       const result = await openRazorpayCheckout({
         amount: Math.round(Number(checkoutPayableTotal) * 100),
+        orderId: backendOrderId,
         currency: 'INR',
         customer: {
           name: `${formData.firstName} ${formData.lastName}`.trim(),
@@ -321,7 +352,7 @@ export const Checkout = () => {
       });
 
       if (result?.paymentId) {
-        await handlePlaceOrder(result.paymentId);
+        await handlePlaceOrder(result.paymentId, createdOrder.data);
       }
     } catch (error) {
       const msg = error?.message || 'Payment could not be completed.';
@@ -335,7 +366,7 @@ export const Checkout = () => {
     }
   };
 
-  const handlePlaceOrder = async (transactionId) => {
+  const handlePlaceOrder = async (transactionId, savedOrder) => {
     if (!transactionId) {
       showToast('Razorpay payment could not be verified. Please try again.', 'error');
       return;
@@ -344,47 +375,7 @@ export const Checkout = () => {
     setIsPlacingOrder(true);
 
     try {
-      const fullAddressString = `${formData.address}, ${formData.city}, ${formData.state}, ${formData.country} - ${formData.postalCode}`;
-      const payload = {
-        userId: user?._id || null,
-        userEmail: user?.email || formData.email,
-        guestEmail: formData.email,
-        guestName: `${formData.firstName} ${formData.lastName}`.trim(),
-        guestPhone: formData.phone,
-        customer: {
-          name: `${formData.firstName} ${formData.lastName}`.trim(),
-          phone: formData.phone,
-          email: formData.email,
-          city: `${formData.city}, ${formData.state}`.trim()
-        },
-        shippingAddress: {
-          fullName: `${formData.firstName} ${formData.lastName}`.trim(),
-          phone: formData.phone,
-          email: formData.email,
-          addressLine1: formData.address,
-          city: formData.city,
-          state: formData.state,
-          postalCode: formData.postalCode,
-          country: formData.country
-        },
-        items: (Array.isArray(items) ? items : []).map(item => ({
-          id: item.id || item.productId,
-          name: item.name || item.title || 'Classical Homeopathic Remedy',
-          quantity: item.quantity || 1,
-          price: item.price || 0,
-          image: item.image || '/logo.png',
-          category: item.category || 'Remedy'
-        })),
-        courier: selectedCourier,
-        paymentMethod: 'RAZORPAY',
-        paymentStatus: 'Paid',
-        transactionId,
-        appliedCoupon: appliedCoupon ? appliedCoupon.code : null,
-        discountAmount: couponDiscountAmount,
-        totalAmount: Number(checkoutPayableTotal)
-      };
-
-      const res = await orderService.createOrder(payload);
+      const res = { success: true, data: savedOrder };
 
       if (res && res.success) {
         // Save user's real shipping address for future visits & MyAccount

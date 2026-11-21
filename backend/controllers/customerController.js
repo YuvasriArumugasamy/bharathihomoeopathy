@@ -37,11 +37,7 @@ export const createOrUpdateCustomer = async (req, res, next) => {
       phone,
       city = 'Chennai',
       state = 'Tamil Nadu',
-      ordersCount = 0,
-      totalSpent = 0,
-      status = 'Active',
       joinedDate,
-      notes = ''
     } = req.body;
 
     if (!firstName || !phone) {
@@ -60,10 +56,6 @@ export const createOrUpdateCustomer = async (req, res, next) => {
       customer.lastName = lastName || customer.lastName;
       customer.city = city || customer.city;
       customer.state = state || customer.state;
-      if (ordersCount) customer.ordersCount = ordersCount;
-      if (totalSpent) customer.totalSpent = totalSpent;
-      if (status) customer.status = status;
-      if (notes) customer.notes = notes;
       await customer.save();
     } else {
       const generatedId = customerId || `PAT-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -76,11 +68,11 @@ export const createOrUpdateCustomer = async (req, res, next) => {
         phone,
         city,
         state,
-        ordersCount,
-        totalSpent,
-        status,
+        ordersCount: 0,
+        totalSpent: 0,
+        status: 'Active',
         joinedDate: joinedDate || new Date().toISOString().slice(0, 10),
-        notes
+        notes: ''
       });
     }
 
