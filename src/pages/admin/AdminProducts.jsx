@@ -211,7 +211,8 @@ export const AdminProducts = () => {
   const [categoriesList, setCategoriesList] = useState(['All']);
   const [sizeOptions, setSizeOptions] = useState([]);
   const availableSizeNames = [...new Set(sizeOptions.map(getSizeOptionName).filter(Boolean))];
-  const assignedSizeNames = new Set((formData.sizes || []).map(getSizeOptionName).filter(Boolean));
+  const [selectedSizeOptions, setSelectedSizeOptions] = useState([]);
+  const assignedSizeNames = new Set(selectedSizeOptions.map(getSizeOptionName).filter(Boolean));
   const unassignedSizeNames = availableSizeNames.filter(size => !assignedSizeNames.has(size));
 
   // Load brands dynamically from admin brands store
@@ -309,6 +310,7 @@ export const AdminProducts = () => {
 
   const handleOpenAdd = () => {
     setEditingProduct(null);
+    setSelectedSizeOptions([]);
     setFormData({
       name: '',
       sku: `HOM-${Math.floor(100 + Math.random() * 900)}`,
@@ -331,12 +333,14 @@ export const AdminProducts = () => {
 
   const handleOpenEdit = (product) => {
     setEditingProduct(product);
+    const savedSizes = (Array.isArray(product.sizes) && product.sizes.length
+      ? product.sizes
+      : (product.size ? [product.size] : [])).map(getSizeOptionName).filter(Boolean);
+    setSelectedSizeOptions(savedSizes);
     setFormData({
       ...product,
       brand: product.brand || '',
-      sizes: (Array.isArray(product.sizes) && product.sizes.length
-        ? product.sizes
-        : (product.size ? [product.size] : [])).map(getSizeOptionName).filter(Boolean),
+      sizes: savedSizes,
       sizeToAdd: ''
     });
     setModalOpen(true);
@@ -352,10 +356,12 @@ export const AdminProducts = () => {
       showToast('This size is already added to the product.', 'info');
       return;
     }
+    const cleanSize = getSizeOptionName(size);
+    setSelectedSizeOptions(previous => [...previous, cleanSize]);
     setFormData(previous => ({
       ...previous,
-      sizes: [...(previous.sizes || []).map(getSizeOptionName).filter(Boolean), getSizeOptionName(size)],
-      size: previous.size || size,
+      sizes: [...selectedSizeOptions, cleanSize],
+      size: previous.size || cleanSize,
       sizeToAdd: ''
     }));
   };
@@ -410,7 +416,7 @@ export const AdminProducts = () => {
     try {
       const formValues = { ...formData };
       delete formValues.sizeToAdd;
-      const sizes = [...new Set((formData.sizes || []).map(getSizeOptionName).filter(Boolean))];
+      const sizes = [...new Set(selectedSizeOptions.map(getSizeOptionName).filter(Boolean))];
       const productData = { ...formValues, sizes, size: sizes[0] || '' };
       if (editingProduct) {
         const targetId = editingProduct.id || editingProduct._id;
@@ -1128,16 +1134,20 @@ export const AdminProducts = () => {
                   />
                   <button type="button" onClick={handleAddSizeToProduct} disabled={!formData.sizeToAdd} className="shrink-0 px-3 py-2 rounded-xl bg-orange-50 border border-orange-200 text-orange-700 font-bold hover:bg-orange-100 disabled:opacity-50 disabled:cursor-not-allowed">+ Add</button>
                 </div>
-                {formData.sizes?.length > 0 ? (
+                {selectedSizeOptions.length > 0 ? (
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {formData.sizes.map(size => (
+                    {selectedSizeOptions.map(size => (
                       <span key={size} className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                         {size}
-                        <button type="button" onClick={() => setFormData(previous => ({
-                          ...previous,
-                          sizes: previous.sizes.filter(item => item !== size),
-                          size: previous.size === size ? (previous.sizes.find(item => item !== size) || '') : previous.size
-                        }))} className="text-slate-500 hover:text-rose-600" aria-label={`Remove ${size}`}>×</button>
+                        <button type="button" onClick={() => {
+                          const remainingSizes = selectedSizeOptions.filter(item => item !== size);
+                          setSelectedSizeOptions(remainingSizes);
+                          setFormData(previous => ({
+                            ...previous,
+                            sizes: remainingSizes,
+                            size: previous.size === size ? (remainingSizes[0] || '') : previous.size
+                          }));
+                        }} className="text-slate-500 hover:text-rose-600" aria-label={`Remove ${size}`}>×</button>
                       </span>
                     ))}
                   </div>
