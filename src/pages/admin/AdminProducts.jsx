@@ -39,6 +39,10 @@ const getProductImageFallback = (product) => {
   return resolveProductImage(product);
 };
 
+const getSizeOptionName = (option) => String(
+  typeof option === 'string' ? option : (option?.name || option?.size || '')
+).trim();
+
 const handleProductImageError = (event, product) => {
   const fallback = getProductImageFallback(product);
   if (fallback && event.currentTarget.src !== new URL(fallback, window.location.href).href) {
@@ -206,6 +210,9 @@ export const AdminProducts = () => {
   const [newCategoryImage, setNewCategoryImage] = useState('');
   const [categoriesList, setCategoriesList] = useState(['All']);
   const [sizeOptions, setSizeOptions] = useState([]);
+  const availableSizeNames = [...new Set(sizeOptions.map(getSizeOptionName).filter(Boolean))];
+  const assignedSizeNames = new Set((formData.sizes || []).map(getSizeOptionName).filter(Boolean));
+  const unassignedSizeNames = availableSizeNames.filter(size => !assignedSizeNames.has(size));
 
   // Load brands dynamically from admin brands store
   useEffect(() => {
@@ -327,9 +334,9 @@ export const AdminProducts = () => {
     setFormData({
       ...product,
       brand: product.brand || '',
-      sizes: Array.isArray(product.sizes) && product.sizes.length
+      sizes: (Array.isArray(product.sizes) && product.sizes.length
         ? product.sizes
-        : (product.size ? [product.size] : []),
+        : (product.size ? [product.size] : [])).map(getSizeOptionName).filter(Boolean),
       sizeToAdd: ''
     });
     setModalOpen(true);
@@ -341,13 +348,13 @@ export const AdminProducts = () => {
       showToast('Choose a size first.', 'warning');
       return;
     }
-    if ((formData.sizes || []).includes(size)) {
+    if (assignedSizeNames.has(getSizeOptionName(size))) {
       showToast('This size is already added to the product.', 'info');
       return;
     }
     setFormData(previous => ({
       ...previous,
-      sizes: [...(previous.sizes || []), size],
+      sizes: [...(previous.sizes || []).map(getSizeOptionName).filter(Boolean), getSizeOptionName(size)],
       size: previous.size || size,
       sizeToAdd: ''
     }));
@@ -403,7 +410,7 @@ export const AdminProducts = () => {
     try {
       const formValues = { ...formData };
       delete formValues.sizeToAdd;
-      const sizes = [...new Set((formData.sizes || []).map(size => String(size).trim()).filter(Boolean))];
+      const sizes = [...new Set((formData.sizes || []).map(getSizeOptionName).filter(Boolean))];
       const productData = { ...formValues, sizes, size: sizes[0] || '' };
       if (editingProduct) {
         const targetId = editingProduct.id || editingProduct._id;
@@ -1114,10 +1121,10 @@ export const AdminProducts = () => {
                   <ModalSelect
                     value={formData.sizeToAdd || ''}
                     onChange={(sizeToAdd) => setFormData(previous => ({ ...previous, sizeToAdd }))}
-                    options={sizeOptions.map(option => option.name).filter(size => !(formData.sizes || []).includes(size))}
+                    options={unassignedSizeNames}
                     placeholder="Select a size"
                     label="Available product sizes"
-                    disabled={sizeOptions.length === 0 || sizeOptions.every(option => (formData.sizes || []).includes(option.name))}
+                    disabled={unassignedSizeNames.length === 0}
                   />
                   <button type="button" onClick={handleAddSizeToProduct} disabled={!formData.sizeToAdd} className="shrink-0 px-3 py-2 rounded-xl bg-orange-50 border border-orange-200 text-orange-700 font-bold hover:bg-orange-100 disabled:opacity-50 disabled:cursor-not-allowed">+ Add</button>
                 </div>
@@ -1136,8 +1143,8 @@ export const AdminProducts = () => {
                   </div>
                 ) : (
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-slate-500">
-                    <span>{sizeOptions.length === 0 ? 'No size options are available yet.' : 'All available sizes are already added.'}</span>
-                    {sizeOptions.length === 0 && <Link to="/admin/sizes" target="_blank" rel="noreferrer" className="font-bold text-brandOrange-600 underline">Open Sizes module</Link>}
+                    <span>{availableSizeNames.length === 0 ? 'No size options are available yet.' : 'All available sizes are already added.'}</span>
+                    {availableSizeNames.length === 0 && <Link to="/admin/sizes" target="_blank" rel="noreferrer" className="font-bold text-brandOrange-600 underline">Open Sizes module</Link>}
                   </div>
                 )}
               </div>
