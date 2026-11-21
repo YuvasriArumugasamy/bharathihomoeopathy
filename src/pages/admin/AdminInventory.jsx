@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Boxes, 
   AlertTriangle, 
@@ -17,25 +17,15 @@ import {
   Search,
   Download
 } from 'lucide-react';
-import { initialAdminInventory, initialInventoryHistory } from '../../data/adminInventoryData';
 import { useToast } from '../../context/ToastContext';
 import { exportToCsv } from '../../utils/exportUtils';
+import { productService } from '../../services/productService';
 
 export const AdminInventory = () => {
   const { showToast } = useToast();
   
-  const [inventory, setInventory] = useState(() => {
-    try {
-      const saved = localStorage.getItem('admin_inventory_store');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {
-      // fallback
-    }
-    return initialAdminInventory;
-  });
+  const [inventory, setInventory] = useState([]);
+  const [inventoryLoading, setInventoryLoading] = useState(true);
 
   // Also load products for accurate out-of-stock counting
   const [products, setProducts] = useState(() => {
@@ -48,6 +38,58 @@ export const AdminInventory = () => {
     } catch {}
     return [];
   });
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadInventory = async () => {
+      setInventoryLoading(true);
+      try {
+        const catalog = await productService.getAdminProducts();
+        if (!Array.isArray(catalog) || cancelled) return;
+
+        let savedInventory = [];
+        try {
+          const saved = JSON.parse(localStorage.getItem('admin_inventory_store') || '[]');
+          if (Array.isArray(saved)) savedInventory = saved;
+        } catch {}
+
+        const rows = catalog.map(product => {
+          const productId = String(product.id || product._id || '');
+          const savedRow = savedInventory.find(row =>
+            (row.productId && String(row.productId) === productId) ||
+            (row.sku && row.sku === product.sku)
+          );
+          const currentStock = Math.max(0, Number(product.stock) || 0);
+          const reservedStock = Math.max(0, Number(savedRow?.reservedStock) || 0);
+          return {
+            id: productId || product.sku,
+            productId,
+            productName: product.name || 'Unnamed product',
+            sku: product.sku || '',
+            category: typeof product.category === 'object' ? (product.category?.name || '') : (product.category || '—'),
+            image: product.image || product.images?.[0] || '/logo.png',
+            currentStock,
+            reservedStock,
+            availableStock: Math.max(0, currentStock - reservedStock),
+            lowStockThreshold: Math.max(0, Number(product.lowStockThreshold ?? savedRow?.lowStockThreshold ?? 5)),
+            lastUpdated: savedRow?.lastUpdated || product.updatedAt || ''
+          };
+        });
+
+        if (!cancelled) {
+          setProducts(catalog);
+          setInventory(rows);
+          localStorage.setItem('admin_inventory_store', JSON.stringify(rows));
+        }
+      } catch (error) {
+        if (!cancelled) showToast(`Failed to load shared inventory: ${error.message}`, 'error');
+      } finally {
+        if (!cancelled) setInventoryLoading(false);
+      }
+    };
+    loadInventory();
+    return () => { cancelled = true; };
+  }, []);
 
   const [history, setHistory] = useState(() => {
     try {
@@ -107,7 +149,7 @@ export const AdminInventory = () => {
     }
   };
 
-  const handleConfirmAdjustment = (e) => {
+  const handleConfirmAdjustment = async (e) => {
     e.preventDefault();
     if (!adjustModalItem || adjustQty <= 0) return;
 
@@ -116,31 +158,30 @@ export const AdminInventory = () => {
     else if (adjustType === 'Remove Stock') newStock = Math.max(0, newStock - adjustQty);
     else if (adjustType === 'Set Stock') newStock = adjustQty;
 
-    const updatedInventory = inventory.map(item => item.id === adjustModalItem.id ? {
-      ...item,
+    const updatedRow = {
+      ...adjustModalItem,
       currentStock: newStock,
-      availableStock: Math.max(0, newStock - item.reservedStock),
+      availableStock: Math.max(0, newStock - (Number(adjustModalItem.reservedStock) || 0)),
       lastUpdated: new Date().toISOString().slice(0, 10)
-    } : item);
+    };
 
-    setInventory(updatedInventory);
+    const product = products.find(item => String(item.id || item._id) === String(adjustModalItem.productId));
+    if (!product) {
+      showToast('Product not found in the shared catalog. Refresh and try again.', 'error');
+      return;
+    }
+
     try {
+      await productService.updateAdminProduct(String(product.id || product._id), { ...product, stock: newStock });
+      const updatedInventory = inventory.map(item => item.id === adjustModalItem.id ? updatedRow : item);
+      setInventory(updatedInventory);
+      setProducts(previous => previous.map(item => String(item.id || item._id) === String(product.id || product._id)
+        ? { ...item, stock: newStock }
+        : item));
       localStorage.setItem('admin_inventory_store', JSON.stringify(updatedInventory));
-      
-      // Also synchronize to product catalogue store
-      const rawProducts = localStorage.getItem('admin_products_store');
-      if (rawProducts) {
-        const parsedProducts = JSON.parse(rawProducts);
-        const updatedProducts = parsedProducts.map(p => {
-          if (p.id === adjustModalItem.productId || p.sku === adjustModalItem.sku || p.id === adjustModalItem.id) {
-            return { ...p, stock: newStock };
-          }
-          return p;
-        });
-        localStorage.setItem('admin_products_store', JSON.stringify(updatedProducts));
-      }
-    } catch (err) {
-      console.warn("Could not persist inventory:", err);
+    } catch (error) {
+      showToast(`Inventory update failed: ${error.message}`, 'error');
+      return;
     }
 
     const historyRecord = {
@@ -165,7 +206,7 @@ export const AdminInventory = () => {
     }
 
     setAdjustModalItem(null);
-    showToast(`Inventory updated for ${adjustModalItem.productName}`, 'success');
+    showToast(`Inventory updated for ${adjustModalItem.productName} and saved to the shared catalog`, 'success');
   };
 
   return (
@@ -193,7 +234,7 @@ export const AdminInventory = () => {
             <div className="text-2xl sm:text-3xl font-black text-slate-900 font-display">
               {totalStockUnits.toLocaleString()}
             </div>
-            <p className="text-[11px] text-slate-500 font-semibold">Across {inventory.length} formulations</p>
+            <p className="text-[11px] text-slate-500 font-semibold">{inventoryLoading ? 'Loading formulations…' : `Across ${inventory.length} formulations`}</p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 group-hover:scale-110 transition-transform">
             <Boxes className="w-6 h-6 stroke-[2.2]" />
@@ -275,7 +316,9 @@ export const AdminInventory = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100/90">
-              {filteredInventory.map((inv) => (
+              {inventoryLoading ? <tr><td colSpan={7} className="p-8 text-center text-slate-500">Loading shared inventory…</td></tr>
+                : filteredInventory.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-slate-500">No products found in the shared catalog.</td></tr>
+                : filteredInventory.map((inv) => (
                 <tr key={inv.id} className="hover:bg-slate-50/80 transition-colors group">
                   <td className="py-3.5 px-5">
                     <div className="flex items-center gap-3">
@@ -331,7 +374,9 @@ export const AdminInventory = () => {
         </div>
         {/* Mobile Inventory Cards */}
         <div className="md:hidden flex flex-col gap-3.5 p-3.5 sm:p-4 bg-slate-50/60">
-          {filteredInventory.map((inv) => (
+          {inventoryLoading ? <p className="p-5 text-center text-slate-500">Loading shared inventory…</p>
+            : filteredInventory.length === 0 ? <p className="p-5 text-center text-slate-500">No products found in the shared catalog.</p>
+            : filteredInventory.map((inv) => (
             <div
               key={inv.id + '-card'}
               onClick={() => setAdjustModalItem(inv)}
