@@ -16,7 +16,8 @@ import {
   Bell, 
   X, 
   LogOut,
-  Globe
+  Globe,
+  Ruler
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import assets from '../../assets';
@@ -36,6 +37,7 @@ export const AdminSidebar = ({ isOpen, onClose }) => {
       title: 'Dispensary & Orders',
       items: [
         { name: 'Products', path: '/admin/products', icon: Package },
+        { name: 'Sizes', path: '/admin/sizes', icon: Ruler },
         { name: 'Categories', path: '/admin/categories', icon: Layers },
         { name: 'Brands', path: '/admin/brands', icon: Award },
         { name: 'Orders', path: '/admin/orders', icon: ShoppingBag },

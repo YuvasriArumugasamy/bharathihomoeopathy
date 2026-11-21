@@ -33,6 +33,7 @@ import { filterLegacySeedCategories } from '../../utils/categoryDefaults';
 import { slugify } from '../../utils/slugify';
 import { demoProducts } from '../../data/products';
 import { resolveProductImage } from '../../utils/productStorage';
+import { sizeOptionService } from '../../services/sizeOptionService';
 
 const getProductImageFallback = (product) => {
   return resolveProductImage(product);
@@ -187,7 +188,8 @@ export const AdminProducts = () => {
     shortDescription: '',
     description: '',
     image: '',
-    sizeOptions: '',
+    sizes: [],
+    sizeToAdd: '',
     status: 'Active',
     isBestSeller: false,
     isFeatured: false
@@ -202,6 +204,7 @@ export const AdminProducts = () => {
   const [newCategoryInput, setNewCategoryInput] = useState('');
   const [newCategoryImage, setNewCategoryImage] = useState('');
   const [categoriesList, setCategoriesList] = useState(['All']);
+  const [sizeOptions, setSizeOptions] = useState([]);
 
   // Load brands dynamically from admin brands store
   useEffect(() => {
@@ -244,6 +247,12 @@ export const AdminProducts = () => {
       window.removeEventListener('drBharathiCategoriesUpdated', loadCategories);
       window.removeEventListener('storage', loadCategories);
     };
+  }, []);
+
+  useEffect(() => {
+    sizeOptionService.getAdminSizes()
+      .then(setSizeOptions)
+      .catch(error => showToast(`Could not load size options: ${error.message}`, 'error'));
   }, []);
 
   const filteredProducts = (Array.isArray(products) ? products : []).filter((p) => {
@@ -303,7 +312,8 @@ export const AdminProducts = () => {
       shortDescription: '',
       description: '',
       image: '',
-      sizeOptions: '',
+      sizes: [],
+      sizeToAdd: '',
       status: 'Active',
       isBestSeller: false,
       isFeatured: false
@@ -316,11 +326,30 @@ export const AdminProducts = () => {
     setFormData({
       ...product,
       brand: product.brand || '',
-      sizeOptions: (Array.isArray(product.sizes) && product.sizes.length
+      sizes: Array.isArray(product.sizes) && product.sizes.length
         ? product.sizes
-        : (product.size ? [product.size] : [])).join(', ')
+        : (product.size ? [product.size] : []),
+      sizeToAdd: ''
     });
     setModalOpen(true);
+  };
+
+  const handleAddSizeToProduct = () => {
+    const size = formData.sizeToAdd;
+    if (!size) {
+      showToast('Choose a size first.', 'warning');
+      return;
+    }
+    if ((formData.sizes || []).includes(size)) {
+      showToast('This size is already added to the product.', 'info');
+      return;
+    }
+    setFormData(previous => ({
+      ...previous,
+      sizes: [...(previous.sizes || []), size],
+      size: previous.size || size,
+      sizeToAdd: ''
+    }));
   };
 
   const handleImageFileUpload = (e) => {
@@ -371,8 +400,10 @@ export const AdminProducts = () => {
     }
 
     try {
-      const sizes = [...new Set(String(formData.sizeOptions || '').split(',').map(size => size.trim()).filter(Boolean))];
-      const productData = { ...formData, sizes, size: sizes[0] || '' };
+      const formValues = { ...formData };
+      delete formValues.sizeToAdd;
+      const sizes = [...new Set((formData.sizes || []).map(size => String(size).trim()).filter(Boolean))];
+      const productData = { ...formValues, sizes, size: sizes[0] || '' };
       if (editingProduct) {
         const targetId = editingProduct.id || editingProduct._id;
         const updatedData = { ...productData, slug: slugify(formData.name) };
@@ -1078,14 +1109,30 @@ export const AdminProducts = () => {
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1.5">Available Sizes</label>
-                <input
-                  type="text"
-                  placeholder="Example: 30 ml, 100 ml"
-                  value={formData.sizeOptions || ''}
-                  onChange={(e) => setFormData({ ...formData, sizeOptions: e.target.value })}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner"
-                />
-                <p className="mt-1 text-[10px] text-slate-500">Separate each size with a comma. These options appear in the customer shop.</p>
+                <div className="flex gap-2">
+                  <ModalSelect
+                    value={formData.sizeToAdd || ''}
+                    onChange={(sizeToAdd) => setFormData(previous => ({ ...previous, sizeToAdd }))}
+                    options={sizeOptions.map(option => option.name).filter(size => !(formData.sizes || []).includes(size))}
+                    placeholder="Select a size"
+                    label="Available product sizes"
+                  />
+                  <button type="button" onClick={handleAddSizeToProduct} className="shrink-0 px-3 py-2 rounded-xl bg-orange-50 border border-orange-200 text-orange-700 font-bold hover:bg-orange-100">+ Add</button>
+                </div>
+                {formData.sizes?.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {formData.sizes.map(size => (
+                      <span key={size} className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                        {size}
+                        <button type="button" onClick={() => setFormData(previous => ({
+                          ...previous,
+                          sizes: previous.sizes.filter(item => item !== size),
+                          size: previous.size === size ? (previous.sizes.find(item => item !== size) || '') : previous.size
+                        }))} className="text-slate-500 hover:text-rose-600" aria-label={`Remove ${size}`}>×</button>
+                      </span>
+                    ))}
+                  </div>
+                ) : <p className="mt-1 text-[10px] text-slate-500">Add size options in the Sizes section of the admin menu.</p>}
               </div>
 
               <div>
