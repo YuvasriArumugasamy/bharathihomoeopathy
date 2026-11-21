@@ -47,7 +47,7 @@ const handleProductImageError = (event, product) => {
   }
 };
 
-const ModalSelect = ({ value, onChange, options, placeholder, label }) => {
+const ModalSelect = ({ value, onChange, options, placeholder, label, disabled = false }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -61,8 +61,9 @@ const ModalSelect = ({ value, onChange, options, placeholder, label }) => {
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-required="true"
-        onClick={() => setIsOpen((open) => !open)}
-        className="w-full min-w-0 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-left text-sm font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner cursor-pointer flex items-center justify-between gap-2"
+        disabled={disabled}
+        onClick={() => !disabled && setIsOpen((open) => !open)}
+        className={`w-full min-w-0 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-left text-sm font-bold text-slate-800 focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all shadow-inner flex items-center justify-between gap-2 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       >
         <span className={`min-w-0 truncate ${value ? '' : 'text-slate-400'}`}>{value || placeholder}</span>
         <ChevronDown className={`w-4 h-4 shrink-0 text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -1116,8 +1117,9 @@ export const AdminProducts = () => {
                     options={sizeOptions.map(option => option.name).filter(size => !(formData.sizes || []).includes(size))}
                     placeholder="Select a size"
                     label="Available product sizes"
+                    disabled={sizeOptions.length === 0 || sizeOptions.every(option => (formData.sizes || []).includes(option.name))}
                   />
-                  <button type="button" onClick={handleAddSizeToProduct} className="shrink-0 px-3 py-2 rounded-xl bg-orange-50 border border-orange-200 text-orange-700 font-bold hover:bg-orange-100">+ Add</button>
+                  <button type="button" onClick={handleAddSizeToProduct} disabled={!formData.sizeToAdd} className="shrink-0 px-3 py-2 rounded-xl bg-orange-50 border border-orange-200 text-orange-700 font-bold hover:bg-orange-100 disabled:opacity-50 disabled:cursor-not-allowed">+ Add</button>
                 </div>
                 {formData.sizes?.length > 0 ? (
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -1132,7 +1134,12 @@ export const AdminProducts = () => {
                       </span>
                     ))}
                   </div>
-                ) : <p className="mt-1 text-[10px] text-slate-500">Add size options in the Sizes section of the admin menu.</p>}
+                ) : (
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-slate-500">
+                    <span>{sizeOptions.length === 0 ? 'No size options are available yet.' : 'All available sizes are already added.'}</span>
+                    {sizeOptions.length === 0 && <Link to="/admin/sizes" target="_blank" rel="noreferrer" className="font-bold text-brandOrange-600 underline">Open Sizes module</Link>}
+                  </div>
+                )}
               </div>
 
               <div>
