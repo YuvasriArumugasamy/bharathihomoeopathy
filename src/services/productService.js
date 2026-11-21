@@ -1,6 +1,7 @@
 import { api } from '../utils/api';
 import { authStorage } from '../utils/authStorage';
 import { isLegacyTestProduct } from '../utils/catalogCleanup';
+import { getStoredCategories } from './categoryService';
 
 const PRODUCTS_STORAGE_KEY = 'admin_products_store';
 
@@ -53,6 +54,33 @@ const getInventoryStockMap = () => {
     // ignore
   }
   return {};
+};
+
+const ensureSharedCategory = async (categoryValue) => {
+  if (!categoryValue || /^[0-9a-fA-F]{24}$/.test(String(categoryValue))) return;
+  const categoryName = String(categoryValue).trim();
+  const remote = await api.get('/categories');
+  const remoteCategories = Array.isArray(remote?.data) ? remote.data : [];
+  const alreadySaved = remoteCategories.some(category =>
+    String(category.name || '').trim().toLowerCase() === categoryName.toLowerCase() ||
+    String(category.slug || '').trim().toLowerCase() === categoryName.toLowerCase()
+  );
+  if (alreadySaved) return;
+
+  const localCategory = getStoredCategories().find(category =>
+    String(category.name || '').trim().toLowerCase() === categoryName.toLowerCase() ||
+    String(category.slug || '').trim().toLowerCase() === categoryName.toLowerCase()
+  );
+  const categoryPayload = localCategory || {
+    name: categoryName,
+    slug: categoryName.toLowerCase().replace(/[\s\W-]+/g, '-'),
+    description: '',
+    image: ''
+  };
+  const created = await api.post('/categories', categoryPayload);
+  if (!created?.success || !created?.data?._id) {
+    throw new Error(created?.message || `Category "${categoryName}" could not be saved to the shared catalog.`);
+  }
 };
 
 export const productService = {
@@ -225,65 +253,71 @@ export const productService = {
       throw new Error('Test and demo products cannot be added to the catalog.');
     }
     const current = getStoredProducts();
-    const newProduct = {
-      ...productData,
-      id: productData.id || ('prod-' + Date.now()),
-      createdAt: productData.createdAt || new Date().toISOString().slice(0, 10)
-    };
-
-    // Save locally immediately so UI never loses changes
-    const updated = [newProduct, ...current];
-    saveStoredProducts(updated);
-
-    // Attempt backend sync
-    try {
-      const res = await api.post('/products', productData);
-      if (res && res.data) {
-        newProduct._id = res.data._id;
-        saveStoredProducts([newProduct, ...current]);
-      }
-    } catch (err) {
-      if (!err?.isDemoMode) console.warn("Product synced to persistent local store (backend offline):", err.message);
+    await ensureSharedCategory(productData.category);
+    const res = await api.post('/products', productData);
+    if (!res?.success || !res?.data?._id) {
+      throw new Error(res?.message || 'The product was not saved to the shared catalog.');
     }
 
+    const newProduct = {
+      ...res.data,
+      ...productData,
+      _id: String(res.data._id),
+      id: String(res.data._id),
+      category: productData.category,
+      regularPrice: Number(res.data.price ?? productData.regularPrice),
+      offerPrice: Number(res.data.salePrice ?? productData.offerPrice ?? productData.regularPrice),
+      stock: Number(res.data.stock ?? productData.stock),
+      status: res.data.isActive === false ? 'Inactive' : 'Active',
+      createdAt: res.data.createdAt || productData.createdAt || new Date().toISOString().slice(0, 10)
+    };
+    saveStoredProducts([newProduct, ...current.filter(p => p.sku !== newProduct.sku)]);
     return { success: true, data: newProduct };
   },
 
   updateAdminProduct: async (id, productData) => {
     if (!id) return { success: false, error: 'Product ID required' };
     const current = getStoredProducts();
-    const updated = current.map(p => {
-      const isMatch = (p.id && p.id === id) || (p._id && p._id === id);
-      return isMatch ? { ...p, ...productData } : p;
-    });
-    saveStoredProducts(updated);
-
-    // Attempt backend sync
+    const localProduct = current.find(p => (p.id && p.id === id) || (p._id && p._id === id));
+    const backendId = /^[0-9a-fA-F]{24}$/.test(id) ? id : (localProduct?.sku || productData.sku || localProduct?.slug || productData.slug);
+    await ensureSharedCategory(productData.category);
+    let res;
     try {
-      await api.put(`/products/${id}`, productData);
+      res = await api.put(`/products/${encodeURIComponent(backendId)}`, productData);
     } catch (err) {
-      if (!err?.isDemoMode) console.warn("Product updated in persistent local store (backend offline):", err.message);
+      // A browser-only legacy row has no Mongo record yet. Publish it once by SKU.
+      if (err?.status !== 404) throw err;
+      res = await api.post('/products', productData);
     }
+    if (!res?.success || !res?.data?._id) throw new Error(res?.message || 'The product update was not saved to the shared catalog.');
 
-    return { success: true, data: productData };
+    const persisted = {
+      ...localProduct,
+      ...productData,
+      ...res.data,
+      id: String(res.data._id),
+      _id: String(res.data._id),
+      category: productData.category,
+      regularPrice: Number(res.data.price ?? productData.regularPrice),
+      offerPrice: Number(res.data.salePrice ?? productData.offerPrice ?? productData.regularPrice),
+      status: res.data.isActive === false ? 'Inactive' : 'Active'
+    };
+    saveStoredProducts(current.map(p =>
+      (p.id && p.id === id) || (p._id && p._id === id) || (p.sku && p.sku === persisted.sku)
+        ? persisted
+        : p
+    ));
+    return { success: true, data: persisted };
   },
 
   deleteAdminProduct: async (id) => {
     if (!id) return { success: false };
     const current = getStoredProducts();
-    const updated = current.filter(p => {
-      const isMatch = (p.id && p.id === id) || (p._id && p._id === id);
-      return !isMatch;
-    });
+    const target = current.find(p => (p.id && p.id === id) || (p._id && p._id === id));
+    const backendId = /^[0-9a-fA-F]{24}$/.test(id) ? id : (target?.sku || target?.slug || id);
+    await api.delete(`/products/${encodeURIComponent(backendId)}`);
+    const updated = current.filter(p => p !== target);
     saveStoredProducts(updated);
-
-    // Attempt backend sync
-    try {
-      await api.delete(`/products/${id}`);
-    } catch (err) {
-      if (!err?.isDemoMode) console.warn("Product deleted in persistent local store (backend offline):", err.message);
-    }
-
     return { success: true };
   },
 

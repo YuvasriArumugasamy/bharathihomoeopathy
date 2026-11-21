@@ -99,23 +99,20 @@ export const categoryService = {
 
   createAdminCategory: async (categoryData) => {
     const categories = getStoredCategories();
-    const generatedId = categoryData.id || ('cat-' + Date.now());
+    const res = await api.post('/categories', categoryData);
+    if (!res?.success || !res?.data?._id) {
+      throw new Error(res?.message || 'The category was not saved to the shared catalog.');
+    }
     const newCategory = {
       ...categoryData,
-      id: generatedId,
-      _id: categoryData._id || generatedId,
-      createdAt: new Date().toISOString().slice(0, 10),
+      ...res.data,
+      id: String(res.data._id),
+      _id: String(res.data._id),
+      createdAt: res.data.createdAt || new Date().toISOString().slice(0, 10),
       productCount: 0
     };
-    const updated = [...categories, newCategory];
+    const updated = [...categories.filter(c => c.slug !== newCategory.slug), newCategory];
     saveStoredCategories(updated);
-
-    try {
-      await api.post('/categories', categoryData);
-    } catch (err) {
-      if (!err?.isDemoMode) console.warn("Category saved locally (backend offline):", err.message);
-    }
-
     return { success: true, data: newCategory };
   },
 

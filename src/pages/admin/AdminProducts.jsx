@@ -361,15 +361,14 @@ export const AdminProducts = () => {
       return;
     }
 
-    setModalOpen(false);
     try {
       if (editingProduct) {
         const targetId = editingProduct.id || editingProduct._id;
         const updatedData = { ...formData, slug: slugify(formData.name) };
-        await productService.updateAdminProduct(targetId, updatedData);
+        const savedProduct = await productService.updateAdminProduct(targetId, updatedData);
         setProducts(prev => prev.map(p => {
           const isMatch = targetId && ((p.id && p.id === targetId) || (p._id && p._id === targetId));
-          return isMatch ? { ...p, ...updatedData } : p;
+          return isMatch ? { ...p, ...updatedData, ...savedProduct.data } : p;
         }));
         showToast('Product updated successfully and saved!', 'success');
       } else {
@@ -379,10 +378,11 @@ export const AdminProducts = () => {
           slug: slugify(formData.name),
           createdAt: new Date().toISOString().slice(0, 10)
         };
-        await productService.createAdminProduct(newProd);
-        setProducts(prev => [newProd, ...prev]);
+        const savedProduct = await productService.createAdminProduct(newProd);
+        setProducts(prev => [savedProduct.data, ...prev]);
         showToast('New product added to catalogue and saved!', 'success');
       }
+      setModalOpen(false);
     } catch (err) {
       showToast(`Product could not be saved: ${err.message}`, 'error');
     }
@@ -1416,11 +1416,15 @@ export const AdminProducts = () => {
                       description: '',
                       isFeatured: false
                     };
-                    await categoryService.createAdminCategory(newCategory);
-                    setCategoriesList((prev) => [...prev, cleanName]);
-                    setFormData((prev) => ({ ...prev, category: cleanName }));
-                    setQuickCategoryModalOpen(false);
-                    showToast(`Category "${cleanName}" added and selected!`, 'success');
+                    try {
+                      const savedCategory = await categoryService.createAdminCategory(newCategory);
+                      setCategoriesList((prev) => [...prev, cleanName]);
+                      setFormData((prev) => ({ ...prev, category: savedCategory.data.name }));
+                      setQuickCategoryModalOpen(false);
+                      showToast(`Category "${cleanName}" saved to the shared catalog and selected!`, 'success');
+                    } catch (err) {
+                      showToast(`Category could not be saved: ${err.message}`, 'error');
+                    }
                   }}
                   className="px-5 py-2.5 bg-brandOrange-500 hover:bg-brandOrange-600 text-white font-black rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5"
                 >

@@ -55,8 +55,8 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Render hosts the backend API; the frontend is deployed separately on Vercel.
 app.get('/', (_req, res) => {
