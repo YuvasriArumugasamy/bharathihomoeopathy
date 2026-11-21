@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Users, 
   RefreshCw, 
@@ -6,28 +6,15 @@ import {
   BarChart3,
   CalendarDays
 } from 'lucide-react';
-import { visitorService } from '../../services/visitorService';
-import { authStorage } from '../../utils/authStorage';
+import { api } from '../../utils/api';
 
 // Backend API-based visitor service
 const simpleVisitorService = {
   getStats: async (year = new Date().getFullYear()) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || '';
-      // Remove /api suffix if it exists since we'll add it
-      const baseUrl = apiUrl.replace(/\/api$/, '');
-      const adminToken = authStorage.getAdminToken();
+      const data = await api.get(`/visitors/stats?period=year&year=${year}`);
       
       // Fetch from backend API
-      const response = await fetch(`${baseUrl}/api/visitors/stats?period=year&year=${year}`, {
-        headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {}
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API returned ${response.status}`);
-      }
-      
-      const data = await response.json();
       console.log('[VisitorStats] ✅ Data received:', data);
       
       if (data && data.success) {
@@ -35,6 +22,7 @@ const simpleVisitorService = {
           success: true,
           summaryCards: data.summaryCards || [
             { label: 'Visitors today', count: 0 },
+            { label: 'Visitors yesterday', count: 0 },
             { label: 'Visitors this week', count: 0 },
             { label: 'Visitors this month', count: 0 },
             { label: 'Visitors last month', count: 0 },
@@ -47,93 +35,9 @@ const simpleVisitorService = {
       throw new Error('Invalid response format');
     } catch (err) {
       console.error('Failed to load stats from backend:', err);
+      return { success: false, error: err.message || 'Visitor stats service is unavailable.' };
       
-      // Fallback to localStorage if backend fails
-      try {
-        const records = JSON.parse(localStorage.getItem('visitor_records') || '[]');
-        
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
-        const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
 
-        // Group by date and count unique IPs
-        const uniqueIPsByDate = {};
-        records.forEach(record => {
-          const date = record.date;
-          if (!uniqueIPsByDate[date]) {
-            uniqueIPsByDate[date] = new Set();
-          }
-          uniqueIPsByDate[date].add(record.ip);
-        });
-
-        // Calculate counts
-        const todayStr = today.toISOString().split('T')[0];
-        const visitorsToday = uniqueIPsByDate[todayStr]?.size || 0;
-
-        const visitorsThisWeek = Object.entries(uniqueIPsByDate)
-          .filter(([date]) => new Date(date) >= weekAgo)
-          .reduce((sum, [, ips]) => sum + ips.size, 0);
-
-        const visitorsThisMonth = Object.entries(uniqueIPsByDate)
-          .filter(([date]) => new Date(date) >= monthStart)
-          .reduce((sum, [, ips]) => sum + ips.size, 0);
-
-        const visitorsLastMonth = Object.entries(uniqueIPsByDate)
-          .filter(([date]) => {
-            const d = new Date(date);
-            return d >= lastMonthStart && d <= lastMonthEnd;
-          })
-          .reduce((sum, [, ips]) => sum + ips.size, 0);
-
-        const visitorsLast6Months = Object.entries(uniqueIPsByDate)
-          .filter(([date]) => new Date(date) >= sixMonthsAgo)
-          .reduce((sum, [, ips]) => sum + ips.size, 0);
-
-        // Generate year chart data (12 months)
-        const currentYear = now.getFullYear();
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const yearDays = [];
-
-        for (let month = 0; month < 12; month++) {
-          const visitors = Object.entries(uniqueIPsByDate)
-            .filter(([date]) => {
-              const d = new Date(date);
-              return d.getFullYear() === currentYear && d.getMonth() === month;
-            })
-            .reduce((sum, [, ips]) => sum + ips.size, 0);
-          
-          yearDays.push({ label: monthNames[month], visitors });
-        }
-
-        return {
-          success: true,
-          summaryCards: [
-            { label: 'Visitors today', count: visitorsToday },
-            { label: 'Visitors this week', count: visitorsThisWeek },
-            { label: 'Visitors this month', count: visitorsThisMonth },
-            { label: 'Visitors last month', count: visitorsLastMonth },
-            { label: 'Visitors last 6 months', count: visitorsLast6Months },
-          ],
-          yearDays
-        };
-      } catch (localErr) {
-        console.error('LocalStorage fallback also failed:', localErr);
-        return {
-          success: false,
-          summaryCards: [
-            { label: 'Visitors today', count: 0 },
-            { label: 'Visitors this week', count: 0 },
-            { label: 'Visitors this month', count: 0 },
-            { label: 'Visitors last month', count: 0 },
-            { label: 'Visitors last 6 months', count: 0 },
-          ],
-          yearDays: []
-        };
-      }
     }
   }
 };
@@ -145,15 +49,15 @@ const BarChartComponent = ({ data = [] }) => {
   const [hoveredItem, setHoveredItem] = useState(null);
 
   const maxValue = useMemo(() => {
-    if (!data.length) return 5;
-    const max = Math.max(...data.map((d) => d.visitors || 0));
-    return max > 0 ? Math.ceil(max * 1.15) : 5;
+    if (!data.length) return 4;
+    const max = Math.max(...data.map((d) => Number(d.visitors) || 0));
+    return Math.max(4, Math.ceil(max / 4) * 4);
   }, [data]);
 
   // Generate Y-axis ticks (5 levels)
   const yTicks = useMemo(() => {
     const ticks = [];
-    const step = Math.ceil(maxValue / 4);
+    const step = maxValue / 4;
     for (let i = 0; i <= 4; i++) {
       ticks.push(i * step);
     }
@@ -248,6 +152,7 @@ export const AdminVisitors = () => {
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const latestRequest = useRef(0);
   const [stats, setStats] = useState({
     summaryCards: [
       { label: 'Visitors today', count: 0 },
@@ -260,34 +165,43 @@ export const AdminVisitors = () => {
   });
 
   const fetchStats = async () => {
+    const requestId = ++latestRequest.current;
     setLoading(true);
     setError(null);
     
     try {
       const data = await simpleVisitorService.getStats(selectedYear);
+      if (requestId !== latestRequest.current) return;
       
       if (data && data.success) {
         setStats(data);
       } else {
-        setError('No data available');
+        setError(data?.error || 'Visitor stats are unavailable.');
       }
     } catch (err) {
+      if (requestId !== latestRequest.current) return;
       console.error('Fetch stats failed:', err);
       setError(err.message || 'Failed to load visitor stats');
     } finally {
-      setLoading(false);
+      if (requestId === latestRequest.current) setLoading(false);
     }
   };
 
-  // No Firebase listener - just refresh every 30 seconds
+  // Refresh shared backend analytics across all devices every 10 seconds.
   useEffect(() => {
     fetchStats();
     
     const interval = setInterval(() => {
-      fetchStats();
-    }, 30000); // Refresh every 30 seconds
-
-    return () => clearInterval(interval);
+      if (document.visibilityState === 'visible') fetchStats();
+    }, 10000);
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') fetchStats();
+    };
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
   }, [selectedYear]);
 
   // Total visitors in year
@@ -300,23 +214,24 @@ export const AdminVisitors = () => {
       
       {/* Header */}
       <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
-            <Globe className="w-5 h-5" />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
+              <Globe className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Website Visitors</h1>
+              <p className="text-xs text-slate-500 mt-0.5">Visitor sessions from all devices · refreshes every 10 seconds</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
-              Website Visitors
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Anonymous website traffic tracking, daily visitor sessions & annual trends
-            </p>
-          </div>
+          <button type="button" onClick={fetchStats} disabled={loading} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50">
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
+          </button>
         </div>
       </div>
 
       {/* 5 Summary Cards - Responsive Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
+      {error ? <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">Visitor statistics are unavailable: {error}. No local-only count is shown.</div> : <div className="grid grid-cols-2 md:grid-cols-6 gap-3 sm:gap-4">
         {stats.summaryCards.map((card, idx) => (
           <div
             key={idx}
@@ -343,7 +258,7 @@ export const AdminVisitors = () => {
             </div>
           </div>
         ))}
-      </div>
+      </div>}
 
       {/* Year Chart with Year Picker */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">

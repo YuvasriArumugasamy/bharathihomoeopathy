@@ -6,6 +6,15 @@ import { DateTime } from 'luxon'; // npm i luxon for timezone handling
 // Helper: get current date/time in IST (Asia/Kolkata)
 const getIstDate = () => DateTime.now().setZone('Asia/Kolkata');
 
+const countUniqueVisitors = async (startDate, endDate = startDate) => {
+  const rows = await SiteVisitorDaily.aggregate([
+    { $match: { visit_date: { $gte: startDate, $lte: endDate } } },
+    { $group: { _id: { date: '$visit_date', visitor: '$visitor_key' } } },
+    { $count: 'count' }
+  ]);
+  return rows[0]?.count || 0;
+};
+
 /**
  * POST /api/visitors/track
  * Record a page view for an anonymous visitor.
@@ -34,11 +43,20 @@ export const trackVisit = async (req, res) => {
     const todayStr = getIstDate().toFormat('yyyy-LL-dd');
 
     // Upsert – one document per (date, visitor_key) with page_views incremented
-    await SiteVisitorDaily.findOneAndUpdate(
-      { visit_date: todayStr, visitor_key },
-      { $inc: { page_views: 1 }, $set: { last_seen: new Date() } },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
-    );
+    try {
+      await SiteVisitorDaily.findOneAndUpdate(
+        { visit_date: todayStr, visitor_key },
+        { $inc: { page_views: 1 }, $set: { last_seen: new Date() } },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+    } catch (writeError) {
+      // Concurrent requests from one visitor can race on the unique daily index.
+      if (writeError?.code !== 11000) throw writeError;
+      await SiteVisitorDaily.updateOne(
+        { visit_date: todayStr, visitor_key },
+        { $inc: { page_views: 1 }, $set: { last_seen: new Date() } }
+      );
+    }
 
     return res.status(200).json({ success: true, date: todayStr });
   } catch (err) {
@@ -53,6 +71,7 @@ export const trackVisit = async (req, res) => {
  */
 export const getVisitorStats = async (req, res) => {
   try {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     const validPeriods = ['today', 'week', 'month', 'last_month', 'six_months', 'year'];
     const period = validPeriods.includes(req.query.period) ? req.query.period : 'month';
     const currentYear = getIstDate().year;
@@ -65,33 +84,15 @@ export const getVisitorStats = async (req, res) => {
 
     // ---------- Summary cards ----------
     const summary = {
-      today: await SiteVisitorDaily.countDocuments({
-        visit_date: now.toFormat('yyyy-LL-dd')
-      }),
-      week: await SiteVisitorDaily.countDocuments({
-        visit_date: {
-          $gte: now.startOf('week').toISODate(),
-          $lte: now.toISODate()
-        }
-      }),
-      month: await SiteVisitorDaily.countDocuments({
-        visit_date: {
-          $gte: now.startOf('month').toISODate(),
-          $lte: now.toISODate()
-        }
-      }),
-      last_month: await SiteVisitorDaily.countDocuments({
-        visit_date: {
-          $gte: now.minus({ months: 1 }).startOf('month').toISODate(),
-          $lte: now.minus({ months: 1 }).endOf('month').toISODate()
-        }
-      }),
-      six_months: await SiteVisitorDaily.countDocuments({
-        visit_date: {
-          $gte: now.minus({ months: 5 }).startOf('month').toISODate(),
-          $lte: now.toISODate()
-        }
-      })
+      today: await countUniqueVisitors(now.toFormat('yyyy-LL-dd')),
+      yesterday: await countUniqueVisitors(now.minus({ days: 1 }).toFormat('yyyy-LL-dd')),
+      week: await countUniqueVisitors(now.startOf('week').toFormat('yyyy-LL-dd'), now.toFormat('yyyy-LL-dd')),
+      month: await countUniqueVisitors(now.startOf('month').toFormat('yyyy-LL-dd'), now.toFormat('yyyy-LL-dd')),
+      last_month: await countUniqueVisitors(
+        now.minus({ months: 1 }).startOf('month').toFormat('yyyy-LL-dd'),
+        now.minus({ months: 1 }).endOf('month').toFormat('yyyy-LL-dd')
+      ),
+      six_months: await countUniqueVisitors(now.minus({ months: 5 }).startOf('month').toFormat('yyyy-LL-dd'), now.toFormat('yyyy-LL-dd'))
     };
 
     // ---------- Determine chart window ----------
@@ -133,9 +134,13 @@ export const getVisitorStats = async (req, res) => {
         { $match: { visit_date: { $gte: startStr, $lte: endStr } } },
         {
           $group: {
-            _id: { $substr: ['$visit_date', 0, 7] }, // YYYY‑MM
-            visitors: { $sum: 1 },
-            page_views: { $sum: '$page_views' }
+            _id: { date: '$visit_date', visitor: '$visitor_key' }
+          }
+        },
+        {
+          $group: {
+            _id: { $substr: ['$_id.date', 0, 7] },
+            visitors: { $sum: 1 }
           }
         },
         { $sort: { _id: 1 } }
@@ -160,9 +165,13 @@ export const getVisitorStats = async (req, res) => {
         { $match: { visit_date: { $gte: startStr, $lte: endStr } } },
         {
           $group: {
-            _id: '$visit_date',
-            visitors: { $sum: 1 },
-            page_views: { $sum: '$page_views' }
+            _id: { date: '$visit_date', visitor: '$visitor_key' }
+          }
+        },
+        {
+          $group: {
+            _id: '$_id.date',
+            visitors: { $sum: 1 }
           }
         },
         { $sort: { _id: 1 } }
@@ -193,7 +202,12 @@ export const getVisitorStats = async (req, res) => {
       { $match: { visit_date: { $gte: yearStart.toISODate(), $lte: yearEnd.toISODate() } } },
       {
         $group: {
-          _id: { $substr: ['$visit_date', 0, 7] }, // YYYY‑MM
+          _id: { date: '$visit_date', visitor: '$visitor_key' }
+        }
+      },
+      {
+        $group: {
+          _id: { $substr: ['$_id.date', 0, 7] },
           visitors: { $sum: 1 }
         }
       },
@@ -217,6 +231,7 @@ export const getVisitorStats = async (req, res) => {
       selectedYear,
       summaryCards: [
         { label: 'Visitors today',        count: summary.today },
+        { label: 'Visitors yesterday',    count: summary.yesterday },
         { label: 'Visitors this week',   count: summary.week },
         { label: 'Visitors this month',  count: summary.month },
         { label: 'Visitors last month',  count: summary.last_month },
