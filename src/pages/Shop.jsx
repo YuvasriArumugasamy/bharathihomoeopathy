@@ -28,6 +28,7 @@ import { getStoredProducts, isMatchingCategory } from '../utils/productStorage';
 import { cloudSyncService } from '../services/cloudSyncService';
 import { brandService } from '../services/brandService';
 import { filterLegacySeedCategories } from '../utils/categoryDefaults';
+import { productService } from '../services/productService';
 
 export const Shop = () => {
   const [allProducts, setAllProducts] = useState(() => getStoredProducts());
@@ -42,6 +43,32 @@ export const Shop = () => {
       window.removeEventListener('drBharathiProductsUpdated', handleSync);
       window.removeEventListener('storage', handleSync);
     };
+  }, []);
+
+  // The public shop must load the shared MongoDB catalog. Admin localStorage
+  // belongs to that browser only, so it cannot populate a customer's device.
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadCatalog = async () => {
+      try {
+        const firstPage = await productService.getProducts({ page: 1, limit: 50 });
+        const products = Array.isArray(firstPage?.data) ? [...firstPage.data] : [];
+        const totalPages = Number(firstPage?.pagination?.totalPages) || 1;
+
+        for (let page = 2; page <= totalPages; page += 1) {
+          const nextPage = await productService.getProducts({ page, limit: 50 });
+          if (Array.isArray(nextPage?.data)) products.push(...nextPage.data);
+        }
+
+        if (!cancelled) setAllProducts(products);
+      } catch (error) {
+        console.error('Failed to load the live product catalog:', error);
+      }
+    };
+
+    loadCatalog();
+    return () => { cancelled = true; };
   }, []);
   const [searchParams, setSearchParams] = useSearchParams();
   const initialCategory = searchParams.get('category') || 'All Categories';

@@ -97,8 +97,31 @@ export const productService = {
       if (params.maxPrice) queryParams.append('maxPrice', params.maxPrice);
 
       const res = await api.get(`/products?${queryParams.toString()}`);
-      if (res && Array.isArray(res.data) && res.data.length > 0) {
-        const cleaned = res.data.filter(product => !isLegacyTestProduct(product));
+      if (res?.success && Array.isArray(res.data)) {
+        // The API is the shared catalog. Do not replace a successful empty
+        // response with potentially stale browser-local products.
+        const cleaned = res.data
+          .filter(product => !isLegacyTestProduct(product))
+          .map(product => {
+            const regularPrice = Number(product.price ?? product.regularPrice ?? 0);
+            const offerPrice = Number(product.effectivePrice ?? product.salePrice ?? product.offerPrice ?? regularPrice);
+            const image = product.image || product.images?.[0] || '';
+            return {
+              ...product,
+              id: String(product._id || product.id),
+              category: typeof product.category === 'object'
+                ? (product.category?.name || '')
+                : (product.category || ''),
+              image,
+              regularPrice,
+              originalPrice: regularPrice,
+              offerPrice,
+              salePrice: offerPrice,
+              price: offerPrice,
+              status: product.isActive === false ? 'Inactive' : 'Active',
+              stock: Number(product.stock ?? 0)
+            };
+          });
         return { ...res, data: cleaned };
       }
     } catch (err) {
