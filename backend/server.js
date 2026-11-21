@@ -43,7 +43,11 @@ const allowedOrigins = new Set([
   ...(process.env.CLIENT_URL || '').split(',').map((origin) => origin.trim()).filter(Boolean),
   'http://localhost:5173',
   'https://bharathihomoeopathy.vercel.app',
-  'https://bharathihomeopathy.vercel.app'
+  'https://bharathihomeopathy.vercel.app',
+  'https://bharathihomoeopathy.com',
+  'https://www.bharathihomoeopathy.com',
+  'http://bharathihomoeopathy.com',
+  'http://www.bharathihomoeopathy.com'
 ]);
 
 app.use(cors({
