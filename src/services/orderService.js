@@ -302,40 +302,34 @@ export const orderService = {
   // ADMIN PORTAL ORDERS OPERATIONS
   // ----------------------------------------------------
   getAdminOrders: async () => {
-    const localOrders = getStoredOrders();
     if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/admin')) {
-      return localOrders;
+      return getStoredOrders();
     }
-    try {
-      const res = await api.get('/orders/admin/all');
-      if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
-        const remoteOrders = res.data.filter(Boolean).map(o => {
-          const num = formatOrderNumber(o.orderNumber || o.orderId || o.id);
-          return {
-            ...o,
-            id: o.id || o._id,
-            originalOrderId: o.orderId || o.orderNumber || o.id,
-            orderId: num,
-            orderNumber: num,
-            total: o.total || o.totalAmount || 0,
-            customer: o.customer || {
-              name: o.shippingAddress?.fullName || o.guestName || 'Online Patient',
-              phone: o.shippingAddress?.phone || o.guestPhone || '',
-              email: o.shippingAddress?.email || o.guestEmail || '',
-              city: `${o.shippingAddress?.city || ''}, ${o.shippingAddress?.state || ''}`.trim()
-            }
-          };
-        });
-        const remoteIds = new Set(remoteOrders.map(o => o.id || o.originalOrderId || o.orderId || o.orderNumber || o._id));
-        const unSyncedLocal = localOrders.filter(l => !remoteIds.has(l.id) && !remoteIds.has(l.originalOrderId) && !remoteIds.has(l.orderId) && !remoteIds.has(l.orderNumber) && !remoteIds.has(l._id));
-        const merged = [...remoteOrders, ...unSyncedLocal];
-        saveStoredOrders(merged, false);
-        return merged;
-      }
-    } catch {
-      // Backend offline or sleeping, silently use local storage
+    const res = await api.get('/orders/admin/all?limit=1000');
+    const payload = res?.data;
+    const serverOrders = Array.isArray(payload) ? payload : payload?.data;
+    if (Array.isArray(serverOrders)) {
+      const remoteOrders = serverOrders.filter(Boolean).map(o => {
+        const num = formatOrderNumber(o.orderNumber || o.orderId || o.id);
+        return {
+          ...o,
+          id: o.id || o._id,
+          originalOrderId: o.orderId || o.orderNumber || o.id,
+          orderId: num,
+          orderNumber: num,
+          total: o.total || o.totalAmount || 0,
+          customer: o.customer || {
+            name: o.shippingAddress?.fullName || o.guestName || 'Online Patient',
+            phone: o.shippingAddress?.phone || o.guestPhone || '',
+            email: o.shippingAddress?.email || o.guestEmail || '',
+            city: `${o.shippingAddress?.city || ''}, ${o.shippingAddress?.state || ''}`.trim()
+          }
+        };
+      });
+      saveStoredOrders(remoteOrders, false);
+      return remoteOrders;
     }
-    return localOrders;
+    throw new Error('The server returned an invalid orders response');
   },
 
   updateAdminOrderStatus: async (id, newStatus) => {

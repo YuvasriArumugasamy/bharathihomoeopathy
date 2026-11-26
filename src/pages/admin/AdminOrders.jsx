@@ -26,8 +26,7 @@ import {
   MessageSquare,
   RotateCcw
 } from 'lucide-react';
-import { orderService, getStoredOrders } from '../../services/orderService';
-import { cloudSyncService } from '../../services/cloudSyncService';
+import { orderService } from '../../services/orderService';
 import { useToast } from '../../context/ToastContext';
 import { dismissNotification } from '../../services/adminNotificationService';
 import { exportToCsv, exportToExcel } from '../../utils/exportUtils';
@@ -38,8 +37,7 @@ export const AdminOrders = () => {
   const { showToast } = useToast();
   const [searchParams] = useSearchParams();
   const urlStatus = searchParams.get('status');
-  const [orders, setOrders] = useState(() => (typeof getStoredOrders === 'function' ? getStoredOrders() : []));
-  const [loading, setLoading] = useState(false);
+  const [orders, setOrders] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState(urlStatus || 'All');
@@ -77,11 +75,6 @@ export const AdminOrders = () => {
 
   const loadOrders = async (showFeedback = false) => {
     if (showFeedback) setIsRefreshing(true);
-    const local = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
-    if (Array.isArray(local) && local.length > 0) {
-      setOrders(local);
-    }
-
     try {
       const data = await orderService.getAdminOrders();
       if (Array.isArray(data)) {
@@ -95,7 +88,6 @@ export const AdminOrders = () => {
         showToast('Synced using persistent store', 'info');
       }
     } finally {
-      setLoading(false);
       if (showFeedback) setIsRefreshing(false);
     }
   };
@@ -108,21 +100,10 @@ export const AdminOrders = () => {
       loadOrders(false);
     }, 8000);
 
-    // Real-time Cloud Sync Listener across devices
-    const unsubscribe = cloudSyncService.listenToCloudOrders((liveOrders) => {
-      if (Array.isArray(liveOrders)) {
-        setOrders(liveOrders);
-      }
-      setLoading(false);
-    });
-
-    // Real-time Cross-tab and Local Storage synchronizer
+    // Local/cross-tab updates should prompt a fresh read from the shared backend.
     const handleStorageOrFocus = (e) => {
       if (!e || !e.key || e.key === 'admin_orders_store') {
-        const fresh = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
-        if (Array.isArray(fresh)) {
-          setOrders(fresh);
-        }
+        loadOrders();
       }
     };
 
@@ -139,7 +120,6 @@ export const AdminOrders = () => {
 
     return () => {
       clearInterval(pollInterval);
-      if (typeof unsubscribe === 'function') unsubscribe();
       window.removeEventListener('storage', handleStorageOrFocus);
       window.removeEventListener('orders_updated', handleStorageOrFocus);
       window.removeEventListener('focus', handleStorageOrFocus);
@@ -258,7 +238,7 @@ export const AdminOrders = () => {
             <div className="flex items-center gap-2 mt-1.5 justify-center sm:justify-start">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 text-[11px] font-black uppercase tracking-wider shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
-                <span>Live Cross-Device Cloud Sync</span>
+                <span>Live Server Sync</span>
               </span>
             </div>
           </div>
