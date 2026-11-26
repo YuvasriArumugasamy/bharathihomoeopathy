@@ -211,6 +211,51 @@ export const getOrderById = async (req, res, next) => {
   }
 };
 
+export const trackOrder = async (req, res, next) => {
+  try {
+    const orderNumber = String(req.body.orderNumber || '').trim();
+    const suppliedPhone = String(req.body.phone || '').replace(/\D/g, '').slice(-10);
+    if (!orderNumber || suppliedPhone.length !== 10) {
+      return res.status(400).json({ success: false, message: 'Enter the order ID and registered 10-digit phone number.' });
+    }
+
+    const order = await Order.findOne({ orderNumber }).populate('user', 'phone');
+    const savedPhone = String(
+      order?.shippingAddress?.phone || order?.guestPhone || order?.user?.phone || ''
+    ).replace(/\D/g, '').slice(-10);
+
+    // Return the same response for an unknown order and a phone mismatch.
+    if (!order || !savedPhone || savedPhone !== suppliedPhone) {
+      return res.status(404).json({ success: false, message: 'No matching order found. Check the order ID and registered phone number.' });
+    }
+
+    const data = order.toObject();
+    res.status(200).json({
+      success: true,
+      data: {
+        orderId: order.orderNumber,
+        orderNumber: order.orderNumber,
+        createdAt: order.createdAt,
+        orderStatus: order.orderStatus ? order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1) : 'Pending',
+        paymentStatus: order.paymentStatus ? order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1) : 'Pending',
+        paymentMethod: order.paymentMethod,
+        totalAmount: order.totalAmount,
+        items: (data.items || []).map(item => ({ name: item.name, quantity: item.quantity })),
+        shippingAddress: {
+          fullName: order.shippingAddress?.fullName || '',
+          addressLine1: order.shippingAddress?.addressLine1 || '',
+          city: order.shippingAddress?.city || '',
+          state: order.shippingAddress?.state || '',
+          postalCode: order.shippingAddress?.postalCode || '',
+          phone: order.shippingAddress?.phone || order.guestPhone || ''
+        }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const cancelMyOrder = async (req, res, next) => {
   try {
     const id = req.params.id;

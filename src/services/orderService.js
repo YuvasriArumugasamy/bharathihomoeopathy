@@ -284,6 +284,14 @@ export const orderService = {
     throw new Error("Order not found");
   },
 
+  trackOrder: async (orderNumber, phone) => {
+    const response = await api.post('/orders/track', { orderNumber, phone });
+    if (!response?.success || !response?.data) {
+      throw new Error(response?.message || 'Could not find this order.');
+    }
+    return response.data;
+  },
+
   cancelMyOrder: async (id) => {
     try {
       const res = await api.patch(`/orders/my-orders/${encodeURIComponent(id)}/cancel`, {});

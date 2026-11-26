@@ -20,6 +20,7 @@ import { useToast } from '../../context/ToastContext';
 export const TrackOrderModal = ({ isOpen, onClose }) => {
   const { showToast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
+  const [phoneQuery, setPhoneQuery] = useState('');
   const [searched, setSearched] = useState(false);
   const [matchedOrder, setMatchedOrder] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -29,38 +30,24 @@ export const TrackOrderModal = ({ isOpen, onClose }) => {
   const handleTrack = async (e) => {
     e.preventDefault();
     const query = searchQuery.trim().toLowerCase();
-    if (!query) {
-      showToast('Please enter your Order ID or registered Phone Number', 'warning');
+    if (!query || phoneQuery.replace(/\D/g, '').length < 10) {
+      showToast('Enter the Order ID and registered 10-digit phone number', 'warning');
       return;
     }
 
     setLoading(true);
     setSearched(true);
     try {
-      const orders = await orderService.getAdminOrders();
-      const cleanPhone = query.replace(/\D/g, '');
-      
-      const found = orders.find(o => {
-        const id = (o.orderId || o.orderNumber || o.id || '').toLowerCase();
-        const oPhone = (o.customer?.phone || o.shippingAddress?.phone || '').replace(/\D/g, '');
-        
-        const aEmail = (o.customer?.email || o.shippingAddress?.email || o.userEmail || '').toLowerCase();
-        if (
-          id.includes(query) || 
-          (cleanPhone.length >= 6 && oPhone.includes(cleanPhone)) ||
-          (query.includes('@') && aEmail.includes(query))
-        ) {
-          return true;
-        }
-        return false;
-      });
-
-      setMatchedOrder(found || null);
-      if (!found) {
-        showToast('No active orders found for this Order ID or Phone Number', 'info');
-      }
+      const order = await orderService.trackOrder(query, phoneQuery);
+      setMatchedOrder(order || null);
+      if (!order) showToast('No matching order found. Check the Order ID and registered phone number.', 'info');
     } catch (err) {
-      showToast('Error tracking order: ' + err.message, 'error');
+      setMatchedOrder(null);
+      if (err.status === 404) {
+        showToast('No matching order found. Check the Order ID and registered phone number.', 'info');
+      } else {
+        showToast('Error tracking order: ' + err.message, 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -107,7 +94,7 @@ export const TrackOrderModal = ({ isOpen, onClose }) => {
                 Live Order Tracking
               </h3>
               <p className="text-xs text-white/80 font-medium">
-                Enter your Order ID or Phone number for instant shipping updates
+                Enter your Order ID and registered phone number for shipping updates
               </p>
             </div>
           </div>
@@ -116,17 +103,26 @@ export const TrackOrderModal = ({ isOpen, onClose }) => {
         {/* Content */}
         <div className="p-6 overflow-y-auto space-y-6">
           {/* Search Bar */}
-          <form onSubmit={handleTrack} className="flex gap-2">
+          <form onSubmit={handleTrack} className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input 
                 type="text"
-                placeholder="Enter your Order ID, Phone Number, or Email..."
+                placeholder="Order ID (e.g. 843427)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 text-sm font-medium focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all"
               />
             </div>
+            <input
+              type="tel"
+              inputMode="numeric"
+              autoComplete="tel"
+              placeholder="Registered 10-digit phone"
+              value={phoneQuery}
+              onChange={(e) => setPhoneQuery(e.target.value)}
+              className="sm:w-56 w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 text-sm font-medium focus:outline-none focus:border-brandOrange-500 focus:bg-white transition-all"
+            />
             <button
               type="submit"
               disabled={loading}
@@ -294,7 +290,7 @@ export const TrackOrderModal = ({ isOpen, onClose }) => {
               <AlertCircle className="w-10 h-10 text-amber-500 mx-auto" />
               <h4 className="font-bold text-slate-800 text-sm">No Matching Orders Found</h4>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Please verify that your Order ID (e.g. ORD-2026-891) or 10-digit mobile number is entered correctly.
+                Check the Order ID and the phone number used when placing the order.
               </p>
             </div>
           ) : (

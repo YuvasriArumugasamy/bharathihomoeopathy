@@ -3,6 +3,7 @@ import {
   createOrder,
   getMyOrders,
   getOrderById,
+  trackOrder,
   getAdminOrders,
   updateOrderStatus,
   updatePaymentStatus,
@@ -19,6 +20,7 @@ const router = express.Router();
 router.post('/', optionalProtect, createOrder);
 router.get('/', protect, adminOnly, getAdminOrders);
 router.get('/my-orders', optionalProtect, getMyOrders);
+router.post('/track', trackOrder);
 router.patch('/my-orders/:id/cancel', protect, cancelMyOrder);
 router.get('/:id', optionalProtect, getOrderById);
 
