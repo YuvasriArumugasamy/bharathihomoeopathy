@@ -44,6 +44,7 @@ export const AdminCategories = () => {
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [savingCategory, setSavingCategory] = useState(false);
 
   useEffect(() => {
     let cloudCategoriesReceived = false;
@@ -125,7 +126,8 @@ export const AdminCategories = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!formData.name.trim()) return;
+    if (!formData.name.trim() || savingCategory) return;
+    setSavingCategory(true);
 
     if (editingCategory) {
       const editId = getCatId(editingCategory);
@@ -137,8 +139,16 @@ export const AdminCategories = () => {
         slug: slugify(formData.name) 
       };
       setCategories(prev => prev.map(c => getCatId(c) === editId ? updatedCat : c));
-      await categoryService.updateAdminCategory(editId, updatedCat);
-      showToast('Category updated successfully!', 'success');
+      setModalOpen(false);
+      try {
+        const result = await categoryService.updateAdminCategory(editId, updatedCat);
+        if (result?.success === false) throw new Error(result.message || 'Could not update category.');
+        showToast('Category updated successfully!', 'success');
+      } catch (error) {
+        showToast(error.message || 'Could not update category.', 'error');
+      } finally {
+        setSavingCategory(false);
+      }
     } else {
       const generatedId = 'cat-' + Date.now();
       const newCat = {
@@ -150,10 +160,20 @@ export const AdminCategories = () => {
         createdAt: new Date().toISOString().slice(0, 10)
       };
       setCategories(prev => [...prev, newCat]);
-      await categoryService.createAdminCategory(newCat);
-      showToast('New category added to dispensary!', 'success');
+      setModalOpen(false);
+      try {
+        const result = await categoryService.createAdminCategory(newCat);
+        if (result?.data) {
+          setCategories(prev => prev.map(category => category.id === generatedId ? result.data : category));
+        }
+        showToast('New category added to dispensary!', 'success');
+      } catch (error) {
+        setCategories(prev => prev.filter(category => category.id !== generatedId));
+        showToast(error.message || 'Could not save category.', 'error');
+      } finally {
+        setSavingCategory(false);
+      }
     }
-    setModalOpen(false);
   };
 
   const handleDelete = async (cat) => {
@@ -413,10 +433,11 @@ export const AdminCategories = () => {
                   Cancel
                 </button>
                 <button 
-                  type="submit" 
+                  type="submit"
+                  disabled={savingCategory}
                   className="px-6 py-2.5 bg-gradient-to-r from-brandOrange-500 to-amber-500 hover:from-brandOrange-600 hover:to-amber-600 text-white font-black rounded-xl shadow-md shadow-brandOrange-500/25 transition-all cursor-pointer"
                 >
-                  Save Category
+                  {savingCategory ? 'Saving…' : 'Save Category'}
                 </button>
               </div>
             </form>
