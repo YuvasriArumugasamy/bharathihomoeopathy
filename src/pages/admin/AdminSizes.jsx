@@ -3,6 +3,10 @@ import { Check, Pencil, Plus, Ruler, Trash2, X } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { sizeOptionService } from '../../services/sizeOptionService';
 
+const normalizeSizeOptions = (options) => (Array.isArray(options) ? options : [])
+  .filter(option => option && typeof option === 'object' && option._id != null && typeof option.name === 'string')
+  .sort((a, b) => a.name.localeCompare(b.name));
+
 export const AdminSizes = () => {
   const { showToast } = useToast();
   const [sizes, setSizes] = useState([]);
@@ -17,7 +21,7 @@ export const AdminSizes = () => {
   const loadSizes = async () => {
     setLoading(true);
     try {
-      setSizes(await sizeOptionService.getAdminSizes());
+      setSizes(normalizeSizeOptions(await sizeOptionService.getAdminSizes()));
     } catch (error) {
       showToast(`Could not load sizes: ${error.message}`, 'error');
     } finally {
@@ -34,7 +38,7 @@ export const AdminSizes = () => {
     setSaving(true);
     try {
       const created = await sizeOptionService.createSize(cleanName);
-      setSizes(previous => [...previous, created].sort((a, b) => a.name.localeCompare(b.name)));
+      setSizes(previous => normalizeSizeOptions([...previous, created]));
       setName('');
       showToast(`Size “${created.name}” added.`, 'success');
     } catch (error) {
@@ -71,7 +75,7 @@ export const AdminSizes = () => {
     setSaving(true);
     try {
       const updated = await sizeOptionService.updateSize(size._id, cleanName);
-      setSizes(previous => previous.map(item => item._id === size._id ? updated : item).sort((a, b) => a.name.localeCompare(b.name)));
+      setSizes(previous => normalizeSizeOptions(previous.map(item => item._id === size._id ? updated : item)));
       setEditingId(null);
       setEditName('');
       showToast(`Size updated to “${updated.name}”.`, 'success');
