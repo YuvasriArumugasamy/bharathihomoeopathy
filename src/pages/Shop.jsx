@@ -32,6 +32,7 @@ import { productService } from '../services/productService';
 
 export const Shop = () => {
   const [allProducts, setAllProducts] = useState(() => getStoredProducts());
+  const [catalogLoading, setCatalogLoading] = useState(true);
 
   useEffect(() => {
     const handleSync = () => {
@@ -55,15 +56,29 @@ export const Shop = () => {
         const firstPage = await productService.getProducts({ page: 1, limit: 50 });
         const products = Array.isArray(firstPage?.data) ? [...firstPage.data] : [];
         const totalPages = Number(firstPage?.pagination?.totalPages) || 1;
-
-        for (let page = 2; page <= totalPages; page += 1) {
-          const nextPage = await productService.getProducts({ page, limit: 50 });
-          if (Array.isArray(nextPage?.data)) products.push(...nextPage.data);
+        if (!cancelled) {
+          setAllProducts(products);
+          setCatalogLoading(false);
         }
 
-        if (!cancelled) setAllProducts(products);
+        if (totalPages > 1) {
+          const remainingPages = await Promise.all(
+            Array.from({ length: totalPages - 1 }, (_, index) =>
+              productService.getProducts({ page: index + 2, limit: 50 })
+            )
+          );
+          remainingPages.forEach(page => {
+            if (Array.isArray(page?.data)) products.push(...page.data);
+          });
+          if (!cancelled) {
+            const byId = new Map(products.map(product => [String(product.id || product._id), product]));
+            setAllProducts([...byId.values()]);
+          }
+        }
       } catch (error) {
         console.error('Failed to load the live product catalog:', error);
+      } finally {
+        if (!cancelled) setCatalogLoading(false);
       }
     };
 
@@ -599,7 +614,7 @@ export const Shop = () => {
             {/* Laptop / Desktop Top Actions & Results Header Bar (Hidden on Mobile) */}
             <div className="hidden lg:flex bg-white border border-slate-200/90 rounded-xl px-4 py-2.5 items-center justify-between shadow-2xs text-xs">
               <div className="font-extrabold text-slate-900 text-sm">
-                {filteredProducts.length > 0 ? `Showing all ${filteredProducts.length} remedies` : 'No remedies found'}
+                {catalogLoading ? 'Loading remedies…' : filteredProducts.length > 0 ? `Showing all ${filteredProducts.length} remedies` : 'No remedies found'}
               </div>
 
               <div className="flex items-center gap-3">
@@ -672,6 +687,12 @@ export const Shop = () => {
                 </div>
               ) : (
                 <div className="bg-white rounded-xl border border-slate-200 p-8 text-center space-y-3">
+                  {catalogLoading ? (
+                    <div className="flex flex-col items-center gap-3 py-6" role="status" aria-live="polite">
+                      <div className="h-9 w-9 rounded-full border-4 border-orange-100 border-t-orange-500 animate-spin" />
+                      <p className="text-sm font-semibold text-slate-600">Loading remedies…</p>
+                    </div>
+                  ) : <>
                   <div className="text-3xl">🔍</div>
                   <h3 className="text-base font-bold text-slate-900">No Remedies Found</h3>
                   <p className="text-xs text-slate-500 max-w-sm mx-auto">
@@ -683,6 +704,7 @@ export const Shop = () => {
                   >
                     Clear All Filters
                   </button>
+                  </>}
                 </div>
               )}
             </div>

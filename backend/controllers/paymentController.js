@@ -1,13 +1,17 @@
 import crypto from 'crypto';
-import { razorpayInstance } from '../config/razorpay.js';
+import { getRazorpayInstance, getRazorpayKeyId, getRazorpayKeySecret } from '../config/razorpay.js';
 import Order from '../models/Order.js';
 import Payment from '../models/Payment.js';
 import { validateCreatePaymentOrder, validateVerifyPayment } from '../validators/paymentValidator.js';
 
 export const createRazorpayOrder = async (req, res, next) => {
   try {
-    if (!razorpayInstance || !process.env.RAZORPAY_KEY_ID) {
-      return res.status(503).json({ success: false, message: 'Razorpay credentials are not configured on the server.' });
+    const razorpayInstance = getRazorpayInstance();
+    if (!razorpayInstance) {
+      return res.status(503).json({
+        success: false,
+        message: 'Server payment setup is incomplete. Configure RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET or LIVE_API_KEY/LIVE_KEY_SECRET in the backend environment.'
+      });
     }
     const { isValid, errors } = validateCreatePaymentOrder(req.body);
     if (!isValid) return res.status(400).json({ success: false, message: errors.join(', ') });
@@ -65,7 +69,7 @@ export const createRazorpayOrder = async (req, res, next) => {
         amount: rzpOrder.amount,
         currency: rzpOrder.currency,
         orderNumber,
-        key: process.env.RAZORPAY_KEY_ID
+        key: getRazorpayKeyId()
       }
     });
   } catch (error) {
@@ -82,12 +86,12 @@ export const verifyPayment = async (req, res, next) => {
     const razorpay_payment_id = req.body.razorpay_payment_id || req.body.paymentId;
     const razorpay_signature = req.body.razorpay_signature || req.body.signature;
 
-    if (!process.env.RAZORPAY_KEY_SECRET) {
-      return res.status(503).json({ success: false, message: 'Razorpay secret is not configured on the server.' });
+    const secret = getRazorpayKeySecret();
+    if (!secret) {
+      return res.status(503).json({ success: false, message: 'Server payment setup is missing its Razorpay secret.' });
     }
 
     if (razorpay_signature) {
-      const secret = process.env.RAZORPAY_KEY_SECRET;
       const body = razorpay_order_id + '|' + razorpay_payment_id;
 
       const expectedSignature = crypto
