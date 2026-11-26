@@ -90,7 +90,7 @@ export default function App() {
   }, []);
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary key={location.pathname}>
       <ScrollToTop />
       <SeoManager />
       <PwaInstallPrompt />
