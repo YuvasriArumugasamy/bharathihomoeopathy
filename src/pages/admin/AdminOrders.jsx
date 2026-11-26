@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { 
@@ -53,6 +53,7 @@ export const AdminOrders = () => {
   const [selectedStatus, setSelectedStatus] = useState(urlStatus || 'All');
   const [selectedOrderDrawer, setSelectedOrderDrawer] = useState(null);
   const [invoiceModalOrder, setInvoiceModalOrder] = useState(null);
+  const pendingOrderChanges = useRef(new Map());
 
   useEffect(() => {
     const s = searchParams.get('status');
@@ -88,7 +89,11 @@ export const AdminOrders = () => {
     try {
       const data = await orderService.getAdminOrders();
       if (Array.isArray(data)) {
-        setOrders(data);
+        setOrders(data.map(order => {
+          const keys = [order.id, order._id, order.orderId, order.originalOrderId].filter(Boolean).map(String);
+          const pending = keys.map(key => pendingOrderChanges.current.get(key)).find(Boolean);
+          return pending ? { ...order, ...pending } : order;
+        }));
       }
       if (showFeedback) {
         showToast('Orders synced successfully!', 'success');
@@ -163,30 +168,78 @@ export const AdminOrders = () => {
   };
 
   const handleUpdateStatus = async (orderId, newStatus) => {
+    const matchesOrder = order => order.id === orderId || order.orderId === orderId || order.originalOrderId === orderId || order._id === orderId;
+    const previousStatus = orders.find(matchesOrder)?.orderStatus || selectedOrderDrawer?.orderStatus || 'Pending';
+    const pendingKey = String(orderId);
+    pendingOrderChanges.current.set(pendingKey, {
+      ...pendingOrderChanges.current.get(pendingKey),
+      orderStatus: newStatus
+    });
+    setOrders(prev => prev.map(o => matchesOrder(o) ? { ...o, orderStatus: newStatus } : o));
+    if (selectedOrderDrawer && matchesOrder(selectedOrderDrawer)) {
+      setSelectedOrderDrawer(prev => ({ ...prev, orderStatus: newStatus }));
+    }
+
     try {
       await orderService.updateAdminOrderStatus(orderId, newStatus);
-      setOrders(prev => prev.map(o => (o.id === orderId || o.orderId === orderId || o.originalOrderId === orderId || o._id === orderId) ? { ...o, orderStatus: newStatus } : o));
-      if (selectedOrderDrawer && (selectedOrderDrawer.id === orderId || selectedOrderDrawer.orderId === orderId || selectedOrderDrawer.originalOrderId === orderId)) {
-        setSelectedOrderDrawer(prev => ({ ...prev, orderStatus: newStatus }));
+      const pending = pendingOrderChanges.current.get(pendingKey);
+      if (pending?.orderStatus === newStatus) {
+        delete pending.orderStatus;
+        if (Object.keys(pending).length) pendingOrderChanges.current.set(pendingKey, pending);
+        else pendingOrderChanges.current.delete(pendingKey);
       }
       const notifId = `notif-ord-${orderId}`;
       dismissNotification(notifId);
       showToast(`Order status updated to ${newStatus} and saved!`, 'success');
     } catch (error) {
-      showToast(error.response?.data?.message || 'Could not save order status. Please try again.', 'error');
+      const pending = pendingOrderChanges.current.get(pendingKey);
+      if (pending?.orderStatus === newStatus) {
+        delete pending.orderStatus;
+        if (Object.keys(pending).length) pendingOrderChanges.current.set(pendingKey, pending);
+        else pendingOrderChanges.current.delete(pendingKey);
+        setOrders(prev => prev.map(o => matchesOrder(o) ? { ...o, orderStatus: previousStatus } : o));
+        if (selectedOrderDrawer && matchesOrder(selectedOrderDrawer)) {
+          setSelectedOrderDrawer(prev => ({ ...prev, orderStatus: previousStatus }));
+        }
+      }
+      showToast(error.data?.message || error.message || 'Could not save order status. Please try again.', 'error');
     }
   };
 
   const handleUpdatePaymentStatus = async (orderId, newStatus) => {
+    const matchesOrder = order => order.id === orderId || order.orderId === orderId || order._id === orderId;
+    const previousStatus = orders.find(matchesOrder)?.paymentStatus || selectedOrderDrawer?.paymentStatus || 'Pending';
+    const pendingKey = String(orderId);
+    pendingOrderChanges.current.set(pendingKey, {
+      ...pendingOrderChanges.current.get(pendingKey),
+      paymentStatus: newStatus
+    });
+    setOrders(prev => prev.map(o => matchesOrder(o) ? { ...o, paymentStatus: newStatus } : o));
+    if (selectedOrderDrawer && matchesOrder(selectedOrderDrawer)) {
+      setSelectedOrderDrawer(prev => ({ ...prev, paymentStatus: newStatus }));
+    }
+
     try {
       await orderService.updateAdminPaymentStatus(orderId, newStatus);
-      setOrders(prev => prev.map(o => (o.id === orderId || o.orderId === orderId || o._id === orderId) ? { ...o, paymentStatus: newStatus } : o));
-      if (selectedOrderDrawer && (selectedOrderDrawer.id === orderId || selectedOrderDrawer.orderId === orderId)) {
-        setSelectedOrderDrawer(prev => ({ ...prev, paymentStatus: newStatus }));
+      const pending = pendingOrderChanges.current.get(pendingKey);
+      if (pending?.paymentStatus === newStatus) {
+        delete pending.paymentStatus;
+        if (Object.keys(pending).length) pendingOrderChanges.current.set(pendingKey, pending);
+        else pendingOrderChanges.current.delete(pendingKey);
       }
       showToast(`Payment status updated to ${newStatus} and saved!`, 'success');
     } catch (error) {
-      showToast(error.response?.data?.message || 'Could not save payment status. Please try again.', 'error');
+      const pending = pendingOrderChanges.current.get(pendingKey);
+      if (pending?.paymentStatus === newStatus) {
+        delete pending.paymentStatus;
+        if (Object.keys(pending).length) pendingOrderChanges.current.set(pendingKey, pending);
+        else pendingOrderChanges.current.delete(pendingKey);
+        setOrders(prev => prev.map(o => matchesOrder(o) ? { ...o, paymentStatus: previousStatus } : o));
+        if (selectedOrderDrawer && matchesOrder(selectedOrderDrawer)) {
+          setSelectedOrderDrawer(prev => ({ ...prev, paymentStatus: previousStatus }));
+        }
+      }
+      showToast(error.data?.message || error.message || 'Could not save payment status. Please try again.', 'error');
     }
   };
 
