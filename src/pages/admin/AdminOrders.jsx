@@ -33,6 +33,16 @@ import { exportToCsv, exportToExcel } from '../../utils/exportUtils';
 import { sendOrderWhatsApp } from '../../utils/whatsappUtils';
 import { OrderInvoiceModal } from '../../components/admin/OrderInvoiceModal';
 
+const formatOrderDateTime = (value, options) => {
+  if (!value) return 'Date and time unavailable';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Date and time unavailable';
+  return new Intl.DateTimeFormat('en-IN', {
+    ...options,
+    timeZone: 'Asia/Kolkata'
+  }).format(date);
+};
+
 export const AdminOrders = () => {
   const { showToast } = useToast();
   const [searchParams] = useSearchParams();
@@ -586,6 +596,20 @@ export const AdminOrders = () => {
                 <h3 className="font-mono font-black text-xl text-slate-900">
                   {selectedOrderDrawer.orderId || selectedOrderDrawer.orderNumber}
                 </h3>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-[11px] font-semibold text-slate-500">
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar className="h-3.5 w-3.5 text-brandOrange-600" />
+                    {formatOrderDateTime(selectedOrderDrawer.createdAt || selectedOrderDrawer.date, {
+                      day: '2-digit', month: 'short', year: 'numeric'
+                    })}
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5 text-brandOrange-600" />
+                    {formatOrderDateTime(selectedOrderDrawer.createdAt || selectedOrderDrawer.date, {
+                      hour: '2-digit', minute: '2-digit', hour12: true
+                    })} IST
+                  </span>
+                </div>
               </div>
               <button 
                 onClick={() => setSelectedOrderDrawer(null)} 
