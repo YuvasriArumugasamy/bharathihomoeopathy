@@ -11,6 +11,8 @@ export const AdminSizes = () => {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadSizes = async () => {
     setLoading(true);
@@ -42,13 +44,18 @@ export const AdminSizes = () => {
     }
   };
 
-  const handleDelete = async (size) => {
+  const handleDelete = async () => {
+    if (!pendingDelete || deleting) return;
+    setDeleting(true);
     try {
-      await sizeOptionService.deleteSize(size._id);
-      setSizes(previous => previous.filter(item => item._id !== size._id));
-      showToast(`Size “${size.name}” removed from available options. Existing products keep their saved size.`, 'success');
+      await sizeOptionService.deleteSize(pendingDelete._id);
+      setSizes(previous => previous.filter(item => item._id !== pendingDelete._id));
+      showToast(`Size “${pendingDelete.name}” removed from available options. Existing products keep their saved size.`, 'success');
+      setPendingDelete(null);
     } catch (error) {
       showToast(error.message || 'Could not remove size.', 'error');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -121,7 +128,7 @@ export const AdminSizes = () => {
                       <button type="button" onClick={() => startEditing(size)} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-orange-600 hover:bg-orange-50 text-xs font-bold" aria-label={`Edit ${size.name}`}>
                         <Pencil className="w-3.5 h-3.5" /> Edit
                       </button>
-                      <button type="button" onClick={() => handleDelete(size)} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-bold" aria-label={`Delete ${size.name}`}>
+                      <button type="button" onClick={() => setPendingDelete(size)} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-bold" aria-label={`Delete ${size.name}`}>
                         <Trash2 className="w-3.5 h-3.5" /> Remove
                       </button>
                     </div>
@@ -132,6 +139,37 @@ export const AdminSizes = () => {
           </ul>
         )}
       </section>
+
+      {pendingDelete && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
+          onMouseDown={event => {
+            if (event.target === event.currentTarget && !deleting) setPendingDelete(null);
+          }}
+        >
+          <div role="dialog" aria-modal="true" aria-labelledby="delete-size-title" className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl sm:p-6">
+            <div className="flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+                <Trash2 className="h-5 w-5" />
+              </span>
+              <div>
+                <h2 id="delete-size-title" className="text-base font-black text-slate-900">Remove this size option?</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  “{pendingDelete.name}” will be removed from the available size options. Existing products keep their saved size.
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <button type="button" disabled={deleting} onClick={() => setPendingDelete(null)} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50">
+                Cancel
+              </button>
+              <button type="button" disabled={deleting} onClick={handleDelete} className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-rose-700 disabled:opacity-50">
+                <Trash2 className="h-4 w-4" /> {deleting ? 'Removing…' : 'Yes, Remove'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
