@@ -5,48 +5,45 @@ import { PwaInstallPrompt } from './components/common/PwaInstallPrompt';
 
 // Layouts
 import { MainLayout } from './layouts/MainLayout';
-import { AdminLayout } from './layouts/AdminLayout';
+const AdminLayout = React.lazy(() => import('./layouts/AdminLayout').then(module => ({ default: module.AdminLayout })));
 
 // Common & Route Guards
 import { ProtectedRoute, AdminProtectedRoute } from './components/common/ProtectedRoute';
 import { ScrollToTop } from './components/common/ScrollToTop';
 import { SeoManager } from './components/common/SeoManager';
 
-// Customer Pages
-import { Home } from './pages/Home';
-import { About } from './pages/About';
-import { Shop } from './pages/Shop';
-import { ProductDetails } from './pages/ProductDetails';
-import { BestSellers } from './pages/BestSellers';
-import { Blog } from './pages/Blog';
-import { Appointment } from './pages/Appointment';
-import { Contact } from './pages/Contact';
-import { Login } from './pages/Login';
-import { Register } from './pages/Register';
-import { MyAccount } from './pages/MyAccount';
-import { Cart } from './pages/Cart';
-import { Wishlist } from './pages/Wishlist';
-import { Checkout } from './pages/Checkout';
-
-// Admin Pages
-import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { AdminLogin } from './pages/admin/AdminLogin';
-import { AdminProducts } from './pages/admin/AdminProducts';
-import { AdminSizes } from './pages/admin/AdminSizes';
-import { AdminCategories } from './pages/admin/AdminCategories';
-import { AdminBrands } from './pages/admin/AdminBrands';
-import { AdminOrders } from './pages/admin/AdminOrders';
-import { AdminCustomers } from './pages/admin/AdminCustomers';
-import { AdminAppointments } from './pages/admin/AdminAppointments';
-import { AdminInventory } from './pages/admin/AdminInventory';
-import { AdminPayments } from './pages/admin/AdminPayments';
-import { AdminReviews } from './pages/admin/AdminReviews';
-import { AdminBlog } from './pages/admin/AdminBlog';
-import { AdminEnquiries } from './pages/admin/AdminEnquiries';
-import { AdminSeo } from './pages/admin/AdminSeo';
-import { AdminSettings } from './pages/admin/AdminSettings';
-import { AdminNotifications } from './pages/admin/AdminNotifications';
-import { AdminVisitors } from './pages/admin/AdminVisitors';
+// Load only the page a visitor opens instead of downloading the full customer
+// and admin portal before the first screen can render.
+const Home = React.lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
+const About = React.lazy(() => import('./pages/About').then(module => ({ default: module.About })));
+const Shop = React.lazy(() => import('./pages/Shop').then(module => ({ default: module.Shop })));
+const ProductDetails = React.lazy(() => import('./pages/ProductDetails').then(module => ({ default: module.ProductDetails })));
+const BestSellers = React.lazy(() => import('./pages/BestSellers').then(module => ({ default: module.BestSellers })));
+const Blog = React.lazy(() => import('./pages/Blog').then(module => ({ default: module.Blog })));
+const Appointment = React.lazy(() => import('./pages/Appointment').then(module => ({ default: module.Appointment })));
+const Contact = React.lazy(() => import('./pages/Contact').then(module => ({ default: module.Contact })));
+const Login = React.lazy(() => import('./pages/Login').then(module => ({ default: module.Login })));
+const Register = React.lazy(() => import('./pages/Register').then(module => ({ default: module.Register })));
+const MyAccount = React.lazy(() => import('./pages/MyAccount').then(module => ({ default: module.MyAccount })));
+const Cart = React.lazy(() => import('./pages/Cart').then(module => ({ default: module.Cart })));
+const Wishlist = React.lazy(() => import('./pages/Wishlist').then(module => ({ default: module.Wishlist })));
+const Checkout = React.lazy(() => import('./pages/Checkout').then(module => ({ default: module.Checkout })));
+const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
+const AdminLogin = React.lazy(() => import('./pages/admin/AdminLogin').then(module => ({ default: module.AdminLogin })));
+const AdminProducts = React.lazy(() => import('./pages/admin/AdminProducts').then(module => ({ default: module.AdminProducts })));
+const AdminSizes = React.lazy(() => import('./pages/admin/AdminSizes').then(module => ({ default: module.AdminSizes })));
+const AdminCategories = React.lazy(() => import('./pages/admin/AdminCategories').then(module => ({ default: module.AdminCategories })));
+const AdminBrands = React.lazy(() => import('./pages/admin/AdminBrands').then(module => ({ default: module.AdminBrands })));
+const AdminOrders = React.lazy(() => import('./pages/admin/AdminOrders').then(module => ({ default: module.AdminOrders })));
+const AdminCustomers = React.lazy(() => import('./pages/admin/AdminCustomers').then(module => ({ default: module.AdminCustomers })));
+const AdminAppointments = React.lazy(() => import('./pages/admin/AdminAppointments').then(module => ({ default: module.AdminAppointments })));
+const AdminInventory = React.lazy(() => import('./pages/admin/AdminInventory').then(module => ({ default: module.AdminInventory })));
+const AdminPayments = React.lazy(() => import('./pages/admin/AdminPayments').then(module => ({ default: module.AdminPayments })));
+const AdminReviews = React.lazy(() => import('./pages/admin/AdminReviews').then(module => ({ default: module.AdminReviews })));
+const AdminEnquiries = React.lazy(() => import('./pages/admin/AdminEnquiries').then(module => ({ default: module.AdminEnquiries })));
+const AdminSettings = React.lazy(() => import('./pages/admin/AdminSettings').then(module => ({ default: module.AdminSettings })));
+const AdminNotifications = React.lazy(() => import('./pages/admin/AdminNotifications').then(module => ({ default: module.AdminNotifications })));
+const AdminVisitors = React.lazy(() => import('./pages/admin/AdminVisitors').then(module => ({ default: module.AdminVisitors })));
 import { useVisitorTracker } from './hooks/useVisitorTracker';
 import { useFCM } from './hooks/useFCM';
 
@@ -97,6 +94,7 @@ export default function App() {
       <ScrollToTop />
       <SeoManager />
       <PwaInstallPrompt />
+      <React.Suspense fallback={<div className="min-h-[40vh] grid place-items-center text-sm font-semibold text-slate-500" role="status">Loading page…</div>}>
       <Routes>
       {/* Patient & Customer Routes */}
       <Route path="/" element={<MainLayout />}>
@@ -164,6 +162,7 @@ export default function App() {
       {/* 404 Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+      </React.Suspense>
     </ErrorBoundary>
   );
 }

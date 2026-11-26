@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { VAPID_KEY, app } from '../services/firebase';
 import { api } from '../utils/api';
 
 export const playNotificationSound = () => {
@@ -51,6 +50,8 @@ export function useFCM() {
 
         const supported = await isSupported();
         if (!supported) return;
+
+        const { app, VAPID_KEY } = await import('../services/firebase');
 
         const msgInstance = getMessaging(app);
 
