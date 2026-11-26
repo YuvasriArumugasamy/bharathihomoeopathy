@@ -214,7 +214,26 @@ export const productService = {
   getProductById: async (id) => {
     try {
       const res = await api.get(`/products/${id}`);
-      if (res && res.data) return res.data;
+      if (res?.success && res.data) {
+        const product = res.data;
+        const regularPrice = Number(product.price ?? product.regularPrice ?? 0);
+        const offerPrice = Number(product.effectivePrice ?? product.salePrice ?? product.offerPrice ?? regularPrice);
+        const images = Array.isArray(product.images) ? product.images.filter(image => typeof image === 'string') : [];
+        return {
+          ...product,
+          id: String(product._id || product.id || id),
+          category: typeof product.category === 'object' ? (product.category?.name || '') : (product.category || ''),
+          images,
+          image: product.image || images[0] || '',
+          regularPrice,
+          originalPrice: regularPrice,
+          offerPrice,
+          salePrice: offerPrice,
+          price: offerPrice,
+          stock: Number(product.stock ?? 0),
+          ingredients: Array.isArray(product.ingredients) ? product.ingredients : []
+        };
+      }
     } catch {
       // Fallback
     }

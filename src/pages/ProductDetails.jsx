@@ -161,6 +161,9 @@ export const ProductDetails = () => {
   }
 
   const productId = product.id || product._id;
+  const productCategory = typeof product.category === 'object'
+    ? (product.category?.name || '')
+    : (product.category || '');
   const isWishlisted = isInWishlist(productId);
 
   const displayPrice = product.salePrice || product.price;
@@ -203,7 +206,7 @@ export const ProductDetails = () => {
     }
   };
 
-  const relatedProducts = getStoredProducts().filter(p => p.id !== product.id && p.category === product.category).slice(0, 4);
+  const relatedProducts = getStoredProducts().filter(p => p.id !== product.id && p.category === productCategory).slice(0, 4);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-10 w-full overflow-x-hidden">
@@ -214,7 +217,7 @@ export const ProductDetails = () => {
         <ChevronRight className="w-3 h-3 text-slate-400 shrink-0" />
         <Link to="/shop" className="hover:text-brandOrange-600 font-semibold transition-colors">Shop</Link>
         <ChevronRight className="w-3 h-3 text-slate-400 shrink-0" />
-        <Link to={`/shop?category=${encodeURIComponent(product.category)}`} className="hover:text-brandOrange-600 font-semibold transition-colors">{product.category}</Link>
+        <Link to={`/shop?category=${encodeURIComponent(productCategory)}`} className="hover:text-brandOrange-600 font-semibold transition-colors">{productCategory}</Link>
         <ChevronRight className="w-3 h-3 text-slate-400 shrink-0" />
         <span className="text-slate-900 font-extrabold truncate max-w-xs">{product.name}</span>
       </nav>
@@ -311,7 +314,7 @@ export const ProductDetails = () => {
 
           <div>
             <span className="px-3 py-1 bg-orange-50 text-[#e05a1e] text-[10px] font-black uppercase tracking-wider rounded-full border border-orange-200/60 inline-block mb-2.5">
-              {product.category}
+              {productCategory}
             </span>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-snug">
               {product.name}
