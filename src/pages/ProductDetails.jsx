@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
-  Star, 
   Check, 
   Heart, 
   ShieldCheck, 
@@ -46,69 +45,7 @@ export const ProductDetails = () => {
   const [error, setError] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
   const [activeTab, setActiveTab] = useState('description');
-  const [reviewsList, setReviewsList] = useState([
-    { name: "Ananya Sharma", rating: 5, date: "2026-08-20", title: "Authentic & Genuine", comment: "The sealed amber packaging gives great confidence in product potency. Delivered securely." },
-    { name: "Suresh Kumar", rating: 5, date: "2026-08-15", title: "Effective daily wellness", comment: "Consulted Dr. Bharathi and ordered this formulation. Very satisfied with the outcome." }
-  ]);
-  const [newReview, setNewReview] = useState({ name: '', rating: 5, title: '', comment: '' });
-  const [showReviewForm, setShowReviewForm] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(`product_reviews_${id}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setReviewsList(parsed);
-        }
-      }
-    } catch {
-      // fallback
-    }
-  }, [id]);
-
-  const handleReviewSubmit = (e) => {
-    e.preventDefault();
-    if (!newReview.name.trim() || !newReview.comment.trim()) {
-      showToast('Please fill in your name and comments', 'warning');
-      return;
-    }
-
-    const reviewObj = {
-      name: newReview.name.trim(),
-      rating: Number(newReview.rating) || 5,
-      date: new Date().toISOString().slice(0, 10),
-      title: newReview.title.trim() || 'Verified Experience',
-      comment: newReview.comment.trim()
-    };
-
-    const updatedList = [reviewObj, ...reviewsList];
-    setReviewsList(updatedList);
-    try {
-      localStorage.setItem(`product_reviews_${id}`, JSON.stringify(updatedList));
-
-      // Also sync to admin reviews queue
-      const rawAdminReviews = localStorage.getItem('admin_reviews_store');
-      const adminReviews = rawAdminReviews ? JSON.parse(rawAdminReviews) : [];
-      adminReviews.unshift({
-        id: 'rev-' + Date.now(),
-        productName: product?.name || 'Homeopathic Remedy',
-        author: reviewObj.name,
-        rating: reviewObj.rating,
-        status: 'Approved',
-        comment: reviewObj.comment,
-        createdAt: new Date().toISOString().slice(0, 10)
-      });
-      localStorage.setItem('admin_reviews_store', JSON.stringify(adminReviews));
-    } catch (err) {
-      console.warn("Could not save review to storage:", err);
-    }
-
-    setNewReview({ name: '', rating: 5, title: '', comment: '' });
-    setShowReviewForm(false);
-    showToast('Thank you! Your verified review has been published.', 'success');
-  };
 
   useEffect(() => {
     if (showImageModal) {
@@ -324,14 +261,8 @@ export const ProductDetails = () => {
             )}
           </div>
 
-          {/* Rating & Stock Badges */}
+          {/* Stock Status */}
           <div className="flex flex-wrap items-center gap-3 pb-4 border-b border-slate-100 text-xs">
-            <div className="flex items-center gap-1.5 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200/60 text-amber-700 font-black">
-              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-              <span>{product.rating || '4.8'}</span>
-            </div>
-            <span className="text-slate-500 font-medium">({reviewsList.length + 22} patient reviews)</span>
-            <span className="text-slate-300">•</span>
             <span className={`font-extrabold px-3 py-1 rounded-xl text-[11px] border ${
               product.stock > 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60' : 'bg-rose-50 text-rose-700 border-rose-200/60'
             }`}>
@@ -452,7 +383,7 @@ export const ProductDetails = () => {
 
       </div>
 
-      {/* Tabs: Description, Care & Storage, Verified Patient Reviews */}
+      {/* Product Information */}
       <div className="bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-10 border border-slate-200/90 shadow-[0_15px_45px_rgba(15,23,42,0.08)] space-y-6">
         
         <div className="flex items-center gap-6 border-b border-slate-100 text-xs sm:text-sm font-black overflow-x-auto pb-1">
@@ -476,15 +407,6 @@ export const ProductDetails = () => {
             )}
           </button>
 
-          <button
-            onClick={() => setActiveTab('reviews')}
-            className={`pb-3.5 transition-colors relative cursor-pointer whitespace-nowrap ${activeTab === 'reviews' ? 'text-brandOrange-600' : 'text-slate-400 hover:text-slate-700'}`}
-          >
-            <span>Patient Reviews ({reviewsList.length})</span>
-            {activeTab === 'reviews' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brandOrange-500 rounded-full" />
-            )}
-          </button>
         </div>
 
         {activeTab === 'description' && (
@@ -522,110 +444,6 @@ export const ProductDetails = () => {
           </div>
         )}
 
-        {activeTab === 'reviews' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="font-extrabold text-slate-900 text-sm">Verified Patient Ratings</h3>
-              <button
-                onClick={() => setShowReviewForm(!showReviewForm)}
-                className="px-4 py-2 text-xs font-extrabold text-brandOrange-600 bg-orange-50 hover:bg-orange-100 border border-orange-200/60 rounded-xl transition-all cursor-pointer"
-              >
-                {showReviewForm ? 'Cancel' : 'Write a Review'}
-              </button>
-            </div>
-
-            {showReviewForm && (
-              <form onSubmit={handleReviewSubmit} className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Your Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={newReview.name}
-                      onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
-                      placeholder="e.g. Rahul V."
-                      className="w-full p-2.5 text-xs bg-white border border-slate-200/90 rounded-xl focus:outline-none focus:border-brandOrange-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Review Title</label>
-                    <input
-                      type="text"
-                      required
-                      value={newReview.title}
-                      onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
-                      placeholder="e.g. Very pure quality"
-                      className="w-full p-2.5 text-xs bg-white border border-slate-200/90 rounded-xl focus:outline-none focus:border-brandOrange-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Rating</label>
-                  <select
-                    value={newReview.rating}
-                    onChange={(e) => setNewReview({ ...newReview, rating: Number(e.target.value) })}
-                    className="p-2.5 text-xs bg-white border border-slate-200/90 rounded-xl focus:outline-none focus:border-brandOrange-500"
-                  >
-                    <option value={5}>5 Stars - Excellent</option>
-                    <option value={4}>4 Stars - Very Good</option>
-                    <option value={3}>3 Stars - Average</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Comments</label>
-                  <textarea
-                    rows={3}
-                    required
-                    value={newReview.comment}
-                    onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                    placeholder="Share your experience with this formulation..."
-                    className="w-full p-2.5 text-xs bg-white border border-slate-200/90 rounded-xl focus:outline-none focus:border-brandOrange-500"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 text-xs font-black text-white bg-brandOrange-500 hover:bg-brandOrange-600 rounded-xl transition-all shadow-md cursor-pointer"
-                >
-                  Submit Review
-                </button>
-              </form>
-            )}
-
-            <div className="space-y-4">
-              {reviewsList.map((rev, i) => (
-                <div key={i} className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-200/70 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0b344d] to-[#18587c] text-white font-black text-xs flex items-center justify-center shadow-2xs">
-                        {rev.name.split(' ').map(n=>n[0]).join('')}
-                      </div>
-                      <div>
-                        <span className="font-extrabold text-slate-900 block">{rev.name}</span>
-                        <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                          <Check className="w-3 h-3" />
-                          <span>Verified Patient</span>
-                        </span>
-                      </div>
-                    </div>
-                    <span className="text-slate-400 text-[11px] font-medium">{rev.date}</span>
-                  </div>
-
-                  <div className="flex items-center gap-1 text-amber-400 text-xs">
-                    {Array.from({ length: rev.rating }).map((_, r) => (
-                      <Star key={r} className="w-3.5 h-3.5 fill-current" />
-                    ))}
-                  </div>
-                  <h4 className="text-xs font-extrabold text-slate-800">{rev.title}</h4>
-                  <p className="text-xs text-slate-600 leading-relaxed font-medium">{rev.comment}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
       </div>
 
