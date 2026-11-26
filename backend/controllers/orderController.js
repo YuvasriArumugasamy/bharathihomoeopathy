@@ -130,7 +130,10 @@ export const createOrder = async (req, res, next) => {
       }
     }
 
-    // Trigger FCM real-time push notification to all clinic admin devices
+    // Online orders are announced only after payment verification. COD orders
+    // can be announced as soon as they are created.
+    const onlinePaymentMethods = new Set(['razorpay', 'online', 'upi', 'card', 'netbanking', 'wallet']);
+    if (!onlinePaymentMethods.has(String(order.paymentMethod || '').trim().toLowerCase())) {
     sendEventNotification({
       title: '🛍️ New Order Received',
       message: `Order #${order.orderNumber || order._id} placed by ${order.shippingAddress?.fullName || 'Patient'} - ₹${order.totalAmount}`,
@@ -142,6 +145,7 @@ export const createOrder = async (req, res, next) => {
         amount: String(order.totalAmount || 0)
       }
     }).catch(err => console.warn('Order push notification error:', err?.message));
+    }
 
     res.status(201).json({
       success: true,

@@ -4,6 +4,18 @@ import { cloudSyncService } from './cloudSyncService';
 import { authStorage } from '../utils/authStorage';
 
 const ORDERS_STORAGE_KEY = 'admin_orders_store';
+const LEGACY_PRODUCTS_STORAGE_KEY = 'drBharathiProductsCatalog';
+
+const compactOrdersForStorage = (orders) => orders.map(order => ({
+  ...order,
+  items: Array.isArray(order.items) ? order.items.map(item => ({
+    ...item,
+    image: typeof item.image === 'string' && item.image.startsWith('data:') ? '' : item.image,
+    images: Array.isArray(item.images)
+      ? item.images.filter(image => typeof image === 'string' && !image.startsWith('data:'))
+      : item.images
+  })) : order.items
+}));
 
 /**
  * Normalizes any order ID to a clean, reliable 6-digit number like "842005"
@@ -55,7 +67,7 @@ export const getStoredOrders = () => {
           !['894123', '894256', '894389'].includes(o.orderNumber)
         );
         if (cleaned.length !== parsed.length) {
-          localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(cleaned));
+          saveStoredOrders(cleaned, false);
         }
         return cleaned.map(o => {
           const num = formatOrderNumber(o.orderNumber || o.orderId || o.id);
@@ -75,14 +87,28 @@ export const getStoredOrders = () => {
 };
 
 export const saveStoredOrders = (orders, emitEvents = true) => {
+  const compactOrders = compactOrdersForStorage(orders);
+  const serialized = JSON.stringify(compactOrders);
   try {
-    localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
-    if (emitEvents && typeof window !== 'undefined') {
-      window.dispatchEvent(new Event('orders_updated'));
-      window.dispatchEvent(new Event('admin_notifications_updated'));
-    }
+    localStorage.setItem(ORDERS_STORAGE_KEY, serialized);
   } catch (err) {
-    console.warn("Could not save orders to storage:", err.message);
+    try {
+      // Remove the duplicate product cache left by older app versions, then retry.
+      localStorage.removeItem(LEGACY_PRODUCTS_STORAGE_KEY);
+      localStorage.setItem(ORDERS_STORAGE_KEY, serialized);
+    } catch {
+      try {
+        // The backend is the source of truth; retain recent local orders if the cache is full.
+        localStorage.removeItem(ORDERS_STORAGE_KEY);
+        localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(compactOrders.slice(0, 50)));
+      } catch (retryError) {
+        console.warn('Could not save orders to local cache:', retryError.message);
+      }
+    }
+  }
+  if (emitEvents && typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('orders_updated'));
+    window.dispatchEvent(new Event('admin_notifications_updated'));
   }
 };
 

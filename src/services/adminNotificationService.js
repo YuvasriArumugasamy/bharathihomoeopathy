@@ -102,7 +102,13 @@ export const getAdminNotifications = () => {
     const orders = typeof getStoredOrders === 'function' ? getStoredOrders() : [];
     if (Array.isArray(orders)) {
       orders
-        .filter(o => o && (o.orderStatus === 'Pending' || o.status === 'Pending'))
+        .filter(o => {
+          if (!o || (o.orderStatus !== 'Pending' && o.status !== 'Pending')) return false;
+          const method = String(o.paymentMethod || '').trim().toLowerCase();
+          const isOnlinePayment = ['razorpay', 'online', 'upi', 'card', 'netbanking', 'wallet'].includes(method);
+          const isPaid = ['paid', 'captured', 'success', 'completed'].includes(String(o.paymentStatus || '').trim().toLowerCase());
+          return !isOnlinePayment || isPaid;
+        })
         .forEach(o => {
           const notifId = `notif-ord-${o.id || o.orderId || o.orderNumber}`;
           if (dismissedIds.includes(notifId)) return;

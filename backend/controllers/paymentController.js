@@ -3,6 +3,7 @@ import { getRazorpayInstance, getRazorpayKeyId, getRazorpayKeySecret } from '../
 import Order from '../models/Order.js';
 import Payment from '../models/Payment.js';
 import { validateCreatePaymentOrder, validateVerifyPayment } from '../validators/paymentValidator.js';
+import { sendEventNotification } from './notificationController.js';
 
 export const createRazorpayOrder = async (req, res, next) => {
   try {
@@ -119,6 +120,7 @@ export const verifyPayment = async (req, res, next) => {
     if (payment.status === 'captured' && payment.razorpayPaymentId !== razorpay_payment_id) {
       return res.status(409).json({ success: false, message: 'Payment order has already been used.' });
     }
+    const isNewlyPaid = order.paymentStatus !== 'paid';
     payment.razorpayPaymentId = razorpay_payment_id;
     payment.razorpaySignature = razorpay_signature;
     payment.status = 'captured';
@@ -127,6 +129,21 @@ export const verifyPayment = async (req, res, next) => {
     order.orderStatus = 'confirmed';
     order.razorpayPaymentId = razorpay_payment_id;
     await order.save();
+
+    if (isNewlyPaid) {
+      sendEventNotification({
+        title: 'Payment Received - New Order',
+        message: `Payment received for order #${order.orderNumber || order._id} from ${order.shippingAddress?.fullName || order.guestName || 'Patient'} - INR ${order.totalAmount}`,
+        type: 'order',
+        link: '/admin/orders',
+        data: {
+          orderId: String(order._id),
+          orderNumber: String(order.orderNumber || ''),
+          amount: String(order.totalAmount || 0),
+          paymentStatus: 'paid'
+        }
+      }).catch(err => console.warn('Paid order push notification error:', err?.message));
+    }
 
     res.status(200).json({
       success: true,

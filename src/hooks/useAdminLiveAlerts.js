@@ -7,6 +7,15 @@ import { getStoredOrders } from '../services/orderService';
 import { getStoredAppointments } from '../services/appointmentService';
 import { cloudSyncService } from '../services/cloudSyncService';
 
+const isOrderReadyForAdminAlert = (order) => {
+  const onlineMethods = new Set(['razorpay', 'online', 'upi', 'card', 'netbanking', 'wallet']);
+  const method = String(order?.paymentMethod || '').trim().toLowerCase();
+  if (!onlineMethods.has(method)) return true;
+  return ['paid', 'captured', 'success', 'completed'].includes(
+    String(order?.paymentStatus || '').trim().toLowerCase()
+  );
+};
+
 /**
  * useAdminLiveAlerts
  * Real-time clinical background alert listener.
@@ -38,7 +47,7 @@ export function useAdminLiveAlerts() {
       if (!Array.isArray(orders) || orders.length === 0) return;
 
       if (!initialLoadDoneRef.current) {
-        orders.forEach(o => {
+        orders.filter(isOrderReadyForAdminAlert).forEach(o => {
           const id = String(o._id || o.id || o.orderNumber || o.orderId);
           knownOrderIdsRef.current.add(id);
         });
@@ -46,6 +55,7 @@ export function useAdminLiveAlerts() {
       }
 
       for (const order of orders) {
+        if (!isOrderReadyForAdminAlert(order)) continue;
         const id = String(order._id || order.id || order.orderNumber || order.orderId);
         if (!knownOrderIdsRef.current.has(id)) {
           knownOrderIdsRef.current.add(id);
