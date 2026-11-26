@@ -1,8 +1,12 @@
 import express from 'express';
-import { createRazorpayOrder, verifyPayment } from '../controllers/paymentController.js';
+import { createRazorpayOrder, getAdminPaymentRecords, verifyPayment } from '../controllers/paymentController.js';
 import { getRazorpayKeyId } from '../config/razorpay.js';
+import { protect } from '../middleware/authMiddleware.js';
+import { adminOnly } from '../middleware/adminMiddleware.js';
 
 const router = express.Router();
+
+router.get('/admin/all', protect, adminOnly, getAdminPaymentRecords);
 
 // Public config endpoint returning the public Razorpay Key ID
 router.get('/razorpay/config', (req, res) => {

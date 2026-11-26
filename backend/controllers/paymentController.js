@@ -5,6 +5,30 @@ import Payment from '../models/Payment.js';
 import { validateCreatePaymentOrder, validateVerifyPayment } from '../validators/paymentValidator.js';
 import { sendEventNotification } from './notificationController.js';
 
+export const getAdminPaymentRecords = async (_req, res, next) => {
+  try {
+    const orders = await Order.find()
+      .populate('user', 'name email phone')
+      .sort({ createdAt: -1 })
+      .limit(1000);
+
+    const data = orders.map(order => ({
+      id: String(order._id),
+      paymentId: order.razorpayPaymentId || order.razorpayOrderId || 'Not recorded',
+      orderId: order.orderNumber || String(order._id),
+      customerName: order.shippingAddress?.fullName || order.user?.name || order.guestName || 'Patient',
+      amount: Number(order.totalAmount) || 0,
+      paymentMethod: String(order.paymentMethod || '').toLowerCase() === 'cod' ? 'COD' : 'Razorpay',
+      paymentStatus: order.paymentStatus ? order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1) : 'Pending',
+      createdAt: order.createdAt
+    }));
+
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const createRazorpayOrder = async (req, res, next) => {
   try {
     const razorpayInstance = getRazorpayInstance();

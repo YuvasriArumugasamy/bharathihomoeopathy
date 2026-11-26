@@ -1,20 +1,34 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   CreditCard, Search, CheckCircle2, RotateCcw, AlertTriangle, 
   ArrowDownLeft, X, IndianRupee, ShieldCheck, Banknote, Clock, 
   ArrowUpRight, Sparkles, Filter, Check
 } from 'lucide-react';
-import { initialAdminPayments } from '../../data/adminPaymentsData';
 import { useToast } from '../../context/ToastContext';
+import { api } from '../../utils/api';
 
 export const AdminPayments = () => {
   const { showToast } = useToast();
-  const [payments, setPayments] = useState(initialAdminPayments);
+  const [payments, setPayments] = useState([]);
   const [statusFilter, setStatusFilter] = useState('All');
   const [methodFilter, setMethodFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [refundModalItem, setRefundModalItem] = useState(null);
-  const [refundReason, setRefundReason] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    api.get('/payments/admin/all')
+      .then(response => {
+        if (active) setPayments(Array.isArray(response?.data) ? response.data : []);
+      })
+      .catch(error => {
+        if (active) showToast(error.message || 'Could not load payment records.', 'error');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, [showToast]);
 
   // Financial Metrics
   const validPayments = Array.isArray(payments) ? payments.filter(Boolean) : [];
@@ -40,25 +54,6 @@ export const AdminPayments = () => {
       (p.customerName || '').toLowerCase().includes(q);
     return matchesStatus && matchesMethod && matchesSearch;
   });
-
-  const handleMarkAsPaid = (id) => {
-    setPayments(prev => prev.map(p => p.id === id ? { ...p, paymentStatus: 'Paid' } : p));
-    showToast('Payment confirmed and recorded as Paid', 'success');
-  };
-
-  const handleConfirmRefund = (e) => {
-    e.preventDefault();
-    if (!refundModalItem) return;
-    setPayments(prev => prev.map(p => p.id === refundModalItem.id ? { 
-      ...p, 
-      paymentStatus: 'Refunded', 
-      refundAmount: refundModalItem.amount, 
-      refundReason 
-    } : p));
-    setRefundModalItem(null);
-    setRefundReason('');
-    showToast('Payment refunded successfully to patient account', 'info');
-  };
 
   const statusStyles = {
     Paid: 'bg-emerald-50 text-emerald-700 border-emerald-200 ring-emerald-500/10',
@@ -234,8 +229,8 @@ export const AdminPayments = () => {
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-400">
-                    <p className="font-bold text-sm text-slate-600">No payment records found.</p>
-                    <p className="text-xs text-slate-400 mt-1">Try modifying search filters or selecting All.</p>
+                    <p className="font-bold text-sm text-slate-600">{loading ? 'Loading payment records…' : 'No payment records found.'}</p>
+                    {!loading && <p className="text-xs text-slate-400 mt-1">Try modifying search filters or selecting All.</p>}
                   </td>
                 </tr>
               ) : (
@@ -295,32 +290,9 @@ export const AdminPayments = () => {
                       </span>
                     </td>
 
-                    {/* Action */}
+                    {/* Payment confirmation must come from the gateway */}
                     <td className="py-4 px-6 text-right">
-                      {p.paymentStatus === 'Pending' ? (
-                        <button
-                          onClick={() => handleMarkAsPaid(p.id)}
-                          className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs shadow-xs transition-all flex items-center gap-1 ml-auto"
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                          Mark Paid
-                        </button>
-                      ) : p.paymentStatus === 'Paid' ? (
-                        <button
-                          onClick={() => {
-                            setRefundModalItem(p);
-                            setRefundReason('');
-                          }}
-                          className="px-3 py-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200/80 font-bold rounded-xl text-xs transition-all flex items-center gap-1 ml-auto"
-                        >
-                          <RotateCcw className="w-3 h-3" />
-                          Refund
-                        </button>
-                      ) : (
-                        <span className="text-slate-400 font-medium text-[11px] italic">
-                          Reversed
-                        </span>
-                      )}
+                      <span className="text-slate-500 font-medium text-[11px]">Gateway record</span>
                     </td>
 
                   </tr>
@@ -333,7 +305,7 @@ export const AdminPayments = () => {
         <div className="md:hidden flex flex-col gap-3.5 p-3.5 sm:p-4 bg-slate-50/60">
           {filtered.length === 0 ? (
             <div className="p-8 text-center text-slate-400">
-              <p className="font-bold text-sm text-slate-600">No payment records found.</p>
+              <p className="font-bold text-sm text-slate-600">{loading ? 'Loading payment records…' : 'No payment records found.'}</p>
             </div>
           ) : (
             filtered.map((p) => (
@@ -375,31 +347,8 @@ export const AdminPayments = () => {
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-end">
-                  {p.paymentStatus === 'Pending' ? (
-                    <button
-                      onClick={() => handleMarkAsPaid(p.id)}
-                      className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs shadow-xs transition-all flex items-center justify-center gap-1"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      Mark Paid
-                    </button>
-                  ) : p.paymentStatus === 'Paid' ? (
-                    <button
-                      onClick={() => {
-                        setRefundModalItem(p);
-                        setRefundReason('');
-                      }}
-                      className="w-full py-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200/80 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      Issue Refund
-                    </button>
-                  ) : (
-                    <span className="text-slate-400 font-medium text-xs italic">
-                      Reversed
-                    </span>
-                  )}
+                <div className="pt-2 border-t border-slate-100 text-right text-[11px] text-slate-500">
+                  Payment status from gateway
                 </div>
               </div>
             ))
@@ -407,73 +356,6 @@ export const AdminPayments = () => {
         </div>
       </div>
 
-{/* Refund Modal */}
-      {refundModalItem && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white rounded-[2.25rem] p-7 max-w-md w-full space-y-5 shadow-2xl border border-slate-100">
-            <div className="flex justify-between items-start">
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-rose-500">Reversal Desk</span>
-                <h3 className="font-heading font-black text-navy-950 text-lg">Process Patient Refund</h3>
-              </div>
-              <button 
-                onClick={() => setRefundModalItem(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-all"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="p-4 bg-rose-50/50 rounded-2xl border border-rose-100 space-y-2 text-xs">
-              <div className="flex justify-between items-center text-slate-600">
-                <span>Order Reference:</span>
-                <strong className="font-mono text-navy-950">{refundModalItem.orderId}</strong>
-              </div>
-              <div className="flex justify-between items-center text-slate-600">
-                <span>Patient Name:</span>
-                <strong className="text-navy-950">{refundModalItem.customerName}</strong>
-              </div>
-              <div className="flex justify-between items-center pt-2 border-t border-rose-200/60 text-rose-700 font-bold">
-                <span>Refund Amount:</span>
-                <span className="text-base font-black">₹{refundModalItem.amount.toLocaleString('en-IN')}</span>
-              </div>
-            </div>
-
-            <form onSubmit={handleConfirmRefund} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1.5">
-                  Audit Reason for Refund *
-                </label>
-                <textarea
-                  rows={3}
-                  required
-                  value={refundReason}
-                  onChange={(e) => setRefundReason(e.target.value)}
-                  placeholder="e.g. Consultation rescheduled by patient; remedy batch return accepted."
-                  className="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-rose-500 focus:bg-white font-medium text-slate-800 transition-all leading-relaxed"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setRefundModalItem(null)}
-                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-xl shadow-lg shadow-rose-600/25 transition-all flex items-center justify-center gap-1.5"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  Confirm Reversal
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
     </div>
   );
