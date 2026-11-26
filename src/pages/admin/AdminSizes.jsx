@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Ruler, Trash2 } from 'lucide-react';
+import { Check, Pencil, Plus, Ruler, Trash2, X } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { sizeOptionService } from '../../services/sizeOptionService';
 
@@ -9,6 +9,8 @@ export const AdminSizes = () => {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editName, setEditName] = useState('');
 
   const loadSizes = async () => {
     setLoading(true);
@@ -50,6 +52,29 @@ export const AdminSizes = () => {
     }
   };
 
+  const startEditing = (size) => {
+    setEditingId(size._id);
+    setEditName(size.name);
+  };
+
+  const handleUpdate = async (event, size) => {
+    event.preventDefault();
+    const cleanName = editName.trim();
+    if (!cleanName) return;
+    setSaving(true);
+    try {
+      const updated = await sizeOptionService.updateSize(size._id, cleanName);
+      setSizes(previous => previous.map(item => item._id === size._id ? updated : item).sort((a, b) => a.name.localeCompare(b.name)));
+      setEditingId(null);
+      setEditName('');
+      showToast(`Size updated to “${updated.name}”.`, 'success');
+    } catch (error) {
+      showToast(error.message || 'Could not update size.', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto space-y-5 pb-10">
       <header className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm">
@@ -83,10 +108,25 @@ export const AdminSizes = () => {
           <ul className="divide-y divide-slate-100">
             {sizes.map(size => (
               <li key={size._id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                <span className="font-semibold text-slate-800">{size.name}</span>
-                <button type="button" onClick={() => handleDelete(size)} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-bold" aria-label={`Delete ${size.name}`}>
-                  <Trash2 className="w-3.5 h-3.5" /> Remove
-                </button>
+                {editingId === size._id ? (
+                  <form onSubmit={event => handleUpdate(event, size)} className="flex flex-1 items-center gap-2">
+                    <input autoFocus value={editName} onChange={event => setEditName(event.target.value)} aria-label={`Edit ${size.name}`} className="flex-1 min-w-0 p-2 bg-slate-50 border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-orange-400" />
+                    <button type="submit" disabled={saving || !editName.trim()} className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-emerald-700 hover:bg-emerald-50 text-xs font-bold disabled:opacity-50" aria-label="Save size"><Check className="w-3.5 h-3.5" /> Save</button>
+                    <button type="button" onClick={() => setEditingId(null)} className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-slate-500 hover:bg-slate-100 text-xs font-bold" aria-label="Cancel editing"><X className="w-3.5 h-3.5" /> Cancel</button>
+                  </form>
+                ) : (
+                  <>
+                    <span className="font-semibold text-slate-800">{size.name}</span>
+                    <div className="flex items-center gap-1">
+                      <button type="button" onClick={() => startEditing(size)} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-orange-600 hover:bg-orange-50 text-xs font-bold" aria-label={`Edit ${size.name}`}>
+                        <Pencil className="w-3.5 h-3.5" /> Edit
+                      </button>
+                      <button type="button" onClick={() => handleDelete(size)} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-bold" aria-label={`Delete ${size.name}`}>
+                        <Trash2 className="w-3.5 h-3.5" /> Remove
+                      </button>
+                    </div>
+                  </>
+                )}
               </li>
             ))}
           </ul>

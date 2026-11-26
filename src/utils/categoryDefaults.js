@@ -10,7 +10,10 @@ export const legacySeedCategories = [
 ];
 
 export const isLegacySeedCategory = (category) =>
-  legacySeedCategories.some((seed) =>
+  category?.isSeedDefault === true
+  || (String(category?.name || '').trim().toLowerCase() === 'medical--'
+    && String(category?.slug || '').trim().toLowerCase() === 'medical')
+  || legacySeedCategories.some((seed) =>
     String(category?.slug || '').trim().toLowerCase() === seed.slug
     && String(category?.description || '').trim() === seed.description
   );

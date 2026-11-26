@@ -2,6 +2,31 @@ import Category from '../models/Category.js';
 import Product from '../models/Product.js';
 import { validateCategoryInput } from '../validators/categoryValidator.js';
 
+const removeUnusedSeedCategories = async () => {
+  const legacySeeds = [
+    { slug: 'homeopathic-medicines', description: 'Classical homeopathic dilutions, pellets, and bio-combination remedies' },
+    { slug: 'mother-tinctures', description: 'Pure concentrated botanical extract mother tinctures' },
+    { slug: 'biochemic-medicines', description: 'Schuessler tissue cell salts and bio-combinations' },
+    { slug: 'wellness-products', description: 'General immunity boosters, health tonics, and preventive drops' },
+    { slug: 'personal-care', description: 'Natural hair oils, creams, soaps, and skin remedies' },
+    { slug: 'combo-products', description: 'Curated wellness remedy value packs and family wellness kits' }
+  ];
+  const legacyQueries = legacySeeds.map(seed => ({ slug: seed.slug, description: seed.description }));
+  const seededCategories = await Category.find({
+    $or: [
+      { isSeedDefault: true },
+      ...legacyQueries,
+      { name: /^medical--$/i, slug: /^medical$/i }
+    ]
+  }).select('_id');
+  if (!seededCategories.length) return;
+
+  const usedCategoryIds = await Product.distinct('category', { category: { $in: seededCategories.map(category => category._id) } });
+  const usedIds = new Set(usedCategoryIds.map(id => String(id)));
+  const unusedIds = seededCategories.map(category => category._id).filter(id => !usedIds.has(String(id)));
+  if (unusedIds.length) await Category.deleteMany({ _id: { $in: unusedIds } });
+};
+
 export const createCategory = async (req, res, next) => {
   try {
     const { isValid, errors } = validateCategoryInput(req.body);
@@ -12,20 +37,6 @@ export const createCategory = async (req, res, next) => {
 
     const existing = await Category.findOne({ slug: categorySlug });
     if (existing) {
-      if (existing.isSeedDefault) {
-        existing.name = name;
-        existing.description = description || '';
-        existing.image = image || '';
-        existing.sortOrder = sortOrder || 0;
-        existing.isActive = true;
-        existing.isSeedDefault = false;
-        await existing.save();
-        return res.status(201).json({
-          success: true,
-          message: 'Category created successfully',
-          data: existing
-        });
-      }
       return res.status(400).json({ success: false, message: 'Category slug already exists' });
     }
 
@@ -49,6 +60,7 @@ export const createCategory = async (req, res, next) => {
 
 export const getCategories = async (req, res, next) => {
   try {
+    await removeUnusedSeedCategories();
     const filter = { isActive: true };
     const categories = await Category.find(filter).sort({ sortOrder: 1, name: 1 });
 
@@ -79,6 +91,7 @@ export const getCategories = async (req, res, next) => {
 
 export const getAdminCategories = async (req, res, next) => {
   try {
+    await removeUnusedSeedCategories();
     const categories = await Category.find().sort({ sortOrder: 1, createdAt: -1 });
     res.status(200).json({
       success: true,

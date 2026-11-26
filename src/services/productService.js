@@ -35,6 +35,8 @@ const saveStoredProducts = (products) => {
   }
 };
 
+export const getCachedAdminProducts = () => getStoredProducts();
+
 const getInventoryStockMap = () => {
   try {
     const raw = localStorage.getItem('admin_inventory_store');
@@ -258,7 +260,6 @@ export const productService = {
       return localProducts;
     }
     try {
-      await api.post('/admin/cleanup-test-catalog', {});
       const res = await api.get('/products/admin/all?limit=1000');
       if (res && Array.isArray(res.data)) {
         const cleaned = res.data.filter(product => !isLegacyTestProduct(product));

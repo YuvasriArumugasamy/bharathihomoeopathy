@@ -25,7 +25,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { productService } from '../../services/productService';
+import { getCachedAdminProducts, productService } from '../../services/productService';
 import { brandService } from '../../services/brandService';
 import { categoryService } from '../../services/categoryService';
 import { useToast } from '../../context/ToastContext';
@@ -111,7 +111,7 @@ const getProductSize = (p) => {
 
 export const AdminProducts = () => {
   const { showToast } = useToast();
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(getCachedAdminProducts);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
