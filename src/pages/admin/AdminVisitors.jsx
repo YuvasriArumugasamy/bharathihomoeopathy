@@ -8,6 +8,21 @@ import {
 } from 'lucide-react';
 import { api } from '../../utils/api';
 
+const VISITOR_STATS_CACHE_KEY = 'dr_bharathi_visitor_stats_v1';
+
+const readCachedStats = () => {
+  try {
+    const cached = localStorage.getItem(VISITOR_STATS_CACHE_KEY);
+    if (!cached) return null;
+    const parsed = JSON.parse(cached);
+    return parsed?.success && Array.isArray(parsed.summaryCards) && Array.isArray(parsed.yearDays)
+      ? parsed
+      : null;
+  } catch {
+    return null;
+  }
+};
+
 // Backend API-based visitor service
 const simpleVisitorService = {
   getStats: async (year = new Date().getFullYear()) => {
@@ -153,7 +168,7 @@ export const AdminVisitors = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const latestRequest = useRef(0);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState(() => readCachedStats() || ({
     summaryCards: [
       { label: 'Visitors today', count: 0 },
       { label: 'Visitors this week', count: 0 },
@@ -162,7 +177,7 @@ export const AdminVisitors = () => {
       { label: 'Visitors last 6 months', count: 0 },
     ],
     yearDays: []
-  });
+  }));
 
   const fetchStats = async () => {
     const requestId = ++latestRequest.current;
@@ -175,6 +190,11 @@ export const AdminVisitors = () => {
       
       if (data && data.success) {
         setStats(data);
+        try {
+          localStorage.setItem(VISITOR_STATS_CACHE_KEY, JSON.stringify(data));
+        } catch {
+          // Keep the live stats usable when browser storage is unavailable.
+        }
       } else {
         setError(data?.error || 'Visitor stats are unavailable.');
       }

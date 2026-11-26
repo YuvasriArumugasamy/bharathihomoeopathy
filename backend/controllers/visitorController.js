@@ -83,17 +83,18 @@ export const getVisitorStats = async (req, res) => {
     const now = getIstDate();
 
     // ---------- Summary cards ----------
-    const summary = {
-      today: await countUniqueVisitors(now.toFormat('yyyy-LL-dd')),
-      yesterday: await countUniqueVisitors(now.minus({ days: 1 }).toFormat('yyyy-LL-dd')),
-      week: await countUniqueVisitors(now.startOf('week').toFormat('yyyy-LL-dd'), now.toFormat('yyyy-LL-dd')),
-      month: await countUniqueVisitors(now.startOf('month').toFormat('yyyy-LL-dd'), now.toFormat('yyyy-LL-dd')),
-      last_month: await countUniqueVisitors(
+    const [today, yesterday, week, month, last_month, six_months] = await Promise.all([
+      countUniqueVisitors(now.toFormat('yyyy-LL-dd')),
+      countUniqueVisitors(now.minus({ days: 1 }).toFormat('yyyy-LL-dd')),
+      countUniqueVisitors(now.startOf('week').toFormat('yyyy-LL-dd'), now.toFormat('yyyy-LL-dd')),
+      countUniqueVisitors(now.startOf('month').toFormat('yyyy-LL-dd'), now.toFormat('yyyy-LL-dd')),
+      countUniqueVisitors(
         now.minus({ months: 1 }).startOf('month').toFormat('yyyy-LL-dd'),
         now.minus({ months: 1 }).endOf('month').toFormat('yyyy-LL-dd')
       ),
-      six_months: await countUniqueVisitors(now.minus({ months: 5 }).startOf('month').toFormat('yyyy-LL-dd'), now.toFormat('yyyy-LL-dd'))
-    };
+      countUniqueVisitors(now.minus({ months: 5 }).startOf('month').toFormat('yyyy-LL-dd'), now.toFormat('yyyy-LL-dd'))
+    ]);
+    const summary = { today, yesterday, week, month, last_month, six_months };
 
     // ---------- Determine chart window ----------
     let periodStart, periodEnd = now;
