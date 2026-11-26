@@ -365,15 +365,26 @@ export const Shop = () => {
 
       return true;
     }).sort((a, b) => {
-      const priceA = Number(a.salePrice || a.price);
-      const priceB = Number(b.salePrice || b.price);
+      const priceA = Number(a.salePrice ?? a.offerPrice ?? a.price) || 0;
+      const priceB = Number(b.salePrice ?? b.offerPrice ?? b.price) || 0;
+      const regularA = Number(a.originalPrice ?? a.regularPrice ?? a.price) || 0;
+      const regularB = Number(b.originalPrice ?? b.regularPrice ?? b.price) || 0;
+      const discountA = Number(a.discount) || (regularA > priceA && regularA > 0 ? ((regularA - priceA) / regularA) * 100 : 0);
+      const discountB = Number(b.discount) || (regularB > priceB && regularB > 0 ? ((regularB - priceB) / regularB) * 100 : 0);
+      const popularityA = (Number(Boolean(a.isBestSeller)) * 2) + Number(Boolean(a.isFeatured));
+      const popularityB = (Number(Boolean(b.isBestSeller)) * 2) + Number(Boolean(b.isFeatured));
+
       if (sortBy === 'PriceLow') return priceA - priceB;
       if (sortBy === 'PriceHigh') return priceB - priceA;
-      if (sortBy === 'Rating') return (b.rating || 0) - (a.rating || 0);
-      if (sortBy === 'Discount') return (b.discount || 0) - (a.discount || 0);
-      if (sortBy === 'Name') return a.name.localeCompare(b.name);
-      if (sortBy === 'Popularity') return (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0);
-      return 0; // Relevancy default
+      if (sortBy === 'Discount') return discountB - discountA;
+      if (sortBy === 'Name') return String(a.name || '').localeCompare(String(b.name || ''));
+      if (sortBy === 'Popularity') return popularityB - popularityA;
+      if (sortBy === 'NewArrivals') {
+        const dateA = new Date(a.createdAt || a.date || 0).getTime() || 0;
+        const dateB = new Date(b.createdAt || b.date || 0).getTime() || 0;
+        return dateB - dateA;
+      }
+      return 0; // Relevancy keeps the catalog's default order.
     });
   }, [allProducts, searchTerm, selectedCategory, minPrice, maxPrice, selectedForm, selectedBrand, sortBy]);
 
