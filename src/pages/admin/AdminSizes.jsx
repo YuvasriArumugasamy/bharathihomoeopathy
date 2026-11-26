@@ -88,8 +88,8 @@ export const AdminSizes = () => {
         <div className="flex items-center gap-3">
           <span className="w-11 h-11 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center"><Ruler className="w-5 h-5" /></span>
           <div>
-            <h1 className="text-xl font-black text-slate-900">Product Sizes</h1>
-            <p className="text-sm text-slate-500">Add shared size options here, then assign them to products.</p>
+            <h1 className="text-xl font-black text-slate-900">Medicine Strength &amp; Pack Size</h1>
+            <p className="text-sm text-slate-500">Add medicine potencies and pack sizes, then assign them to products.</p>
           </div>
         </div>
       </header>
@@ -98,19 +98,19 @@ export const AdminSizes = () => {
         <input
           value={name}
           onChange={event => setName(event.target.value)}
-          placeholder="Example: 30 ml"
-          aria-label="New product size"
+          placeholder="Example: 30C, 30 ml, 10 g"
+          aria-label="New medicine strength or pack size"
           className="flex-1 min-w-0 p-3 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-orange-400"
         />
         <button type="submit" disabled={saving || !name.trim()} className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold disabled:opacity-50">
-          <Plus className="w-4 h-4" /> {saving ? 'Adding…' : 'Add Size'}
+          <Plus className="w-4 h-4" /> {saving ? 'Adding…' : 'Add Option'}
         </button>
       </form>
 
       <section className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-        <h2 className="font-bold text-slate-900 mb-4">Available options ({sizes.length})</h2>
-        {loading ? <p className="text-sm text-slate-500">Loading sizes…</p> : sizes.length === 0 ? (
-          <p className="text-sm text-slate-500">No sizes yet. Add a size above to use it in the product form.</p>
+        <h2 className="font-bold text-slate-900 mb-4">Available strengths &amp; pack sizes ({sizes.length})</h2>
+        {loading ? <p className="text-sm text-slate-500">Loading options…</p> : sizes.length === 0 ? (
+          <p className="text-sm text-slate-500">No options yet. Add a strength or pack size above to use it in the product form.</p>
         ) : (
           <ul className="divide-y divide-slate-100">
             {sizes.map(size => (

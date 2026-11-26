@@ -255,7 +255,7 @@ export const AdminProducts = () => {
   useEffect(() => {
     sizeOptionService.getAdminSizes()
       .then(setSizeOptions)
-      .catch(error => showToast(`Could not load size options: ${error.message}`, 'error'));
+      .catch(error => showToast(`Could not load strength and pack size options: ${error.message}`, 'error'));
   }, []);
 
   const filteredProducts = (Array.isArray(products) ? products : []).filter((p) => {
@@ -1116,7 +1116,7 @@ export const AdminProducts = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">Available Sizes</label>
+                <label className="block font-bold text-slate-700 mb-1.5">Available Strengths &amp; Pack Sizes</label>
                 <div className="flex gap-2">
                   <ModalSelect
                     value={formData.sizeToAdd || ''}
@@ -1147,8 +1147,8 @@ export const AdminProducts = () => {
                   </div>
                 ) : (
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-slate-500">
-                    <span>{availableSizeNames.length === 0 ? 'No size options are available yet.' : 'All available sizes are already added.'}</span>
-                    {availableSizeNames.length === 0 && <Link to="/admin/sizes" target="_blank" rel="noreferrer" className="font-bold text-brandOrange-600 underline">Open Sizes module</Link>}
+                    <span>{availableSizeNames.length === 0 ? 'No strength or pack size options are available yet.' : 'All available strengths and pack sizes are already added.'}</span>
+                    {availableSizeNames.length === 0 && <Link to="/admin/sizes" target="_blank" rel="noreferrer" className="font-bold text-brandOrange-600 underline">Open Strengths &amp; Packs module</Link>}
                   </div>
                 )}
               </div>
