@@ -163,23 +163,31 @@ export const AdminOrders = () => {
   };
 
   const handleUpdateStatus = async (orderId, newStatus) => {
-    await orderService.updateAdminOrderStatus(orderId, newStatus);
-    setOrders(prev => prev.map(o => (o.id === orderId || o.orderId === orderId || o.originalOrderId === orderId || o._id === orderId) ? { ...o, orderStatus: newStatus } : o));
-    if (selectedOrderDrawer && (selectedOrderDrawer.id === orderId || selectedOrderDrawer.orderId === orderId || selectedOrderDrawer.originalOrderId === orderId)) {
-      setSelectedOrderDrawer(prev => ({ ...prev, orderStatus: newStatus }));
+    try {
+      await orderService.updateAdminOrderStatus(orderId, newStatus);
+      setOrders(prev => prev.map(o => (o.id === orderId || o.orderId === orderId || o.originalOrderId === orderId || o._id === orderId) ? { ...o, orderStatus: newStatus } : o));
+      if (selectedOrderDrawer && (selectedOrderDrawer.id === orderId || selectedOrderDrawer.orderId === orderId || selectedOrderDrawer.originalOrderId === orderId)) {
+        setSelectedOrderDrawer(prev => ({ ...prev, orderStatus: newStatus }));
+      }
+      const notifId = `notif-ord-${orderId}`;
+      dismissNotification(notifId);
+      showToast(`Order status updated to ${newStatus} and saved!`, 'success');
+    } catch (error) {
+      showToast(error.response?.data?.message || 'Could not save order status. Please try again.', 'error');
     }
-    const notifId = `notif-ord-${orderId}`;
-    dismissNotification(notifId);
-    showToast(`Order status updated to ${newStatus} and saved!`, 'success');
   };
 
   const handleUpdatePaymentStatus = async (orderId, newStatus) => {
-    await orderService.updateAdminPaymentStatus(orderId, newStatus);
-    setOrders(prev => prev.map(o => (o.id === orderId || o.orderId === orderId || o._id === orderId) ? { ...o, paymentStatus: newStatus } : o));
-    if (selectedOrderDrawer && (selectedOrderDrawer.id === orderId || selectedOrderDrawer.orderId === orderId)) {
-      setSelectedOrderDrawer(prev => ({ ...prev, paymentStatus: newStatus }));
+    try {
+      await orderService.updateAdminPaymentStatus(orderId, newStatus);
+      setOrders(prev => prev.map(o => (o.id === orderId || o.orderId === orderId || o._id === orderId) ? { ...o, paymentStatus: newStatus } : o));
+      if (selectedOrderDrawer && (selectedOrderDrawer.id === orderId || selectedOrderDrawer.orderId === orderId)) {
+        setSelectedOrderDrawer(prev => ({ ...prev, paymentStatus: newStatus }));
+      }
+      showToast(`Payment status updated to ${newStatus} and saved!`, 'success');
+    } catch (error) {
+      showToast(error.response?.data?.message || 'Could not save payment status. Please try again.', 'error');
     }
-    showToast(`Payment status updated to ${newStatus} and saved!`, 'success');
   };
 
   const handleUpdateCourier = (orderId, courier, trackingNumber) => {

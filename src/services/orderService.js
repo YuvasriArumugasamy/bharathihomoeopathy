@@ -333,34 +333,16 @@ export const orderService = {
   },
 
   updateAdminOrderStatus: async (id, newStatus) => {
+    await api.patch(`/orders/${encodeURIComponent(id)}/status`, { orderStatus: newStatus });
     const orders = getStoredOrders().map(o => (o.id === id || o._id === id || o.orderId === id) ? { ...o, orderStatus: newStatus } : o);
     saveStoredOrders(orders);
-
-    try {
-      await cloudSyncService.updateCloudOrderStatus(id, { orderStatus: newStatus });
-    } catch {}
-
-    try {
-      await api.patch(`/orders/${id}/status`, { orderStatus: newStatus });
-    } catch (err) {
-      console.warn("Order status updated in local persistent store:", err.message);
-    }
     return { success: true, orderStatus: newStatus };
   },
 
   updateAdminPaymentStatus: async (id, newPaymentStatus) => {
+    await api.patch(`/orders/${encodeURIComponent(id)}/payment-status`, { paymentStatus: newPaymentStatus });
     const orders = getStoredOrders().map(o => (o.id === id || o._id === id || o.orderId === id) ? { ...o, paymentStatus: newPaymentStatus } : o);
     saveStoredOrders(orders);
-
-    try {
-      await cloudSyncService.updateCloudOrderStatus(id, { paymentStatus: newPaymentStatus });
-    } catch {}
-
-    try {
-      await api.patch(`/orders/${id}/payment-status`, { paymentStatus: newPaymentStatus });
-    } catch (err) {
-      console.warn("Payment status updated in local persistent store:", err.message);
-    }
     return { success: true, paymentStatus: newPaymentStatus };
   }
 };
