@@ -10,6 +10,9 @@ export const Wishlist = () => {
   const { wishlist, removeFromWishlist, clearWishlist } = useWishlist();
   const { addToCart } = useCart();
   const { showToast } = useToast();
+  const safeWishlist = Array.isArray(wishlist)
+    ? wishlist.filter(item => item && typeof item === 'object')
+    : [];
 
   const handleAddToCart = (product) => {
     if (product.stock <= 0) {
@@ -21,7 +24,7 @@ export const Wishlist = () => {
 
   const handleAddAllToCart = () => {
     let count = 0;
-    wishlist.forEach((item) => {
+    safeWishlist.forEach((item) => {
       if (item.stock > 0 || item.stock === undefined) {
         addToCart(item, 1);
         count++;
@@ -34,7 +37,7 @@ export const Wishlist = () => {
     }
   };
 
-  if (wishlist.length === 0) {
+  if (safeWishlist.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <EmptyState
@@ -81,19 +84,22 @@ export const Wishlist = () => {
 
       {/* Wishlist Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {wishlist.map((item) => {
-          const displayPrice = item.price;
-          const originalPrice = item.originalPrice || item.price;
+        {safeWishlist.map((item, index) => {
+          const displayPrice = Number(item.price) || 0;
+          const originalPrice = Number(item.originalPrice) || displayPrice;
+          const itemId = item.id || item._id || `saved-item-${index}`;
+          const itemCategory = typeof item.category === 'string' ? item.category : 'Homeopathy';
+          const itemSize = typeof item.size === 'string' ? item.size : itemCategory;
           const hasDiscount = originalPrice > displayPrice;
 
           return (
             <div
-              key={item.id}
+              key={itemId}
               className="bg-white rounded-2xl border border-slate-200/90 hover:border-brandOrange-400 hover:shadow-xl transition-all duration-300 flex flex-col justify-between p-4 relative group"
             >
               {/* Remove button */}
               <button
-                onClick={() => removeFromWishlist(item.id)}
+                onClick={() => removeFromWishlist(item.id || item._id)}
                 title="Remove from wishlist"
                 aria-label="Remove item"
                 className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center transition-colors shadow-xs z-10"
@@ -102,7 +108,7 @@ export const Wishlist = () => {
               </button>
 
               {/* Product Image Link */}
-              <Link to={`/product/${item.id}`} className="flex flex-col items-center pt-2">
+              <Link to={`/product/${item.id || item._id || ''}`} className="flex flex-col items-center pt-2">
                 <div className="w-full aspect-[4/3] sm:aspect-square max-h-44 rounded-xl overflow-hidden flex items-center justify-center p-2.5 bg-gradient-to-b from-slate-50 to-white/60 group-hover:bg-orange-50/20 transition-all duration-300">
                   <img
                     src={item.image}
@@ -115,7 +121,7 @@ export const Wishlist = () => {
                 {/* Details */}
                 <div className="w-full text-left mt-3 space-y-1.5">
                   <span className="text-[10px] font-bold text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200/50">
-                    {item.size || item.category || 'Homeopathy'}
+                    {itemSize || itemCategory}
                   </span>
 
                   <h3 className="font-extrabold text-sm text-navy-950 line-clamp-1 group-hover:text-brandOrange-600 transition-colors leading-tight">

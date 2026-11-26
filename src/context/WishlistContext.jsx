@@ -10,20 +10,21 @@ const normalizeWishlist = (value) => {
   return value
     .filter(item => item && typeof item === 'object')
     .map(item => {
-      const id = item.id || item._id;
-      const category = typeof item.category === 'object'
-        ? (item.category?.name || 'Homeopathy')
-        : (item.category || 'Homeopathy');
+      const rawId = item.id || item._id;
+      const id = typeof rawId === 'string' || typeof rawId === 'number' ? String(rawId) : '';
+      const rawCategory = typeof item.category === 'object' ? item.category?.name : item.category;
+      const category = typeof rawCategory === 'string' && rawCategory.trim() ? rawCategory : 'Homeopathy';
+      const rawPrice = Number(item.price ?? item.salePrice ?? 0);
+      const rawOriginalPrice = Number(item.originalPrice ?? item.price ?? item.salePrice ?? 0);
       return {
-        ...item,
-        id: id ? String(id) : '',
+        id,
         name: typeof item.name === 'string' ? item.name : 'Homeopathic Remedy',
-        category: typeof category === 'string' ? category : 'Homeopathy',
+        category,
         size: typeof item.size === 'string' ? item.size : category,
-        price: Number(item.price ?? item.salePrice ?? 0),
-        originalPrice: Number(item.originalPrice ?? item.price ?? item.salePrice ?? 0),
+        price: Number.isFinite(rawPrice) ? rawPrice : 0,
+        originalPrice: Number.isFinite(rawOriginalPrice) ? rawOriginalPrice : 0,
         image: typeof item.image === 'string' ? item.image : '',
-        stock: item.stock == null ? undefined : Number(item.stock)
+        stock: item.stock == null || !Number.isFinite(Number(item.stock)) ? undefined : Number(item.stock)
       };
     })
     .filter(item => item.id);
