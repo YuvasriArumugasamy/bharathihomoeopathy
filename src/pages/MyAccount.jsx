@@ -29,7 +29,6 @@ import { EmptyState } from '../components/common/EmptyState';
 import { getUserOrders, orderService } from '../services/orderService';
 import { getUserAppointments, appointmentService } from '../services/appointmentService';
 import { getUserPrescriptions, prescriptionService } from '../services/prescriptionService';
-import { cloudSyncService } from '../services/cloudSyncService';
 
 export const MyAccount = () => {
   const { user, patientUser, logout, openAuthModal } = useAuth();
@@ -60,7 +59,7 @@ export const MyAccount = () => {
   const [userAppointments, setUserAppointments] = useState(() => getUserAppointments(activeUser));
   const [userPrescriptions, setUserPrescriptions] = useState(() => getUserPrescriptions(activeUser));
 
-  // Listen to live updates from MongoDB, local checkout/booking and Firebase Firestore cloud
+  // Render the device cache immediately and refresh shared data in the background.
   useEffect(() => {
     const refreshLiveUserData = async () => {
       setLoadingOrders(true);
@@ -138,11 +137,6 @@ export const MyAccount = () => {
       window.addEventListener('storage', refreshLiveUserData);
     }
 
-    const unsubscribeCloud = cloudSyncService.listenToCloudOrders(() => {
-      refreshLiveUserData();
-      loadMongoData();
-    });
-
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('orders_updated', refreshLiveUserData);
@@ -150,7 +144,6 @@ export const MyAccount = () => {
         window.removeEventListener('prescriptions_updated', refreshLiveUserData);
         window.removeEventListener('storage', refreshLiveUserData);
       }
-      if (typeof unsubscribeCloud === 'function') unsubscribeCloud();
     };
   }, [user]);
 

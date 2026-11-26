@@ -1,6 +1,5 @@
 import { api } from '../utils/api';
 import { customerService } from './customerService';
-import { cloudSyncService } from './cloudSyncService';
 import { authStorage } from '../utils/authStorage';
 
 const ORDERS_STORAGE_KEY = 'admin_orders_store';
@@ -182,11 +181,9 @@ export const orderService = {
     saveStoredOrders([newOrder, ...currentOrders]);
 
     // Push order in real-time to Firebase Firestore Cloud (Accessible from any device)
-    try {
-      cloudSyncService.syncOrderToCloud(newOrder);
-    } catch (cErr) {
-      console.warn("Cloud sync error:", cErr.message);
-    }
+    import('./cloudSyncService')
+      .then(({ cloudSyncService }) => cloudSyncService.syncOrderToCloud(newOrder))
+      .catch(cErr => console.warn("Cloud sync error:", cErr.message));
 
     // Automatically sync patient directory
     try {
