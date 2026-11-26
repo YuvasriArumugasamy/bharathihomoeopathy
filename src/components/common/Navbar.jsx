@@ -247,6 +247,17 @@ export const Navbar = () => {
 
         {/* Right Actions: Account, Wishlist, Cart + Mobile Search Icon + Language */}
         <div className="flex items-center gap-2 sm:gap-4 lg:gap-6 text-slate-700 shrink-0">
+
+          {/* Show the mobile/tablet navigation trigger below the desktop nav breakpoint. */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(open => !open)}
+            className="lg:hidden w-8 h-8 rounded-full bg-slate-100 hover:bg-orange-50 text-slate-700 hover:text-brandOrange-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </button>
           
           <div className="block">
             <GoogleTranslate />
