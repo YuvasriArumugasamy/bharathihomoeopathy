@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { assets } from '../assets';
 import { getStoredProducts } from '../utils/productStorage';
-import { cloudSyncService } from '../services/cloudSyncService';
+import { api } from '../utils/api';
 import { useCart } from '../context/CartContext';
 import { getCategoryDisplayImage } from '../utils/categoryImages';
 import { useToast } from '../context/ToastContext';
@@ -59,6 +59,17 @@ export const Home = () => {
   });
 
   useEffect(() => {
+    let isMounted = true;
+    api.get('/categories')
+      .then(response => {
+        if (!isMounted || !Array.isArray(response?.data)) return;
+        setAdminCategories(filterLegacySeedCategories(response.data).filter(category =>
+          category && category.name && category.isActive !== false &&
+          (category.status === 'Active' || !category.status) && category.name.toLowerCase() !== 'kjds'
+        ));
+      })
+      .catch(error => console.warn('Could not load homepage categories:', error.message));
+
     const handleCatSync = () => {
       try {
         const raw = localStorage.getItem('admin_categories_store');
@@ -76,16 +87,10 @@ export const Home = () => {
     window.addEventListener('drBharathiCategoriesUpdated', handleCatSync);
     window.addEventListener('storage', handleCatSync);
 
-    const unsubCloud = cloudSyncService.listenToCategories((cloudCats) => {
-      if (Array.isArray(cloudCats)) {
-        setAdminCategories(filterLegacySeedCategories(cloudCats).filter(c => c && c.name && (c.status === 'Active' || !c.status) && c.name.toLowerCase() !== 'kjds'));
-      }
-    });
-
     return () => {
+      isMounted = false;
       window.removeEventListener('drBharathiCategoriesUpdated', handleCatSync);
       window.removeEventListener('storage', handleCatSync);
-      if (typeof unsubCloud === 'function') unsubCloud();
     };
   }, []);
 
