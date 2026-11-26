@@ -136,16 +136,10 @@ export const AdminProducts = () => {
       const prod = products.find(p => (p.id && p.id === productId) || (p._id && p._id === productId));
       if (!prod) return;
 
-      const updated = {
-        ...prod,
-        stock: qty,
-        status: 'Active'
-      };
-
-      await productService.updateAdminProduct(productId, updated);
+      const updated = await productService.restockAdminProduct(productId, qty);
       setProducts(prev => prev.map(p => {
         const isMatch = (p.id && p.id === productId) || (p._id && p._id === productId);
-        return isMatch ? updated : p;
+        return isMatch ? { ...p, ...updated } : p;
       }));
 
       setQuickRestockMap(prev => {

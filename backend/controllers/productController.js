@@ -295,6 +295,28 @@ export const updateProduct = async (req, res, next) => {
   }
 };
 
+export const updateProductStock = async (req, res, next) => {
+  try {
+    const stock = Number(req.body?.stock);
+    if (!Number.isFinite(stock) || stock < 0) {
+      return res.status(400).json({ success: false, message: 'Stock must be a non-negative number.' });
+    }
+
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);
+    const query = isMongoId ? { _id: req.params.id } : { $or: [{ sku: req.params.id }, { slug: req.params.id }] };
+    const product = await Product.findOneAndUpdate(
+      query,
+      { $set: { stock, ...(stock > 0 ? { isActive: true } : {}) } },
+      { new: true, runValidators: true }
+    );
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found.' });
+
+    res.status(200).json({ success: true, message: 'Product stock updated.', data: product });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const deleteProduct = async (req, res, next) => {
   try {
     const isMongoId = /^[0-9a-fA-F]{24}$/.test(req.params.id);

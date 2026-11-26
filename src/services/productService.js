@@ -4,6 +4,11 @@ import { isLegacyTestProduct } from '../utils/catalogCleanup';
 import { getStoredCategories } from './categoryService';
 
 const PRODUCTS_STORAGE_KEY = 'admin_products_store';
+const LEGACY_PRODUCTS_STORAGE_KEY = 'drBharathiProductsCatalog';
+const ADMIN_PRODUCTS_CACHE_TTL_MS = 60_000;
+let cachedAdminProducts = null;
+let cachedAdminProductsAt = 0;
+let adminProductsRequest = null;
 
 const getStoredProducts = () => {
   try {
@@ -24,18 +29,41 @@ const getStoredProducts = () => {
 };
 
 const saveStoredProducts = (products) => {
+  cachedAdminProducts = products;
+  cachedAdminProductsAt = Date.now();
+  const compactProducts = products.map(product => ({
+    ...product,
+    image: typeof product.image === 'string' && product.image.startsWith('data:') ? '' : product.image,
+    images: Array.isArray(product.images)
+      ? product.images.filter(image => typeof image === 'string' && !image.startsWith('data:'))
+      : product.images
+  }));
+  const serialized = JSON.stringify(compactProducts);
   try {
-    localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
-    localStorage.setItem('drBharathiProductsCatalog', JSON.stringify(products));
-    window.dispatchEvent(new CustomEvent('drBharathiProductsUpdated', { detail: products }));
-    window.dispatchEvent(new CustomEvent('products_updated', { detail: products }));
-    window.dispatchEvent(new Event('storage'));
+    localStorage.setItem(PRODUCTS_STORAGE_KEY, serialized);
+    localStorage.setItem(LEGACY_PRODUCTS_STORAGE_KEY, serialized);
   } catch (err) {
-    console.warn("Failed to persist products to storage:", err.message);
+    try {
+      localStorage.removeItem(LEGACY_PRODUCTS_STORAGE_KEY);
+      localStorage.setItem(PRODUCTS_STORAGE_KEY, serialized);
+    } catch (retryError) {
+      console.warn('Could not persist the compact product cache:', retryError.message);
+    }
   }
+  window.dispatchEvent(new CustomEvent('drBharathiProductsUpdated', { detail: products }));
+  window.dispatchEvent(new CustomEvent('products_updated', { detail: products }));
+  window.dispatchEvent(new Event('storage'));
 };
 
-export const getCachedAdminProducts = () => getStoredProducts();
+export const getCachedAdminProducts = () => {
+  const products = getStoredProducts();
+  if (!cachedAdminProducts) {
+    cachedAdminProducts = products;
+    // Local data should render instantly, but still trigger a live refresh.
+    cachedAdminProductsAt = 0;
+  }
+  return cachedAdminProducts;
+};
 
 const getInventoryStockMap = () => {
   try {
@@ -259,17 +287,30 @@ export const productService = {
     if (authStorage.isDemoMode()) {
       return localProducts;
     }
-    try {
-      const res = await api.get('/products/admin/all?limit=1000');
-      if (res && Array.isArray(res.data)) {
-        const cleaned = res.data.filter(product => !isLegacyTestProduct(product));
-        saveStoredProducts(cleaned);
-        return cleaned.length > 0 || localProducts.length === 0 ? cleaned : localProducts;
-      }
-    } catch {
-      // Backend offline or sleeping, silently use persistent local store
+    if (cachedAdminProducts && Date.now() - cachedAdminProductsAt < ADMIN_PRODUCTS_CACHE_TTL_MS) {
+      return cachedAdminProducts;
     }
-    return getStoredProducts();
+    if (!adminProductsRequest) {
+      adminProductsRequest = (async () => {
+        try {
+          const res = await api.get('/products/admin/all?limit=1000');
+          if (res && Array.isArray(res.data)) {
+            const cleaned = res.data.filter(product => !isLegacyTestProduct(product));
+            const result = cleaned.length > 0 || localProducts.length === 0 ? cleaned : localProducts;
+            saveStoredProducts(result);
+            return result;
+          }
+        } catch {
+          // Backend offline or sleeping, use the persistent local store.
+        }
+        return localProducts;
+      })();
+    }
+    try {
+      return await adminProductsRequest;
+    } finally {
+      adminProductsRequest = null;
+    }
   },
 
   createAdminProduct: async (productData) => {
@@ -332,6 +373,36 @@ export const productService = {
         : p
     ));
     return { success: true, data: persisted };
+  },
+
+  restockAdminProduct: async (id, stock) => {
+    if (!id) throw new Error('Product ID required.');
+    const quantity = Number(stock);
+    if (!Number.isFinite(quantity) || quantity < 0) throw new Error('Stock must be a non-negative number.');
+
+    const response = await api.patch(`/products/${encodeURIComponent(id)}/stock`, { stock: quantity });
+    if (!response?.success || !response?.data?._id) {
+      throw new Error(response?.message || 'The restock was not saved.');
+    }
+
+    const current = getStoredProducts();
+    const products = current.length ? current : (Array.isArray(cachedAdminProducts) ? cachedAdminProducts : []);
+    const savedProduct = products.find(product => String(product.id || product._id) === String(id));
+    const persisted = {
+      ...savedProduct,
+      ...response.data,
+      id: String(response.data._id),
+      _id: String(response.data._id),
+      category: savedProduct?.category || response.data.category,
+      regularPrice: Number(response.data.price ?? savedProduct?.regularPrice ?? 0),
+      offerPrice: Number(response.data.salePrice ?? savedProduct?.offerPrice ?? response.data.price ?? 0),
+      status: response.data.isActive === false ? 'Inactive' : 'Active'
+    };
+    const updatedProducts = products.some(product => String(product.id || product._id) === String(id))
+      ? products.map(product => String(product.id || product._id) === String(id) ? persisted : product)
+      : [...products, persisted];
+    saveStoredProducts(updatedProducts);
+    return persisted;
   },
 
   deleteAdminProduct: async (id) => {

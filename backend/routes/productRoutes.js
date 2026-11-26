@@ -7,6 +7,7 @@ import {
   getProductBySlug,
   getProductById,
   getAdminProducts,
+  updateProductStock,
   updateProduct,
   deleteProduct
 } from '../controllers/productController.js';
@@ -24,6 +25,7 @@ router.get('/:id', getProductById);
 
 // Admin-only routes
 router.get('/admin/all', protect, adminOnly, getAdminProducts);
+router.patch('/:id/stock', protect, adminOnly, updateProductStock);
 router.post('/', protect, adminOnly, createProduct);
 router.put('/:id', protect, adminOnly, updateProduct);
 router.delete('/:id', protect, adminOnly, deleteProduct);
