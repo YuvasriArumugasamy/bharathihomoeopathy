@@ -7,7 +7,7 @@ import { useToast } from '../context/ToastContext';
 import { EmptyState } from '../components/common/EmptyState';
 
 export const Wishlist = () => {
-  const { wishlist, totalWishlist, removeFromWishlist, clearWishlist } = useWishlist();
+  const { wishlist, removeFromWishlist, clearWishlist } = useWishlist();
   const { addToCart } = useCart();
   const { showToast } = useToast();
 
@@ -34,7 +34,7 @@ export const Wishlist = () => {
     }
   };
 
-  if (totalWishlist === 0) {
+  if (wishlist.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <EmptyState
@@ -57,9 +57,6 @@ export const Wishlist = () => {
           <span className="text-xs font-bold uppercase tracking-wider text-[#236888]">Saved Formulations</span>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-navy-950 tracking-tight flex items-center gap-2.5">
             <span>My Wishlist</span>
-            <span className="text-sm font-bold bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-0.5 rounded-full">
-              {totalWishlist} {totalWishlist === 1 ? 'item' : 'items'}
-            </span>
           </h1>
         </div>
 

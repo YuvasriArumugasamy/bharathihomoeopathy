@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import { useWishlist } from '../../context/WishlistContext';
 import { GoogleTranslate } from './GoogleTranslate';
 import { assets } from '../../assets';
 import { demoProducts } from '../../data/products';
@@ -26,7 +25,6 @@ export const Navbar = () => {
   const activePatient = patientUser || (user?.role !== 'admin' ? user : null);
   const isPatientLoggedIn = !!activePatient;
   const { totalItems } = useCart();
-  const { totalWishlist } = useWishlist();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
@@ -318,7 +316,7 @@ export const Navbar = () => {
             )}
           </div>
 
-          {/* Wishlist Link with Live Counter Badge in Solid Vibrant Red */}
+          {/* Wishlist link with icon only; item counts stay off the header. */}
           <Link
             to="/wishlist"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -327,11 +325,6 @@ export const Navbar = () => {
           >
             <div className="relative flex items-center justify-center">
               <Heart className="w-5 h-5 text-rose-500 fill-rose-500 group-hover:text-rose-600 group-hover:fill-rose-600 group-hover:scale-110 transition-all duration-200" />
-              {totalWishlist > 0 && (
-                <span className="absolute -top-2 -right-2 w-4 h-4 bg-[#236888] text-white font-extrabold text-[10px] rounded-full flex items-center justify-center shadow-sm animate-in zoom-in ring-2 ring-white">
-                  {totalWishlist}
-                </span>
-              )}
             </div>
             <span className="hidden lg:inline text-xs font-bold group-hover:text-rose-600 transition-colors">Wishlist</span>
           </Link>

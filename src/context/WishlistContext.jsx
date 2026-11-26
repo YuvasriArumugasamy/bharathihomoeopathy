@@ -5,13 +5,37 @@ const WISHLIST_STORAGE_KEY = 'user_wishlist';
 
 const WishlistContext = createContext(null);
 
+const normalizeWishlist = (value) => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter(item => item && typeof item === 'object')
+    .map(item => {
+      const id = item.id || item._id;
+      const category = typeof item.category === 'object'
+        ? (item.category?.name || 'Homeopathy')
+        : (item.category || 'Homeopathy');
+      return {
+        ...item,
+        id: id ? String(id) : '',
+        name: typeof item.name === 'string' ? item.name : 'Homeopathic Remedy',
+        category: typeof category === 'string' ? category : 'Homeopathy',
+        size: typeof item.size === 'string' ? item.size : category,
+        price: Number(item.price ?? item.salePrice ?? 0),
+        originalPrice: Number(item.originalPrice ?? item.price ?? item.salePrice ?? 0),
+        image: typeof item.image === 'string' ? item.image : '',
+        stock: item.stock == null ? undefined : Number(item.stock)
+      };
+    })
+    .filter(item => item.id);
+};
+
 export const WishlistProvider = ({ children }) => {
   const { showToast } = useToast();
 
   const [wishlist, setWishlist] = useState(() => {
     try {
       const saved = localStorage.getItem(WISHLIST_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
+      return saved ? normalizeWishlist(JSON.parse(saved)) : [];
     } catch {
       return [];
     }
@@ -29,7 +53,7 @@ export const WishlistProvider = ({ children }) => {
   const totalWishlist = useMemo(() => wishlist.length, [wishlist]);
 
   const isInWishlist = (productId) => {
-    return wishlist.some((item) => item.id === productId || item._id === productId);
+    return wishlist.some((item) => item?.id === productId || item?._id === productId);
   };
 
   const addToWishlist = (product) => {
